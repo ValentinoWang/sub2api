@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +19,7 @@ type OpenAIOAuthHandler struct {
 	openaiOAuthService *service.OpenAIOAuthService
 	adminService       service.AdminService
 	quotaService       *service.OpenAIQuotaService
+	tokenInvalidator   service.TokenCacheInvalidator
 }
 
 func oauthPlatformFromPath(c *gin.Context) string {
@@ -29,11 +31,13 @@ func NewOpenAIOAuthHandler(
 	openaiOAuthService *service.OpenAIOAuthService,
 	adminService service.AdminService,
 	quotaService *service.OpenAIQuotaService,
+	tokenInvalidator service.TokenCacheInvalidator,
 ) *OpenAIOAuthHandler {
 	return &OpenAIOAuthHandler{
 		openaiOAuthService: openaiOAuthService,
 		adminService:       adminService,
 		quotaService:       quotaService,
+		tokenInvalidator:   tokenInvalidator,
 	}
 }
 
@@ -222,6 +226,16 @@ func (h *OpenAIOAuthHandler) RefreshAccountToken(c *gin.Context) {
 	updatedAccount, err := h.adminService.UpdateAccount(c.Request.Context(), accountID, &service.UpdateAccountInput{
 		Credentials: newCredentials,
 	})
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	if h.tokenInvalidator != nil {
+		if invalidateErr := h.tokenInvalidator.InvalidateToken(c.Request.Context(), updatedAccount); invalidateErr != nil {
+			slog.Warn("openai_oauth_refresh.invalidate_token_failed", "account_id", accountID, "error", invalidateErr)
+		}
+	}
+	updatedAccount, err = h.adminService.RecoverOAuthAccountAfterCredentialUpdate(c.Request.Context(), accountID)
 	if err != nil {
 		response.ErrorFrom(c, err)
 		return

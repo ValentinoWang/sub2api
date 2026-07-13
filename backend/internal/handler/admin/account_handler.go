@@ -1269,7 +1269,7 @@ type ApplyOAuthCredentialsRequest struct {
 //   - Extra 走 UpdateAccountExtra(JSONB key 级合并)，**绝不**全量覆盖；
 //     避免 base_rpm / window_cost_limit / max_sessions / quota_* / privacy_mode
 //     等持久化配置在重新授权后丢失
-//   - 内置 ClearError + InvalidateToken，避免前端额外两次调用，
+//   - 内置认证故障定向恢复 + InvalidateToken，避免前端额外调用，
 //     并修复旧路径未失效 token 缓存导致重新授权后立即 401 的隐性 bug
 //
 // 与 /refresh 的区别：/refresh 用现有 refresh_token 换 access_token（无用户交互），
@@ -1311,7 +1311,7 @@ func (h *AccountHandler) ApplyOAuthCredentials(c *gin.Context) {
 
 	// 增量合并 Extra（JSONB key 级 merge，绝不覆盖 base_rpm / window_cost_limit /
 	// max_sessions / quota_* / privacy_mode 等持久化键）。
-	// best-effort：失败仅记日志；下方 ClearAccountError 会从 DB 重新读取最新 account，
+	// best-effort：失败仅记日志；下方恢复逻辑会从 DB 重新读取最新 account，
 	// 因此响应里的 extra 始终以 DB 为准——这里不需要手动维护内存快照。
 	if len(req.Extra) > 0 {
 		if extraErr := h.adminService.UpdateAccountExtra(ctx, accountID, req.Extra); extraErr != nil {
@@ -1327,13 +1327,13 @@ func (h *AccountHandler) ApplyOAuthCredentials(c *gin.Context) {
 		}
 	}
 
-	if cleared, clearErr := h.adminService.ClearAccountError(ctx, accountID); clearErr != nil {
-		slog.Warn("apply_oauth_credentials.clear_error_failed",
+	if recovered, recoverErr := h.adminService.RecoverOAuthAccountAfterCredentialUpdate(ctx, accountID); recoverErr != nil {
+		slog.Warn("apply_oauth_credentials.recover_account_failed",
 			"account_id", accountID,
-			"err", clearErr,
+			"err", recoverErr,
 		)
-	} else if cleared != nil {
-		updatedAccount = cleared
+	} else if recovered != nil {
+		updatedAccount = recovered
 	}
 
 	if h.tokenCacheInvalidator != nil && updatedAccount.IsOAuth() {

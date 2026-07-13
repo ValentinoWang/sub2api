@@ -179,7 +179,7 @@ const routes: RouteRecordRaw[] = [
   // ==================== User Routes ====================
   {
     path: '/',
-    redirect: '/home'
+    redirect: '/Api_subscribe'
   },
   {
     path: '/dashboard',
@@ -500,6 +500,19 @@ const routes: RouteRecordRaw[] = [
       title: 'Account Management',
       titleKey: 'admin.accounts.title',
       descriptionKey: 'admin.accounts.description'
+    }
+  },
+  {
+    path: '/Api_subscribe',
+    alias: '/admin/accounts/subscriptions',
+    name: 'AdminAccountSubscriptions',
+    component: () => import('@/views/admin/AccountSubscriptionsView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Account Subscriptions',
+      titleKey: 'admin.accounts.subscriptions.title',
+      descriptionKey: 'admin.accounts.subscriptions.description'
     }
   },
   {

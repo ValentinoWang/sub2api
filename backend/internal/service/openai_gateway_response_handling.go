@@ -38,7 +38,7 @@ type openaiNonStreamingResult struct {
 	imageOutputSizes []string
 }
 
-func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp *http.Response, c *gin.Context, account *Account, startTime time.Time, originalModel, mappedModel string) (*openaiStreamingResult, error) {
+func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp *http.Response, c *gin.Context, account *Account, startTime time.Time, originalModel, mappedModel string, firstTokenWatchdogs ...*openAIFirstTokenWatchdog) (*openaiStreamingResult, error) {
 	if s.responseHeaderFilter != nil {
 		responseheaders.WriteFilteredHeaders(c.Writer.Header(), resp.Header, s.responseHeaderFilter)
 	}
@@ -94,6 +94,12 @@ func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp
 	if intervalTicker != nil {
 		intervalCh = intervalTicker.C
 	}
+
+	var firstTokenWatchdog *openAIFirstTokenWatchdog
+	if len(firstTokenWatchdogs) > 0 {
+		firstTokenWatchdog = firstTokenWatchdogs[0]
+	}
+	firstTokenTimeoutCh := firstTokenWatchdog.Timeout()
 
 	keepaliveInterval := time.Duration(0)
 	if s.cfg != nil && s.cfg.Gateway.StreamKeepaliveInterval > 0 {
@@ -320,6 +326,16 @@ func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp
 				line = s.replaceModelInSSELine(line, mappedModel, originalModel)
 			}
 			startsClientOutput := forceFlushFailedEvent || openAIStreamDataStartsClientOutput(data, eventType)
+			if startsClientOutput && !clientOutputStarted && firstTokenWatchdog != nil && !firstTokenWatchdog.Stop() {
+				streamEarlyErr = s.newOpenAIFirstTokenTimeoutFailoverError(
+					c,
+					account,
+					originalModel,
+					upstreamRequestID,
+					firstTokenWatchdog.Duration(),
+				)
+				return
+			}
 
 			// 写入客户端（客户端断开后继续 drain 上游）
 			if !clientDisconnected {
@@ -375,7 +391,7 @@ func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp
 	}
 
 	// 无超时/无 keepalive 的常见路径走同步扫描，减少 goroutine 与 channel 开销。
-	if streamInterval <= 0 && keepaliveInterval <= 0 {
+	if streamInterval <= 0 && keepaliveInterval <= 0 && firstTokenWatchdog == nil {
 		defer putSSEScannerBuf64K(scanBuf)
 		for scanner.Scan() {
 			processSSELine(scanner.Text(), true)
@@ -444,12 +460,30 @@ func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp
 				return resultWithUsage(), fmt.Errorf("stream usage incomplete after timeout")
 			}
 			logger.LegacyPrintf("service.openai_gateway", "Stream data interval timeout: account=%d model=%s interval=%s", account.ID, originalModel, streamInterval)
+			if !openAIStreamClientOutputStarted(c, clientOutputStarted) {
+				return resultWithUsage(), s.newOpenAIFirstTokenTimeoutFailoverError(
+					c,
+					account,
+					originalModel,
+					upstreamRequestID,
+					streamInterval,
+				)
+			}
 			// 处理流超时，可能标记账户为临时不可调度或错误状态
 			if s.rateLimitService != nil {
 				s.rateLimitService.HandleStreamTimeout(ctx, account, originalModel)
 			}
 			sendErrorEvent("stream_timeout")
 			return resultWithUsage(), fmt.Errorf("stream data interval timeout")
+
+		case <-firstTokenTimeoutCh:
+			return resultWithUsage(), s.newOpenAIFirstTokenTimeoutFailoverError(
+				c,
+				account,
+				originalModel,
+				upstreamRequestID,
+				firstTokenWatchdog.Duration(),
+			)
 
 		case <-keepaliveCh:
 			if clientDisconnected {

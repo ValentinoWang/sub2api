@@ -1179,12 +1179,88 @@ func TestOpenAIStreamingTimeout(t *testing.T) {
 	_ = pw.Close()
 	_ = pr.Close()
 
-	if err == nil || !strings.Contains(err.Error(), "stream data interval timeout") {
-		t.Fatalf("expected stream timeout error, got %v", err)
+	require.Error(t, err)
+	var failoverErr *UpstreamFailoverError
+	require.ErrorAs(t, err, &failoverErr)
+	require.Equal(t, http.StatusGatewayTimeout, failoverErr.StatusCode)
+	require.False(t, c.Writer.Written())
+	require.Empty(t, rec.Body.String())
+}
+
+func TestOpenAIStreamingFirstTokenDeadlineReturnsFailoverBeforeOutput(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	svc := &OpenAIGatewayService{cfg: &config.Config{Gateway: config.GatewayConfig{
+		StreamDataIntervalTimeout: 0,
+		StreamKeepaliveInterval:   0,
+		MaxLineSize:               defaultMaxLineSize,
+	}}}
+
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodPost, "/", nil)
+	pr, pw := io.Pipe()
+	defer func() {
+		_ = pw.Close()
+		_ = pr.Close()
+	}()
+
+	upstreamCtx, watchdog := newOpenAIFirstTokenWatchdog(context.Background(), 20*time.Millisecond)
+	defer watchdog.Close()
+	resp := &http.Response{StatusCode: http.StatusOK, Body: pr, Header: http.Header{}}
+
+	_, err := svc.handleStreamingResponse(upstreamCtx, resp, c, &Account{ID: 1, Platform: PlatformOpenAI}, time.Now(), "gpt-5.6-luna", "gpt-5.6-luna", watchdog)
+	require.Error(t, err)
+	var failoverErr *UpstreamFailoverError
+	require.ErrorAs(t, err, &failoverErr)
+	require.Equal(t, http.StatusGatewayTimeout, failoverErr.StatusCode)
+	require.False(t, c.Writer.Written())
+	require.Empty(t, rec.Body.String())
+}
+
+func TestOpenAIFirstTokenWatchdogCancelsRequestContext(t *testing.T) {
+	upstreamCtx, watchdog := newOpenAIFirstTokenWatchdog(context.Background(), 20*time.Millisecond)
+	defer watchdog.Close()
+
+	select {
+	case <-upstreamCtx.Done():
+		require.True(t, watchdog.TimedOut())
+	case <-time.After(time.Second):
+		t.Fatal("watchdog did not cancel the upstream request context")
 	}
-	if !strings.Contains(rec.Body.String(), "\"type\":\"error\"") || !strings.Contains(rec.Body.String(), "stream_timeout") {
-		t.Fatalf("expected OpenAI-compatible error SSE event, got %q", rec.Body.String())
-	}
+}
+
+func TestOpenAIStreamingFirstTokenDeadlineStopsAfterClientOutput(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	svc := &OpenAIGatewayService{cfg: &config.Config{Gateway: config.GatewayConfig{
+		StreamDataIntervalTimeout: 0,
+		StreamKeepaliveInterval:   0,
+		MaxLineSize:               defaultMaxLineSize,
+	}}}
+
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodPost, "/", nil)
+	pr, pw := io.Pipe()
+	defer func() {
+		_ = pw.Close()
+		_ = pr.Close()
+	}()
+
+	upstreamCtx, watchdog := newOpenAIFirstTokenWatchdog(context.Background(), 100*time.Millisecond)
+	defer watchdog.Close()
+	resp := &http.Response{StatusCode: http.StatusOK, Body: pr, Header: http.Header{}}
+	go func() {
+		_, _ = io.WriteString(pw, "data: {\"type\":\"response.output_text.delta\",\"delta\":\"ok\"}\n\n")
+		time.Sleep(150 * time.Millisecond)
+		_, _ = io.WriteString(pw, "data: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_1\"}}\n\n")
+		_ = pw.Close()
+	}()
+
+	result, err := svc.handleStreamingResponse(upstreamCtx, resp, c, &Account{ID: 1, Platform: PlatformOpenAI}, time.Now(), "gpt-5.6-terra", "gpt-5.6-terra", watchdog)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.NotNil(t, result.firstTokenMs)
+	require.Contains(t, rec.Body.String(), "response.output_text.delta")
 }
 
 func TestOpenAIStreamingContextCanceledReturnsIncompleteErrorWithoutInjectingErrorEvent(t *testing.T) {

@@ -607,6 +607,61 @@ func (s *adminServiceImpl) RefreshAccountCredentials(ctx context.Context, id int
 	return account, nil
 }
 
+// RecoverOAuthAccountAfterCredentialUpdate clears only authentication-related
+// scheduling state after fresh OAuth credentials have been persisted. Quota and
+// upstream rate-limit windows are intentionally preserved.
+func (s *adminServiceImpl) RecoverOAuthAccountAfterCredentialUpdate(ctx context.Context, id int64) (*Account, error) {
+	account, err := s.accountRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if account == nil || !account.IsOAuth() {
+		return account, nil
+	}
+
+	if account.Status == StatusError && isOAuthCredentialFailureReason(account.ErrorMessage) {
+		if err := s.accountRepo.ClearError(ctx, id); err != nil {
+			return nil, err
+		}
+		// SetError makes an account unschedulable. A successful re-authorization
+		// is explicit proof that this authentication failure can be retried.
+		if err := s.accountRepo.SetSchedulable(ctx, id, true); err != nil {
+			return nil, err
+		}
+	}
+	if account.TempUnschedulableUntil != nil && isOAuthCredentialFailureReason(account.TempUnschedulableReason) {
+		if err := s.accountRepo.ClearTempUnschedulable(ctx, id); err != nil {
+			return nil, err
+		}
+	}
+	if s.runtimeBlocker != nil {
+		s.runtimeBlocker.ClearAccountSchedulingBlock(id)
+	}
+	return s.accountRepo.GetByID(ctx, id)
+}
+
+func isOAuthCredentialFailureReason(reason string) bool {
+	reason = strings.ToLower(strings.TrimSpace(reason))
+	if reason == "" {
+		return false
+	}
+	for _, marker := range []string{
+		"authentication failed",
+		"oauth 401",
+		"unauthorized (401)",
+		"token revoked",
+		"token refresh",
+		"refresh_token",
+		"missing_refresh_token",
+		"invalid or expired credentials",
+	} {
+		if strings.Contains(reason, marker) {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *adminServiceImpl) ClearAccountError(ctx context.Context, id int64) (*Account, error) {
 	if err := s.accountRepo.ClearError(ctx, id); err != nil {
 		return nil, err

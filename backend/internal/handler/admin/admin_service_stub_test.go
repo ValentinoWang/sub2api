@@ -433,6 +433,11 @@ func (s *stubAdminService) RefreshAccountCredentials(ctx context.Context, id int
 	return &account, nil
 }
 
+func (s *stubAdminService) RecoverOAuthAccountAfterCredentialUpdate(ctx context.Context, id int64) (*service.Account, error) {
+	account := service.Account{ID: id, Name: "account", Status: service.StatusActive, Schedulable: true}
+	return &account, nil
+}
+
 func (s *stubAdminService) ClearAccountError(ctx context.Context, id int64) (*service.Account, error) {
 	account := service.Account{ID: id, Name: "account", Status: service.StatusActive}
 	return &account, nil

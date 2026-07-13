@@ -1185,7 +1185,52 @@ export default {
         todayTokens: 'Today Tokens',
         todayCost: 'Today Cost',
         usageTrend: '30-Day Cost & Request Trend',
-        noData: 'No usage data available for this account'
+      noData: 'No usage data available for this account'
+      },
+      subscriptions: {
+        title: 'Account Subscriptions',
+        description: 'Maintain account subscription details and billing address',
+        billingAddress: 'Billing Address',
+        billingAddressHint: 'Enter the real billing address associated with the payment account.',
+        accountLabel: 'Account Label',
+        accountLabelPlaceholder: 'For example: OpenAI Pro primary account',
+        billingName: 'Billing Name or Business',
+        billingNamePlaceholder: 'Enter a name or business name',
+        country: 'Country/Region',
+        unitedStates: 'United States',
+        addressLine1: 'Address Line 1',
+        addressLine1Placeholder: 'Street address and number',
+        addressLine2: 'Address Line 2',
+        addressLine2Placeholder: 'Apartment, suite, etc. (optional)',
+        city: 'City',
+        cityPlaceholder: 'Enter city',
+        state: 'State',
+        selectState: 'Select a state',
+        postalCode: 'ZIP Code',
+        postalCodePlaceholder: 'For example: 97201',
+        actualAddressConfirmation: 'I confirm this is the account\'s real billing address and I am authorized to use it for billing records.',
+        saveAddress: 'Save Address',
+        clearForm: 'Clear',
+        saved: 'Address saved',
+        savedAt: 'Last saved: {time}',
+        statusTitle: 'State Sales Tax Information',
+        statusEmpty: 'Select a state to see the result',
+        noStateGeneralSalesTax: 'This state has no general statewide sales tax',
+        stateGeneralSalesTax: 'This state generally levies a statewide sales tax',
+        stateTaxNote: 'The final tax depends on the full address, product type, and payment provider rules.',
+        noStateListTitle: 'States without a general statewide sales tax',
+        noStateListHint: 'These states have no general statewide sales tax, but not every product or service is necessarily tax-free.',
+        caveats: {
+          AK: 'Some Alaska local jurisdictions may levy sales tax.',
+          DE: 'Delaware may impose other business-related taxes.',
+          MT: 'Some Montana areas may impose resort or local taxes.',
+          NH: 'Meals, lodging, and other categories may have special taxes in New Hampshire.',
+          OR: 'Some products or services may be subject to other special taxes.'
+        },
+        validation: {
+          required: 'Complete the required address fields and confirm the address.',
+          postalCode: 'Enter a valid US ZIP Code.'
+        }
       },
       usageWindow: {
         statsTitle: '5-Hour Window Usage Statistics',

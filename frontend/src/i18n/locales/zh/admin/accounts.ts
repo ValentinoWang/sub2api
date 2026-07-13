@@ -1266,6 +1266,51 @@ export default {
         todayCost: '今日费用',
         usageTrend: '30天费用与请求趋势',
         noData: '该账号暂无使用数据'
+      },
+      subscriptions: {
+        title: '账号订阅',
+        description: '维护账号订阅信息与账单地址',
+        billingAddress: '账单地址',
+        billingAddressHint: '填写与支付账户一致的真实账单地址。',
+        accountLabel: '账号标识',
+        accountLabelPlaceholder: '例如：OpenAI Pro 主账号',
+        billingName: '账单姓名或企业名称',
+        billingNamePlaceholder: '请输入姓名或企业名称',
+        country: '国家/地区',
+        unitedStates: '美国',
+        addressLine1: '地址行 1',
+        addressLine1Placeholder: '街道地址、门牌号',
+        addressLine2: '地址行 2',
+        addressLine2Placeholder: '公寓、套房等（可选）',
+        city: '城市',
+        cityPlaceholder: '请输入城市',
+        state: '州',
+        selectState: '选择州',
+        postalCode: 'ZIP Code',
+        postalCodePlaceholder: '例如：97201',
+        actualAddressConfirmation: '我确认这是该账户的真实账单地址，并有权使用该地址进行账单记录。',
+        saveAddress: '保存地址',
+        clearForm: '清空',
+        saved: '地址已保存',
+        savedAt: '最近保存：{time}',
+        statusTitle: '州级销售税信息',
+        statusEmpty: '选择州后显示检测结果',
+        noStateGeneralSalesTax: '该州没有州级一般销售税',
+        stateGeneralSalesTax: '该州通常征收州级一般销售税',
+        stateTaxNote: '具体税费仍取决于地址、商品类型和支付服务商规则。',
+        noStateListTitle: '无州级一般销售税州',
+        noStateListHint: '以下州没有州级一般销售税，但不代表所有商品和服务最终都免税。',
+        caveats: {
+          AK: '阿拉斯加部分地方可能征收地方销售税。',
+          DE: '特拉华可能涉及其他商业税。',
+          MT: '蒙大拿部分地区可能征收度假区或地方专项税。',
+          NH: '新罕布什尔州的餐饮、住宿等项目可能适用专项税。',
+          OR: '部分商品或服务可能适用其他专项税。'
+        },
+        validation: {
+          required: '请完成必填地址字段并确认地址真实性。',
+          postalCode: '请输入有效的美国 ZIP Code。'
+        }
       }
     },
 

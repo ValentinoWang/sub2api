@@ -165,6 +165,8 @@ export default {
     availableChannels: 'Available Channels',
     subscriptions: 'Subscriptions',
     accounts: 'Accounts',
+    accountList: 'Account List',
+    accountSubscriptions: 'Account Subscriptions',
     proxies: 'Proxies',
     redeemCodes: 'Redeem Codes',
     ops: 'Ops',

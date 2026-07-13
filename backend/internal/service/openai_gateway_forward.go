@@ -687,9 +687,14 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 	for {
 		// Build upstream request
 		upstreamCtx, releaseUpstreamCtx := detachUpstreamContext(ctx)
+		var firstTokenWatchdog *openAIFirstTokenWatchdog
+		if reqStream {
+			upstreamCtx, firstTokenWatchdog = newOpenAIFirstTokenWatchdog(upstreamCtx, s.openAIFirstTokenTimeout())
+		}
 		upstreamReq, err := s.buildUpstreamRequest(upstreamCtx, c, account, body, token, reqStream, promptCacheKey, isCodexCLI)
 		releaseUpstreamCtx()
 		if err != nil {
+			firstTokenWatchdog.Close()
 			return nil, err
 		}
 
@@ -704,6 +709,17 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 		resp, err := s.httpUpstream.Do(upstreamReq, proxyURL, account.ID, account.Concurrency)
 		SetOpsLatencyMs(c, OpsUpstreamLatencyMsKey, time.Since(upstreamStart).Milliseconds())
 		if err != nil {
+			if firstTokenWatchdog.TimedOut() {
+				firstTokenWatchdog.Close()
+				return nil, s.newOpenAIFirstTokenTimeoutFailoverError(
+					c,
+					account,
+					originalModel,
+					"",
+					firstTokenWatchdog.Duration(),
+				)
+			}
+			firstTokenWatchdog.Close()
 			// Transport-level failure (proxy/DNS/TCP/TLS — no HTTP response). Convert to
 			// a failover so the handler switches to a healthy account, and temporarily
 			// unschedule the account on durable faults (e.g. rejected proxy credentials).
@@ -712,6 +728,7 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 
 		// Handle error response
 		if resp.StatusCode >= 400 {
+			firstTokenWatchdog.Close()
 			respBody := s.readUpstreamErrorBody(resp)
 			_ = resp.Body.Close()
 			resp.Body = io.NopCloser(bytes.NewReader(respBody))
@@ -781,7 +798,8 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 		imageCount := 0
 		var imageOutputSizes []string
 		if reqStream {
-			streamResult, err := s.handleStreamingResponse(ctx, resp, c, account, startTime, originalModel, upstreamModel)
+			streamResult, err := s.handleStreamingResponse(ctx, resp, c, account, startTime, originalModel, upstreamModel, firstTokenWatchdog)
+			firstTokenWatchdog.Close()
 			if err != nil {
 				return nil, err
 			}

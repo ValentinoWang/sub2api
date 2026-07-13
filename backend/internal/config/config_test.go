@@ -236,6 +236,15 @@ func TestLoadOpenAIResponseHeaderTimeoutFromEnv(t *testing.T) {
 	require.Equal(t, 1800, cfg.Gateway.OpenAIResponseHeaderTimeout)
 }
 
+func TestLoadOpenAIFirstTokenTimeoutFromEnv(t *testing.T) {
+	resetViperWithJWTSecret(t)
+	t.Setenv("GATEWAY_OPENAI_FIRST_TOKEN_TIMEOUT", "120")
+
+	cfg, err := Load()
+	require.NoError(t, err)
+	require.Equal(t, 120, cfg.Gateway.OpenAIFirstTokenTimeout)
+}
+
 func TestLoadOpenAIWSStickyTTLCompatibility(t *testing.T) {
 	resetViperWithJWTSecret(t)
 	t.Setenv("GATEWAY_OPENAI_WS_STICKY_RESPONSE_ID_TTL_SECONDS", "0")
@@ -1397,6 +1406,16 @@ func TestValidateConfigErrors(t *testing.T) {
 			wantErr: "gateway.stream_data_interval_timeout must be non-negative",
 		},
 		{
+			name:    "gateway openai first token timeout range",
+			mutate:  func(c *Config) { c.Gateway.OpenAIFirstTokenTimeout = 5 },
+			wantErr: "gateway.openai_first_token_timeout",
+		},
+		{
+			name:    "gateway openai first token timeout negative",
+			mutate:  func(c *Config) { c.Gateway.OpenAIFirstTokenTimeout = -1 },
+			wantErr: "gateway.openai_first_token_timeout must be non-negative",
+		},
+		{
 			name:    "gateway image stream keepalive range",
 			mutate:  func(c *Config) { c.Gateway.ImageStreamKeepaliveInterval = 4 },
 			wantErr: "gateway.image_stream_keepalive_interval",
@@ -1954,6 +1973,9 @@ func TestLoad_DefaultGatewayImageStreamConfig(t *testing.T) {
 	}
 	if cfg.Gateway.StreamDataIntervalTimeout != 180 {
 		t.Fatalf("stream_data_interval_timeout = %d, want 180", cfg.Gateway.StreamDataIntervalTimeout)
+	}
+	if cfg.Gateway.OpenAIFirstTokenTimeout != 90 {
+		t.Fatalf("openai_first_token_timeout = %d, want 90", cfg.Gateway.OpenAIFirstTokenTimeout)
 	}
 	if cfg.Gateway.StreamKeepaliveInterval != 10 {
 		t.Fatalf("stream_keepalive_interval = %d, want 10", cfg.Gateway.StreamKeepaliveInterval)

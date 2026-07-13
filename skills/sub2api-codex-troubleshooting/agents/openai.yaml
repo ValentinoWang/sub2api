@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sub2API Codex Troubleshooting"
+  short_description: "Diagnose Codex config and transcript loading failures"
+  default_prompt: "Use $sub2api-codex-troubleshooting to diagnose a Codex configuration or local transcript loading failure."

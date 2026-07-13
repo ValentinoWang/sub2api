@@ -152,6 +152,8 @@ gateway:
   # OpenAI/Codex upstream response header timeout (seconds, 0=disabled)
   # OpenAI/Codex 等待上游响应头超时时间（秒，0=禁用本地响应头超时）
   openai_response_header_timeout: 0
+  # OpenAI Responses 首个客户端可见输出超时（秒，0=禁用）。超时且尚未写出响应时会切换账号。
+  openai_first_token_timeout: 90
   # Max request body size in bytes (default: 256MB)
   # 请求体最大字节数（默认 256MB）
   max_body_size: 268435456
