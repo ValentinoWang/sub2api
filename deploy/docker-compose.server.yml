@@ -18,3 +18,5 @@ services:
     restart: unless-stopped
     volumes:
       - /srv/sub2api/mihomo/config.yaml:/root/.config/mihomo/config.yaml:ro
+    networks:
+      - sub2api-network
