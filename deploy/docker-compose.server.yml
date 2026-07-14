@@ -6,3 +6,15 @@ services:
       dockerfile: Dockerfile
       args:
         NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-https://registry.npmmirror.com}
+    environment:
+      - HTTP_PROXY=http://mihomo:7890
+      - HTTPS_PROXY=http://mihomo:7890
+      - ALL_PROXY=socks5h://mihomo:7890
+      - NO_PROXY=localhost,127.0.0.1,::1,postgres,redis,mihomo,sub2api-mihomo,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+
+  mihomo:
+    image: metacubex/mihomo@sha256:e6acd921addecfd59a8e2d38203f88356d635b54de6c0673db0e015139989312
+    container_name: sub2api-mihomo
+    restart: unless-stopped
+    volumes:
+      - /srv/sub2api/mihomo/config.yaml:/root/.config/mihomo/config.yaml:ro
