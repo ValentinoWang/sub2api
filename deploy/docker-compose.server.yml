@@ -7,6 +7,8 @@ services:
       args:
         NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-https://registry.npmmirror.com}
     environment:
+      - SERVER_MAX_REQUEST_BODY_SIZE=25165824
+      - GATEWAY_MAX_BODY_SIZE=25165824
       - HTTP_PROXY=http://172.18.0.1:7891
       - HTTPS_PROXY=http://172.18.0.1:7891
       - ALL_PROXY=socks5h://172.18.0.1:7891
