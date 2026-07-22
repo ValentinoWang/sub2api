@@ -20,6 +20,8 @@ checksum="$archive.sha256"
 manifest="$artifact_dir/candidate.env"
 go_image="${GO_TEST_IMAGE:-golang:1.26.5-alpine}"
 go_test_platform="${GO_TEST_PLATFORM:-}"
+go_test_goproxy="${GO_TEST_GOPROXY:-https://goproxy.cn,direct}"
+go_test_gosumdb="${GO_TEST_GOSUMDB:-sum.golang.google.cn}"
 test_packages="${GO_TEST_PACKAGES:-./internal/config ./internal/repository ./internal/service ./internal/handler ./cmd/server}"
 build_parallelism="${LOCAL_BUILD_PARALLELISM:-2}"
 go_mod_cache="${GO_MOD_CACHE_VOLUME:-sub2api-go-mod}"
@@ -60,6 +62,8 @@ printf 'running Go verification for %s\n' "$commit"
 docker_pull_retry "$go_test_platform" "$go_image"
 docker run --rm \
   --platform "$go_test_platform" \
+  -e "GOPROXY=$go_test_goproxy" \
+  -e "GOSUMDB=$go_test_gosumdb" \
   -v "$repo_root/backend:/src" \
   -v "$go_mod_cache:/go/pkg/mod" \
   -v "$go_build_cache:/root/.cache/go-build" \
