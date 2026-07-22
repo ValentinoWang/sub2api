@@ -19,10 +19,35 @@ archive="$artifact_dir/sub2api-${short_commit}-linux-amd64.tar.gz"
 checksum="$archive.sha256"
 manifest="$artifact_dir/candidate.env"
 go_image="${GO_TEST_IMAGE:-golang:1.26.5-alpine}"
+go_test_platform="${GO_TEST_PLATFORM:-}"
 test_packages="${GO_TEST_PACKAGES:-./internal/config ./internal/repository ./internal/service ./internal/handler ./cmd/server}"
 build_parallelism="${LOCAL_BUILD_PARALLELISM:-2}"
 go_mod_cache="${GO_MOD_CACHE_VOLUME:-sub2api-go-mod}"
 go_build_cache="${GO_BUILD_CACHE_VOLUME:-sub2api-go-build}"
+
+host_goos="$(docker info --format '{{.OSType}}')"
+host_arch="$(docker info --format '{{.Architecture}}')"
+case "$host_arch" in
+  aarch64 | arm64) host_arch="arm64" ;;
+  x86_64 | amd64) host_arch="amd64" ;;
+esac
+if [[ -z "$go_test_platform" ]]; then
+  go_test_platform="${host_goos}/${host_arch}"
+fi
+
+docker_pull_retry() {
+  local pull_platform="$1"
+  local image_name="$2"
+  local attempt
+  for attempt in 1 2 3; do
+    if docker pull --platform "$pull_platform" "$image_name"; then
+      return 0
+    fi
+    printf 'pull failed for %s on %s, retry %s/3\n' "$image_name" "$pull_platform" "$attempt" >&2
+    sleep 2
+  done
+  return 1
+}
 
 if [[ "$platform" != "linux/amd64" ]]; then
   printf 'production candidate platform must be linux/amd64, got %s\n' "$platform" >&2
@@ -32,7 +57,9 @@ fi
 mkdir -p "$artifact_dir"
 
 printf 'running Go verification for %s\n' "$commit"
+docker_pull_retry "$go_test_platform" "$go_image"
 docker run --rm \
+  --platform "$go_test_platform" \
   -v "$repo_root/backend:/src" \
   -v "$go_mod_cache:/go/pkg/mod" \
   -v "$go_build_cache:/root/.cache/go-build" \
@@ -42,6 +69,13 @@ docker run --rm \
 
 version="$(tr -d '[:space:]' < backend/cmd/server/VERSION)"
 build_date="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+printf 'warming production base images for %s\n' "$platform"
+docker_pull_retry "$platform" docker/dockerfile:1.7
+docker_pull_retry "$platform" node:24-alpine
+docker_pull_retry "$platform" golang:1.26.5-alpine
+docker_pull_retry "$platform" postgres:18-alpine
+docker_pull_retry "$platform" alpine:3.21
 
 printf 'building %s for %s\n' "$image" "$platform"
 docker buildx build \
