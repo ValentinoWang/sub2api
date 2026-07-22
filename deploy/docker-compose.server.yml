@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile
       args:
         NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-https://registry.npmmirror.com}
+        GO_BUILD_PARALLELISM: 1
     environment:
       - SERVER_MAX_REQUEST_BODY_SIZE=25165824
       - GATEWAY_MAX_BODY_SIZE=25165824
