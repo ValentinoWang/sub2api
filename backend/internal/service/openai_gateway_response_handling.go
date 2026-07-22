@@ -49,6 +49,10 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 	if len(watchdogs) > 0 {
 		legacyWatchdog = watchdogs[0]
 	}
+	var legacyWatchdogCh <-chan struct{}
+	if legacyWatchdog != nil {
+		legacyWatchdogCh = legacyWatchdog.Timeout()
+	}
 	firstOutputTimeout := time.Duration(0)
 	if account != nil && account.Platform == PlatformOpenAI {
 		firstOutputTimeout = s.openAIFirstOutputTimeout(reasoningEffort)
@@ -541,6 +545,9 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 
 			// Record first token time
 			if !guardFirstOutput && firstTokenMs == nil && startsClientOutput {
+				if legacyWatchdog != nil {
+					_ = legacyWatchdog.Stop()
+				}
 				ms := int(time.Since(startTime).Milliseconds())
 				firstTokenMs = &ms
 				stopFirstOutputTimer()
@@ -589,7 +596,7 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 	}
 
 	// 无超时/无 keepalive 的常见路径走同步扫描，减少 goroutine 与 channel 开销。
-	if streamInterval <= 0 && keepaliveInterval <= 0 && firstOutputTimeout <= 0 {
+	if streamInterval <= 0 && keepaliveInterval <= 0 && firstOutputTimeout <= 0 && legacyWatchdogCh == nil {
 		defer putSSEScannerBuf64K(scanBuf)
 		for documentScanner.Scan() {
 			processSSELine(documentScanner.Text(), true)
@@ -704,6 +711,19 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 			return resultWithUsage(), s.newOpenAIFirstOutputTimeoutError(
 				ctx, c, account, startTime, originalModel, reasoningEffort,
 				firstOutputTimeout, "semantic_output", resp.Header,
+			)
+
+		case <-legacyWatchdogCh:
+			if firstTokenMs != nil {
+				legacyWatchdogCh = nil
+				continue
+			}
+			_ = resp.Body.Close()
+			for ev := range events {
+				markEventProcessed(ev)
+			}
+			return resultWithUsage(), s.newOpenAIFirstTokenTimeoutFailoverError(
+				c, account, originalModel, upstreamRequestID, legacyWatchdog.Duration(),
 			)
 
 		case <-keepaliveCh:
