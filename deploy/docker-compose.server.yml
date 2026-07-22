@@ -1,12 +1,8 @@
 services:
   sub2api:
-    image: sub2api-local:latest
-    build:
-      context: ..
-      dockerfile: Dockerfile
-      args:
-        NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-https://registry.npmmirror.com}
-        GO_BUILD_PARALLELISM: 1
+    # Production consumes a prebuilt immutable image. Build and upload it from
+    # the development host; this low-memory server must never compile it.
+    image: ${SUB2API_IMAGE:-sub2api-local:latest}
     environment:
       - SERVER_MAX_REQUEST_BODY_SIZE=25165824
       - GATEWAY_MAX_BODY_SIZE=25165824

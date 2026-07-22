@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sub2API Deployment"
+  short_description: "Build locally and cut over Sub2API safely"
+  default_prompt: "Use $sub2api-deployment to build a verified local image, upload it, and cut over Sub2API safely."

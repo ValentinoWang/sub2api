@@ -1,11 +1,13 @@
 ---
 name: sub2api-codex-troubleshooting
-description: Diagnose Codex CLI or desktop configuration failures when Codex uses Sub2API or another OpenAI-compatible provider, including "Model provider ... not found", conversations that cannot continue, missing local transcripts, and local/remote state mismatches. Use when changing config.toml, model_providers, CODEX_HOME, API-key authentication, or custom Responses gateways.
+description: Diagnose Codex CLI or desktop configuration failures when Codex uses Sub2API or another OpenAI-compatible provider, including "Model provider ... not found", conversations that cannot continue, missing local transcripts, gateway availability failures, and local/remote state mismatches. Use when changing config.toml, model_providers, CODEX_HOME, API-key authentication, custom Responses gateways, or investigating 502/503/SSE disconnects. For image releases and production cutovers, route to the sub2api-deployment skill.
 ---
 
 # Sub2api Codex Troubleshooting
 
 Treat a Codex configuration load failure as a runtime initialization problem first. Do not conclude that conversation transcripts were deleted until the effective configuration, `CODEX_HOME`, SQLite state path, and transcript files have been checked.
+
+For Docker builds, image upload, server updates, or production availability incidents, use `../sub2api-deployment/SKILL.md`. Never compile this project on a low-memory production server while it is serving traffic.
 
 ## Provider Configuration
 
