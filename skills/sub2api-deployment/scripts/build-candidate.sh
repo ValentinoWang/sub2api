@@ -21,6 +21,8 @@ manifest="$artifact_dir/candidate.env"
 go_image="${GO_TEST_IMAGE:-golang:1.26.5-alpine}"
 test_packages="${GO_TEST_PACKAGES:-./internal/config ./internal/repository ./internal/service ./internal/handler ./cmd/server}"
 build_parallelism="${LOCAL_BUILD_PARALLELISM:-2}"
+go_mod_cache="${GO_MOD_CACHE_VOLUME:-sub2api-go-mod}"
+go_build_cache="${GO_BUILD_CACHE_VOLUME:-sub2api-go-build}"
 
 if [[ "$platform" != "linux/amd64" ]]; then
   printf 'production candidate platform must be linux/amd64, got %s\n' "$platform" >&2
@@ -32,8 +34,8 @@ mkdir -p "$artifact_dir"
 printf 'running Go verification for %s\n' "$commit"
 docker run --rm \
   -v "$repo_root/backend:/src" \
-  -v sub2api-go-mod:/go/pkg/mod \
-  -v sub2api-go-build:/root/.cache/go-build \
+  -v "$go_mod_cache:/go/pkg/mod" \
+  -v "$go_build_cache:/root/.cache/go-build" \
   -w /src \
   "$go_image" \
   sh -lc "/usr/local/go/bin/go mod download && /usr/local/go/bin/go test $test_packages"
