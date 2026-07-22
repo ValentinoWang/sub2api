@@ -824,6 +824,8 @@ type GatewayConfig struct {
 	OpenAICompactModel string `mapstructure:"openai_compact_model"`
 	// OpenAIWS: OpenAI Responses WebSocket 配置（默认开启，可按需回滚到 HTTP）
 	OpenAIWS GatewayOpenAIWSConfig `mapstructure:"openai_ws"`
+	// OpenAIContinuity: provider-independent Codex turn ledger. Disabled by default.
+	OpenAIContinuity GatewayOpenAIContinuityConfig `mapstructure:"openai_continuity"`
 	// OpenAIScheduler: OpenAI 高级调度器粘性逃逸配置
 	OpenAIScheduler GatewayOpenAISchedulerConfig `mapstructure:"openai_scheduler"`
 	// OpenAIHTTP2: OpenAI HTTP 上游协议策略（默认启用 HTTP/2，可按代理能力回退 HTTP/1.1）
@@ -1069,6 +1071,21 @@ type GatewayOpenAIWSConfig struct {
 	StickyPreviousResponseTTLSeconds int `mapstructure:"sticky_previous_response_ttl_seconds"`
 
 	SchedulerScoreWeights GatewayOpenAIWSSchedulerScoreWeights `mapstructure:"scheduler_score_weights"`
+}
+
+// GatewayOpenAIContinuityConfig controls the durable, tenant-isolated replay
+// ledger used when a Codex task moves between upstream OpenAI accounts.
+type GatewayOpenAIContinuityConfig struct {
+	Enabled bool `mapstructure:"enabled"`
+	// Secret signs the stable continuity identity. It must not be shared with clients.
+	Secret string `mapstructure:"secret"`
+	// APIKeyIDs is an optional rollout allowlist. Empty means all authenticated API keys.
+	APIKeyIDs []int64 `mapstructure:"api_key_ids"`
+	// RetentionDays controls the expiry stamped on newly committed snapshots.
+	RetentionDays int `mapstructure:"retention_days"`
+	// MaxReplayBytes bounds durable replay state, not inbound requests or attachments.
+	// Oversized snapshots fail the continuity commit without rejecting request ingestion.
+	MaxReplayBytes int64 `mapstructure:"max_replay_bytes"`
 }
 
 // GatewayOpenAIWSSchedulerScoreWeights 账号调度打分权重。
@@ -2089,6 +2106,11 @@ func setDefaults() {
 	viper.SetDefault("gateway.openai_ws.metadata_bridge_enabled", true)
 	viper.SetDefault("gateway.openai_ws.sticky_response_id_ttl_seconds", 3600)
 	viper.SetDefault("gateway.openai_ws.sticky_previous_response_ttl_seconds", 3600)
+	viper.SetDefault("gateway.openai_continuity.enabled", false)
+	viper.SetDefault("gateway.openai_continuity.secret", "")
+	viper.SetDefault("gateway.openai_continuity.api_key_ids", []int64{})
+	viper.SetDefault("gateway.openai_continuity.retention_days", 30)
+	viper.SetDefault("gateway.openai_continuity.max_replay_bytes", 32*1024*1024)
 	viper.SetDefault("gateway.openai_ws.scheduler_score_weights.priority", 1.0)
 	viper.SetDefault("gateway.openai_ws.scheduler_score_weights.load", 1.0)
 	viper.SetDefault("gateway.openai_ws.scheduler_score_weights.queue", 0.7)
@@ -2961,6 +2983,22 @@ func (c *Config) Validate() error {
 	}
 	if c.Gateway.OpenAIWS.StickyPreviousResponseTTLSeconds < 0 {
 		return fmt.Errorf("gateway.openai_ws.sticky_previous_response_ttl_seconds must be non-negative")
+	}
+	if c.Gateway.OpenAIContinuity.Enabled {
+		if len(strings.TrimSpace(c.Gateway.OpenAIContinuity.Secret)) < 32 {
+			return fmt.Errorf("gateway.openai_continuity.secret must be at least 32 characters when enabled")
+		}
+		if c.Gateway.OpenAIContinuity.RetentionDays <= 0 {
+			return fmt.Errorf("gateway.openai_continuity.retention_days must be positive")
+		}
+		if c.Gateway.OpenAIContinuity.MaxReplayBytes <= 0 {
+			return fmt.Errorf("gateway.openai_continuity.max_replay_bytes must be positive")
+		}
+	}
+	for _, apiKeyID := range c.Gateway.OpenAIContinuity.APIKeyIDs {
+		if apiKeyID <= 0 {
+			return fmt.Errorf("gateway.openai_continuity.api_key_ids must contain only positive IDs")
+		}
 	}
 	if c.Gateway.OpenAIHTTP2.FallbackErrorThreshold < 0 {
 		return fmt.Errorf("gateway.openai_http2.fallback_error_threshold must be non-negative")

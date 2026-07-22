@@ -28,6 +28,7 @@ type openaiStreamingResult struct {
 	responseID       string
 	imageCount       int
 	imageOutputSizes []string
+	canonicalOutput  []json.RawMessage
 }
 
 type openaiNonStreamingResult struct {
@@ -36,13 +37,18 @@ type openaiNonStreamingResult struct {
 	responseID       string
 	imageCount       int
 	imageOutputSizes []string
+	canonicalOutput  []json.RawMessage
 }
 
-func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp *http.Response, c *gin.Context, account *Account, startTime time.Time, originalModel, mappedModel string) (*openaiStreamingResult, error) {
-	return s.handleStreamingResponseWithReasoning(ctx, resp, c, account, startTime, originalModel, mappedModel, "")
+func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp *http.Response, c *gin.Context, account *Account, startTime time.Time, originalModel, mappedModel string, watchdogs ...*openAIFirstTokenWatchdog) (*openaiStreamingResult, error) {
+	return s.handleStreamingResponseWithReasoning(ctx, resp, c, account, startTime, originalModel, mappedModel, "", watchdogs...)
 }
 
-func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.Context, resp *http.Response, c *gin.Context, account *Account, startTime time.Time, originalModel, mappedModel, reasoningEffort string) (*openaiStreamingResult, error) {
+func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.Context, resp *http.Response, c *gin.Context, account *Account, startTime time.Time, originalModel, mappedModel, reasoningEffort string, watchdogs ...*openAIFirstTokenWatchdog) (*openaiStreamingResult, error) {
+	var legacyWatchdog *openAIFirstTokenWatchdog
+	if len(watchdogs) > 0 {
+		legacyWatchdog = watchdogs[0]
+	}
 	firstOutputTimeout := time.Duration(0)
 	if account != nil && account.Platform == PlatformOpenAI {
 		firstOutputTimeout = s.openAIFirstOutputTimeout(reasoningEffort)
@@ -136,6 +142,7 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 	usage := &OpenAIUsage{}
 	imageCounter := newOpenAIImageOutputCounter()
 	responseID := ""
+	canonicalOutput := &openAIWSCanonicalOutputCollector{}
 	var firstOutputScanGuard atomic.Bool
 	firstOutputScanGuard.Store(guardFirstOutput)
 	scanner := bufio.NewScanner(resp.Body)
@@ -254,6 +261,9 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 			}
 		}
 		if completedSemanticEvent && firstTokenMs == nil {
+			if legacyWatchdog != nil {
+				_ = legacyWatchdog.Stop()
+			}
 			firstOutputScanGuard.Store(false)
 			ms := int(time.Since(startTime).Milliseconds())
 			firstTokenMs = &ms
@@ -295,6 +305,7 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 			responseID:       responseID,
 			imageCount:       imageCounter.Count(),
 			imageOutputSizes: imageCounter.Sizes(),
+			canonicalOutput:  canonicalOutput.Items(),
 		}
 	}
 	flushPending := func(disconnectMessage string) {
@@ -336,6 +347,11 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 	handleScanErr := func(scanErr error) (*openaiStreamingResult, error, bool) {
 		if scanErr == nil {
 			return nil, nil, false
+		}
+		if legacyWatchdog != nil && legacyWatchdog.TimedOut() && firstTokenMs == nil {
+			return resultWithUsage(), s.newOpenAIFirstTokenTimeoutFailoverError(
+				c, account, originalModel, upstreamRequestID, legacyWatchdog.Duration(),
+			), true
 		}
 		if errors.Is(scanErr, errOpenAIFirstOutputScannerLimit) && firstTokenMs == nil {
 			logger.LegacyPrintf("service.openai_gateway", "SSE token exceeded guarded first-output limit: account=%d limit=%d error=%v", account.ID, openAIFirstOutputStageMaxBytes+openAIFirstOutputScannerFramingAllowance, scanErr)
@@ -403,6 +419,7 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 			if responseID == "" {
 				responseID = extractOpenAIResponseIDFromJSONBytes(dataBytes)
 			}
+			canonicalOutput.AddEvent(eventType, dataBytes)
 			forceFlushFailedEvent := false
 			if eventType == "response.failed" {
 				failedMessage = extractOpenAISSEErrorMessage(dataBytes)
@@ -1134,6 +1151,7 @@ func (s *OpenAIGatewayService) handleNonStreamingResponse(ctx context.Context, r
 		responseID:       extractOpenAIResponseIDFromJSONBytes(body),
 		imageCount:       countOpenAIResponseImageOutputsFromJSONBytes(body),
 		imageOutputSizes: collectOpenAIResponseImageOutputSizesFromJSONBytes(body),
+		canonicalOutput:  canonicalOpenAIOutputFromResponse(body),
 	}, nil
 }
 
@@ -1224,7 +1242,17 @@ func (s *OpenAIGatewayService) handleSSEToJSON(resp *http.Response, c *gin.Conte
 		responseID:       extractOpenAIResponseIDFromJSONBytes(body),
 		imageCount:       countOpenAIImageOutputsFromSSEBody(bodyText),
 		imageOutputSizes: collectOpenAIImageOutputSizesFromSSEBody(bodyText),
+		canonicalOutput:  canonicalOpenAIOutputFromResponse(body),
 	}, nil
+}
+
+func canonicalOpenAIOutputFromResponse(body []byte) []json.RawMessage {
+	if strings.TrimSpace(gjson.GetBytes(body, "status").String()) != "completed" {
+		return nil
+	}
+	collector := &openAIWSCanonicalOutputCollector{}
+	collector.AddEvent("response.completed", []byte(`{"response":`+string(body)+`}`))
+	return collector.Items()
 }
 
 func extractOpenAISSETerminalEvent(body string) (string, []byte, bool) {

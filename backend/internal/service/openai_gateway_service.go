@@ -263,6 +263,8 @@ type OpenAIForwardResult struct {
 
 	wsReplayInput       []json.RawMessage
 	wsReplayInputExists bool
+	wsCanonicalOutput   []json.RawMessage
+	httpCanonicalOutput []json.RawMessage
 }
 
 // SucceededForScheduling reports whether this result is an upstream success
@@ -406,6 +408,7 @@ type OpenAIGatewayService struct {
 	balanceNotifyService  *BalanceNotifyService
 	settingService        *SettingService
 	userPlatformQuotaRepo UserPlatformQuotaRepository
+	openAIContinuityRepo  OpenAIContinuityRepository
 
 	openaiWSPoolOnce              sync.Once
 	openaiWSStateStoreOnce        sync.Once

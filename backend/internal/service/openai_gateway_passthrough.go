@@ -236,6 +236,7 @@ func (s *OpenAIGatewayService) forwardOpenAIPassthrough(
 	responseID := ""
 	imageCount := 0
 	var imageOutputSizes []string
+	var canonicalOutput []json.RawMessage
 	if reqStream {
 		result, err := s.handleStreamingResponsePassthrough(ctx, resp, c, account, startTime, reqModel, upstreamPassthroughModel)
 		if err != nil {
@@ -246,6 +247,7 @@ func (s *OpenAIGatewayService) forwardOpenAIPassthrough(
 		responseID = strings.TrimSpace(result.responseID)
 		imageCount = result.imageCount
 		imageOutputSizes = result.imageOutputSizes
+		canonicalOutput = result.canonicalOutput
 	} else {
 		result, err := s.handleNonStreamingResponsePassthrough(ctx, resp, c, reqModel, upstreamPassthroughModel)
 		if err != nil {
@@ -255,6 +257,7 @@ func (s *OpenAIGatewayService) forwardOpenAIPassthrough(
 		responseID = strings.TrimSpace(result.responseID)
 		imageCount = result.imageCount
 		imageOutputSizes = result.imageOutputSizes
+		canonicalOutput = result.canonicalOutput
 	}
 	s.bindHTTPResponseAccount(ctx, c, account, responseID)
 
@@ -270,17 +273,18 @@ func (s *OpenAIGatewayService) forwardOpenAIPassthrough(
 	}
 
 	forwardResult := &OpenAIForwardResult{
-		RequestID:       resp.Header.Get("x-request-id"),
-		ResponseID:      responseID,
-		Usage:           *usage,
-		Model:           reqModel,
-		UpstreamModel:   upstreamPassthroughModel,
-		ServiceTier:     serviceTier,
-		ReasoningEffort: reasoningEffort,
-		Stream:          reqStream,
-		OpenAIWSMode:    false,
-		Duration:        time.Since(startTime),
-		FirstTokenMs:    firstTokenMs,
+		RequestID:           resp.Header.Get("x-request-id"),
+		ResponseID:          responseID,
+		Usage:               *usage,
+		Model:               reqModel,
+		UpstreamModel:       upstreamPassthroughModel,
+		ServiceTier:         serviceTier,
+		ReasoningEffort:     reasoningEffort,
+		Stream:              reqStream,
+		OpenAIWSMode:        false,
+		Duration:            time.Since(startTime),
+		FirstTokenMs:        firstTokenMs,
+		httpCanonicalOutput: canonicalOutput,
 	}
 	if imageCount > 0 {
 		forwardResult.ImageCount = imageCount
@@ -717,6 +721,7 @@ type openaiStreamingResultPassthrough struct {
 	responseID       string
 	imageCount       int
 	imageOutputSizes []string
+	canonicalOutput  []json.RawMessage
 }
 
 type openaiNonStreamingResultPassthrough struct {
@@ -725,6 +730,7 @@ type openaiNonStreamingResultPassthrough struct {
 	responseID       string
 	imageCount       int
 	imageOutputSizes []string
+	canonicalOutput  []json.RawMessage
 }
 
 func openAIStreamClientOutputStarted(c *gin.Context, localStarted bool) bool {
@@ -989,6 +995,7 @@ func (s *OpenAIGatewayService) handleStreamingResponsePassthrough(
 	imageCounter := newOpenAIImageOutputCounter()
 	var firstTokenMs *int
 	responseID := ""
+	canonicalOutput := &openAIWSCanonicalOutputCollector{}
 	clientDisconnected := false
 	sawDone := false
 	sawTerminalEvent := false
@@ -1038,6 +1045,7 @@ func (s *OpenAIGatewayService) handleStreamingResponsePassthrough(
 			responseID:       responseID,
 			imageCount:       imageCounter.Count(),
 			imageOutputSizes: imageCounter.Sizes(),
+			canonicalOutput:  canonicalOutput.Items(),
 		}
 	}
 
@@ -1077,6 +1085,7 @@ func (s *OpenAIGatewayService) handleStreamingResponsePassthrough(
 				}
 			}
 			eventType := strings.TrimSpace(gjson.Get(trimmedData, "type").String())
+			canonicalOutput.AddEvent(eventType, dataBytes)
 			if eventType == "response.failed" {
 				failedMessage = extractOpenAISSEErrorMessage(dataBytes)
 				// response.failed 自带上游已消耗的 usage（input token 通常已扣）；必须先解析
@@ -1272,6 +1281,7 @@ func (s *OpenAIGatewayService) handleNonStreamingResponsePassthrough(
 		responseID:       extractOpenAIResponseIDFromJSONBytes(body),
 		imageCount:       countOpenAIResponseImageOutputsFromJSONBytes(body),
 		imageOutputSizes: collectOpenAIResponseImageOutputSizesFromJSONBytes(body),
+		canonicalOutput:  canonicalOpenAIOutputFromResponse(body),
 	}, nil
 }
 
@@ -1344,6 +1354,7 @@ func (s *OpenAIGatewayService) handlePassthroughSSEToJSON(resp *http.Response, c
 		responseID:       extractOpenAIResponseIDFromJSONBytes(body),
 		imageCount:       countOpenAIImageOutputsFromSSEBody(bodyText),
 		imageOutputSizes: collectOpenAIImageOutputSizesFromSSEBody(bodyText),
+		canonicalOutput:  canonicalOpenAIOutputFromResponse(body),
 	}, nil
 }
 

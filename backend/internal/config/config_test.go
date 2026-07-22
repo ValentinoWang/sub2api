@@ -4,6 +4,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -156,6 +157,15 @@ func TestLoadDefaultOpenAIWSConfig(t *testing.T) {
 	if cfg.Gateway.OpenAIWS.StickySessionTTLSeconds != 3600 {
 		t.Fatalf("Gateway.OpenAIWS.StickySessionTTLSeconds = %d, want 3600", cfg.Gateway.OpenAIWS.StickySessionTTLSeconds)
 	}
+	if cfg.Gateway.OpenAIContinuity.Enabled {
+		t.Fatalf("Gateway.OpenAIContinuity.Enabled = true, want false")
+	}
+	if cfg.Gateway.OpenAIContinuity.RetentionDays != 30 {
+		t.Fatalf("Gateway.OpenAIContinuity.RetentionDays = %d, want 30", cfg.Gateway.OpenAIContinuity.RetentionDays)
+	}
+	if cfg.Gateway.OpenAIContinuity.MaxReplayBytes != 32*1024*1024 {
+		t.Fatalf("Gateway.OpenAIContinuity.MaxReplayBytes = %d, want %d", cfg.Gateway.OpenAIContinuity.MaxReplayBytes, 32*1024*1024)
+	}
 	if !cfg.Gateway.OpenAIScheduler.StickyEscapeEnabled {
 		t.Fatalf("Gateway.OpenAIScheduler.StickyEscapeEnabled = false, want true")
 	}
@@ -243,6 +253,32 @@ func TestLoadDefaultOpenAIWSConfig(t *testing.T) {
 	}
 	if cfg.Gateway.OpenAIWS.MaxIngressConnectionsPerAPIKey != 64 {
 		t.Fatalf("Gateway.OpenAIWS.MaxIngressConnectionsPerAPIKey = %d, want 64", cfg.Gateway.OpenAIWS.MaxIngressConnectionsPerAPIKey)
+	}
+}
+
+func TestLoadOpenAIContinuityFromEnvironment(t *testing.T) {
+	resetViperWithJWTSecret(t)
+	t.Setenv("GATEWAY_OPENAI_CONTINUITY_ENABLED", "true")
+	t.Setenv("GATEWAY_OPENAI_CONTINUITY_SECRET", strings.Repeat("c", 32))
+	t.Setenv("GATEWAY_OPENAI_CONTINUITY_API_KEY_IDS", "1,2")
+	t.Setenv("GATEWAY_OPENAI_CONTINUITY_RETENTION_DAYS", "14")
+	t.Setenv("GATEWAY_OPENAI_CONTINUITY_MAX_REPLAY_BYTES", "67108864")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+	if !cfg.Gateway.OpenAIContinuity.Enabled {
+		t.Fatal("Gateway.OpenAIContinuity.Enabled = false, want true")
+	}
+	if got := cfg.Gateway.OpenAIContinuity.APIKeyIDs; !reflect.DeepEqual(got, []int64{1, 2}) {
+		t.Fatalf("Gateway.OpenAIContinuity.APIKeyIDs = %v, want [1 2]", got)
+	}
+	if cfg.Gateway.OpenAIContinuity.RetentionDays != 14 {
+		t.Fatalf("Gateway.OpenAIContinuity.RetentionDays = %d, want 14", cfg.Gateway.OpenAIContinuity.RetentionDays)
+	}
+	if cfg.Gateway.OpenAIContinuity.MaxReplayBytes != 67108864 {
+		t.Fatalf("Gateway.OpenAIContinuity.MaxReplayBytes = %d, want 67108864", cfg.Gateway.OpenAIContinuity.MaxReplayBytes)
 	}
 }
 

@@ -83,6 +83,55 @@ type openAIWSToolCallReplayCollector struct {
 	seen  map[string]struct{}
 }
 
+type openAIWSCanonicalOutputCollector struct {
+	items []json.RawMessage
+	seen  map[string]struct{}
+}
+
+func (c *openAIWSCanonicalOutputCollector) AddEvent(eventType string, message []byte) {
+	switch strings.TrimSpace(eventType) {
+	case "response.output_item.done":
+		c.addItem(gjson.GetBytes(message, "item"))
+	case "response.completed", "response.done":
+		output := gjson.GetBytes(message, "response.output")
+		if !output.IsArray() {
+			return
+		}
+		for _, item := range output.Array() {
+			c.addItem(item)
+		}
+	}
+}
+
+func (c *openAIWSCanonicalOutputCollector) Items() []json.RawMessage {
+	return cloneOpenAIWSRawMessages(c.items)
+}
+
+func (c *openAIWSCanonicalOutputCollector) addItem(item gjson.Result) {
+	if !item.Exists() || item.Type != gjson.JSON {
+		return
+	}
+	raw := strings.TrimSpace(item.Raw)
+	if raw == "" || !strings.HasPrefix(raw, "{") {
+		return
+	}
+	key := strings.TrimSpace(item.Get("id").String())
+	if key == "" {
+		key = strings.TrimSpace(item.Get("call_id").String())
+	}
+	if key == "" {
+		key = raw
+	}
+	if c.seen == nil {
+		c.seen = make(map[string]struct{})
+	}
+	if _, ok := c.seen[key]; ok {
+		return
+	}
+	c.seen[key] = struct{}{}
+	c.items = append(c.items, json.RawMessage(raw))
+}
+
 func (c *openAIWSToolCallReplayCollector) AddEvent(eventType string, message []byte) {
 	switch strings.TrimSpace(eventType) {
 	case "response.output_item.done":
@@ -264,6 +313,7 @@ func (s *OpenAIGatewayService) proxyOpenAIWSHTTPBridgeTurn(
 	tokenEventCount := 0
 	terminalEventCount := 0
 	replayCollector := &openAIWSToolCallReplayCollector{}
+	canonicalOutputCollector := &openAIWSCanonicalOutputCollector{}
 	firstEventType := ""
 	lastEventType := ""
 	upstreamTerminalEvent := ""
@@ -301,6 +351,7 @@ func (s *OpenAIGatewayService) proxyOpenAIWSHTTPBridgeTurn(
 			result.wsReplayInput = replayInput
 			result.wsReplayInputExists = true
 		}
+		result.wsCanonicalOutput = canonicalOutputCollector.Items()
 		if imageCount > 0 {
 			result.ImageCount = imageCount
 			result.ImageSize = imageSizeTier
@@ -371,6 +422,7 @@ func (s *OpenAIGatewayService) proxyOpenAIWSHTTPBridgeTurn(
 			}
 		}
 		replayCollector.AddEvent(eventType, upstreamMessage)
+		canonicalOutputCollector.AddEvent(eventType, upstreamMessage)
 
 		if !clientDisconnected {
 			if err := writeClientMessage(upstreamMessage); err != nil {

@@ -263,11 +263,13 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 			h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "previous_response_id must be a response.id (resp_*), not a message id")
 			return
 		}
-		reqLog.Warn("openai.request_validation_failed",
-			zap.String("reason", "previous_response_id_requires_wsv2"),
-		)
-		h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "previous_response_id is only supported on Responses WebSocket v2")
-		return
+		if !h.gatewayService.OpenAIContinuityEnabledForHTTPRequest(c, body) {
+			reqLog.Warn("openai.request_validation_failed",
+				zap.String("reason", "previous_response_id_requires_wsv2_or_continuity"),
+			)
+			h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "previous_response_id is only supported on Responses WebSocket v2 or durable HTTP continuity")
+			return
+		}
 	}
 
 	setOpsRequestContext(c, reqModel, reqStream)
@@ -453,13 +455,27 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 		// 用扣除 compact 心跳字节的口径快照：心跳注释不构成语义响应，
 		// 不能因心跳字节变化而放弃 failover 换号（#3887）。
 		writerSizeBeforeForward := service.OpenAICompactKeepaliveAdjustedWrittenSize(c)
+		attemptForwardBody, continuityReplayInput, continuitySessionHash, continuityEnabled, continuityErr := h.gatewayService.PrepareOpenAIContinuityHTTPRequest(
+			c.Request.Context(), c, forwardBody,
+		)
+		if continuityErr != nil {
+			if accountReleaseFunc != nil {
+				accountReleaseFunc()
+			}
+			reqLog.Error("openai.http_continuity_prepare_failed",
+				zap.Int64("account_id", account.ID),
+				zap.Error(continuityErr),
+			)
+			h.handleStreamingAwareError(c, http.StatusInternalServerError, "continuity_error", "Failed to restore durable task continuity", streamStarted)
+			return
+		}
 		result, err := func() (*service.OpenAIForwardResult, error) {
 			defer func() {
 				if accountReleaseFunc != nil {
 					accountReleaseFunc()
 				}
 			}()
-			return h.gatewayService.Forward(c.Request.Context(), c, account, forwardBody)
+			return h.gatewayService.Forward(c.Request.Context(), c, account, attemptForwardBody)
 		}()
 		cyberBlockKeyHTTP := ""
 		if service.GetOpsCyberPolicy(c) != nil {
@@ -589,6 +605,19 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 			h.gatewayService.ReportOpenAIAccountScheduleResult(account.ID, account.GetMappedModel(reqModel), openAIForwardSucceededForScheduling(result), result.FirstTokenMs)
 		} else {
 			h.gatewayService.ReportOpenAIAccountScheduleResult(account.ID, account.GetMappedModel(reqModel), openAIForwardSucceededForScheduling(result), nil)
+		}
+		if continuityEnabled && result != nil {
+			continuityCommitCtx, cancelContinuityCommit := context.WithTimeout(context.Background(), 5*time.Second)
+			if commitErr := h.gatewayService.CommitOpenAIContinuityHTTPResponse(
+				continuityCommitCtx, c, continuitySessionHash, account.ID, continuityReplayInput, result,
+			); commitErr != nil {
+				reqLog.Error("openai.http_continuity_commit_failed",
+					zap.Int64("account_id", account.ID),
+					zap.String("response_id", result.ResponseID),
+					zap.Error(commitErr),
+				)
+			}
+			cancelContinuityCommit()
 		}
 
 		// 捕获请求信息（用于异步记录，避免在 goroutine 中访问 gin.Context）
