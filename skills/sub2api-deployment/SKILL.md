@@ -1,11 +1,13 @@
 ---
 name: sub2api-deployment
-description: Build, verify, upload, and safely cut over this Sub2API project's Docker image without compiling on the production server. Use for Sub2API releases, server updates, Docker image transfers, production cutovers, deployment recovery, health or admin-login regressions, and any request to rebuild or deploy the 43.136.113.101 instance or another low-memory Sub2API host.
+description: Build, verify, troubleshoot, upload, and safely cut over this Sub2API project's Docker image without compiling on the production server. Use for Sub2API releases, server updates, Docker image transfers, local Docker build failures, Go cache or registry mirror errors, production cutovers, deployment recovery, health or admin-login regressions, and any request to rebuild or deploy the 43.136.113.101 instance or another low-memory Sub2API host.
 ---
 
 # Sub2API Deployment
 
 Protect the running service before optimizing deployment speed. Never run `docker compose build`, `docker build`, `go build`, `pnpm build`, or BuildKit on a low-memory production host. Build `linux/amd64` on the Mac, verify it locally, upload an immutable image, and make cutover a separate decision.
+
+For errors seen during local candidate builds, read [references/local-build-failures.md](references/local-build-failures.md) before changing scripts or retrying blindly.
 
 ## Hard Gates
 
@@ -31,6 +33,8 @@ skills/sub2api-deployment/scripts/upload-candidate.sh \
 ```
 
 `build-candidate.sh` runs tests, cross-builds the image, performs image checks, and creates a compressed archive. `upload-candidate.sh` verifies the old service before and after transfer, validates the archive checksum remotely, and runs `docker load`. It never recreates the application container.
+
+`build-candidate.sh` intentionally separates the test container platform from the production image platform. On Apple Silicon, Go tests should run on the host platform, while the release image must still be `linux/amd64`. Do not "simplify" this into a single platform variable.
 
 Password authentication may be supplied interactively or through an existing SSH agent. Never add a password, API key, JWT, OAuth token, or encryption key to these scripts, command history, manifests, or the repository.
 
@@ -75,3 +79,15 @@ When an accidental production build makes the host unavailable:
 4. Resume release work only after the old service is stable.
 
 Keep Codex memories and transcripts independent from deployment. Do not edit `~/.codex/config.toml`, `~/.codex/memories`, `~/.codex/sessions`, or Redis as part of an image release.
+
+## Local Build Failure Memory
+
+If a candidate build is slow or fails before image export, check these recurring causes first:
+
+- Docker registry mirror EOF while resolving base image metadata.
+- Apple Silicon tag/platform drift after pulling `linux/amd64` base images.
+- Corrupted Go module or build cache under the mounted cache directories.
+- `go mod download` hanging because the test container lacks the intended `GOPROXY`.
+- Stream timeout tests hanging because the SSE scanner is synchronously drained after closing the upstream body.
+
+Use the reference file for concrete error strings, diagnosis commands, and durable fixes. Prefer updating the project skill or scripts when a new failure mode is confirmed.
