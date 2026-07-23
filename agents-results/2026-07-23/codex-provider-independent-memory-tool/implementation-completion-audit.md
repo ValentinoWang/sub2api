@@ -31,7 +31,7 @@ The implementation, public GitHub Release, and production deployment are complet
 
 The public Release exists at `https://github.com/ValentinoWang/sub2api/releases/tag/codex-memory-v0.1.0`, and its macOS, Linux, Windows, checksum, and manifest assets are downloadable. Production `43.136.113.101` runs the exact locally built `linux/amd64` image for commit `ae2705973300327ada0b7590826f6b7b66aa5143`. Public Docs, administrator authentication, PostgreSQL, Redis, migrations, and a real streamed `/responses` completion passed after cutover. Full evidence is in `evidence/production-publication-acceptance.md`.
 
-GitHub Actions run `30000043556` is a real failed run, not acceptance evidence: all three hosted operating-system jobs ended before executing a step because the account was locked for a billing issue, and the release job was skipped. Therefore:
+GitHub Actions run `30000043556` is a real failed run, not acceptance evidence: attempts 1 and 2 both ended with all three hosted operating-system jobs failing before executing a step, and the release job was skipped. The attempt-2 Check annotation confirms that the account is locked due to a billing issue. Therefore:
 
 - local implementation: complete;
 - public Release and download availability: complete;

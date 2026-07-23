@@ -10,7 +10,7 @@ Date: 2026-07-23
 - GitHub reported asset digests match the locally verified release inputs.
 - All four public download URLs returned HTTP 200 from the production host.
 
-GitHub Actions run `30000043556` did not provide hosted-platform acceptance. The Ubuntu, macOS, and Windows jobs failed before running any steps because the GitHub account was locked for a billing issue; the release job was skipped. Therefore no GitHub Artifact Attestation exists, and B2 remains `VERIFIED` rather than `ACCEPTED`.
+GitHub Actions run `30000043556` did not provide hosted-platform acceptance. Attempts 1 and 2 both ended with the Ubuntu, macOS, and Windows jobs failing before running any steps; the release job was skipped. The attempt-2 Check annotation states exactly: `The job was not started because your account is locked due to a billing issue.` Therefore this is an external account lock rather than a test failure. No GitHub Artifact Attestation exists, and B2 remains `VERIFIED` rather than `ACCEPTED`.
 
 ## Production Candidate
 
@@ -45,4 +45,4 @@ The old image `sub2api-local:3f9535ab5450` and the remote transfer archive were 
 
 ## Completion Boundary
 
-Production publication and runtime acceptance are complete. Overall SSOT completion is still blocked by the missing hosted Ubuntu/macOS/Windows run and missing GitHub Artifact Attestation. The unrelated historical Obsidian archive drift also prevents a clean whole-collection `--audit-archive` result, although this bundle's own snapshot and hash check pass.
+Production publication and runtime acceptance are complete. Overall SSOT completion is still blocked by the missing hosted Ubuntu/macOS/Windows run and missing GitHub Artifact Attestation. During the final snapshot refresh, the whole-collection `--audit-archive` result fluctuated with iCloud synchronization: two unrelated Athlete-OS conflict-copy directories first appeared without manifests and then disappeared; the next audit reported hash drift in the unrelated `self-media-dual-machine-intelligence-ssot` snapshot. This bundle's own 15-file snapshot and hash check pass. No unrelated snapshot was deleted or rewritten because the user previously prohibited those changes without authorization.
