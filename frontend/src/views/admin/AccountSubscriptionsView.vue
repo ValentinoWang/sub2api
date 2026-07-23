@@ -15,13 +15,22 @@
             </p>
           </div>
         </div>
-        <span
-          v-if="savedAddress"
-          class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
-        >
-          <Icon name="checkCircle" size="sm" />
-          {{ t('admin.accounts.subscriptions.saved') }}
-        </span>
+        <div class="flex flex-wrap items-center gap-3">
+          <router-link
+            to="/docs/codex-memory"
+            class="inline-flex items-center gap-2 text-sm font-medium text-primary-600 transition-colors hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+          >
+            <Icon name="book" size="sm" />
+            Codex Memory Docs
+          </router-link>
+          <span
+            v-if="savedAddress"
+            class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
+          >
+            <Icon name="checkCircle" size="sm" />
+            {{ t('admin.accounts.subscriptions.saved') }}
+          </span>
+        </div>
       </header>
 
       <div

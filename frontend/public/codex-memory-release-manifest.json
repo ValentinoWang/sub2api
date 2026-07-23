@@ -1,0 +1,36 @@
+{
+  "assets": [
+    {
+      "filename": "codex-memory_0.1.0_macos.zip",
+      "platform": "macos",
+      "sha256": "63d9d7707e7572875cd505d1ed044081a2999c85113bd13f2ab3c549049387e1",
+      "size": 8177,
+      "url": "https://github.com/ValentinoWang/sub2api/releases/download/codex-memory-v0.1.0/codex-memory_0.1.0_macos.zip"
+    },
+    {
+      "filename": "codex-memory_0.1.0_linux.zip",
+      "platform": "linux",
+      "sha256": "63d9d7707e7572875cd505d1ed044081a2999c85113bd13f2ab3c549049387e1",
+      "size": 8177,
+      "url": "https://github.com/ValentinoWang/sub2api/releases/download/codex-memory-v0.1.0/codex-memory_0.1.0_linux.zip"
+    },
+    {
+      "filename": "codex-memory_0.1.0_windows.zip",
+      "platform": "windows",
+      "sha256": "b9177f9139dadcf33703a6f1f93ddc6f5a8152911ec86d91e9076d548b6ecd1a",
+      "size": 8208,
+      "url": "https://github.com/ValentinoWang/sub2api/releases/download/codex-memory-v0.1.0/codex-memory_0.1.0_windows.zip"
+    }
+  ],
+  "checksums": {
+    "filename": "codex-memory-checksums.txt",
+    "sha256": "03cc2c6917d77644b086eca0e4bc6d77413e79982fbf5b766c35329971845200",
+    "url": "https://github.com/ValentinoWang/sub2api/releases/download/codex-memory-v0.1.0/codex-memory-checksums.txt"
+  },
+  "python_minimum": "3.11",
+  "released_at": null,
+  "repository": "ValentinoWang/sub2api",
+  "schema_version": 1,
+  "tag": "codex-memory-v0.1.0",
+  "version": "0.1.0"
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sub2api.local/schemas/codex-memory-plan-v1.json",
+  "title": "Codex memory merge plan",
+  "type": "object",
+  "required": ["schema_version", "created_at", "sources", "target", "operations", "summary"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "created_at": { "type": "integer", "minimum": 0 },
+    "sources": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "target": { "type": "string", "minLength": 1 },
+    "target_config_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["state_dir", "identity", "sha256", "size", "destination", "sources"],
+        "properties": {
+          "state_dir": { "enum": ["memories", "sessions", "archived_sessions"] },
+          "identity": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "size": { "type": "integer", "minimum": 0 },
+          "destination": { "type": "string", "minLength": 1 },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["home", "path"],
+              "properties": {
+                "home": { "type": "string", "minLength": 1 },
+                "path": { "type": "string", "minLength": 1 }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["source_files", "output_files", "exact_duplicates", "conflicting_identities", "bytes"],
+      "properties": {
+        "source_files": { "type": "integer", "minimum": 0 },
+        "output_files": { "type": "integer", "minimum": 0 },
+        "exact_duplicates": { "type": "integer", "minimum": 0 },
+        "conflicting_identities": { "type": "integer", "minimum": 0 },
+        "bytes": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

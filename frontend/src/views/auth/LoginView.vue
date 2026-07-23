@@ -170,6 +170,16 @@
           />
         </div>
       </form>
+
+      <div class="text-center">
+        <router-link
+          to="/docs"
+          class="inline-flex items-center gap-2 text-sm font-medium text-primary-600 transition-colors hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+        >
+          <Icon name="book" size="sm" />
+          Docs
+        </router-link>
+      </div>
     </div>
 
     <!-- Footer -->

@@ -51,7 +51,16 @@
           <!-- Language Switcher -->
           <LocaleSwitcher />
 
-          <!-- Doc Link -->
+          <router-link
+            to="/docs"
+            class="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
+            :title="t('home.viewDocs')"
+            aria-label="Docs"
+          >
+            <Icon name="book" size="md" />
+          </router-link>
+
+          <!-- Optional external documentation configured by the administrator. -->
           <a
             v-if="docUrl"
             :href="docUrl"
@@ -381,6 +390,12 @@
           &copy; {{ currentYear }} {{ siteName }}. {{ t('home.footer.allRightsReserved') }}
         </p>
         <div class="flex items-center gap-4">
+          <router-link
+            to="/docs"
+            class="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-dark-400 dark:hover:text-white"
+          >
+            {{ t('home.docs') }}
+          </router-link>
           <a
             v-if="docUrl"
             :href="docUrl"
@@ -388,7 +403,7 @@
             rel="noopener noreferrer"
             class="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-dark-400 dark:hover:text-white"
           >
-            {{ t('home.docs') }}
+            {{ t('home.viewDocs') }}
           </a>
           <a
             :href="githubUrl"

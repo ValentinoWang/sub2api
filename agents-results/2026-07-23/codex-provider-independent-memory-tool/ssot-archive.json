@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "artifact_class": "ssot-development",
+  "artifact_date": "2026-07-23",
+  "project_name": "Sub2api",
+  "ssot_name": "codex-provider-independent-memory-tool",
+  "main_document": "ssot-development-paths.md",
+  "problem_documents": [
+    "openproblem.md"
+  ]
+}

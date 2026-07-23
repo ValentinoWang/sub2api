@@ -1,5 +1,7 @@
 # Codex OAuth 记忆连续性宏观实施脚本
 
+> 本文描述 Sub2API 服务端 Responses 连续性，不是 Codex 本地记忆合并工具。统一同一台电脑上的 `memories/`、`sessions/` 和 `archived_sessions/`，请使用 [Codex 本地记忆统一工具](CODEX_MEMORY_UNIFIER.md)；其站内公开入口为 `/docs/codex-memory`。
+
 ## 目标
 
 在同一套 Sub2API 中，将上游 OpenAI OAuth 账号视为可替换的执行通道，而不是
