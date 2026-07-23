@@ -41,9 +41,9 @@ describe('CodexMemoryDocsView', () => {
     })
     await flushPromises()
 
-    expect(wrapper.text()).toContain('v0.1.0')
-    expect(wrapper.text()).toContain('codex-memory_0.1.0_macos.zip')
-    expect(wrapper.findAll('a[href*="codex-memory-v0.1.0"]')).toHaveLength(4)
+    expect(wrapper.text()).toContain(`v${releaseManifest.version}`)
+    expect(wrapper.text()).toContain(releaseManifest.assets[0].filename)
+    expect(wrapper.findAll(`a[href*="${releaseManifest.tag}"]`)).toHaveLength(4)
     expect(wrapper.text()).not.toContain('当前部署尚未提供经过校验')
   })
 })

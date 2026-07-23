@@ -10,13 +10,13 @@ It never merges `auth.json`, OAuth tokens, API keys, keychain data, or Sub2API R
 
 Python 3.11 or newer is required. End active streaming responses and tool calls before applying a merge or restore.
 
-Verify the downloaded ZIP against `codex-memory-checksums.txt`. Published assets also carry a GitHub Artifact Attestation:
+Verify the downloaded ZIP against `codex-memory-checksums.txt` before extracting it:
 
 ```bash
-gh attestation verify codex-memory_VERSION_PLATFORM.zip --repo OWNER/REPOSITORY
+shasum -a 256 -c codex-memory-checksums.txt
 ```
 
-The deliverables are Python scripts rather than native macOS binaries, so Apple code signing and notarization do not apply. GitHub attestation provides the signed build provenance.
+The release gate runs on the maintainer's Mac: it builds all three platform archives twice, requires byte-identical output, verifies the manifest and SHA-256 file, executes the shared Python entry point from every extracted archive, and validates both launcher formats. GitHub-hosted CI or Artifact Attestation may be added as optional provenance, but neither is required to use or verify the release. The deliverables are Python scripts rather than native macOS binaries, so Apple code signing and notarization do not apply.
 
 ## Plan
 
