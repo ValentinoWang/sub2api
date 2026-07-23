@@ -322,7 +322,7 @@ flowchart LR
 - 测试与证据：干净目录安装、校验失败拒绝、升级、卸载、可复现构建；发布时由三平台矩阵与 Artifact Attestation 补齐托管证据。
 - 验收：每个支持平台都有不可变制品与匹配摘要；无凭据和用户数据进入包。
 - 下游：C-M1。
-- 当前状态/尝试：`VERIFIED` / 2；GitHub Release `codex-memory-v0.1.0` 与三平台制品已发布并可下载；hosted 三平台 job 因 GitHub 账单锁在执行 step 前失败，attestation 未生成，因此不标记 `ACCEPTED`。
+- 当前状态/尝试：`VERIFIED` / 3；GitHub Release `codex-memory-v0.1.0` 与三平台制品已发布并可下载；连续三次 hosted 三平台 job 均因 GitHub 账单锁在执行 step 前失败，attestation 未生成，因此不标记 `ACCEPTED`。
 - 负责人：发布实现者。
 - 偏差权限：L1；平台或托管变化为 L2/L3。
 - Harness：失败类型为供应链或版本漂移；通过制品重建、Artifact Attestation 和清单摘要检测；控制位置为发布工作流。
@@ -451,7 +451,7 @@ flowchart LR
 | A1 | A | 4/1/4/4 | `ACCEPTED` | 1 | 主编排者 | 无 | 本文边界表、`source-notes.md` | A2 |
 | A2 | A | 4/1/4/4 | `ACCEPTED` | 1 | 产品/契约负责人 | 无 | `openproblem.md`、两个 JSON Schema | B1/B2/B3 |
 | B1 | B | 4/1/4/4 | `ACCEPTED` | 1 | 客户端实现者 | 无 | 19 项 CLI/制品测试、D2 场景 | C-M1 |
-| B2 | B | 4/1/4/4 | `VERIFIED` | 2 | 发布实现者 | GitHub 账单锁阻止 hosted jobs 执行，Artifact Attestation 缺失 | Release、下载摘要、失败 run `30000043556` | C-M1 |
+| B2 | B | 4/1/4/4 | `VERIFIED` | 3 | 发布实现者 | GitHub 账单锁连续三次阻止 hosted jobs 执行，Artifact Attestation 缺失 | Release、下载摘要、失败 run `30000043556` | C-M1 |
 | B3 | B | 4/1/4/4 | `ACCEPTED` | 2 | 前端/文档实现者 | 无 | 43 项测试、视觉验收、生产在线 HTTP 200 | C-M1 |
 | C-M1 | C | 4/1/4/4 | `VERIFIED` | 2 | 主编排者 | B2 Artifact Attestation 缺失 | 生产清单、Release 下载、路由与文档集成 | D1 |
 | D1 | D | 4/1/4/4 | `ACCEPTED` | 1 | 主编排者 | 无 | `evidence/d1-verification.md` | D2 |
