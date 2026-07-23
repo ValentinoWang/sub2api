@@ -2,7 +2,7 @@
   <div class="overflow-hidden border border-gray-200 bg-gray-950 dark:border-dark-700">
     <div class="flex items-center justify-between border-b border-gray-800 px-4 py-2">
       <span class="text-xs font-semibold text-gray-300">{{ title }}</span>
-      <button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-800 hover:text-white" :title="copied ? 'Copied' : 'Copy'" @click="copyCommand">
+      <button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-800 hover:text-white" :title="copied ? copiedLabel : copyLabel" @click="copyCommand">
         <Icon :name="copied ? 'check' : 'copy'" size="sm" />
       </button>
     </div>
@@ -11,14 +11,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import Icon from '@/components/icons/Icon.vue'
+import { useClipboard } from '@/composables/useClipboard'
 
-const props = defineProps<{ title: string; command: string }>()
-const copied = ref(false)
+const props = withDefaults(defineProps<{
+  title: string
+  command: string
+  copyLabel?: string
+  copiedLabel?: string
+}>(), {
+  copyLabel: 'Copy',
+  copiedLabel: 'Copied',
+})
+const { copied, copyToClipboard } = useClipboard()
+
 async function copyCommand() {
-  await navigator.clipboard.writeText(props.command)
-  copied.value = true
-  window.setTimeout(() => { copied.value = false }, 1200)
+  await copyToClipboard(props.command, props.copiedLabel)
 }
 </script>
