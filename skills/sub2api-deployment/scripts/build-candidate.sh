@@ -26,6 +26,11 @@ test_packages="${GO_TEST_PACKAGES:-./internal/config ./internal/repository ./int
 build_parallelism="${LOCAL_BUILD_PARALLELISM:-2}"
 go_mod_cache="${GO_MOD_CACHE_VOLUME:-sub2api-go-mod}"
 go_build_cache="${GO_BUILD_CACHE_VOLUME:-sub2api-go-build}"
+production_base_registry="${PRODUCTION_BASE_IMAGE_REGISTRY:-docker.m.daocloud.io/library}"
+node_image="${NODE_IMAGE:-$production_base_registry/node:24-alpine}"
+golang_image="${GOLANG_IMAGE:-$production_base_registry/golang:1.26.5-alpine}"
+postgres_image="${POSTGRES_IMAGE:-$production_base_registry/postgres:18-alpine}"
+alpine_image="${ALPINE_IMAGE:-$production_base_registry/alpine:3.21}"
 
 host_goos="$(docker info --format '{{.OSType}}')"
 host_arch="$(docker info --format '{{.Architecture}}')"
@@ -84,11 +89,10 @@ version="$(tr -d '[:space:]' < backend/cmd/server/VERSION)"
 build_date="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 printf 'warming production base images for %s\n' "$platform"
-docker_pull_retry "$platform" docker/dockerfile:1.7
-docker_pull_retry "$platform" node:24-alpine
-docker_pull_retry "$platform" golang:1.26.5-alpine
-docker_pull_retry "$platform" postgres:18-alpine
-docker_pull_retry "$platform" alpine:3.21
+docker_pull_retry "$platform" "$node_image"
+docker_pull_retry "$platform" "$golang_image"
+docker_pull_retry "$platform" "$postgres_image"
+docker_pull_retry "$platform" "$alpine_image"
 
 if head -n 1 "$repo_root/Dockerfile" | grep -q '^# syntax='; then
   tmp_dockerfile="$artifact_dir/Dockerfile.no-syntax"
@@ -105,6 +109,10 @@ docker buildx build \
   --build-arg "COMMIT=$commit" \
   --build-arg "DATE=$build_date" \
   --build-arg "GO_BUILD_PARALLELISM=$build_parallelism" \
+  --build-arg "NODE_IMAGE=$node_image" \
+  --build-arg "GOLANG_IMAGE=$golang_image" \
+  --build-arg "POSTGRES_IMAGE=$postgres_image" \
+  --build-arg "ALPINE_IMAGE=$alpine_image" \
   -t "$image" \
   .
 
