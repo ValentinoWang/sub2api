@@ -4,19 +4,19 @@ Date: 2026-07-23
 
 ## Result
 
-The requested local implementation is complete and locally verified. Production deployment and public GitHub publication were explicitly not performed.
+The implementation, public GitHub Release, and production deployment are complete and directly verified. Overall completion is not 100% because GitHub hosted CI did not execute and no Artifact Attestation was generated.
 
 | Node | Result | Evidence |
 |---|---|---|
 | A1 boundary audit | done | SSOT state-layer table, `source-notes.md`, continuity documentation |
 | A2 contract freeze | done | `openproblem.md`, plan and release JSON schemas |
 | B1 local unifier | done | `tools/codex-memory-unifier/`, 19 passing tests, D2 scenario |
-| B2 release implementation | done locally, publication pending | deterministic builder, three ZIP targets, checksum/manifest, release workflow |
-| B3 public Docs | done locally | public routes, Home/Login/admin links, Markdown-backed page, 43 passing tests, visual evidence |
-| C-M1 integration | done locally | one generated release manifest contract and one fork-maintained documentation source |
+| B2 release implementation | partial | published Release and verified assets exist; hosted Ubuntu/macOS/Windows jobs failed before all steps due to a GitHub billing lock, so no attestation exists |
+| B3 public Docs | done and deployed | public routes, Home/Login/admin links, Markdown-backed page, 43 passing tests, visual evidence, production HTTP 200 |
+| C-M1 integration | verified and deployed | one generated release manifest contract, one fork-maintained documentation source, production manifest and downloads verified |
 | D1 verification | done | `evidence/d1-verification.md` |
 | D2 recovery exercise | done | `evidence/d2-acceptance-scenario.json`, `evidence/d2-scenario-matrix.md` |
-| D3 audit | done locally | this report |
+| D3 audit | partial | this report; final acceptance remains blocked by B2 hosted CI and attestation |
 
 ## Safety Findings
 
@@ -27,12 +27,15 @@ The requested local implementation is complete and locally verified. Production 
 - Exact identity plus exact SHA-256 is the only deduplication rule. Different content is preserved with provenance.
 - Path traversal, undeclared sources, symlinks, post-plan symlink swaps, malformed JSONL, insufficient space, and interrupted swaps are covered by tests.
 
-## Publication Gate
+## Publication And Production Evidence
 
-The workflow is ready to run on Ubuntu, macOS, and Windows, build deterministic assets, create GitHub Artifact Attestations, inject the generated manifest into the frontend, and attach assets to a GitHub Release. Those external actions have not occurred. Therefore:
+The public Release exists at `https://github.com/ValentinoWang/sub2api/releases/tag/codex-memory-v0.1.0`, and its macOS, Linux, Windows, checksum, and manifest assets are downloadable. Production `43.136.113.101` runs the exact locally built `linux/amd64` image for commit `ae2705973300327ada0b7590826f6b7b66aa5143`. Public Docs, administrator authentication, PostgreSQL, Redis, migrations, and a real streamed `/responses` completion passed after cutover. Full evidence is in `evidence/production-publication-acceptance.md`.
 
-- local implementation completion: 100%;
-- production deployment completion: 0%, intentionally not requested in this execution;
-- public release completion: 0%, pending repository release authority and an actual successful workflow run.
+GitHub Actions run `30000043556` is a real failed run, not acceptance evidence: all three hosted operating-system jobs ended before executing a step because the account was locked for a billing issue, and the release job was skipped. Therefore:
 
-No download availability, hosted CI result, GitHub Release, or attestation is claimed by this audit.
+- local implementation: complete;
+- public Release and download availability: complete;
+- production deployment and online acceptance: complete;
+- hosted Ubuntu/macOS/Windows CI: blocked externally;
+- GitHub Artifact Attestation: missing because the gated release job never ran;
+- overall final acceptance: partial, not 100%.
