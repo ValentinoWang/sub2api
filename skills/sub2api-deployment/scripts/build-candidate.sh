@@ -57,6 +57,15 @@ if [[ "$platform" != "linux/amd64" ]]; then
 fi
 
 mkdir -p "$artifact_dir"
+dockerfile_for_build="$repo_root/Dockerfile"
+tmp_dockerfile=""
+
+cleanup_tmp_dockerfile() {
+  if [[ -n "$tmp_dockerfile" && -f "$tmp_dockerfile" ]]; then
+    rm -f "$tmp_dockerfile"
+  fi
+}
+trap cleanup_tmp_dockerfile EXIT
 
 printf 'running Go verification for %s\n' "$commit"
 docker_pull_retry "$go_test_platform" "$go_image"
@@ -81,8 +90,15 @@ docker_pull_retry "$platform" golang:1.26.5-alpine
 docker_pull_retry "$platform" postgres:18-alpine
 docker_pull_retry "$platform" alpine:3.21
 
+if head -n 1 "$repo_root/Dockerfile" | grep -q '^# syntax='; then
+  tmp_dockerfile="$artifact_dir/Dockerfile.no-syntax"
+  tail -n +2 "$repo_root/Dockerfile" > "$tmp_dockerfile"
+  dockerfile_for_build="$tmp_dockerfile"
+fi
+
 printf 'building %s for %s\n' "$image" "$platform"
 docker buildx build \
+  -f "$dockerfile_for_build" \
   --platform "$platform" \
   --load \
   --build-arg "VERSION=$version" \
@@ -101,10 +117,10 @@ fi
 docker run --rm --platform "$platform" --entrypoint /app/sub2api "$image" --version
 
 tmp_archive="$archive.tmp"
-trap 'rm -f "$tmp_archive"' EXIT
+trap 'rm -f "$tmp_archive"; cleanup_tmp_dockerfile' EXIT
 docker save "$image" | gzip -1 > "$tmp_archive"
 mv "$tmp_archive" "$archive"
-trap - EXIT
+trap cleanup_tmp_dockerfile EXIT
 
 (
   cd "$artifact_dir"
