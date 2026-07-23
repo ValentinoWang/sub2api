@@ -4,19 +4,19 @@ Date: 2026-07-23
 
 ## Result
 
-The implementation and existing production deployment are verified. The corrected v5 completion contract uses the maintainer Mac for all three platform artifacts; GitHub-hosted CI and Artifact Attestation are optional. Local `0.1.1` acceptance has passed, while publication and production manifest rollout are still pending.
+The implementation, `0.1.1` public release, and production deployment are accepted. The corrected v5 completion contract uses the maintainer Mac for all three platform artifacts; GitHub-hosted CI and Artifact Attestation are optional.
 
 | Node | Result | Evidence |
 |---|---|---|
 | A1 boundary audit | done | SSOT state-layer table, `source-notes.md`, continuity documentation |
 | A2 contract freeze | done | `openproblem.md`, plan and release JSON schemas |
 | B1 local unifier | done | `tools/codex-memory-unifier/`, 19 passing tests, D2 scenario |
-| B2 release implementation | verified locally | `0.1.1` built twice on the Mac with byte-identical outputs; 20 tests, three archive executions, launcher contracts, manifest and SHA-256 passed |
+| B2 release implementation | accepted | `0.1.1` built twice on the Mac with byte-identical outputs; 20 tests, three archive executions, launcher contracts, manifest and SHA-256 passed; five published assets were downloaded and rehashed |
 | B3 public Docs | done and deployed | public routes, Home/Login/admin links, Markdown-backed page, 43 passing tests, visual evidence, production HTTP 200 |
-| C-M1 integration | verified locally | one `0.1.1` release manifest contract and one fork-maintained documentation source; publication and production readback pending |
+| C-M1 integration | accepted | one `0.1.1` release manifest contract and one fork-maintained documentation source; public Release and production manifest readback passed |
 | D1 verification | done | `evidence/d1-verification.md` |
 | D2 recovery exercise | done | `evidence/d2-acceptance-scenario.json`, `evidence/d2-scenario-matrix.md` |
-| D3 audit | verified locally | final acceptance awaits the `0.1.1` Release and production readback |
+| D3 audit | accepted | Release, production routes, authenticated admin path, migrations, databases, streamed `/responses`, logs, and cleanup passed |
 
 ## Safety Findings
 
@@ -34,7 +34,7 @@ The product owner explicitly requires local builds. The authoritative v5 release
 The earlier `0.1.0` Release and production deployment remain valid historical evidence. The failed GitHub Actions run `30000043556` is retained only as evidence of the discarded hosted path; it is not a product blocker. Current state:
 
 - local implementation and v5 release gate: complete;
-- `0.1.1` public Release: pending;
-- production manifest and online acceptance for `0.1.1`: pending;
+- `0.1.1` public Release: complete;
+- production manifest and online acceptance for `0.1.1`: complete;
 - hosted CI and Artifact Attestation: optional, not applicable to completion;
-- overall final acceptance: partial until publication and production readback.
+- overall final acceptance: complete.

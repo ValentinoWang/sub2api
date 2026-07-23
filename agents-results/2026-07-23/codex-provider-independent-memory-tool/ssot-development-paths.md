@@ -3,7 +3,7 @@ PLAN_VERSION: 5
 DAG_VERSION: 1
 INTERFACE_FREEZE_VERSION: 5
 NODE_CONTRACT_VERSION: 5
-STATUS: local-release-v0.1.1-verified-publication-pending
+STATUS: accepted
 ---
 
 # Codex 本地记忆统一工具开发 SSOT
@@ -86,7 +86,7 @@ STATUS: local-release-v0.1.1-verified-publication-pending
 | 产品边界和安全不变量 | 本 SSOT 验收后晋升到 `docs/CODEX_PROVIDER_INDEPENDENT_MEMORY.md` | A1 冻结，C-M1 统一回写 |
 | 本地工具清单格式与冲突规则 | 待 A2 冻结的 `tools/codex-memory-unifier/spec/manifest.schema.json` 和核心库 | 不允许页面或脚本各自定义 |
 | 配置修改规则 | 工具核心库中的 TOML 结构化编辑模块及契约测试 | 禁止字符串拼接或整体覆盖配置 |
-| 下载版本和校验值 | GitHub Release `codex-memory-v0.1.0` 的不可变制品、校验文件和单一发布清单 | 官网和文档只读取该清单，不另存手写版本 |
+| 下载版本和校验值 | GitHub Release `codex-memory-v0.1.1` 的不可变制品、校验文件和单一发布清单 | 官网和文档只读取该清单，不另存手写版本 |
 | 站内公开文档入口 | `frontend/src/router/index.ts` 及待建立的公开文档页面 | 固定 `/docs` 与 `/docs/codex-memory`；`/Api_subscribe` 只提供辅助链接 |
 | 服务端连续性数据 | `backend/migrations/183_codex_continuity.sql` 与对应服务、仓库层 | 只引用，不混成本地记忆 |
 | 服务端连续性配置 | `backend/internal/config/config.go`、`deploy/config.example.yaml` | 继续保持按 API 密钥灰度 |
@@ -148,7 +148,7 @@ Codex 记忆工具（Codex Memory）的功能代码与通用文档源文件共�
 | 路径 | 目标 | 终点交付物 | 当前结论 |
 |---|---|---|---|
 | P1 本地核心 | 三平台脚本完成安全审计、自动设置 `CODEX_HOME`、备份、合并和恢复 | 可由 Codex 调用的跨 provider 本地状态统一脚本 | 已实现并通过 19 项本地测试与 D2 演练 |
-| P2 发布制品 | 在 Mac 本机为三平台生成可验证脚本制品和发布清单 | GitHub Releases 不可变版本、SHA-256 与本机复现证据 | `0.1.1` 已在本机双重构建且逐字节一致，20 项测试通过；待发布新版 Release |
+| P2 发布制品 | 在 Mac 本机为三平台生成可验证脚本制品和发布清单 | GitHub Releases 不可变版本、SHA-256 与本机复现证据 | `0.1.1` 已在本机双重构建且逐字节一致，20 项测试通过；Release 已发布并回读摘要 |
 | P3 站内公开文档 | 外部用户打开 Sub2API 即可找到文档并正确使用 | `/docs`、`/docs/codex-memory`、首屏/导航入口和管理员辅助链接 | 已实现、本地验收并部署到生产；公开路由 HTTP 200 |
 | P4 服务端历史 | 未来可能的托管能力 | 非当前 SSOT 的设计备注 | 明确不纳入、不阻塞第一版；服务端连续性保持既有默认 |
 
@@ -233,7 +233,7 @@ flowchart LR
 | R6 | 发布清单 | GitHub Releases 中待 A2 冻结的单一清单 | IFV5 | B2/B3/C-M1 | R/R/W | manifest-cm1 | Stage B 不写最终文件 | C-M1 |
 | R7 | 本地测试状态根 | 临时 `CODEX_HOME` | fixture-v1 | B1/D2 | W/W | 每测试唯一临时目录 | 隔离目录，禁止使用真实用户目录写测试 | D2 |
 | R8 | 构建目录 | 平台独立输出目录 | release-v1 | B2/D1 | W/R | platform-version | 每平台隔离 | D1 |
-| R9 | 生产服务 | `43.136.113.101` | `sub2api-local:ae2705973300` | 发布验收 | W/R | immutable-image-id | 仅按部署 Skill 无构建切换并在线回读 | D3 |
+| R9 | 生产服务 | `43.136.113.101` | `sub2api-local:bfb8526aed66` | 发布验收 | W/R | immutable-image-id | 仅按部署 Skill 无构建切换并在线回读 | D3 |
 | R10 | 现有未跟踪工具 | `tools/sub2api_request_pressure_guard.py` 及测试 | current-worktree | 全部 | 禁止 | user-owned | 与本任务无关，保留 | 无 |
 
 ### 8.6 最小可开发单元
@@ -323,7 +323,7 @@ flowchart LR
 - 测试与证据：在 Mac 本机完成干净目录安装、校验失败拒绝、升级、卸载、两次逐字节一致构建、三平台归档共同核心执行、POSIX 启动器语法和 PowerShell 启动器合同校验。
 - 验收：每个支持平台都有不可变制品与匹配摘要；无凭据和用户数据进入包。
 - 下游：C-M1。
-- 当前状态/尝试：`VERIFIED` / 4；`0.1.1` 已在 Mac 本机双重构建且五个输出逐字节一致，20 项测试与 SHA-256 回读通过；新版 Release 尚未发布，因此暂不标记 `ACCEPTED`。
+- 当前状态/尝试：`ACCEPTED` / 5；`0.1.1` 已在 Mac 本机双重构建且五个输出逐字节一致，20 项测试与 SHA-256 回读通过；Release 发布后五个资产已重新下载并逐项匹配。
 - 负责人：发布实现者。
 - 偏差权限：L1；平台或托管变化为 L2/L3。
 - Harness：失败类型为供应链或版本漂移；通过本机双重构建、归档执行、启动器合同、发布清单和 SHA-256 回读检测；控制位置为本地测试与发布脚本。
@@ -369,7 +369,7 @@ flowchart LR
 - 测试与证据：路径重叠检查、摘要匹配、接口语义核对、路由权限、组合测试和清除清单核对。
 - 验收：页面展示的版本、摘要和制品完全一致；本地与服务端边界一致；无重复事实来源。
 - 下游：D1。
-- 当前状态/尝试：`VERIFIED` / 3；代码、文档、路由和 `0.1.1` 单一发布清单已汇合，本机门禁通过；待新版 Release 与生产清单回读。
+- 当前状态/尝试：`ACCEPTED` / 4；代码、文档、路由和 `0.1.1` 单一发布清单已汇合，本机门禁、Release 与生产清单回读均通过。
 - 负责人：主编排者。
 - 偏差权限：L1；接口变化 L2；范围或安全变化 L3。
 - Harness：失败类型为集成漂移；通过发布清单回读和交叉引用检查检测；控制位置为 `contract` 与 `scripts/quality`。
@@ -438,7 +438,7 @@ flowchart LR
 - 测试与证据：逐节点给出 `done`、`partial`、`missing`、`blocked` 或 `not-applicable`，并附路径和命令证据。
 - 验收：不存在未声明缺口；清除完成；外部文档不超出真实能力；所有必要节点已经 `ACCEPTED`。
 - 下游：无。
-- 当前状态/尝试：`VERIFIED` / 3；本机 v5 门禁和 `0.1.1` 候选审计完成，待新版 Release 与生产回读后最终验收。
+- 当前状态/尝试：`ACCEPTED` / 4；本机 v5 门禁、`0.1.1` Release、生产清单、管理员认证、迁移、真实 SSE、日志和清除结果均已审计。
 - 负责人：独立审计者和最终验收负责人。
 - 偏差权限：只报告，不修改；发现偏差交回主编排者。
 - Harness：失败类型为声明与实现不一致；控制位置为独立审计与 `scripts/qa`。
@@ -452,12 +452,12 @@ flowchart LR
 | A1 | A | 5/1/5/5 | `ACCEPTED` | 1 | 主编排者 | 无 | 本文边界表、`source-notes.md` | A2 |
 | A2 | A | 5/1/5/5 | `ACCEPTED` | 2 | 产品/契约负责人 | 无 | `openproblem.md`、两个 JSON Schema | B1/B2/B3 |
 | B1 | B | 5/1/5/5 | `ACCEPTED` | 1 | 客户端实现者 | 无 | 20 项 CLI/制品测试、D2 场景 | C-M1 |
-| B2 | B | 5/1/5/5 | `VERIFIED` | 4 | 发布实现者 | `0.1.1` 尚未发布 | 本机双重构建、20 项测试、SHA-256 回读 | C-M1 |
+| B2 | B | 5/1/5/5 | `ACCEPTED` | 5 | 发布实现者 | 无 | 本机双重构建、20 项测试、Release 资产 SHA-256 回读 | C-M1 |
 | B3 | B | 5/1/5/5 | `ACCEPTED` | 2 | 前端/文档实现者 | 无 | 43 项测试、视觉验收、生产在线 HTTP 200 | C-M1 |
-| C-M1 | C | 5/1/5/5 | `VERIFIED` | 3 | 主编排者 | 待 `0.1.1` Release 与生产清单回读 | `0.1.1` 清单、本机门禁、路由与文档集成 | D1 |
+| C-M1 | C | 5/1/5/5 | `ACCEPTED` | 4 | 主编排者 | 无 | `0.1.1` Release、生产清单、本机门禁、路由与文档集成 | D1 |
 | D1 | D | 5/1/5/5 | `ACCEPTED` | 2 | 主编排者 | 无 | `evidence/d1-verification.md` | D2 |
 | D2 | D | 5/1/5/5 | `ACCEPTED` | 1 | 验收负责人 | 无 | `evidence/d2-acceptance-scenario.json`、场景矩阵 | D3 |
-| D3 | D | 5/1/5/5 | `VERIFIED` | 3 | 独立审计者 | 待 `0.1.1` Release 与生产回读 | `implementation-completion-audit.md`、本机发布证据 | 发布验收 |
+| D3 | D | 5/1/5/5 | `ACCEPTED` | 4 | 独立审计者 | 无 | `implementation-completion-audit.md`、Release 与生产在线证据 | 发布验收 |
 
 规范状态仅允许：`BLOCKED -> READY -> RUNNING -> IMPLEMENTED -> VERIFIED -> ACCEPTED`，失败进入 `FAILED`，已验收证据因上游变化失效时进入 `INVALIDATED`。只有 `ACCEPTED` 解锁下游。
 
@@ -586,7 +586,7 @@ A1 审计并验收
   -> D3 独立审计并最终验收
 ```
 
-本地工具、三平台发布构建器、公开 Docs 页面和发布脚本均已实现。`0.1.1` 已在 Mac 本机完成两次逐字节一致构建、20 项测试、三平台共同核心执行、启动器合同和 SHA-256 回读；D1、D2 证据已归档。GitHub hosted CI 与 Artifact Attestation 是可选增强，不再参与完成判断。当前只待发布 `0.1.1` Release、部署更新后的站内清单并完成在线回读。原 OP-08 和未来服务端托管继续属于范围外事项。
+本地工具、三平台发布构建器、公开 Docs 页面和发布脚本均已实现并验收。`0.1.1` 已在 Mac 本机完成两次逐字节一致构建、20 项测试、三平台共同核心执行、启动器合同和 SHA-256 回读；Release 五个资产已重新下载验签，生产站内清单、管理员认证、迁移、PostgreSQL/Redis、真实 SSE、日志和旧制品清除均已回读。GitHub hosted CI 与 Artifact Attestation 是可选增强，不参与完成判断。原 OP-08 和未来服务端托管继续属于范围外事项。
 
 ## 10. 最终完成定义
 

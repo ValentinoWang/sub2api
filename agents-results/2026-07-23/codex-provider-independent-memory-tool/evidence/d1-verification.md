@@ -25,8 +25,10 @@ Date: 2026-07-23
 | `codex-memory_0.1.1_macos.zip` | `d034b6242580a52936bc3ad967628cdb44f498d7810a08f61253c08da76423ba` |
 | `codex-memory_0.1.1_windows.zip` | `52cbc41744c42761263c7be9a863e82de3b0f1e96c1b620bc549aa53a2f3489d` |
 
-These are the local `0.1.1` release-candidate hashes. Publication acceptance must match them exactly.
+These are the local `0.1.1` release-candidate hashes. The five published assets were downloaded again and matched them exactly.
 
 ## Publication boundary
 
 The authoritative release gate runs on the maintainer Mac. GitHub Releases stores the immutable outputs only after the two local builds, manifest comparison, archive execution, launcher checks, and SHA-256 verification pass. The optional `codex-memory-v*` GitHub workflow may add hosted-platform runs and Artifact Attestations when available, but its availability does not define product completion.
+
+Release `codex-memory-v0.1.1` is published at `https://github.com/ValentinoWang/sub2api/releases/tag/codex-memory-v0.1.1`. Its five asset digests match the table above and the production manifest reports version `0.1.1`.
