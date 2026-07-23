@@ -10,7 +10,7 @@ Date: 2026-07-23
 - GitHub reported asset digests match the locally verified release inputs.
 - All four public download URLs returned HTTP 200 from the production host.
 
-GitHub Actions run `30000043556` did not provide hosted-platform acceptance. Attempts 1 and 2 both ended with the Ubuntu, macOS, and Windows jobs failing before running any steps; the release job was skipped. The attempt-2 Check annotation states exactly: `The job was not started because your account is locked due to a billing issue.` Therefore this is an external account lock rather than a test failure. No GitHub Artifact Attestation exists, and B2 remains `VERIFIED` rather than `ACCEPTED`.
+GitHub Actions run `30000043556` did not provide hosted-platform acceptance. Attempts 1, 2, and 3 all ended with the Ubuntu, macOS, and Windows jobs failing before running any steps; the release job was skipped. The attempt-3 Check annotation states exactly: `The job was not started because your account is locked due to a billing issue.` Therefore this is an external account lock rather than a test failure. No GitHub Artifact Attestation exists, and B2 remains `VERIFIED` rather than `ACCEPTED`.
 
 ## Production Candidate
 
