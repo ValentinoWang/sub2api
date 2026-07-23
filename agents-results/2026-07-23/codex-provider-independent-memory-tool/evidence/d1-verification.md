@@ -4,13 +4,14 @@ Date: 2026-07-23
 
 ## Passed locally
 
-- CLI and release unit tests: 19 passed.
+- CLI and release unit tests: 20 passed on the maintainer Mac.
 - Public Docs, route guard, and release-manifest frontend tests: 43 passed.
 - Vue type check: passed.
 - Full frontend ESLint: passed.
 - Vite production build: passed. Existing chunk-size and mixed dynamic/static import warnings remain non-blocking.
 - Disposable D2 merge/restore scenario: passed.
-- Two clean release builds for version `0.1.0` were byte-identical.
+- Two clean release builds for version `0.1.1` were byte-identical across all five outputs.
+- Every macOS, Linux, and Windows archive was extracted locally and its shared Python core completed `--help`; both POSIX launchers passed `/bin/sh -n`, and the PowerShell launcher contract was verified.
 - Workflow YAML and both JSON schemas parse successfully.
 - `git diff --check`: passed before this evidence update.
 
@@ -18,14 +19,14 @@ Date: 2026-07-23
 
 | File | SHA-256 |
 |---|---|
-| `codex-memory-checksums.txt` | `03cc2c6917d77644b086eca0e4bc6d77413e79982fbf5b766c35329971845200` |
-| `codex-memory-release-manifest.json` | `5dba29e1840e6bdfe87b8db691f7c393976b2a408e0a5facf5e8817d55c8a947` |
-| `codex-memory_0.1.0_linux.zip` | `63d9d7707e7572875cd505d1ed044081a2999c85113bd13f2ab3c549049387e1` |
-| `codex-memory_0.1.0_macos.zip` | `63d9d7707e7572875cd505d1ed044081a2999c85113bd13f2ab3c549049387e1` |
-| `codex-memory_0.1.0_windows.zip` | `b9177f9139dadcf33703a6f1f93ddc6f5a8152911ec86d91e9076d548b6ecd1a` |
+| `codex-memory-checksums.txt` | `764cae49a8b9a7413119248758a45248b678105ffcbae4ddf58772ff39b73ef7` |
+| `codex-memory-release-manifest.json` | `ef9ab2966272b5c9ec7d52f268f65bbdacc5d03f7e3a04fde3a01aadfbc9851f` |
+| `codex-memory_0.1.1_linux.zip` | `d034b6242580a52936bc3ad967628cdb44f498d7810a08f61253c08da76423ba` |
+| `codex-memory_0.1.1_macos.zip` | `d034b6242580a52936bc3ad967628cdb44f498d7810a08f61253c08da76423ba` |
+| `codex-memory_0.1.1_windows.zip` | `52cbc41744c42761263c7be9a863e82de3b0f1e96c1b620bc549aa53a2f3489d` |
 
-These are disposable local candidate hashes, not published release identifiers.
+These are the local `0.1.1` release-candidate hashes. Publication acceptance must match them exactly.
 
 ## Publication boundary
 
-The dedicated `codex-memory-v*` release workflow defines Ubuntu, macOS, and Windows tests, gates artifact construction on that matrix, verifies the committed website manifest byte-for-byte, creates GitHub Artifact Attestations, and attaches the generated assets to a GitHub Release. At the time of this evidence snapshot, no hosted workflow run, GitHub Release, or attestation had yet been created; later publication evidence must be recorded separately.
+The authoritative release gate runs on the maintainer Mac. GitHub Releases stores the immutable outputs only after the two local builds, manifest comparison, archive execution, launcher checks, and SHA-256 verification pass. The optional `codex-memory-v*` GitHub workflow may add hosted-platform runs and Artifact Attestations when available, but its availability does not define product completion.

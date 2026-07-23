@@ -1,13 +1,10 @@
 name: Codex Memory Release
 
 on:
-  push:
-    tags:
-      - 'codex-memory-v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing Codex Memory tag (for example codex-memory-v0.1.0)'
+        description: 'Existing Codex Memory tag (optional hosted verification only)'
         required: true
         type: string
 
@@ -71,4 +68,4 @@ jobs:
             codex-memory-dist/* \
             --verify-tag \
             --title "Codex Memory ${{ steps.version.outputs.version }}" \
-            --notes "Provider-independent local Codex memory unifier for macOS, Windows, and Linux. Verify SHA-256 checksums and GitHub Artifact Attestations before use."
+            --notes "Provider-independent local Codex memory unifier for macOS, Windows, and Linux. Verify SHA-256 checksums before use."

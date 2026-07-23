@@ -64,7 +64,7 @@ class ReleaseArtifactTests(unittest.TestCase):
 
     def test_committed_website_manifest_is_generated_release_authority(self):
         output = self.root / "website"
-        self.build("0.1.0", output, repository="ValentinoWang/sub2api")
+        self.build("0.1.1", output, repository="ValentinoWang/sub2api")
         committed = ROOT.parent.parent / "frontend" / "public" / "codex-memory-release-manifest.json"
         self.assertEqual(
             (output / "codex-memory-release-manifest.json").read_bytes(),
@@ -90,6 +90,30 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertIn("Safely merge provider-independent Codex state", completed.stdout)
         shutil.rmtree(install)
         self.assertFalse(install.exists())
+
+    def test_all_platform_archives_run_shared_core_and_have_valid_launchers(self):
+        output = self.root / "platforms"
+        self.build("1.2.3", output)
+
+        for platform in ("macos", "linux", "windows"):
+            install = self.root / platform
+            with zipfile.ZipFile(output / f"codex-memory_1.2.3_{platform}.zip") as bundle:
+                bundle.extractall(install)
+            completed = subprocess.run(
+                [sys.executable, str(install / "codex_memory_unifier.py"), "--help"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertIn("Safely merge provider-independent Codex state", completed.stdout)
+
+            if platform == "windows":
+                launcher = (install / "codex-memory.ps1").read_text(encoding="utf-8")
+                self.assertIn('$ErrorActionPreference = "Stop"', launcher)
+                self.assertIn('python "$ScriptDir\\codex_memory_unifier.py" @args', launcher)
+                self.assertIn("exit $LASTEXITCODE", launcher)
+            else:
+                subprocess.run(["/bin/sh", "-n", str(install / "codex-memory")], check=True)
 
     def test_unsafe_version_and_nonempty_output_are_rejected(self):
         unsafe_output = self.root / "unsafe"

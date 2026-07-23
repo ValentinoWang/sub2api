@@ -1,9 +1,9 @@
 ---
-PLAN_VERSION: 4
+PLAN_VERSION: 5
 DAG_VERSION: 1
-INTERFACE_FREEZE_VERSION: 4
-NODE_CONTRACT_VERSION: 4
-STATUS: published-and-deployed-hosted-ci-attestation-blocked
+INTERFACE_FREEZE_VERSION: 5
+NODE_CONTRACT_VERSION: 5
+STATUS: local-release-v0.1.1-verified-publication-pending
 ---
 
 # Codex 本地记忆统一工具开发 SSOT
@@ -43,7 +43,7 @@ STATUS: published-and-deployed-hosted-ci-attestation-blocked
 - 不使用本地对话索引工具（LCO），也不依赖其索引。
 - 不把接口中转服务的内存数据库（Sub2API Redis）当作持久记忆。
 - 不为接口中转服务（Sub2API）的不同用户共享历史；租户隔离失败必须直接拒绝。
-- 当前切片已完成代码、测试、构建、GitHub 发布版本（Release）和生产部署；只有真实 hosted CI 与制品证明通过后才可宣告最终 100%。
+- 三平台脚本制品必须在维护者 Mac 本机完成双重构建、逐字节复现、清单与 SHA-256 回读、共同 Python 核心执行和启动器合同检查；GitHub hosted CI 与 Artifact Attestation 仅是可选增强，不阻塞第一版完成。
 - 第一版不包含任何本地历史到接口中转服务（Sub2API）服务端的导入。
 
 ### 1.4 成功定义
@@ -124,7 +124,7 @@ STATUS: published-and-deployed-hosted-ci-attestation-blocked
 
 ## 5. 接口中转服务的站内公开文档
 
-外部用户打开接口中转服务（Sub2API）时，必须能从首屏或全局导航直接进入公开文档中心（`/docs`），无需注册或登录。Codex 记忆统一工具的详情页（`/docs/codex-memory`）至少包含：当前稳定版本、macOS、Windows 和开源桌面操作系统（Linux）的系统要求、GitHub 发布区（Releases）下载链接、安全摘要（SHA-256）、制品证明（Artifact Attestation）验证说明、脚本安装命令、审计命令、合并命令、恢复命令、卸载方式、数据边界、常见错误和安全说明。
+外部用户打开接口中转服务（Sub2API）时，必须能从首屏或全局导航直接进入公开文档中心（`/docs`），无需注册或登录。Codex 记忆统一工具的详情页（`/docs/codex-memory`）至少包含：当前稳定版本、macOS、Windows 和开源桌面操作系统（Linux）的系统要求、GitHub 发布区（Releases）下载链接、安全摘要（SHA-256）、脚本安装命令、审计命令、合并命令、恢复命令、卸载方式、数据边界、常见错误和安全说明。
 
 管理员订阅页面（`/Api_subscribe`）不改成公开页面。该页可以增加文档链接，但实际下载和说明必须由站内公开文档承载。所有页面必须读取同一发布清单，不能手写不同版本号。Obsidian 和手机提醒不属于外部文档交付面。
 
@@ -148,7 +148,7 @@ Codex 记忆工具（Codex Memory）的功能代码与通用文档源文件共�
 | 路径 | 目标 | 终点交付物 | 当前结论 |
 |---|---|---|---|
 | P1 本地核心 | 三平台脚本完成安全审计、自动设置 `CODEX_HOME`、备份、合并和恢复 | 可由 Codex 调用的跨 provider 本地状态统一脚本 | 已实现并通过 19 项本地测试与 D2 演练 |
-| P2 发布制品 | 为三平台生成可验证脚本制品和发布清单 | GitHub Releases 不可变版本、Artifact Attestation 与 SHA-256 | Release 与三平台制品已发布；hosted CI 因 GitHub 账单锁未执行，Attestation 缺失 |
+| P2 发布制品 | 在 Mac 本机为三平台生成可验证脚本制品和发布清单 | GitHub Releases 不可变版本、SHA-256 与本机复现证据 | `0.1.1` 已在本机双重构建且逐字节一致，20 项测试通过；待发布新版 Release |
 | P3 站内公开文档 | 外部用户打开 Sub2API 即可找到文档并正确使用 | `/docs`、`/docs/codex-memory`、首屏/导航入口和管理员辅助链接 | 已实现、本地验收并部署到生产；公开路由 HTTP 200 |
 | P4 服务端历史 | 未来可能的托管能力 | 非当前 SSOT 的设计备注 | 明确不纳入、不阻塞第一版；服务端连续性保持既有默认 |
 
@@ -162,8 +162,9 @@ Codex 记忆工具（Codex Memory）的功能代码与通用文档源文件共�
 | R2 | L3 | 用户明确“文档”是外部用户打开 Sub2API 时看到的站内公开 Docs，不是 Obsidian 产物 | 2/1/2/2 | A2、B3、C-M1、D1-D3 | R1 的入口待决结论 | A2 及全部下游 | user | 2026-07-23 |
 | R3 | L3 | 用户拍板三平台、本机范围、自动统一 CODEX_HOME、脚本形态、GitHub Releases 托管和保留差异任务的冲突策略 | 3/1/3/3 | A2、B1-B3、C-M1、D1-D3 | R2 中对应产品待决结论 | A2 及全部下游 | user | 2026-07-23 |
 | R4 | L3 | 用户明确文档随本项目 fork 维护，并将 OP-10 收敛为合并前本地备份、默认不覆盖和可恢复 | 4/1/4/4 | A2、B1、B3、C-M1、D1-D3 | R3 的 OP-07、OP-10 待决结论 | A2 及全部下游 | user | 2026-07-23 |
+| R5 | L3 | 用户再次明确三平台构建与验证必须使用本机，纠正错误引入的 hosted CI 与 Artifact Attestation 强制门禁 | 5/1/5/5 | A2、B2、C-M1、D1、D3 | R4 中依赖 hosted CI/attestation 的完成判断 | A2、B2、C-M1、D1、D3 | user | 2026-07-23 |
 
-版本元组为 `(PLAN_VERSION=4, DAG_VERSION=1, INTERFACE_FREEZE_VERSION=4, NODE_CONTRACT_VERSION=4)`。任何范围、安全边界或服务端导入策略变化按 L3 处理。
+版本元组为 `(PLAN_VERSION=5, DAG_VERSION=1, INTERFACE_FREEZE_VERSION=5, NODE_CONTRACT_VERSION=5)`。任何范围、安全边界或服务端导入策略变化按 L3 处理。
 
 ### 8.2 A-D 阶段与转换门槛
 
@@ -224,12 +225,12 @@ flowchart LR
 
 | Resource ID | Type | Canonical path/name | Version/snapshot | Node | Access R/W | Isolation key | Conflict decision | Integration owner |
 |---|---|---|---|---|---|---|---|---|
-| R1 | 文档 | `docs/CODEX_OAUTH_MEMORY_CONTINUITY_MACRO_CN.md` | IFV4 | A1/B3/C-M1 | R/R/W | frozen-doc-v4 | Stage B 只读，C-M1 唯一写 | C-M1 |
-| R2 | 工具源码 | `tools/codex-memory-unifier/` | NCV4 | B1 | W | core-b1 | 独占 | B1 |
-| R3 | 发布脚本 | 待 A2 冻结的制品目录 | IFV4 | B2 | W | release-b2 | 独占候选目录 | B2 |
-| R4 | 前端页面 | `/docs`、`/docs/codex-memory` 及首屏/导航入口组件 | IFV4 | B3 | W | docs-b3 | 独占 | B3 |
-| R5 | 路由 | `frontend/src/router/index.ts` | IFV4 | B3/C-M1 | R/W | router-cm1 | B3 提交路由候选，C-M1 最终写入 | C-M1 |
-| R6 | 发布清单 | GitHub Releases 中待 A2 冻结的单一清单 | IFV4 | B2/B3/C-M1 | R/R/W | manifest-cm1 | Stage B 不写最终文件 | C-M1 |
+| R1 | 文档 | `docs/CODEX_OAUTH_MEMORY_CONTINUITY_MACRO_CN.md` | IFV5 | A1/B3/C-M1 | R/R/W | frozen-doc-v5 | Stage B 只读，C-M1 唯一写 | C-M1 |
+| R2 | 工具源码 | `tools/codex-memory-unifier/` | NCV5 | B1 | W | core-b1 | 独占 | B1 |
+| R3 | 发布脚本 | 待 A2 冻结的制品目录 | IFV5 | B2 | W | release-b2 | 独占候选目录 | B2 |
+| R4 | 前端页面 | `/docs`、`/docs/codex-memory` 及首屏/导航入口组件 | IFV5 | B3 | W | docs-b3 | 独占 | B3 |
+| R5 | 路由 | `frontend/src/router/index.ts` | IFV5 | B3/C-M1 | R/W | router-cm1 | B3 提交路由候选，C-M1 最终写入 | C-M1 |
+| R6 | 发布清单 | GitHub Releases 中待 A2 冻结的单一清单 | IFV5 | B2/B3/C-M1 | R/R/W | manifest-cm1 | Stage B 不写最终文件 | C-M1 |
 | R7 | 本地测试状态根 | 临时 `CODEX_HOME` | fixture-v1 | B1/D2 | W/W | 每测试唯一临时目录 | 隔离目录，禁止使用真实用户目录写测试 | D2 |
 | R8 | 构建目录 | 平台独立输出目录 | release-v1 | B2/D1 | W/R | platform-version | 每平台隔离 | D1 |
 | R9 | 生产服务 | `43.136.113.101` | `sub2api-local:ae2705973300` | 发布验收 | W/R | immutable-image-id | 仅按部署 Skill 无构建切换并在线回读 | D3 |
@@ -263,7 +264,7 @@ flowchart LR
 #### A2 冻结产品决策与公共契约
 
 - Stage/type：A / `foundation-serial`
-- 目标与调用者：把已拍板的三平台、公开入口、脚本形态、冲突规则、GitHub Releases 托管、本机范围、fork 文档归属和备份恢复规则变成唯一可实现合同。
+- 目标与调用者：把已拍板的三平台、本机发布门禁、公开入口、脚本形态、冲突规则、GitHub Releases 托管、本机范围、fork 文档归属和备份恢复规则变成唯一可实现合同。
 - 输入：A1 已验收输出、`openproblem.md` 的人类决定。
 - 预期输出：清单模式、命令接口、冲突规则、平台矩阵、已拍板公开路由和发布清单位置。
 - 前置依赖：A1 必须 `ACCEPTED`；OP-01 至 OP-10 的当前范围决定均已记录。原 OP-08 和未来服务端托管均属范围外既有或未来事项。
@@ -276,7 +277,7 @@ flowchart LR
 - 测试与证据：模式自校验、命令帮助快照、路由冲突检查。
 - 验收：所有 Stage B 输入可无猜测实现；站内 Docs 固定为 `/docs` 与 `/docs/codex-memory`；其余未决项保持阻塞。
 - 下游：B1、B2、B3。
-- 当前状态/尝试：`ACCEPTED` / 1；OP-01 至 OP-10 已冻结，两个 JSON Schema 和命令接口已落地。
+- 当前状态/尝试：`ACCEPTED` / 2；OP-01 至 OP-10 已按 v5 冻结，本机三平台发布门禁、两个 JSON Schema 和命令接口已落地。
 - 负责人：产品负责人、主编排者和契约负责人。
 - 偏差权限：任何产品边界变化均为 L3。
 - Harness：失败类型为契约漂移；通过模式校验和跨文档引用检查检测；控制位置为 `contract`。
@@ -293,7 +294,7 @@ flowchart LR
 - 并行性：可与 B2、B3 并行；写入范围互斥。
 - 读取范围：冻结契约、临时 Codex 目录夹具。
 - 写入范围：`tools/codex-memory-unifier/` 及其专属测试目录。
-- 接口：消费 IFV4，只能提出变更，不能自行修改冻结契约。
+- 接口：消费 IFV5，只能提出变更，不能自行修改冻结契约。
 - 共享资源：无；测试使用唯一临时目录。
 - 禁止修改：`auth.json`、真实 `~/.codex`、前端、后端、发布清单最终文件。
 - 测试与证据：空目录、重复文件、内容冲突、坏 JSONL、路径穿越、符号链接、空间不足、中断恢复、配置保真和跨 provider 回读测试。
@@ -310,22 +311,22 @@ flowchart LR
 
 - Stage/type：B / `parallel-work`，批次 B-1。
 - 目标与调用者：为外部用户生成可验证、可追溯的下载制品。
-- 输入：A2 的平台矩阵、版本、制品证明和托管合同；B1 的冻结命令接口只读快照。
-- 预期输出：平台制品、SHA-256、GitHub Artifact Attestation 工作流和候选发布清单。交付为脚本而非原生 macOS 应用，不适用 Apple 公证。
+- 输入：A2 的平台矩阵、本机发布门禁、版本、SHA-256 和托管合同；B1 的冻结命令接口只读快照。
+- 预期输出：由 Mac 本机生成的三平台制品、SHA-256、双重构建复现证据和候选发布清单。交付为脚本而非原生 macOS 应用，不适用 Apple 公证。
 - 前置依赖：A2 `ACCEPTED`。
 - 并行性：可并行；不写 B1 源码和最终发布清单。
 - 读取范围：冻结工具接口和构建输入。
 - 写入范围：平台隔离的构建、证明和候选制品目录。
-- 接口：消费 IFV4。
+- 接口：消费 IFV5。
 - 共享资源：GitHub 发布身份和制品版本；按平台与版本隔离。
 - 禁止修改：前端页面、核心逻辑、最终发布清单、生产站点。
-- 测试与证据：干净目录安装、校验失败拒绝、升级、卸载、可复现构建；发布时由三平台矩阵与 Artifact Attestation 补齐托管证据。
+- 测试与证据：在 Mac 本机完成干净目录安装、校验失败拒绝、升级、卸载、两次逐字节一致构建、三平台归档共同核心执行、POSIX 启动器语法和 PowerShell 启动器合同校验。
 - 验收：每个支持平台都有不可变制品与匹配摘要；无凭据和用户数据进入包。
 - 下游：C-M1。
-- 当前状态/尝试：`VERIFIED` / 3；GitHub Release `codex-memory-v0.1.0` 与三平台制品已发布并可下载；连续三次 hosted 三平台 job 均因 GitHub 账单锁在执行 step 前失败，attestation 未生成，因此不标记 `ACCEPTED`。
+- 当前状态/尝试：`VERIFIED` / 4；`0.1.1` 已在 Mac 本机双重构建且五个输出逐字节一致，20 项测试与 SHA-256 回读通过；新版 Release 尚未发布，因此暂不标记 `ACCEPTED`。
 - 负责人：发布实现者。
 - 偏差权限：L1；平台或托管变化为 L2/L3。
-- Harness：失败类型为供应链或版本漂移；通过制品重建、Artifact Attestation 和清单摘要检测；控制位置为发布工作流。
+- Harness：失败类型为供应链或版本漂移；通过本机双重构建、归档执行、启动器合同、发布清单和 SHA-256 回读检测；控制位置为本地测试与发布脚本。
 - 清除：删除摘要不匹配的候选和过期构建目录。
 - 完成定义：候选制品证据齐全并被主编排者验收。
 
@@ -339,7 +340,7 @@ flowchart LR
 - 并行性：可并行；只读候选发布清单模式，不写最终版本数据。
 - 读取范围：前端设计系统、路由规范、冻结契约、现有连续性文档。
 - 写入范围：公开文档页面、首屏或全局导航入口、专属文档和测试。
-- 接口：消费 IFV4。
+- 接口：消费 IFV5。
 - 共享资源：路由与文档索引在 C-M1 最终写入。
 - 禁止修改：工具核心、后端连续性逻辑、生产配置。
 - 测试与证据：打开 Sub2API 即可发现 Docs、未登录访问、下载链接、摘要展示、移动端布局、管理员权限不退化、命令示例可执行。
@@ -362,13 +363,13 @@ flowchart LR
 - 并行性：不可并行；独占共享集成资源。
 - 读取范围：三个节点全部交付物和实际变更路径。
 - 写入范围：最终发布清单、路由、文档索引、连续性文档交叉链接。
-- 接口：核对 IFV4；需要新接口时先按偏差协议处理。
+- 接口：核对 IFV5；需要新接口时先按偏差协议处理。
 - 共享资源：发布清单、路由、文档索引、集成证据目录。
 - 禁止修改：未声明的后端业务逻辑、生产环境。
 - 测试与证据：路径重叠检查、摘要匹配、接口语义核对、路由权限、组合测试和清除清单核对。
 - 验收：页面展示的版本、摘要和制品完全一致；本地与服务端边界一致；无重复事实来源。
 - 下游：D1。
-- 当前状态/尝试：`VERIFIED` / 2；代码、文档、路由和单一发布清单已汇合并部署，Release 下载与生产清单已回读；最终验收仍受 B2 hosted CI/attestation 门禁约束。
+- 当前状态/尝试：`VERIFIED` / 3；代码、文档、路由和 `0.1.1` 单一发布清单已汇合，本机门禁通过；待新版 Release 与生产清单回读。
 - 负责人：主编排者。
 - 偏差权限：L1；接口变化 L2；范围或安全变化 L3。
 - Harness：失败类型为集成漂移；通过发布清单回读和交叉引用检查检测；控制位置为 `contract` 与 `scripts/quality`。
@@ -385,10 +386,10 @@ flowchart LR
 - 并行性：串行。
 - 读取范围：完整集成快照。
 - 写入范围：D1 独立证据目录。
-- 接口：验证 IFV4，无权修改。
+- 接口：验证 IFV5，无权修改。
 - 共享资源：隔离构建目录。
 - 禁止修改：功能源码、生产环境。
-- 测试与证据：前后端静态检查、单元测试、发布清单模式、摘要、Artifact Attestation 工作流、文档链接和生成物漂移。
+- 测试与证据：前后端静态检查、单元测试、本机双重构建、三平台归档执行、发布清单模式、SHA-256、文档链接和生成物漂移。
 - 验收：所有必需检查通过且证据新鲜。
 - 下游：D2。
 - 当前状态/尝试：`ACCEPTED` / 1；证据见 `evidence/d1-verification.md`。
@@ -408,7 +409,7 @@ flowchart LR
 - 并行性：串行；内部测试仅可使用隔离目录和进程。
 - 读取范围：发布候选、测试夹具。
 - 写入范围：唯一临时状态根与 D2 证据目录。
-- 接口：按 IFV4 运行。
+- 接口：按 IFV5 运行。
 - 共享资源：每场景唯一临时目录；不得连接生产 Sub2API。
 - 禁止修改：真实 `~/.codex`、真实凭据、生产环境。
 - 测试与证据：OAuth provider 到 Sub2API provider、Sub2API 到自定义 provider、冲突、中断、回滚、损坏文件、大任务记录和配置保真。
@@ -431,13 +432,13 @@ flowchart LR
 - 并行性：串行，只读，使用独立上下文。
 - 读取范围：明确列出的规划、实现、测试和证据路径。
 - 写入范围：审计报告。
-- 接口：只读核对 IFV4。
+- 接口：只读核对 IFV5。
 - 共享资源：审计证据目录。
 - 禁止修改：全部实现、配置、制品和生产环境。
 - 测试与证据：逐节点给出 `done`、`partial`、`missing`、`blocked` 或 `not-applicable`，并附路径和命令证据。
 - 验收：不存在未声明缺口；清除完成；外部文档不超出真实能力；所有必要节点已经 `ACCEPTED`。
 - 下游：无。
-- 当前状态/尝试：`VERIFIED` / 2；实现、GitHub Release 与生产部署审计完成。最终产品验收仍受 B2 的 hosted CI 与 attestation 结果约束。
+- 当前状态/尝试：`VERIFIED` / 3；本机 v5 门禁和 `0.1.1` 候选审计完成，待新版 Release 与生产回读后最终验收。
 - 负责人：独立审计者和最终验收负责人。
 - 偏差权限：只报告，不修改；发现偏差交回主编排者。
 - Harness：失败类型为声明与实现不一致；控制位置为独立审计与 `scripts/qa`。
@@ -448,15 +449,15 @@ flowchart LR
 
 | Task ID | Stage | Versions | State | Attempt | Owner | Blocking reason | Evidence | Unlocks |
 |---|---|---|---|---|---|---|---|---|
-| A1 | A | 4/1/4/4 | `ACCEPTED` | 1 | 主编排者 | 无 | 本文边界表、`source-notes.md` | A2 |
-| A2 | A | 4/1/4/4 | `ACCEPTED` | 1 | 产品/契约负责人 | 无 | `openproblem.md`、两个 JSON Schema | B1/B2/B3 |
-| B1 | B | 4/1/4/4 | `ACCEPTED` | 1 | 客户端实现者 | 无 | 19 项 CLI/制品测试、D2 场景 | C-M1 |
-| B2 | B | 4/1/4/4 | `VERIFIED` | 3 | 发布实现者 | GitHub 账单锁连续三次阻止 hosted jobs 执行，Artifact Attestation 缺失 | Release、下载摘要、失败 run `30000043556` | C-M1 |
-| B3 | B | 4/1/4/4 | `ACCEPTED` | 2 | 前端/文档实现者 | 无 | 43 项测试、视觉验收、生产在线 HTTP 200 | C-M1 |
-| C-M1 | C | 4/1/4/4 | `VERIFIED` | 2 | 主编排者 | B2 Artifact Attestation 缺失 | 生产清单、Release 下载、路由与文档集成 | D1 |
-| D1 | D | 4/1/4/4 | `ACCEPTED` | 1 | 主编排者 | 无 | `evidence/d1-verification.md` | D2 |
-| D2 | D | 4/1/4/4 | `ACCEPTED` | 1 | 验收负责人 | 无 | `evidence/d2-acceptance-scenario.json`、场景矩阵 | D3 |
-| D3 | D | 4/1/4/4 | `VERIFIED` | 2 | 独立审计者 | hosted CI 与 Artifact Attestation 未通过，不能标记 100% | `implementation-completion-audit.md`、生产发布证据 | 发布验收 |
+| A1 | A | 5/1/5/5 | `ACCEPTED` | 1 | 主编排者 | 无 | 本文边界表、`source-notes.md` | A2 |
+| A2 | A | 5/1/5/5 | `ACCEPTED` | 2 | 产品/契约负责人 | 无 | `openproblem.md`、两个 JSON Schema | B1/B2/B3 |
+| B1 | B | 5/1/5/5 | `ACCEPTED` | 1 | 客户端实现者 | 无 | 20 项 CLI/制品测试、D2 场景 | C-M1 |
+| B2 | B | 5/1/5/5 | `VERIFIED` | 4 | 发布实现者 | `0.1.1` 尚未发布 | 本机双重构建、20 项测试、SHA-256 回读 | C-M1 |
+| B3 | B | 5/1/5/5 | `ACCEPTED` | 2 | 前端/文档实现者 | 无 | 43 项测试、视觉验收、生产在线 HTTP 200 | C-M1 |
+| C-M1 | C | 5/1/5/5 | `VERIFIED` | 3 | 主编排者 | 待 `0.1.1` Release 与生产清单回读 | `0.1.1` 清单、本机门禁、路由与文档集成 | D1 |
+| D1 | D | 5/1/5/5 | `ACCEPTED` | 2 | 主编排者 | 无 | `evidence/d1-verification.md` | D2 |
+| D2 | D | 5/1/5/5 | `ACCEPTED` | 1 | 验收负责人 | 无 | `evidence/d2-acceptance-scenario.json`、场景矩阵 | D3 |
+| D3 | D | 5/1/5/5 | `VERIFIED` | 3 | 独立审计者 | 待 `0.1.1` Release 与生产回读 | `implementation-completion-audit.md`、本机发布证据 | 发布验收 |
 
 规范状态仅允许：`BLOCKED -> READY -> RUNNING -> IMPLEMENTED -> VERIFIED -> ACCEPTED`，失败进入 `FAILED`，已验收证据因上游变化失效时进入 `INVALIDATED`。只有 `ACCEPTED` 解锁下游。
 
@@ -469,7 +470,7 @@ flowchart LR
 | A1 | 状态层混淆 | 本地记忆、认证、Redis、PostgreSQL 分层 | review | docs/contract | 是 | 边界检查报告 |
 | A2 | 契约漂移 | Stage B 只读同一冻结接口 | static | contract | 是 | 模式与版本检查 |
 | B1 | 数据丢失/凭据泄露 | 先快照、凭据零读取、原子写入 | runtime/readback | scripts/qa | 是 | 故障注入与恢复证据 |
-| B2 | 供应链漂移 | 制品、版本、摘要和证明一致 | static/readback | release workflow | 是 | 可复现构建和 Artifact Attestation 工作流 |
+| B2 | 供应链漂移 | 制品、版本、摘要和本机证据一致 | static/readback | local release gate | 是 | 双重构建、归档执行、启动器合同与 SHA-256 |
 | B3 | 权限/文档回归 | 公开页可访问，管理员页仍受保护，表述真实 | static/runtime | scripts/quality/scripts/qa/docs | 是 | 路由、链接和文档测试 |
 | C-M1 | 集成分叉 | 单一发布清单和单一文档事实来源 | readback | contract/scripts/quality | 是 | 集成清单回读 |
 | D1 | 全局静态漂移 | 构建、模式、迁移和生成物一致 | static | scripts/quality | 是 | D1 报告 |
@@ -482,7 +483,7 @@ flowchart LR
 - Stage C 后审计：在 C-M1 汇合完成后，整批核对工具、制品、页面和文档，不以单个节点的自报结论代替集成审计。
 - D3 审计：使用独立上下文，只传原始需求、本 SSOT、权威路径、节点清单和验证命令，不传主编排者的预期结论。
 - 审计输出：`agents-results/2026-07-23/codex-provider-independent-memory-tool/implementation-completion-audit.md`。
-- 本次创建本地实施完成审计，但不得把未运行的 GitHub 发布与跨平台 hosted CI 写成已完成。
+- 本次以 Mac 本机发布门禁和真实 Release/生产回读为完成证据，不把 GitHub hosted CI 或 Artifact Attestation 作为必需门禁。
 
 ### 8.10 执行者分配与返回合同
 
@@ -585,7 +586,7 @@ A1 审计并验收
   -> D3 独立审计并最终验收
 ```
 
-本地工具、三平台发布构建器、公开 Docs 页面和发布工作流均已实现并通过本地验证；D1、D2 证据已归档。GitHub Release `codex-memory-v0.1.0` 已发布，生产 `43.136.113.101` 已运行 `sub2api-local:ae2705973300`，公开 Docs、管理员认证、数据库、Redis、迁移和真实 `/responses` SSE 均通过在线验收。GitHub Actions run `30000043556` 的三个 hosted job 因账户账单锁在执行任何 step 前失败，release job 被跳过，因此 Artifact Attestation 不存在，B2、C-M1、D3 不能晋升为 `ACCEPTED`，整体不能标记 100%。原 OP-08 和未来服务端托管继续属于范围外事项。
+本地工具、三平台发布构建器、公开 Docs 页面和发布脚本均已实现。`0.1.1` 已在 Mac 本机完成两次逐字节一致构建、20 项测试、三平台共同核心执行、启动器合同和 SHA-256 回读；D1、D2 证据已归档。GitHub hosted CI 与 Artifact Attestation 是可选增强，不再参与完成判断。当前只待发布 `0.1.1` Release、部署更新后的站内清单并完成在线回读。原 OP-08 和未来服务端托管继续属于范围外事项。
 
 ## 10. 最终完成定义
 
