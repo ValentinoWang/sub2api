@@ -57,4 +57,4 @@ The old image `sub2api-local:ae2705973300` (`sha256:c718ce21e12cdaccf3cc0e2618ba
 
 The `0.1.1` three-platform assets passed the Mac-local double-build, archive execution, launcher-contract, manifest, and SHA-256 gates. The public Release, production manifest, authenticated administrator path, database and Redis health, migrations, real streamed `/responses` completion, logs, and existing sites all passed online readback. Missing hosted jobs or Artifact Attestation are not completion blockers.
 
-During the previous snapshot refresh, the whole-collection `--audit-archive` result fluctuated with unrelated iCloud state. This bundle's own snapshot and hash check passed; no unrelated snapshot was deleted or rewritten.
+This bundle's 15-file Obsidian snapshot and source/target hash check passed, and its iCloud reminder was updated. The collection-wide `--audit-archive` check failed on unrelated hash drift in the Athlete-OS `session-templates-create-direction-v3-promotion` snapshot. No unrelated snapshot was deleted or rewritten; this blocks only the SSOT archive closeout, not the accepted Release or production deployment.

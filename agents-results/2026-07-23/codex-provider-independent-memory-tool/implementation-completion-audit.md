@@ -37,4 +37,5 @@ The earlier `0.1.0` Release and production deployment remain valid historical ev
 - `0.1.1` public Release: complete;
 - production manifest and online acceptance for `0.1.1`: complete;
 - hosted CI and Artifact Attestation: optional, not applicable to completion;
-- overall final acceptance: complete.
+- implementation, release, and production acceptance: complete;
+- SSOT archive closeout: partial because the collection-wide audit found unrelated hash drift in the Athlete-OS `session-templates-create-direction-v3-promotion` snapshot. This Sub2api bundle's 15-file snapshot and hash check passed.

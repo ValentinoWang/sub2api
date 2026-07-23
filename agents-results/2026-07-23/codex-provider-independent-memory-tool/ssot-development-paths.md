@@ -3,7 +3,7 @@ PLAN_VERSION: 5
 DAG_VERSION: 1
 INTERFACE_FREEZE_VERSION: 5
 NODE_CONTRACT_VERSION: 5
-STATUS: accepted
+STATUS: implementation-accepted-archive-audit-blocked
 ---
 
 # Codex 本地记忆统一工具开发 SSOT
@@ -587,6 +587,8 @@ A1 审计并验收
 ```
 
 本地工具、三平台发布构建器、公开 Docs 页面和发布脚本均已实现并验收。`0.1.1` 已在 Mac 本机完成两次逐字节一致构建、20 项测试、三平台共同核心执行、启动器合同和 SHA-256 回读；Release 五个资产已重新下载验签，生产站内清单、管理员认证、迁移、PostgreSQL/Redis、真实 SSE、日志和旧制品清除均已回读。GitHub hosted CI 与 Artifact Attestation 是可选增强，不参与完成判断。原 OP-08 和未来服务端托管继续属于范围外事项。
+
+本项目 15 文件 Obsidian 快照已刷新并通过源/目标哈希校验，iCloud `Codex提醒` 已更新。全库 `--audit-archive` 仍被无关的 Athlete-OS 快照 `session-templates-create-direction-v3-promotion` 哈希漂移阻塞；在该外部漂移修复前，项目实现与生产发布可以标记为已验收，但 SSOT 归档总门禁不得标记为完全完成。
 
 ## 10. 最终完成定义
 
