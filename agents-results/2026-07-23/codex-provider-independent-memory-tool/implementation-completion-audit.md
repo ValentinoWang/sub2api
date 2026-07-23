@@ -38,4 +38,4 @@ The earlier `0.1.0` Release and production deployment remain valid historical ev
 - production manifest and online acceptance for `0.1.1`: complete;
 - hosted CI and Artifact Attestation: optional, not applicable to completion;
 - implementation, release, and production acceptance: complete;
-- SSOT archive closeout: partial because the collection-wide audit found unrelated hash drift in the Athlete-OS `session-templates-create-direction-v3-promotion` snapshot. This Sub2api bundle's 15-file snapshot and hash check passed.
+- SSOT archive closeout: complete. The Sub2api bundle's 15-file snapshot passed its hash check; external project snapshots that drifted during the audit were atomically refreshed from their project SSOT sources and separately verified; empty iCloud conflict directories were removed only after confirming they contained no files; the final collection-wide audit passed with 8 bundles and 6 declared problem documents.

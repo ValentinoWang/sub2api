@@ -3,7 +3,7 @@ PLAN_VERSION: 5
 DAG_VERSION: 1
 INTERFACE_FREEZE_VERSION: 5
 NODE_CONTRACT_VERSION: 5
-STATUS: implementation-accepted-archive-audit-blocked
+STATUS: accepted
 ---
 
 # Codex 本地记忆统一工具开发 SSOT
@@ -588,7 +588,7 @@ A1 审计并验收
 
 本地工具、三平台发布构建器、公开 Docs 页面和发布脚本均已实现并验收。`0.1.1` 已在 Mac 本机完成两次逐字节一致构建、20 项测试、三平台共同核心执行、启动器合同和 SHA-256 回读；Release 五个资产已重新下载验签，生产站内清单、管理员认证、迁移、PostgreSQL/Redis、真实 SSE、日志和旧制品清除均已回读。GitHub hosted CI 与 Artifact Attestation 是可选增强，不参与完成判断。原 OP-08 和未来服务端托管继续属于范围外事项。
 
-本项目 15 文件 Obsidian 快照已刷新并通过源/目标哈希校验，iCloud `Codex提醒` 已更新。全库 `--audit-archive` 仍被无关的 Athlete-OS 快照 `session-templates-create-direction-v3-promotion` 哈希漂移阻塞；在该外部漂移修复前，项目实现与生产发布可以标记为已验收，但 SSOT 归档总门禁不得标记为完全完成。
+本项目 15 文件 Obsidian 快照已刷新并通过源/目标哈希校验，iCloud `Codex提醒` 已更新。审计期间发生哈希漂移的外部项目快照均已从各自项目 SSOT 原子刷新并分别通过 `--check`；空的 iCloud 冲突目录也已在确认不含文件后清理。全库 `--audit-archive` 随后验证通过，共核对 8 个 SSOT 快照和 6 个 openproblem 文档。项目实现、公开发布、生产部署与 SSOT 归档总门禁均已验收。
 
 ## 10. 最终完成定义
 
@@ -603,4 +603,5 @@ A1 审计并验收
 7. 本地状态、服务端连续性和 Redis 临时状态在产品文档中没有混淆；Obsidian 与手机提醒没有进入外部产品流程。
 8. 独立审计报告确认文档承诺与代码、制品和测试一致。
 9. 清除清单完成，不遗留重复发布清单、临时制品或测试状态。
-10. 若后续启用服务端历史导入，其独立切片必须另行全部验收。
+10. 本项目完整 Obsidian 审计快照通过 `--check`，并且 SSOT 合集通过 `--audit-archive`。
+11. 若后续启用服务端历史导入，其独立切片必须另行全部验收。
