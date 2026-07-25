@@ -1,0 +1,14 @@
+[
+  {
+    "id": "monthly-400gb",
+    "name": "月度 API + VPN 组合套餐",
+    "description": "API 中转订阅 30 天，VPN 400 GB，最多 3 个 IP",
+    "price_cny": "0.00",
+    "duration_days": 30,
+    "traffic_gb": 400,
+    "ip_limit": 3,
+    "enabled": false,
+    "sub2api_group_id": 3,
+    "api_validity_days": 30
+  }
+]
