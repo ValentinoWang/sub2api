@@ -39,6 +39,7 @@ vi.mock('vue-i18n', async (importOriginal) => {
         'userSubscriptions.liandongPurchaseTitle': '选择金额，前往链动小铺购买',
         'userSubscriptions.exchangeRateNotice': '人民币将在兑换时按实际汇率换算',
         'userSubscriptions.exchangeRateDetail': `当前参考：1 USD = ¥${params?.rate}`,
+        'userSubscriptions.exchangeRateSourceLabel': '来源：',
         'userSubscriptions.exchangeRateUnavailable': '实时汇率暂不可用',
         'userSubscriptions.estimatedUsdCredit': `预计到账 $${params?.usd}`,
         'userSubscriptions.redeemPurchasedCode': '已有卡密，去兑换',
@@ -75,7 +76,7 @@ describe('SubscriptionsView Liandong purchase entry', () => {
     getPaymentConfig.mockResolvedValue({
       data: {
         balance_exchange_rate_usd_to_cny: 7.2,
-        balance_exchange_rate_source: 'frankfurter',
+        balance_exchange_rate_source: 'open-er-api',
         balance_exchange_rate_updated_at: '2026-07-26T00:00:00Z',
       },
     })
@@ -93,11 +94,15 @@ describe('SubscriptionsView Liandong purchase entry', () => {
     expect(wrapper.text()).toContain('选择金额，前往链动小铺购买')
     expect(wrapper.text()).toContain('人民币将在兑换时按实际汇率换算')
     expect(wrapper.text()).toContain('预计到账 $0.14')
+    const rateSourceLink = wrapper.find('a[href="https://open.er-api.com/v6/latest/USD"]')
+    expect(rateSourceLink.text()).toBe('open-er-api')
+    expect(rateSourceLink.attributes('target')).toBe('_blank')
+    expect(rateSourceLink.attributes('rel')).toBe('noopener noreferrer')
     const productLinks = wrapper.findAll('a[target="_blank"]')
-    expect(productLinks).toHaveLength(2)
-    expect(productLinks[0].attributes('href')).toBe('https://pay.ldxp.cn/item/one')
-    expect(productLinks[0].attributes('rel')).toBe('noopener noreferrer')
-    expect(productLinks[1].attributes('href')).toBe('https://pay.ldxp.cn/item/twenty')
+    expect(productLinks).toHaveLength(3)
+    expect(productLinks[1].attributes('href')).toBe('https://pay.ldxp.cn/item/one')
+    expect(productLinks[1].attributes('rel')).toBe('noopener noreferrer')
+    expect(productLinks[2].attributes('href')).toBe('https://pay.ldxp.cn/item/twenty')
     expect(wrapper.find('a[href="/redeem"]').exists()).toBe(true)
   })
 

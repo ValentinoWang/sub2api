@@ -37,9 +37,17 @@
             <p class="mt-1 text-xs text-amber-800 dark:text-amber-300">
               {{ t('userSubscriptions.exchangeRateDetail', {
                 rate: exchangeRate.toFixed(4),
-                time: exchangeRateUpdatedAtLabel,
-                source: exchangeRateSource
+                time: exchangeRateUpdatedAtLabel
               }) }}
+              {{ t('userSubscriptions.exchangeRateSourceLabel') }}
+              <a
+                v-if="exchangeRateSourceUrl"
+                :href="exchangeRateSourceUrl"
+                class="font-medium underline decoration-amber-500 underline-offset-2 hover:text-amber-950 dark:hover:text-amber-100"
+                target="_blank"
+                rel="noopener noreferrer"
+              >{{ exchangeRateSource }}</a>
+              <span v-else>{{ exchangeRateSource }}</span>
             </p>
           </div>
           <p v-else class="mb-4 text-xs text-amber-700 dark:text-amber-300">
@@ -334,6 +342,11 @@ const exchangeRate = computed(() => {
   return rate >= 4 && rate <= 10 ? rate : null
 })
 const exchangeRateSource = computed(() => paymentConfig.value?.balance_exchange_rate_source || 'N/A')
+const exchangeRateSourceUrl = computed(() => (
+  exchangeRateSource.value === 'open-er-api'
+    ? 'https://open.er-api.com/v6/latest/USD'
+    : null
+))
 const exchangeRateUpdatedAtLabel = computed(() => {
   const raw = paymentConfig.value?.balance_exchange_rate_updated_at
   if (!raw) return 'N/A'
