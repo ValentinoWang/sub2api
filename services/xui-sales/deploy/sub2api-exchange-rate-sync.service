@@ -10,6 +10,7 @@ Group=xui-sales
 WorkingDirectory=/opt/xui-sales
 EnvironmentFile=/etc/xui-sales/xui-sales.env
 LoadCredential=sub2api_admin_api_key:/etc/xui-sales/sub2api-admin-api-key
+Environment=SUB2API_BASE_URL=http://127.0.0.1:19080
 Environment=SUB2API_ADMIN_API_KEY_FILE=/run/credentials/sub2api-exchange-rate-sync.service/sub2api_admin_api_key
 ExecStart=/usr/bin/python3 -m xui_sales.exchange_rate_sync
 UMask=0077

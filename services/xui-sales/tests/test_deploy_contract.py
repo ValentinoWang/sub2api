@@ -29,6 +29,7 @@ class DeployContractTests(unittest.TestCase):
 
         self.assertIn("WorkingDirectory=/opt/xui-sales", exchange_rate)
         self.assertIn("EnvironmentFile=/etc/xui-sales/xui-sales.env", exchange_rate)
+        self.assertIn("Environment=SUB2API_BASE_URL=http://127.0.0.1:19080", exchange_rate)
         self.assertIn("ExecStart=/usr/bin/python3 -m xui_sales.exchange_rate_sync", exchange_rate)
 
     def test_sub2api_plain_http_is_confined_to_loopback_tunnel(self) -> None:
