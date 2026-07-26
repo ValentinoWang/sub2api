@@ -96,6 +96,15 @@ type Config struct {
 	Idempotency             IdempotencyConfig             `mapstructure:"idempotency"`
 	BatchImage              BatchImageConfig              `mapstructure:"batch_image"`
 	ImageStorage            ImageStorageConfig            `mapstructure:"image_storage"`
+	LiandongRestock         LiandongRestockConfig         `mapstructure:"liandong_restock"`
+}
+
+type LiandongRestockConfig struct {
+	BaseURL        string `mapstructure:"base_url"`
+	MerchantToken string `mapstructure:"merchant_token"`
+	CodeSecret    string `mapstructure:"code_secret"`
+	ProductsJSON  string `mapstructure:"products_json"`
+	IntervalSecs  int    `mapstructure:"interval_seconds"`
 }
 
 type LogConfig struct {
@@ -2229,6 +2238,11 @@ func setDefaults() {
 	// Subscription Maintenance (bounded queue + worker pool)
 	viper.SetDefault("subscription_maintenance.worker_count", 2)
 	viper.SetDefault("subscription_maintenance.queue_size", 1024)
+	viper.SetDefault("liandong_restock.base_url", "https://ldxp.cn")
+	viper.SetDefault("liandong_restock.merchant_token", "")
+	viper.SetDefault("liandong_restock.code_secret", "")
+	viper.SetDefault("liandong_restock.products_json", "")
+	viper.SetDefault("liandong_restock.interval_seconds", 300)
 
 }
 

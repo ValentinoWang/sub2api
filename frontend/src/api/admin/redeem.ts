@@ -12,6 +12,29 @@ import type {
   PaginatedResponse
 } from '@/types'
 
+export interface LiandongRestockProduct {
+  cny_amount: number
+  usd_credit: number
+  goods_id: number
+  threshold: number
+  restock_count: number
+  enabled: boolean
+  current_stock?: number
+  last_error?: string
+  last_run_at?: string
+}
+
+export interface LiandongRestockStatus {
+  configured: boolean
+  enabled: boolean
+  running: boolean
+  interval_seconds: number
+  last_run_at?: string
+  last_error?: string
+  pending_batch: boolean
+  products: LiandongRestockProduct[]
+}
+
 /**
  * List all redeem codes with pagination
  * @param page - Page number (default: 1)
@@ -191,6 +214,31 @@ export async function exportCodes(filters?: {
   return response.data
 }
 
+export async function getLiandongRestockStatus(): Promise<LiandongRestockStatus> {
+  const { data } = await apiClient.get<LiandongRestockStatus>('/admin/redeem-codes/liandong-restock')
+  return data
+}
+
+export async function updateLiandongRestockPolicies(
+  products: Pick<LiandongRestockProduct, 'cny_amount' | 'threshold' | 'restock_count' | 'enabled'>[]
+): Promise<LiandongRestockStatus> {
+  const { data } = await apiClient.put<LiandongRestockStatus>(
+    '/admin/redeem-codes/liandong-restock/policies',
+    { products }
+  )
+  return data
+}
+
+export async function startLiandongRestock(): Promise<LiandongRestockStatus> {
+  const { data } = await apiClient.post<LiandongRestockStatus>('/admin/redeem-codes/liandong-restock/start')
+  return data
+}
+
+export async function stopLiandongRestock(): Promise<LiandongRestockStatus> {
+  const { data } = await apiClient.post<LiandongRestockStatus>('/admin/redeem-codes/liandong-restock/stop')
+  return data
+}
+
 export const redeemAPI = {
   list,
   getById,
@@ -200,7 +248,11 @@ export const redeemAPI = {
   batchUpdate,
   expire,
   getStats,
-  exportCodes
+  exportCodes,
+  getLiandongRestockStatus,
+  updateLiandongRestockPolicies,
+  startLiandongRestock,
+  stopLiandongRestock
 }
 
 export default redeemAPI

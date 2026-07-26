@@ -141,6 +141,7 @@ docs/*
 !docs/ADMIN_PAYMENT_INTEGRATION_API.md
 !docs/ASYNC_IMAGE_TASKS.md
 !docs/CODEX_OAUTH_MEMORY_CONTINUITY_MACRO_CN.md
+!docs/LIANDONG_AUTO_RESTOCK_CN.md
 !docs/legal/
 !docs/legal/*.md
 .serena/

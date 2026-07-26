@@ -20,8 +20,69 @@ import (
 
 // RedeemHandler handles admin redeem code management
 type RedeemHandler struct {
-	adminService  service.AdminService
-	redeemService *service.RedeemService
+	adminService    service.AdminService
+	redeemService   *service.RedeemService
+	liandongRestock *service.LiandongRestockService
+}
+
+func (h *RedeemHandler) SetLiandongRestockService(restock *service.LiandongRestockService) {
+	h.liandongRestock = restock
+}
+
+func (h *RedeemHandler) LiandongRestockStatus(c *gin.Context) {
+	if h.liandongRestock == nil {
+		response.BadRequest(c, "Liandong auto restock is unavailable")
+		return
+	}
+	status, err := h.liandongRestock.Status(c.Request.Context())
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, status)
+}
+
+type liandongRestockPoliciesRequest struct {
+	Products []service.LiandongRestockPolicyUpdate `json:"products" binding:"required,min=1,dive"`
+}
+
+func (h *RedeemHandler) UpdateLiandongRestockPolicies(c *gin.Context) {
+	if h.liandongRestock == nil {
+		response.BadRequest(c, "Liandong auto restock is unavailable")
+		return
+	}
+	var req liandongRestockPoliciesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request: "+err.Error())
+		return
+	}
+	status, err := h.liandongRestock.UpdatePolicies(c.Request.Context(), req.Products)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.Success(c, status)
+}
+
+func (h *RedeemHandler) StartLiandongRestock(c *gin.Context) {
+	h.setLiandongRestockEnabled(c, true)
+}
+
+func (h *RedeemHandler) StopLiandongRestock(c *gin.Context) {
+	h.setLiandongRestockEnabled(c, false)
+}
+
+func (h *RedeemHandler) setLiandongRestockEnabled(c *gin.Context, enabled bool) {
+	if h.liandongRestock == nil {
+		response.BadRequest(c, "Liandong auto restock is unavailable")
+		return
+	}
+	status, err := h.liandongRestock.SetEnabled(c.Request.Context(), enabled)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.Success(c, status)
 }
 
 // NewRedeemHandler creates a new admin redeem handler
@@ -34,7 +95,7 @@ func NewRedeemHandler(adminService service.AdminService, redeemService *service.
 
 // GenerateRedeemCodesRequest represents generate redeem codes request
 type GenerateRedeemCodesRequest struct {
-	Count         int        `json:"count" binding:"required,min=1,max=100"`
+	Count         int        `json:"count" binding:"required,min=1,max=1000"`
 	Type          string     `json:"type" binding:"required,oneof=balance concurrency subscription invitation"`
 	Value         float64    `json:"value"`
 	GroupID       *int64     `json:"group_id"`      // 订阅类型必填

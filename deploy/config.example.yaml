@@ -1221,3 +1221,19 @@ image_storage:
   presign_expiry_hours: 24
   # 当上游返回的是图片 url 时，下载该图片再转存的字节上限（默认 32MB）
   max_download_bytes: 33554432
+
+# =============================================================================
+# Liandong Card Inventory Auto Restock (链动小铺自动补货，可选)
+# =============================================================================
+# This integration uses merchant-session endpoints observed in the Liandong web
+# console, not a documented public API. A failed request stops the current cycle
+# and leaves the deterministic pending batch for an idempotent retry.
+liandong_restock:
+  base_url: "https://ldxp.cn"
+  merchant_token: ""
+  # At least 32 characters. Never reuse JWT, database, or redemption secrets.
+  code_secret: ""
+  interval_seconds: 300
+  # Immutable mapping only. Obtain goods_id from Liandong; never infer it from
+  # title, URL, or price. Admin UI may change threshold/count/enabled only.
+  products_json: '[]'

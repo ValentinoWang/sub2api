@@ -48,6 +48,21 @@
               <Icon name="edit" size="md" class="mr-2" />
               {{ t('admin.redeem.batchUpdate') }}
             </button>
+            <button
+              data-test="liandong-restock-open"
+              type="button"
+              class="btn btn-secondary"
+              :disabled="liandongProductOptions.length === 0"
+              :title="
+                liandongProductOptions.length === 0
+                  ? t('admin.redeem.liandong.noProductsConfigured')
+                  : t('admin.redeem.liandong.openHint')
+              "
+              @click="openLiandongRestockDialog"
+            >
+              <Icon name="gift" size="md" class="mr-2" />
+              {{ t('admin.redeem.liandong.restock') }}
+            </button>
             <button @click="showGenerateDialog = true" class="btn btn-primary">
               {{ t('admin.redeem.generateCodes') }}
             </button>
@@ -56,6 +71,57 @@
       </template>
 
       <template #table>
+        <section data-test="liandong-auto-restock" class="mb-4 border-y border-gray-200 py-4 dark:border-dark-600">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.redeem.liandong.autoTitle') }}</h2>
+                <span :class="['badge', liandongAutoStatus?.enabled ? 'badge-success' : 'badge-gray']">
+                  {{ liandongAutoStatus?.enabled ? t('admin.redeem.liandong.enabled') : t('admin.redeem.liandong.stopped') }}
+                </span>
+                <span v-if="liandongAutoStatus?.running" class="badge badge-info">{{ t('admin.redeem.liandong.checking') }}</span>
+              </div>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.autoDescription') }}</p>
+              <p v-if="liandongAutoStatus && !liandongAutoStatus.configured" class="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300">
+                {{ t('admin.redeem.liandong.notConfigured') }}
+              </p>
+              <p v-if="liandongAutoStatus?.last_error" class="mt-2 text-xs text-red-600 dark:text-red-400">{{ liandongAutoStatus.last_error }}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="btn btn-secondary btn-sm" :disabled="liandongAutoBusy || !liandongAutoStatus?.configured" @click="saveLiandongPolicies()">{{ t('common.save') }}</button>
+              <button v-if="!liandongAutoStatus?.enabled" data-test="liandong-auto-start" type="button" class="btn btn-primary btn-sm" :disabled="liandongAutoBusy || !liandongAutoStatus?.configured" @click="startLiandongAutoRestock">{{ t('admin.redeem.liandong.startAuto') }}</button>
+              <button v-else data-test="liandong-auto-stop" type="button" class="btn btn-danger btn-sm" :disabled="liandongAutoBusy" @click="stopLiandongAutoRestock">{{ t('admin.redeem.liandong.stopAuto') }}</button>
+            </div>
+          </div>
+          <div v-if="liandongPolicyDrafts.length" class="mt-4 overflow-x-auto">
+            <table class="w-full min-w-[680px] text-left text-sm">
+              <thead class="text-xs text-gray-500 dark:text-gray-400">
+                <tr>
+                  <th class="pb-2 font-medium">{{ t('admin.redeem.liandong.product') }}</th>
+                  <th class="pb-2 font-medium">{{ t('admin.redeem.liandong.stock') }}</th>
+                  <th class="pb-2 font-medium">{{ t('admin.redeem.liandong.threshold') }}</th>
+                  <th class="pb-2 font-medium">{{ t('admin.redeem.liandong.restockCount') }}</th>
+                  <th class="pb-2 font-medium">{{ t('common.status') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 dark:divide-dark-700">
+                <tr v-for="product in liandongPolicyDrafts" :key="product.cny_amount">
+                  <td class="py-2">¥{{ product.cny_amount }} / ${{ product.usd_credit.toFixed(2) }}</td>
+                  <td class="py-2">{{ product.current_stock ?? '-' }}</td>
+                  <td class="py-2"><input v-model.number="product.threshold" type="number" min="0" max="1000" class="input w-24" /></td>
+                  <td class="py-2"><input v-model.number="product.restock_count" type="number" min="1" max="1000" class="input w-24" /></td>
+                  <td class="py-2">
+                    <label class="inline-flex items-center gap-2">
+                      <input v-model="product.enabled" type="checkbox" class="h-4 w-4 rounded" />
+                      <span>{{ product.enabled ? t('common.enabled') : t('common.disabled') }}</span>
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <DataTable
           :columns="columns"
           :data="codes"
@@ -272,6 +338,85 @@
       @cancel="showDeleteUnusedDialog = false"
     />
 
+    <!-- Liandong inventory batch dialog -->
+    <Teleport to="body">
+      <div
+        v-if="showLiandongRestockDialog"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div class="fixed inset-0 bg-black/50" @click="closeLiandongRestockDialog"></div>
+        <div class="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-dark-800">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ t('admin.redeem.liandong.title') }}
+          </h2>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {{ t('admin.redeem.liandong.description') }}
+          </p>
+
+          <form data-test="liandong-restock-form" class="mt-5 space-y-4" @submit.prevent="handleLiandongRestock">
+            <div>
+              <label class="input-label">{{ t('admin.redeem.liandong.product') }}</label>
+              <Select
+                data-test="liandong-product-select"
+                v-model="liandongRestockForm.cny_amount"
+                :options="liandongProductOptions"
+              />
+            </div>
+
+            <div>
+              <label class="input-label">{{ t('admin.redeem.count') }}</label>
+              <input
+                data-test="liandong-count-input"
+                v-model.number="liandongRestockForm.count"
+                type="number"
+                min="1"
+                max="1000"
+                required
+                class="input"
+              />
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {{ t('admin.redeem.liandong.countHint') }}
+              </p>
+            </div>
+
+            <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-900/20">
+              <p class="text-sm text-amber-800 dark:text-amber-200">
+                {{ t('admin.redeem.liandong.plaintextWarning') }}
+              </p>
+            </div>
+
+            <label class="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                data-test="liandong-confirm-checkbox"
+                v-model="liandongRestockForm.confirmed"
+                type="checkbox"
+                class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span>{{ liandongConfirmationText }}</span>
+            </label>
+
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" class="btn btn-secondary" @click="closeLiandongRestockDialog">
+                {{ t('common.cancel') }}
+              </button>
+              <button
+                data-test="liandong-restock-submit"
+                type="submit"
+                class="btn btn-primary"
+                :disabled="generating || !liandongRestockForm.confirmed"
+              >
+                {{
+                  generating
+                    ? t('admin.redeem.generating')
+                    : t('admin.redeem.liandong.generateAndDownload')
+                }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- Generate Codes Dialog -->
     <Teleport to="body">
       <div v-if="showGenerateDialog" class="fixed inset-0 z-50 flex items-center justify-center">
@@ -391,7 +536,7 @@
                 v-model.number="generateForm.count"
                 type="number"
                 min="1"
-                max="100"
+                max="1000"
                 required
                 class="input"
               />
@@ -565,6 +710,12 @@
           </div>
           <!-- Content -->
           <div class="p-5">
+            <div
+              v-if="generatedBatchSource === 'liandong'"
+              class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-200"
+            >
+              {{ t('admin.redeem.liandong.resultWarning') }}
+            </div>
             <div class="relative">
               <textarea
                 readonly
@@ -615,6 +766,7 @@ import { useClipboard } from '@/composables/useClipboard'
 import { useTableSelection } from '@/composables/useTableSelection'
 import { getPersistedPageSize } from '@/composables/usePersistedPageSize'
 import { adminAPI } from '@/api/admin'
+import type { LiandongRestockProduct, LiandongRestockStatus } from '@/api/admin/redeem'
 import { formatDateTime } from '@/utils/format'
 import type {
   RedeemCode,
@@ -634,6 +786,10 @@ import Select from '@/components/common/Select.vue'
 import GroupBadge from '@/components/common/GroupBadge.vue'
 import GroupOptionItem from '@/components/common/GroupOptionItem.vue'
 import Icon from '@/components/icons/Icon.vue'
+import {
+  LIANDONG_BALANCE_PRODUCTS,
+  type LiandongBalanceProduct
+} from '@/components/payment/liandongBalanceProducts'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -649,9 +805,75 @@ interface GroupOption {
 }
 
 const showGenerateDialog = ref(false)
+const showLiandongRestockDialog = ref(false)
 const showResultDialog = ref(false)
 const generatedCodes = ref<RedeemCode[]>([])
+const generatedBatchFilename = ref('')
+const generatedBatchSource = ref<'manual' | 'liandong'>('manual')
 const subscriptionGroups = ref<Group[]>([])
+const liandongAutoStatus = ref<LiandongRestockStatus | null>(null)
+const liandongPolicyDrafts = ref<LiandongRestockProduct[]>([])
+const liandongAutoBusy = ref(false)
+let liandongStatusTimer: ReturnType<typeof setInterval> | null = null
+
+const applyLiandongStatus = (status: LiandongRestockStatus) => {
+  liandongAutoStatus.value = status
+  liandongPolicyDrafts.value = status.products.map((product) => ({ ...product }))
+}
+
+const loadLiandongAutoStatus = async (quiet = false) => {
+  try {
+    applyLiandongStatus(await adminAPI.redeem.getLiandongRestockStatus())
+  } catch (error: any) {
+    if (!quiet) appStore.showError(error.response?.data?.message || t('admin.redeem.liandong.statusFailed'))
+  }
+}
+
+const saveLiandongPolicies = async (showSuccess = true) => {
+  liandongAutoBusy.value = true
+  try {
+    applyLiandongStatus(await adminAPI.redeem.updateLiandongRestockPolicies(
+      liandongPolicyDrafts.value.map(({ cny_amount, threshold, restock_count, enabled }) => ({
+        cny_amount,
+        threshold: Math.floor(Number(threshold)),
+        restock_count: Math.floor(Number(restock_count)),
+        enabled
+      }))
+    ))
+    if (showSuccess) appStore.showSuccess(t('admin.redeem.liandong.policiesSaved'))
+    return true
+  } catch (error: any) {
+    appStore.showError(error.response?.data?.message || t('admin.redeem.liandong.actionFailed'))
+    return false
+  } finally {
+    liandongAutoBusy.value = false
+  }
+}
+
+const startLiandongAutoRestock = async () => {
+  if (!window.confirm(t('admin.redeem.liandong.startConfirm'))) return
+  if (!(await saveLiandongPolicies(false))) return
+  liandongAutoBusy.value = true
+  try {
+    applyLiandongStatus(await adminAPI.redeem.startLiandongRestock())
+  } catch (error: any) {
+    appStore.showError(error.response?.data?.message || t('admin.redeem.liandong.actionFailed'))
+  } finally {
+    liandongAutoBusy.value = false
+  }
+}
+
+const stopLiandongAutoRestock = async () => {
+  liandongAutoBusy.value = true
+  try {
+    applyLiandongStatus(await adminAPI.redeem.stopLiandongRestock())
+    appStore.showSuccess(t('admin.redeem.liandong.stoppedNotice'))
+  } catch (error: any) {
+    appStore.showError(error.response?.data?.message || t('admin.redeem.liandong.actionFailed'))
+  } finally {
+    liandongAutoBusy.value = false
+  }
+}
 
 // 订阅类型分组选项
 const subscriptionGroupOptions = computed(() => {
@@ -695,6 +917,8 @@ const closeResultDialog = () => {
   showResultDialog.value = false
   generatedCodes.value = []
   copiedAll.value = false
+  generatedBatchFilename.value = ''
+  generatedBatchSource.value = 'manual'
 }
 
 const copyGeneratedCodes = async () => {
@@ -707,16 +931,21 @@ const copyGeneratedCodes = async () => {
   }
 }
 
-const downloadGeneratedCodes = () => {
-  const blob = new Blob([generatedCodesText.value], { type: 'text/plain' })
+const downloadCodes = (codesText: string, filename: string) => {
+  const blob = new Blob([codesText], { type: 'text/plain;charset=utf-8' })
   const url = window.URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `redeem-codes-${new Date().toISOString().split('T')[0]}.txt`
+  link.download = filename
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
   window.URL.revokeObjectURL(url)
+}
+
+const downloadGeneratedCodes = () => {
+  const fallbackFilename = `redeem-codes-${new Date().toISOString().split('T')[0]}.txt`
+  downloadCodes(generatedCodesText.value, generatedBatchFilename.value || fallbackFilename)
 }
 
 const columns = computed<Column[]>(() => [
@@ -836,6 +1065,86 @@ const generateForm = reactive({
   expiry_option: 'never' as RedeemCodeExpiryOption,
   custom_expiry_days: 7
 })
+
+const configuredLiandongProducts = computed(() =>
+  LIANDONG_BALANCE_PRODUCTS.filter((product) => product.productUrl)
+)
+
+const liandongProductOptions = computed(() =>
+  configuredLiandongProducts.value.map((product) => ({
+    value: product.cnyAmount,
+    label: t('admin.redeem.liandong.productOption', {
+      cny: product.cnyAmount,
+      usd: product.usdCredit.toFixed(2)
+    })
+  }))
+)
+
+const liandongRestockForm = reactive({
+  cny_amount: configuredLiandongProducts.value[0]?.cnyAmount ?? 1,
+  count: 10,
+  confirmed: false
+})
+
+const selectedLiandongProduct = computed<LiandongBalanceProduct | undefined>(() =>
+  configuredLiandongProducts.value.find(
+    (product) => product.cnyAmount === Number(liandongRestockForm.cny_amount)
+  )
+)
+
+const liandongConfirmationText = computed(() => {
+  const product = selectedLiandongProduct.value
+  if (!product) return t('admin.redeem.liandong.confirmUnavailable')
+  return t('admin.redeem.liandong.confirm', {
+    cny: product.cnyAmount,
+    usd: product.usdCredit.toFixed(2),
+    count: liandongRestockForm.count
+  })
+})
+
+const openLiandongRestockDialog = () => {
+  const firstProduct = configuredLiandongProducts.value[0]
+  if (!firstProduct) {
+    appStore.showError(t('admin.redeem.liandong.noProductsConfigured'))
+    return
+  }
+  liandongRestockForm.cny_amount = firstProduct.cnyAmount
+  liandongRestockForm.count = 10
+  liandongRestockForm.confirmed = false
+  showLiandongRestockDialog.value = true
+}
+
+const closeLiandongRestockDialog = () => {
+  showLiandongRestockDialog.value = false
+  liandongRestockForm.confirmed = false
+}
+
+const handleLiandongRestock = async () => {
+  const product = selectedLiandongProduct.value
+  const count = Math.floor(Number(liandongRestockForm.count))
+  if (!product || count < 1 || count > 1000 || !liandongRestockForm.confirmed) {
+    appStore.showError(t('admin.redeem.liandong.invalidRequest'))
+    return
+  }
+
+  generating.value = true
+  try {
+    const result = await adminAPI.redeem.generate(count, 'balance', product.usdCredit)
+    const date = new Date().toISOString().split('T')[0]
+    generatedCodes.value = result
+    generatedBatchFilename.value = `liandong-cny-${product.cnyAmount}-${date}-${result.length}.txt`
+    generatedBatchSource.value = 'liandong'
+    closeLiandongRestockDialog()
+    showResultDialog.value = true
+    downloadGeneratedCodes()
+    void loadCodes()
+  } catch (error: any) {
+    appStore.showError(error.response?.data?.detail || t('admin.redeem.failedToGenerate'))
+    console.error('Error generating Liandong inventory:', error)
+  } finally {
+    generating.value = false
+  }
+}
 
 // 监听类型变化，邀请码类型时自动设置 value 为 0
 watch(
@@ -1042,6 +1351,8 @@ const handleGenerateCodes = async () => {
     )
     showGenerateDialog.value = false
     generatedCodes.value = result
+    generatedBatchFilename.value = ''
+    generatedBatchSource.value = 'manual'
     showResultDialog.value = true
     // 重置表单
     generateForm.group_id = null
@@ -1180,10 +1491,13 @@ const loadSubscriptionGroups = async () => {
 onMounted(() => {
   loadCodes()
   loadSubscriptionGroups()
+  void loadLiandongAutoStatus()
+  liandongStatusTimer = setInterval(() => void loadLiandongAutoStatus(true), 10000)
 })
 
 onUnmounted(() => {
   clearTimeout(searchTimeout)
   abortController?.abort()
+  if (liandongStatusTimer) clearInterval(liandongStatusTimer)
 })
 </script>

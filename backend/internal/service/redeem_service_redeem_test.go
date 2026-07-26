@@ -10,8 +10,9 @@ import (
 )
 
 type redeemRejectRepo struct {
-	code      RedeemCode
-	useCalled bool
+	code         RedeemCode
+	useCalled    bool
+	createdBatch []RedeemCode
 }
 
 func (r *redeemRejectRepo) Create(ctx context.Context, code *RedeemCode) error {
@@ -19,7 +20,25 @@ func (r *redeemRejectRepo) Create(ctx context.Context, code *RedeemCode) error {
 }
 
 func (r *redeemRejectRepo) CreateBatch(ctx context.Context, codes []RedeemCode) error {
-	panic("unexpected CreateBatch call")
+	r.createdBatch = append([]RedeemCode(nil), codes...)
+	return nil
+}
+
+func TestGenerateCodesAllowsOneThousandAndRejectsMore(t *testing.T) {
+	repo := &redeemRejectRepo{}
+	svc := NewRedeemService(repo, nil, nil, nil, nil, nil, nil, nil)
+
+	codes, err := svc.GenerateCodes(context.Background(), GenerateCodesRequest{
+		Count: 1000, Type: RedeemTypeBalance, Value: 1,
+	})
+	require.NoError(t, err)
+	require.Len(t, codes, 1000)
+	require.Len(t, repo.createdBatch, 1000)
+
+	_, err = svc.GenerateCodes(context.Background(), GenerateCodesRequest{
+		Count: 1001, Type: RedeemTypeBalance, Value: 1,
+	})
+	require.EqualError(t, err, "cannot generate more than 1000 codes at once")
 }
 
 func (r *redeemRejectRepo) GetByID(ctx context.Context, id int64) (*RedeemCode, error) {

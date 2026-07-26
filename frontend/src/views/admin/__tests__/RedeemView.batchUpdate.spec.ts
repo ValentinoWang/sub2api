@@ -3,10 +3,12 @@ import { flushPromises, mount } from '@vue/test-utils'
 
 import RedeemView from '../RedeemView.vue'
 
-const { listRedeemCodes, batchUpdateRedeemCodes, getAllGroups, showSuccess, showError, showInfo } =
+const { listRedeemCodes, batchUpdateRedeemCodes, getRestockStatus, stopRestock, getAllGroups, showSuccess, showError, showInfo } =
   vi.hoisted(() => ({
     listRedeemCodes: vi.fn(),
     batchUpdateRedeemCodes: vi.fn(),
+    getRestockStatus: vi.fn(),
+    stopRestock: vi.fn(),
     getAllGroups: vi.fn(),
     showSuccess: vi.fn(),
     showError: vi.fn(),
@@ -21,7 +23,11 @@ vi.mock('@/api/admin', () => ({
       delete: vi.fn(),
       batchDelete: vi.fn(),
       batchUpdate: batchUpdateRedeemCodes,
-      exportCodes: vi.fn()
+      exportCodes: vi.fn(),
+      getLiandongRestockStatus: getRestockStatus,
+      updateLiandongRestockPolicies: vi.fn(),
+      startLiandongRestock: vi.fn(),
+      stopLiandongRestock: stopRestock
     },
     groups: {
       getAll: getAllGroups
@@ -106,6 +112,8 @@ describe('admin RedeemView batch update', () => {
 
     listRedeemCodes.mockReset()
     batchUpdateRedeemCodes.mockReset()
+    getRestockStatus.mockReset()
+    stopRestock.mockReset()
     getAllGroups.mockReset()
     showSuccess.mockReset()
     showError.mockReset()
@@ -143,6 +151,14 @@ describe('admin RedeemView batch update', () => {
     })
     batchUpdateRedeemCodes.mockResolvedValue({ updated: 1, message: 'ok' })
     getAllGroups.mockResolvedValue([])
+    getRestockStatus.mockResolvedValue({
+      configured: false,
+      enabled: false,
+      running: false,
+      interval_seconds: 300,
+      pending_batch: false,
+      products: []
+    })
   })
 
   it('submits only checked fields for selected redeem codes', async () => {
@@ -183,5 +199,44 @@ describe('admin RedeemView batch update', () => {
       notes: 'maintenance'
     })
     expect(showSuccess).toHaveBeenCalledWith('admin.redeem.batchUpdateSuccess')
+  })
+
+  it('stops server-side auto restock from the visible control', async () => {
+    const runningStatus = {
+      configured: true,
+      enabled: true,
+      running: false,
+      interval_seconds: 300,
+      pending_batch: false,
+      products: [{ cny_amount: 20, usd_credit: 2.78, goods_id: 42, threshold: 5, restock_count: 20, enabled: true }]
+    }
+    getRestockStatus.mockResolvedValue(runningStatus)
+    stopRestock.mockResolvedValue({ ...runningStatus, enabled: false })
+
+    const wrapper = mount(RedeemView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          AppLayout: { template: '<div><slot /></div>' },
+          TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
+          DataTable: DataTableStub,
+          Pagination: true,
+          ConfirmDialog: true,
+          Select: SelectStub,
+          GroupBadge: true,
+          GroupOptionItem: true,
+          Icon: true,
+          Teleport: true
+        }
+      }
+    })
+
+    await flushPromises()
+    await wrapper.get('[data-test="liandong-auto-stop"]').trigger('click')
+    await flushPromises()
+
+    expect(stopRestock).toHaveBeenCalledOnce()
+    expect(showSuccess).toHaveBeenCalledWith('admin.redeem.liandong.stoppedNotice')
+    expect(wrapper.find('[data-test="liandong-auto-stop"]').exists()).toBe(false)
   })
 })
