@@ -6613,8 +6613,8 @@
                           ) || 1
                       "
                       type="number"
-                      step="0.01"
-                      min="0.01"
+                      step="0.000001"
+                      min="0.000001"
                       class="input"
                     />
                     <p class="mt-0.5 text-xs text-gray-400">
@@ -6632,7 +6632,7 @@
                           usd: (
                             Number(form.payment_balance_recharge_multiplier) ||
                             1
-                          ).toFixed(2),
+                          ).toFixed(6),
                         })
                       }}
                     </p>

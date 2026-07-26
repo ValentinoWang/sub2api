@@ -5,6 +5,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from typing import Any
 
@@ -55,6 +56,10 @@ class Sub2APIClient:
     @staticmethod
     def internal_code(order_id: str) -> str:
         return "BND" + sha256(order_id.encode("utf-8")).hexdigest()[:24].upper()
+
+    @staticmethod
+    def internal_balance_code(order_id: str) -> str:
+        return "BAL" + sha256(order_id.encode("utf-8")).hexdigest()[:24].upper()
 
     def healthcheck(self) -> None:
         self._request("GET", "/api/v1/admin/groups/all")
@@ -112,6 +117,67 @@ class Sub2APIClient:
             except Sub2APIError:
                 raise original
         return self._validate_grant(data, user_id, group_id)
+
+    def grant_balance(self, order: dict[str, Any]) -> int:
+        code = self.internal_balance_code(str(order["id"]))
+        user_id = int(order["sub2api_user_id"])
+        balance_cents = int(order["api_balance_cents"])
+        if balance_cents <= 0:
+            raise Sub2APIError("balance grant must be positive")
+        payload = {
+            "code": code,
+            "type": "balance",
+            "value": balance_cents / 100,
+            "user_id": user_id,
+            "notes": f"balance fulfillment {order['id']}",
+        }
+        try:
+            data = self._request(
+                "POST",
+                "/api/v1/admin/redeem-codes/create-and-redeem",
+                payload,
+                f"balance:{order['id']}:api:v1",
+            )
+        except Sub2APIError as original:
+            try:
+                return self._find_completed_balance_grant(code, user_id, balance_cents)
+            except Sub2APIError:
+                raise original
+        redeem_code = data.get("redeem_code") if isinstance(data, dict) else None
+        if not isinstance(redeem_code, dict):
+            raise Sub2APIError("Sub2API returned an invalid grant result")
+        return self._validate_balance_code(redeem_code, user_id, balance_cents)
+
+    def _find_completed_balance_grant(
+        self, code: str, user_id: int, balance_cents: int
+    ) -> int:
+        query = urllib.parse.urlencode({"page": 1, "page_size": 20, "search": code})
+        data = self._request("GET", f"/api/v1/admin/redeem-codes?{query}")
+        items = data.get("items") if isinstance(data, dict) else None
+        if not isinstance(items, list):
+            raise Sub2APIError("Sub2API returned an invalid redeem-code list")
+        exact = [item for item in items if isinstance(item, dict) and item.get("code") == code]
+        if len(exact) != 1:
+            raise Sub2APIError("Sub2API balance grant could not be reconciled")
+        return self._validate_balance_code(exact[0], user_id, balance_cents)
+
+    @staticmethod
+    def _validate_balance_code(item: dict[str, Any], user_id: int, balance_cents: int) -> int:
+        try:
+            value = Decimal(str(item.get("value")))
+        except InvalidOperation as exc:
+            raise Sub2APIError("Sub2API returned an invalid balance value") from exc
+        if (
+            item.get("status") != "used"
+            or item.get("used_by") != user_id
+            or item.get("type") != "balance"
+            or value != Decimal(balance_cents) / 100
+        ):
+            raise Sub2APIError("Sub2API balance grant does not match this order")
+        redeem_id = item.get("id")
+        if not isinstance(redeem_id, int) or redeem_id <= 0:
+            raise Sub2APIError("Sub2API returned an invalid redeem-code id")
+        return redeem_id
 
     def _find_completed_grant(self, code: str, user_id: int, group_id: int) -> int:
         query = urllib.parse.urlencode({"page": 1, "page_size": 20, "search": code})

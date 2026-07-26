@@ -19,8 +19,32 @@
           {{ t('userSubscriptions.noActiveSubscriptions') }}
         </h3>
         <p class="text-gray-500 dark:text-dark-400">
-          {{ t('userSubscriptions.noActiveSubscriptionsDesc') }}
+          {{ availableLiandongProducts.length > 0
+            ? t('userSubscriptions.liandongPurchaseDesc')
+            : t('userSubscriptions.noActiveSubscriptionsDesc') }}
         </p>
+        <div v-if="availableLiandongProducts.length > 0" class="mx-auto mt-6 max-w-2xl">
+          <p class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ t('userSubscriptions.liandongPurchaseTitle') }}
+          </p>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <a
+              v-for="product in availableLiandongProducts"
+              :key="product.cnyAmount"
+              :href="product.productUrl"
+              class="btn btn-primary inline-flex min-h-11 items-center justify-center gap-2 px-4"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span>¥{{ product.cnyAmount }}</span>
+              <Icon name="externalLink" size="sm" />
+            </a>
+          </div>
+          <RouterLink class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400" to="/redeem">
+            <Icon name="gift" size="sm" />
+            {{ t('userSubscriptions.redeemPurchasedCode') }}
+          </RouterLink>
+        </div>
       </div>
 
       <!-- Subscriptions Grid -->
@@ -248,7 +272,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
@@ -260,6 +284,7 @@ import { formatDateOnly } from '@/utils/format'
 import { hasPeakRate, formatPeakRateWindow, serverTimezoneLabel } from '@/utils/peak-rate'
 import { platformBorderClass, platformBadgeClass, platformButtonClass, platformLabel } from '@/utils/platformColors'
 import { getRemainingDurationParts, isOneTimeDailyQuota, type RemainingDurationParts } from '@/utils/subscriptionQuota'
+import { LIANDONG_BALANCE_PRODUCTS } from '@/components/payment/liandongBalanceProducts'
 
 function platformAccentDotClass(p: string): string {
   switch (p) {
@@ -277,6 +302,7 @@ const appStore = useAppStore()
 
 const subscriptions = ref<UserSubscription[]>([])
 const loading = ref(true)
+const availableLiandongProducts = computed(() => LIANDONG_BALANCE_PRODUCTS.filter(product => product.productUrl))
 
 function subscriptionHasPeakRate(subscription: UserSubscription): boolean {
   return hasPeakRate(subscription.group)

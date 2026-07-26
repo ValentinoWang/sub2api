@@ -24,8 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
     active: ['订阅已开通', '请妥善保存下方订阅地址。'],
     api_pending: ['正在开通 API 套餐', '系统会继续处理 VPN 订阅。'],
     api_active: ['API 套餐已开通', '正在创建 VPN 订阅。'],
-    vpn_pending: ['正在开通 VPN 订阅', '通常会在数秒内完成。'],
-    vpn_active: ['VPN 订阅已开通', 'API 套餐仍在处理中。'],
+    vpn_pending: ['正在开通网络稳定器', '通常会在数秒内完成。'],
+    vpn_active: ['网络稳定器已开通', 'API 套餐仍在处理中。'],
     partial_failed: ['部分服务正在恢复', '已成功的服务不会重复发放，系统会自动重试。'],
   };
   let stopped = false;

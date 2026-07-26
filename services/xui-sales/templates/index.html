@@ -44,7 +44,7 @@
           <input id="redemption-code" name="code" required autocomplete="one-time-code" spellcheck="false" placeholder="LA-XXXXXX-XXXXXX-XXXXXX-XXXXXXXX">
         </div>
         <div class="field-group">
-          <label for="sub2api-email">Sub2API 账户邮箱（组合套餐）</label>
+          <label for="sub2api-email">Sub2API 账户邮箱（API 商品）</label>
           <input id="sub2api-email" name="sub2api_email" type="email" autocomplete="email" placeholder="name@example.com">
         </div>
         <button class="redeem-button" type="submit"><i data-lucide="key-round"></i>立即兑换</button>
@@ -61,13 +61,19 @@
             <h2>{{ plan.name }}</h2>
             <p>{{ plan.description }}</p>
           </div>
-          <span class="plan-badge">{{ plan.duration_days }} 天</span>
+          <span class="plan-badge">{% if plan.is_api_balance %}API 额度{% else %}{{ plan.duration_days }} 天{% endif %}</span>
         </div>
         <p class="price"><span>¥</span>{{ plan.price_text }}</p>
         <ul class="plan-details">
+          {% if plan.is_api_balance %}
+          <li><i data-lucide="wallet-cards"></i><span>USD {{ plan.sub2api_balance_text }} API 额度</span></li>
+          <li><i data-lucide="user-check"></i><span>充值到指定 Sub2API 账户</span></li>
+          <li><i data-lucide="shield-check"></i><span>不创建网络稳定器订阅</span></li>
+          {% else %}
           <li><i data-lucide="gauge"></i><span>{{ plan.traffic_gb }} GB 流量</span></li>
           <li><i data-lucide="monitor-smartphone"></i><span>{% if plan.ip_limit == 0 %}不限设备 IP{% else %}最多 {{ plan.ip_limit }} 个 IP{% endif %}</span></li>
           <li><i data-lucide="calendar-days"></i><span>有效期 {{ plan.duration_days }} 天</span></li>
+          {% endif %}
         </ul>
         <form method="post" action="{{ url_for('create_order') }}">
           <input type="hidden" name="plan_id" value="{{ plan.id }}">

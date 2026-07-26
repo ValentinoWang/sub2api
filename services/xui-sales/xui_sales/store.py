@@ -20,7 +20,8 @@ SELECT o.id, o.access_token_hash, o.plan_id, o.plan_name, o.amount_cents,
        o.source, o.created_at, o.updated_at,
        f.status AS fulfillment_status, f.api_status, f.vpn_status,
        f.sub2api_user_id, f.sub2api_group_id, f.api_validity_days,
-       f.api_redeem_code_id, f.api_error, f.vpn_error
+       f.api_redeem_code_id, f.api_error, f.vpn_error,
+       f.api_fulfillment_type, f.api_balance_cents, f.vpn_required
 FROM orders AS o
 LEFT JOIN order_fulfillments AS f ON f.order_id = o.id
 """
@@ -199,6 +200,29 @@ class OrderStore:
             for name in ("sub2api_group_id", "api_validity_days"):
                 if name not in redemption_columns:
                     conn.execute(f"ALTER TABLE redemption_codes ADD COLUMN {name} INTEGER")
+            if "api_fulfillment_type" not in redemption_columns:
+                conn.execute(
+                    "ALTER TABLE redemption_codes ADD COLUMN api_fulfillment_type "
+                    "TEXT NOT NULL DEFAULT 'none'"
+                )
+            if "api_balance_cents" not in redemption_columns:
+                conn.execute("ALTER TABLE redemption_codes ADD COLUMN api_balance_cents INTEGER")
+
+            fulfillment_columns = {
+                row[1] for row in conn.execute("PRAGMA table_info(order_fulfillments)")
+            }
+            if "api_fulfillment_type" not in fulfillment_columns:
+                conn.execute(
+                    "ALTER TABLE order_fulfillments ADD COLUMN api_fulfillment_type "
+                    "TEXT NOT NULL DEFAULT 'none'"
+                )
+            if "api_balance_cents" not in fulfillment_columns:
+                conn.execute("ALTER TABLE order_fulfillments ADD COLUMN api_balance_cents INTEGER")
+            if "vpn_required" not in fulfillment_columns:
+                conn.execute(
+                    "ALTER TABLE order_fulfillments ADD COLUMN vpn_required "
+                    "INTEGER NOT NULL DEFAULT 1"
+                )
 
     @staticmethod
     def _token_hash(token: str) -> str:
@@ -216,24 +240,38 @@ class OrderStore:
         sub2api_user_id: int | None = None,
         sub2api_group_id: int | None = None,
         api_validity_days: int | None = None,
+        api_balance_cents: int | None = None,
+        vpn_required: bool = True,
     ) -> None:
         is_bundle = sub2api_group_id is not None
         if is_bundle != (sub2api_user_id is not None and api_validity_days is not None):
             raise ValueError("bundle fulfillment requires complete Sub2API identity and plan data")
+        is_balance = api_balance_cents is not None
+        if is_bundle and is_balance:
+            raise ValueError("fulfillment cannot grant a subscription and balance")
+        if is_balance and (sub2api_user_id is None or api_balance_cents <= 0 or vpn_required):
+            raise ValueError("balance fulfillment requires a user, positive balance, and no VPN")
+        api_type = "subscription" if is_bundle else "balance" if is_balance else "none"
+        api_required = api_type != "none"
         conn.execute(
             """
             INSERT INTO order_fulfillments (
                 order_id, status, api_status, vpn_status, sub2api_user_id,
-                sub2api_group_id, api_validity_days, created_at, updated_at
-            ) VALUES (?, ?, ?, 'vpn_pending', ?, ?, ?, ?, ?)
+                sub2api_group_id, api_validity_days, api_fulfillment_type,
+                api_balance_cents, vpn_required, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 order_id,
-                "api_pending" if is_bundle else "vpn_pending",
-                "api_pending" if is_bundle else "api_not_required",
+                "api_pending" if api_required else "vpn_pending",
+                "api_pending" if api_required else "api_not_required",
+                "vpn_pending" if vpn_required else "vpn_active",
                 sub2api_user_id,
                 sub2api_group_id,
                 api_validity_days,
+                api_type,
+                api_balance_cents,
+                int(vpn_required),
                 now,
                 now,
             ),
@@ -248,8 +286,9 @@ class OrderStore:
         conn.execute(
             """
             INSERT OR IGNORE INTO order_fulfillments (
-                order_id, status, api_status, vpn_status, created_at, updated_at
-            ) VALUES (?, ?, 'api_not_required', ?, ?, ?)
+                order_id, status, api_status, vpn_status, api_fulfillment_type,
+                vpn_required, created_at, updated_at
+            ) VALUES (?, ?, 'api_not_required', ?, 'none', 1, ?, ?)
             """,
             (
                 order["id"],
@@ -338,6 +377,8 @@ class OrderStore:
                 raise KeyError(order_id)
             order = dict(row)
             self._ensure_legacy_fulfillment(conn, order)
+            if not order["vpn_required"]:
+                raise ValueError(f"order {order_id} does not require VPN provisioning")
             if order["status"] == "active":
                 return order
             if order["status"] == "provisioning" and order["updated_at"] > now - PROVISIONING_LEASE_SECONDS:
@@ -530,8 +571,9 @@ class OrderStore:
                 INSERT INTO redemption_codes (
                     batch_id, code_hash, code_hint, plan_id, plan_name,
                     duration_days, traffic_gb, ip_limit, status, created_at,
-                    sub2api_group_id, api_validity_days
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available', ?, ?, ?)
+                    sub2api_group_id, api_validity_days, api_fulfillment_type,
+                    api_balance_cents
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available', ?, ?, ?, ?, ?)
                 """,
                 [
                     (
@@ -546,6 +588,14 @@ class OrderStore:
                         now,
                         plan.sub2api_group_id,
                         plan.api_validity_days,
+                        (
+                            "subscription"
+                            if plan.is_bundle
+                            else "balance"
+                            if plan.is_api_balance
+                            else "none"
+                        ),
+                        plan.sub2api_balance_cents,
                     )
                     for code in normalized_codes
                 ],
@@ -575,7 +625,8 @@ class OrderStore:
         with self._connection() as conn:
             row = conn.execute(
                 """
-                SELECT sub2api_group_id, api_validity_days
+                SELECT sub2api_group_id, api_validity_days, api_fulfillment_type,
+                       api_balance_cents
                 FROM redemption_codes WHERE code_hash=?
                 """,
                 (digest,),
@@ -601,10 +652,11 @@ class OrderStore:
             code = dict(code_row)
             if code["status"] == "revoked":
                 raise ValueError("兑换码已停用")
-            is_bundle = code["sub2api_group_id"] is not None
-            if is_bundle and (sub2api_user_id is None or sub2api_user_id <= 0):
-                raise ValueError("组合套餐需要有效的 Sub2API 账户")
-            if not is_bundle and sub2api_user_id is not None:
+            api_type = code["api_fulfillment_type"]
+            api_required = api_type in {"subscription", "balance"}
+            if api_required and (sub2api_user_id is None or sub2api_user_id <= 0):
+                raise ValueError("该套餐需要有效的 Sub2API 账户")
+            if not api_required and sub2api_user_id is not None:
                 raise ValueError("VPN 套餐不能绑定 Sub2API 账户")
             if code["redeemed_order_id"] is not None:
                 row = conn.execute(
@@ -612,7 +664,7 @@ class OrderStore:
                 ).fetchone()
                 result = self._row(row)
                 assert result is not None, "redeemed code references a missing order"
-                if is_bundle and result["sub2api_user_id"] != sub2api_user_id:
+                if api_required and result["sub2api_user_id"] != sub2api_user_id:
                     raise ValueError("兑换码已绑定其他 Sub2API 账户")
                 return result, token
 
@@ -646,6 +698,8 @@ class OrderStore:
                 sub2api_user_id=sub2api_user_id,
                 sub2api_group_id=code["sub2api_group_id"],
                 api_validity_days=code["api_validity_days"],
+                api_balance_cents=code["api_balance_cents"],
+                vpn_required=api_type != "balance",
             )
             cur = conn.execute(
                 """

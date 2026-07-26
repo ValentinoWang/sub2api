@@ -77,8 +77,11 @@ def _public_order(order: dict[str, Any]) -> dict[str, Any]:
         "amount": f"{order['amount_cents'] / 100:.2f}",
         "status": public_status,
         "api_status": order["api_status"],
+        "api_fulfillment_type": order["api_fulfillment_type"],
         "vpn_status": order["vpn_status"],
-        "is_bundle": order["api_status"] != "api_not_required",
+        "has_api": order["api_status"] != "api_not_required",
+        "has_vpn": bool(order["vpn_required"]),
+        "is_bundle": order["api_status"] != "api_not_required" and bool(order["vpn_required"]),
         "source": order["source"],
         "subscription_url": (
             order["subscription_url"] if order["vpn_status"] == "vpn_active" else None
@@ -123,15 +126,15 @@ def create_app(
             subscription_base_url=settings.subscription_base_url,
             insecure_local_tls=settings.xui_insecure_local_tls,
         )
-    has_bundle_plans = any(plan.is_bundle for plan in plans.values())
+    has_api_plans = any(plan.requires_sub2api for plan in plans.values())
     if sub2api is None and settings.sub2api_enabled:
         sub2api = Sub2APIClient(
             base_url=settings.sub2api_base_url,
             admin_api_key=settings.sub2api_admin_api_key,
             timeout_seconds=settings.sub2api_timeout_seconds,
         )
-    if has_bundle_plans and sub2api is None:
-        raise RuntimeError("bundle plans require SUB2API_ENABLED=true")
+    if has_api_plans and sub2api is None:
+        raise RuntimeError("API plans require SUB2API_ENABLED=true")
 
     app = Flask(__name__, template_folder="../templates", static_folder="../static")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
@@ -204,7 +207,7 @@ def create_app(
         try:
             requirements = store.redemption_requirements(code)
             sub2api_user_id = None
-            if requirements["sub2api_group_id"] is not None:
+            if requirements["api_fulfillment_type"] != "none":
                 assert sub2api is not None
                 sub2api_user_id = sub2api.resolve_user(request.form.get("sub2api_email", ""))
             order, token = store.redeem_code(code, sub2api_user_id=sub2api_user_id)
@@ -231,8 +234,8 @@ def create_app(
         plan = plans.get(plan_id)
         if plan is None or not plan.enabled:
             abort(400, description="套餐不存在或已下架")
-        if plan.is_bundle:
-            abort(400, description="组合套餐仅支持一次性卡密兑换")
+        if plan.requires_sub2api:
+            abort(400, description="API 商品仅支持一次性卡密兑换")
         order, token = store.create_order(plan)
         return redirect(url_for("order_page", order_id=order["id"], token=token), code=303)
 

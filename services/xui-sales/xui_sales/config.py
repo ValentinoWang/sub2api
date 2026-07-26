@@ -21,14 +21,33 @@ class Plan:
     enabled: bool
     sub2api_group_id: int | None = None
     api_validity_days: int | None = None
+    sub2api_balance_cents: int | None = None
 
     @property
     def is_bundle(self) -> bool:
         return self.sub2api_group_id is not None
 
     @property
+    def is_api_balance(self) -> bool:
+        return self.sub2api_balance_cents is not None
+
+    @property
+    def requires_sub2api(self) -> bool:
+        return self.is_bundle or self.is_api_balance
+
+    @property
+    def vpn_required(self) -> bool:
+        return not self.is_api_balance
+
+    @property
     def price_text(self) -> str:
         return f"{self.price_cents / 100:.2f}"
+
+    @property
+    def sub2api_balance_text(self) -> str:
+        if self.sub2api_balance_cents is None:
+            return ""
+        return f"{self.sub2api_balance_cents / 100:.2f}"
 
 
 def _required_env(name: str) -> str:
@@ -65,6 +84,9 @@ def load_plans(path: Path) -> dict[str, Plan]:
             plan_id = str(item["id"]).strip()
             price = Decimal(str(item["price_cny"]))
             price_cents = int(price * 100)
+            balance_raw = item.get("sub2api_balance")
+            balance = Decimal(str(balance_raw)) if balance_raw is not None else None
+            balance_cents = int(balance * 100) if balance is not None else None
             plan = Plan(
                 id=plan_id,
                 name=str(item["name"]).strip(),
@@ -84,6 +106,7 @@ def load_plans(path: Path) -> dict[str, Plan]:
                     if item.get("api_validity_days") is not None
                     else None
                 ),
+                sub2api_balance_cents=balance_cents,
             )
         except (KeyError, TypeError, ValueError, InvalidOperation) as exc:
             raise RuntimeError(f"invalid plan at index {index}: {exc}") from exc
@@ -105,6 +128,14 @@ def load_plans(path: Path) -> dict[str, Plan]:
             plan.sub2api_group_id <= 0 or plan.api_validity_days <= 0
         ):
             raise RuntimeError(f"plan {plan.id} has invalid Sub2API subscription settings")
+        if plan.is_bundle and plan.is_api_balance:
+            raise RuntimeError(f"plan {plan.id} cannot combine subscription and balance grants")
+        if balance is not None and (
+            balance != Decimal(balance_cents) / 100 or balance_cents <= 0
+        ):
+            raise RuntimeError(
+                f"plan {plan.id} Sub2API balance must be positive with at most 2 decimals"
+            )
         plans[plan.id] = plan
     return plans
 

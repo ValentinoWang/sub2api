@@ -39,7 +39,9 @@ RUN --mount=type=cache,id=sub2api-pnpm-store,target=/root/.local/share/pnpm/stor
 # Copy only that subtree to keep the build dependency minimal.
 COPY frontend/ ./
 COPY docs/legal/ /app/docs/legal/
-RUN pnpm run build
+RUN test "$(grep -c '^VITE_LIANDONG_SUB2API_CNY_[0-9][0-9]*_URL=https://pay\.ldxp\.cn/item/' .env.production)" -eq 6 && \
+    pnpm run build && \
+    test "$(grep -Roh 'https://pay\.ldxp\.cn/item/[a-z0-9]*' ../backend/internal/web/dist | sort -u | wc -l | tr -d ' ')" -eq 6
 
 # -----------------------------------------------------------------------------
 # Stage 2: Backend Builder

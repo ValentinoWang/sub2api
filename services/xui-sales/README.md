@@ -1,7 +1,7 @@
 # xui-sales
 
-Unified one-time-code fulfillment for the local 3x-ui panel and an optional
-Sub2API subscription grant.
+Unified one-time-code fulfillment for the local 3x-ui panel and optional
+Sub2API subscription or balance grants.
 
 The production topology keeps this coordinator next to x-ui. It reaches the
 Sub2API host only through the dedicated loopback SSH tunnel. The card platform
@@ -35,7 +35,8 @@ https://64.83.31.224:8443/callbacks/alipay
 
 Liandong is responsible only for payment and delivery of a pre-generated
 one-time code. It is not a provisioning authority and does not need a callback
-into this service. A bundle plan maps one local VPN plan to one Sub2API group:
+into this service. A bundle plan maps one local network-stabilizer plan to one
+Sub2API group:
 
 ```json
 {
@@ -45,6 +46,18 @@ into this service. A bundle plan maps one local VPN plan to one Sub2API group:
   "duration_days": 30,
   "traffic_gb": 400,
   "ip_limit": 3
+}
+```
+
+A balance-only plan grants the exact USD balance and never calls x-ui:
+
+```json
+{
+  "id": "api-balance-10",
+  "sub2api_balance": "10.00",
+  "duration_days": 1,
+  "traffic_gb": 1,
+  "ip_limit": 0
 }
 ```
 

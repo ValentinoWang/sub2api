@@ -48,6 +48,7 @@ coverage/
 .env
 .env.*
 !.env.example
+!frontend/.env.production
 
 # Local config
 config.yaml

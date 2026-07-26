@@ -116,6 +116,10 @@ export default {
     noActiveSubscriptions: 'No Active Subscriptions',
     noActiveSubscriptionsDesc:
       "You don't have any active subscriptions. Contact administrator to get one.",
+    liandongPurchaseDesc:
+      'You do not have an active subscription. Buy API credit and Liandong Store will deliver a redemption code after payment.',
+    liandongPurchaseTitle: 'Choose an amount and buy from Liandong Store',
+    redeemPurchasedCode: 'Already have a code? Redeem it',
     failedToLoad: 'Failed to load subscriptions',
     status: {
       active: 'Active',

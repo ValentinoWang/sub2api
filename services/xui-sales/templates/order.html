@@ -31,10 +31,12 @@
         </div>
       </div>
 
-      {% if order.is_bundle %}
-      <div class="fulfillment-grid" aria-label="组合服务状态">
-        <span>API 套餐 <strong id="api-state">{{ order.api_status }}</strong></span>
-        <span>VPN 订阅 <strong id="vpn-state">{{ order.vpn_status }}</strong></span>
+      {% if order.has_api %}
+      <div class="fulfillment-grid" aria-label="服务状态">
+        <span>{% if order.api_fulfillment_type == 'balance' %}API 额度{% else %}API 套餐{% endif %} <strong id="api-state">{{ order.api_status }}</strong></span>
+        {% if order.has_vpn %}
+        <span>网络稳定器 <strong id="vpn-state">{{ order.vpn_status }}</strong></span>
+        {% endif %}
       </div>
       {% endif %}
 

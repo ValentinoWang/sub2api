@@ -25,7 +25,7 @@ const i18n = createI18n({
   },
 });
 
-const mountPlanCard = (groupPlatform: string) =>
+const mountPlanCard = (groupPlatform: string, paymentCurrency = 'USD', paymentMultiplier = 1) =>
   mount(SubscriptionPlanCard, {
     props: {
       plan: {
@@ -42,6 +42,8 @@ const mountPlanCard = (groupPlatform: string) =>
         supported_model_scopes: ["claude", "gemini_text", "gemini_image"],
         is_active: true,
       },
+      paymentCurrency,
+      paymentMultiplier,
     },
     global: { plugins: [i18n, createPinia()] },
   });
@@ -62,4 +64,11 @@ describe("SubscriptionPlanCard", () => {
     expect(text).toContain("Gemini");
     expect(text).toContain("Imagen");
   });
+
+  it('shows the converted RMB price with a yen symbol', () => {
+    const text = mountPlanCard('openai', 'CNY', 7.2).text()
+
+    expect(text).toContain('¥72.00')
+    expect(text).not.toContain('$10')
+  })
 });

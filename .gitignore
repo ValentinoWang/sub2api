@@ -53,6 +53,7 @@ pnpm-debug.log*
 .env.*.local
 *.env
 !.env.example
+!frontend/.env.production
 docker-compose.override.yml
 
 # ===================
@@ -117,6 +118,8 @@ backend/.installed
 # 其他
 # ===================
 tests
+!services/xui-sales/tests/
+!services/xui-sales/tests/*.py
 !deploy/tests/
 !deploy/tests/**
 CLAUDE.md

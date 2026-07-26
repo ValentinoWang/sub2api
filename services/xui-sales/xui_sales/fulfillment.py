@@ -6,6 +6,11 @@ from .sub2api import Sub2APIClient
 
 
 def provision_order(store: OrderStore, provisioner: XUIProvisioner, order_id: str) -> bool:
+    order = store.get(order_id)
+    if order is None:
+        raise KeyError(order_id)
+    if not order["vpn_required"]:
+        return False
     claimed = store.claim_provisioning(order_id)
     if claimed is None:
         return False
@@ -39,7 +44,12 @@ def fulfill_order(
         claimed = store.claim_api_fulfillment(order_id)
         if claimed is not None and claimed["api_status"] != "api_active":
             try:
-                redeem_code_id = sub2api.grant_subscription(claimed)
+                if claimed["api_fulfillment_type"] == "subscription":
+                    redeem_code_id = sub2api.grant_subscription(claimed)
+                elif claimed["api_fulfillment_type"] == "balance":
+                    redeem_code_id = sub2api.grant_balance(claimed)
+                else:
+                    raise ValueError("unsupported API fulfillment type")
                 store.mark_api_active(order_id, redeem_code_id)
             except Exception as exc:
                 current = store.get(order_id)
@@ -49,7 +59,7 @@ def fulfill_order(
 
     current = store.get(order_id)
     assert current is not None, "fulfillment order disappeared"
-    if current["vpn_status"] != "vpn_active":
+    if current["vpn_required"] and current["vpn_status"] != "vpn_active":
         try:
             provision_order(store, provisioner, order_id)
         except Exception as exc:
