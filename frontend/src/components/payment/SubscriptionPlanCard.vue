@@ -105,6 +105,7 @@ import type { UserSubscription } from '@/types'
 import { useAppStore } from '@/stores/app'
 import { hasPeakRate as groupHasPeakRate, formatPeakRateWindow, serverTimezoneLabel } from '@/utils/peak-rate'
 import { formatPaymentAmount } from './currency'
+import { planValiditySuffix } from './validity'
 import {
   platformAccentBarClass,
   platformBadgeLightClass,
@@ -122,7 +123,7 @@ const props = withDefaults(defineProps<{
   paymentCurrency?: string
   paymentMultiplier?: number
 }>(), {
-  paymentCurrency: 'USD',
+  paymentCurrency: '',
   paymentMultiplier: 1,
 })
 const emit = defineEmits<{ select: [plan: SubscriptionPlan] }>()
@@ -143,11 +144,12 @@ const btnClass = computed(() => platformButtonClass(platform.value))
 const discountClass = computed(() => platformDiscountClass(platform.value))
 const pLabel = computed(() => platformLabel(platform.value))
 
+const displayCurrency = computed(() => props.paymentCurrency || props.plan.currency || 'USD')
 const priceLabel = computed(() =>
-  formatPaymentAmount(props.plan.price * props.paymentMultiplier, props.paymentCurrency)
+  formatPaymentAmount(props.plan.price * props.paymentMultiplier, displayCurrency.value)
 )
 const originalPriceLabel = computed(() =>
-  formatPaymentAmount((props.plan.original_price ?? 0) * props.paymentMultiplier, props.paymentCurrency)
+  formatPaymentAmount((props.plan.original_price ?? 0) * props.paymentMultiplier, displayCurrency.value)
 )
 
 const discountText = computed(() => {
@@ -182,10 +184,5 @@ const modelScopeLabels = computed(() => {
   return scopes.map(s => MODEL_SCOPE_LABELS[s] || s)
 })
 
-const validitySuffix = computed(() => {
-  const u = props.plan.validity_unit || 'day'
-  if (u === 'month') return t('payment.perMonth')
-  if (u === 'year') return t('payment.perYear')
-  return `${props.plan.validity_days}${t('payment.days')}`
-})
+const validitySuffix = computed(() => planValiditySuffix(props.plan, t))
 </script>
