@@ -481,6 +481,7 @@ func registerRedeemCodeRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 		codes.GET("/stats", h.Admin.Redeem.GetStats)
 		codes.GET("/export", h.Admin.Redeem.Export)
 		codes.GET("/liandong-restock", h.Admin.Redeem.LiandongRestockStatus)
+		codes.PUT("/liandong-restock/configuration", h.Admin.Redeem.UpdateLiandongRestockConfiguration)
 		codes.PUT("/liandong-restock/policies", h.Admin.Redeem.UpdateLiandongRestockPolicies)
 		codes.POST("/liandong-restock/start", h.Admin.Redeem.StartLiandongRestock)
 		codes.POST("/liandong-restock/stop", h.Admin.Redeem.StopLiandongRestock)

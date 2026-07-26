@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -11,6 +12,17 @@ import (
 	"testing"
 	"time"
 )
+
+type liandongTestEncryptor struct{}
+
+func (liandongTestEncryptor) Encrypt(plaintext string) (string, error) {
+	return base64.StdEncoding.EncodeToString([]byte(plaintext)), nil
+}
+
+func (liandongTestEncryptor) Decrypt(ciphertext string) (string, error) {
+	raw, err := base64.StdEncoding.DecodeString(ciphertext)
+	return string(raw), err
+}
 
 type liandongSettingRepoStub struct {
 	mu     sync.Mutex
@@ -85,6 +97,64 @@ func newLiandongTestService(serverURL string) (*LiandongRestockService, *liandon
 		stop:       make(chan struct{}),
 	}
 	return svc, settings, redeem
+}
+
+func TestLiandongRestockConfigurationGeneratesAndEncryptsSecret(t *testing.T) {
+	settings := &liandongSettingRepoStub{values: map[string]string{}}
+	redeem := &liandongRedeemStoreStub{codes: map[string]*RedeemCode{}}
+	svc := &LiandongRestockService{
+		settingRepo: settings,
+		redeem:      redeem,
+		encryptor:   liandongTestEncryptor{},
+		baseURL:     "https://ldxp.cn",
+		interval:    time.Minute,
+		httpClient:  &http.Client{Timeout: time.Second},
+		stop:        make(chan struct{}),
+	}
+
+	status, err := svc.UpdateConfiguration(context.Background(), LiandongRestockConfigurationUpdate{
+		MerchantToken: "merchant-token-from-liandong",
+		Products: []LiandongRestockProduct{{
+			CNYAmount: 20, USDCredit: 2.78, GoodsID: 12345,
+			Threshold: 5, RestockCount: 10, Enabled: true,
+		}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !status.Configured || !status.MerchantTokenConfigured || !status.CodeSecretConfigured {
+		t.Fatalf("unexpected status: %+v", status)
+	}
+	raw := settings.values[liandongRestockConfigKey]
+	if strings.Contains(raw, "merchant-token-from-liandong") {
+		t.Fatal("stored configuration exposed the merchant token")
+	}
+	plaintext, err := (liandongTestEncryptor{}).Decrypt(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stored liandongRestockStoredConfig
+	if err := json.Unmarshal([]byte(plaintext), &stored); err != nil {
+		t.Fatal(err)
+	}
+	if stored.MerchantToken != "merchant-token-from-liandong" {
+		t.Fatal("merchant token was not persisted")
+	}
+	if len(stored.CodeSecret) != 64 {
+		t.Fatalf("generated secret length = %d, want 64 hex characters", len(stored.CodeSecret))
+	}
+	if stored.Products[0].GoodsID != 12345 {
+		t.Fatal("goods ID was not persisted")
+	}
+}
+
+func TestLiandongRestockConfigurationRequiresRealNumericGoodsID(t *testing.T) {
+	_, err := validateLiandongConfiguration("token", strings.Repeat("s", 32), []LiandongRestockProduct{{
+		CNYAmount: 20, USDCredit: 2.78, GoodsID: 0, Threshold: 5, RestockCount: 10,
+	}})
+	if err == nil || !strings.Contains(err.Error(), "numeric goods ID") {
+		t.Fatalf("got %v, want numeric goods ID validation error", err)
+	}
 }
 
 func TestLiandongRestockRetryReusesPendingBatch(t *testing.T) {

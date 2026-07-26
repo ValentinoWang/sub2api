@@ -26,12 +26,20 @@ export interface LiandongRestockProduct {
 
 export interface LiandongRestockStatus {
   configured: boolean
+  merchant_token_configured: boolean
+  code_secret_configured: boolean
   enabled: boolean
   running: boolean
   interval_seconds: number
   last_run_at?: string
   last_error?: string
   pending_batch: boolean
+  products: LiandongRestockProduct[]
+}
+
+export interface LiandongRestockConfigurationUpdate {
+  merchant_token: string
+  generate_code_secret: boolean
   products: LiandongRestockProduct[]
 }
 
@@ -219,6 +227,16 @@ export async function getLiandongRestockStatus(): Promise<LiandongRestockStatus>
   return data
 }
 
+export async function updateLiandongRestockConfiguration(
+  configuration: LiandongRestockConfigurationUpdate
+): Promise<LiandongRestockStatus> {
+  const { data } = await apiClient.put<LiandongRestockStatus>(
+    '/admin/redeem-codes/liandong-restock/configuration',
+    configuration
+  )
+  return data
+}
+
 export async function updateLiandongRestockPolicies(
   products: Pick<LiandongRestockProduct, 'cny_amount' | 'threshold' | 'restock_count' | 'enabled'>[]
 ): Promise<LiandongRestockStatus> {
@@ -250,6 +268,7 @@ export const redeemAPI = {
   getStats,
   exportCodes,
   getLiandongRestockStatus,
+  updateLiandongRestockConfiguration,
   updateLiandongRestockPolicies,
   startLiandongRestock,
   stopLiandongRestock

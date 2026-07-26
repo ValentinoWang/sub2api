@@ -71,28 +71,49 @@
       </template>
 
       <template #table>
-        <section data-test="liandong-auto-restock" class="mb-4 border-y border-gray-200 py-4 dark:border-dark-600">
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-2">
-                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.redeem.liandong.autoTitle') }}</h2>
+        <section data-test="liandong-auto-restock" class="mb-5 rounded-lg border border-gray-200 bg-white p-4 dark:border-dark-600 dark:bg-dark-800">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('admin.redeem.liandong.autoTitle') }}</h2>
                 <span :class="['badge', liandongAutoStatus?.enabled ? 'badge-success' : 'badge-gray']">
                   {{ liandongAutoStatus?.enabled ? t('admin.redeem.liandong.enabled') : t('admin.redeem.liandong.stopped') }}
                 </span>
                 <span v-if="liandongAutoStatus?.running" class="badge badge-info">{{ t('admin.redeem.liandong.checking') }}</span>
               </div>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.autoDescription') }}</p>
-              <p v-if="liandongAutoStatus && !liandongAutoStatus.configured" class="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300">
-                {{ t('admin.redeem.liandong.notConfigured') }}
-              </p>
-              <p v-if="liandongAutoStatus?.last_error" class="mt-2 text-xs text-red-600 dark:text-red-400">{{ liandongAutoStatus.last_error }}</p>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.autoDescription') }}</p>
             </div>
             <div class="flex flex-wrap gap-2">
-              <button type="button" class="btn btn-secondary btn-sm" :disabled="liandongAutoBusy || !liandongAutoStatus?.configured" @click="saveLiandongPolicies()">{{ t('common.save') }}</button>
+              <button data-test="liandong-config-open" type="button" class="btn btn-secondary btn-sm" :disabled="liandongAutoBusy || liandongAutoStatus?.enabled" @click="openLiandongConfigurationDialog">
+                <Icon name="cog" size="sm" class="mr-1.5" />
+                {{ t('admin.redeem.liandong.configure') }}
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" :disabled="liandongAutoBusy || !liandongAutoStatus?.configured" @click="saveLiandongPolicies()">{{ t('admin.redeem.liandong.savePolicy') }}</button>
               <button v-if="!liandongAutoStatus?.enabled" data-test="liandong-auto-start" type="button" class="btn btn-primary btn-sm" :disabled="liandongAutoBusy || !liandongAutoStatus?.configured" @click="startLiandongAutoRestock">{{ t('admin.redeem.liandong.startAuto') }}</button>
               <button v-else data-test="liandong-auto-stop" type="button" class="btn btn-danger btn-sm" :disabled="liandongAutoBusy" @click="stopLiandongAutoRestock">{{ t('admin.redeem.liandong.stopAuto') }}</button>
             </div>
           </div>
+
+          <div class="mt-4 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-md border border-gray-200 px-3 py-2 dark:border-dark-600">
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.merchantToken') }}</p>
+              <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">{{ liandongAutoStatus?.merchant_token_configured ? t('admin.redeem.liandong.configuredState') : t('admin.redeem.liandong.missingState') }}</p>
+            </div>
+            <div class="rounded-md border border-gray-200 px-3 py-2 dark:border-dark-600">
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.codeSecret') }}</p>
+              <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">{{ liandongAutoStatus?.code_secret_configured ? t('admin.redeem.liandong.generatedState') : t('admin.redeem.liandong.missingState') }}</p>
+            </div>
+            <div class="rounded-md border border-gray-200 px-3 py-2 dark:border-dark-600">
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.productMapping') }}</p>
+              <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">{{ t('admin.redeem.liandong.productCount', { count: liandongAutoStatus?.products.length || 0 }) }}</p>
+            </div>
+          </div>
+
+          <div v-if="liandongAutoStatus && !liandongAutoStatus.configured" class="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-200">
+            <Icon name="exclamationTriangle" size="sm" class="mt-0.5 shrink-0" />
+            <span>{{ t('admin.redeem.liandong.notConfigured') }}</span>
+          </div>
+          <p v-if="liandongAutoStatus?.last_error" class="mt-3 text-sm text-red-600 dark:text-red-400">{{ liandongAutoStatus.last_error }}</p>
           <div v-if="liandongPolicyDrafts.length" class="mt-4 overflow-x-auto">
             <table class="w-full min-w-[680px] text-left text-sm">
               <thead class="text-xs text-gray-500 dark:text-gray-400">
@@ -411,6 +432,93 @@
                     : t('admin.redeem.liandong.generateAndDownload')
                 }}
               </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Liandong automatic restock configuration -->
+    <Teleport to="body">
+      <div v-if="showLiandongConfigurationDialog" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50" @click="closeLiandongConfigurationDialog"></div>
+        <div class="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-xl dark:bg-dark-800">
+          <div class="flex items-start justify-between border-b border-gray-200 px-5 py-4 dark:border-dark-600">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.redeem.liandong.configurationTitle') }}</h2>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.configurationDescription') }}</p>
+            </div>
+            <button type="button" class="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-700" :title="t('common.close')" @click="closeLiandongConfigurationDialog">
+              <Icon name="x" size="md" />
+            </button>
+          </div>
+
+          <form class="min-h-0 flex-1 overflow-y-auto p-5" data-test="liandong-config-form" @submit.prevent="saveLiandongConfiguration">
+            <div class="grid gap-5 md:grid-cols-2">
+              <div>
+                <label class="input-label">{{ t('admin.redeem.liandong.merchantToken') }}</label>
+                <input v-model.trim="liandongConfigurationForm.merchant_token" type="password" autocomplete="new-password" class="input" :placeholder="liandongAutoStatus?.merchant_token_configured ? t('admin.redeem.liandong.keepExistingToken') : t('admin.redeem.liandong.tokenPlaceholder')" />
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.tokenHint') }}</p>
+              </div>
+              <div>
+                <label class="input-label">{{ t('admin.redeem.liandong.codeSecret') }}</label>
+                <div class="flex min-h-10 items-center justify-between gap-3 rounded-md border border-gray-200 px-3 dark:border-dark-600">
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ liandongAutoStatus?.code_secret_configured && !liandongConfigurationForm.generate_code_secret ? t('admin.redeem.liandong.secretStored') : t('admin.redeem.liandong.secretWillGenerate') }}</span>
+                  <button type="button" class="btn btn-secondary btn-sm shrink-0" @click="liandongConfigurationForm.generate_code_secret = true">
+                    <Icon name="refresh" size="sm" class="mr-1.5" />
+                    {{ t('admin.redeem.liandong.generateSecret') }}
+                  </button>
+                </div>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.secretHint') }}</p>
+              </div>
+            </div>
+
+            <div class="mt-6 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.redeem.liandong.productMapping') }}</h3>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.redeem.liandong.goodsIdHint') }}</p>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" @click="addLiandongConfigurationProduct">
+                <Icon name="plus" size="sm" class="mr-1.5" />
+                {{ t('admin.redeem.liandong.addProduct') }}
+              </button>
+            </div>
+
+            <div class="mt-3 space-y-3">
+              <div v-for="(product, index) in liandongConfigurationForm.products" :key="product.client_key" class="grid gap-3 rounded-md border border-gray-200 p-3 dark:border-dark-600 md:grid-cols-[110px_120px_minmax(180px,1fr)_100px_100px_40px] md:items-end">
+                <div>
+                  <label class="input-label">{{ t('admin.redeem.liandong.cnyAmount') }}</label>
+                  <input v-model.number="product.cny_amount" type="number" min="1" max="100000" required class="input" />
+                </div>
+                <div>
+                  <label class="input-label">{{ t('admin.redeem.liandong.usdCredit') }}</label>
+                  <input v-model.number="product.usd_credit" type="number" min="0.01" step="0.01" required class="input" />
+                </div>
+                <div>
+                  <label class="input-label">{{ t('admin.redeem.liandong.goodsId') }}</label>
+                  <input v-model.number="product.goods_id" type="number" min="1" step="1" required class="input font-mono" :placeholder="t('admin.redeem.liandong.goodsIdPlaceholder')" />
+                </div>
+                <div>
+                  <label class="input-label">{{ t('admin.redeem.liandong.threshold') }}</label>
+                  <input v-model.number="product.threshold" type="number" min="0" max="1000" required class="input" />
+                </div>
+                <div>
+                  <label class="input-label">{{ t('admin.redeem.liandong.restockCount') }}</label>
+                  <input v-model.number="product.restock_count" type="number" min="1" max="1000" required class="input" />
+                </div>
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" :title="t('common.delete')" :disabled="liandongConfigurationForm.products.length === 1" @click="removeLiandongConfigurationProduct(index)">
+                  <Icon name="trash" size="sm" />
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-5 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800 dark:border-blue-900/60 dark:bg-blue-900/20 dark:text-blue-200">
+              {{ t('admin.redeem.liandong.uuidExplanation') }}
+            </div>
+
+            <div class="mt-5 flex justify-end gap-3 border-t border-gray-200 pt-4 dark:border-dark-600">
+              <button type="button" class="btn btn-secondary" @click="closeLiandongConfigurationDialog">{{ t('common.cancel') }}</button>
+              <button data-test="liandong-config-save" type="submit" class="btn btn-primary" :disabled="liandongAutoBusy">{{ liandongAutoBusy ? t('common.saving') : t('admin.redeem.liandong.saveConfiguration') }}</button>
             </div>
           </form>
         </div>
@@ -806,6 +914,7 @@ interface GroupOption {
 
 const showGenerateDialog = ref(false)
 const showLiandongRestockDialog = ref(false)
+const showLiandongConfigurationDialog = ref(false)
 const showResultDialog = ref(false)
 const generatedCodes = ref<RedeemCode[]>([])
 const generatedBatchFilename = ref('')
@@ -815,6 +924,17 @@ const liandongAutoStatus = ref<LiandongRestockStatus | null>(null)
 const liandongPolicyDrafts = ref<LiandongRestockProduct[]>([])
 const liandongAutoBusy = ref(false)
 let liandongStatusTimer: ReturnType<typeof setInterval> | null = null
+let liandongProductDraftKey = 0
+
+interface LiandongConfigurationProductDraft extends LiandongRestockProduct {
+  client_key: number
+}
+
+const liandongConfigurationForm = reactive({
+  merchant_token: '',
+  generate_code_secret: false,
+  products: [] as LiandongConfigurationProductDraft[]
+})
 
 const applyLiandongStatus = (status: LiandongRestockStatus) => {
   liandongAutoStatus.value = status
@@ -826,6 +946,86 @@ const loadLiandongAutoStatus = async (quiet = false) => {
     applyLiandongStatus(await adminAPI.redeem.getLiandongRestockStatus())
   } catch (error: any) {
     if (!quiet) appStore.showError(error.response?.data?.message || t('admin.redeem.liandong.statusFailed'))
+  }
+}
+
+const createLiandongConfigurationProduct = (
+  source?: Partial<LiandongRestockProduct>
+): LiandongConfigurationProductDraft => {
+  const preferredAmounts = [20, 50, 100, 5, 1, 500]
+  const used = new Set(liandongConfigurationForm.products.map((product) => product.cny_amount))
+  const cnyAmount = source?.cny_amount || preferredAmounts.find((amount) => !used.has(amount)) || 1
+  const definition = LIANDONG_BALANCE_PRODUCTS.find((product) => product.cnyAmount === cnyAmount)
+  return {
+    client_key: ++liandongProductDraftKey,
+    cny_amount: cnyAmount,
+    usd_credit: source?.usd_credit || definition?.usdCredit || 0.01,
+    goods_id: source?.goods_id || 0,
+    threshold: source?.threshold ?? 5,
+    restock_count: source?.restock_count || 10,
+    enabled: source?.enabled ?? true
+  }
+}
+
+const openLiandongConfigurationDialog = () => {
+  liandongConfigurationForm.merchant_token = ''
+  liandongConfigurationForm.generate_code_secret = !liandongAutoStatus.value?.code_secret_configured
+  liandongConfigurationForm.products = (liandongAutoStatus.value?.products || []).map((product) =>
+    createLiandongConfigurationProduct(product)
+  )
+  if (liandongConfigurationForm.products.length === 0) {
+    liandongConfigurationForm.products.push(createLiandongConfigurationProduct())
+  }
+  showLiandongConfigurationDialog.value = true
+}
+
+const closeLiandongConfigurationDialog = () => {
+  if (!liandongAutoBusy.value) showLiandongConfigurationDialog.value = false
+}
+
+const addLiandongConfigurationProduct = () => {
+  liandongConfigurationForm.products.push(createLiandongConfigurationProduct())
+}
+
+const removeLiandongConfigurationProduct = (index: number) => {
+  if (liandongConfigurationForm.products.length > 1) {
+    liandongConfigurationForm.products.splice(index, 1)
+  }
+}
+
+const saveLiandongConfiguration = async () => {
+  if (!liandongAutoStatus.value?.merchant_token_configured && !liandongConfigurationForm.merchant_token) {
+    appStore.showError(t('admin.redeem.liandong.tokenRequired'))
+    return
+  }
+  if (liandongConfigurationForm.products.some((product) => !Number.isInteger(Number(product.goods_id)) || Number(product.goods_id) <= 0)) {
+    appStore.showError(t('admin.redeem.liandong.goodsIdRequired'))
+    return
+  }
+
+  liandongAutoBusy.value = true
+  try {
+    applyLiandongStatus(await adminAPI.redeem.updateLiandongRestockConfiguration({
+      merchant_token: liandongConfigurationForm.merchant_token,
+      generate_code_secret: liandongConfigurationForm.generate_code_secret,
+      products: liandongConfigurationForm.products.map(({ client_key: _clientKey, ...product }) => ({
+        ...product,
+        cny_amount: Math.floor(Number(product.cny_amount)),
+        usd_credit: Number(product.usd_credit),
+        goods_id: Math.floor(Number(product.goods_id)),
+        threshold: Math.floor(Number(product.threshold)),
+        restock_count: Math.floor(Number(product.restock_count)),
+        current_stock: undefined,
+        last_error: undefined,
+        last_run_at: undefined
+      }))
+    }))
+    showLiandongConfigurationDialog.value = false
+    appStore.showSuccess(t('admin.redeem.liandong.configurationSaved'))
+  } catch (error: any) {
+    appStore.showError(error.response?.data?.message || t('admin.redeem.liandong.actionFailed'))
+  } finally {
+    liandongAutoBusy.value = false
   }
 }
 

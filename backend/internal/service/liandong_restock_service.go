@@ -22,7 +22,10 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 )
 
-const liandongRestockStateKey = "liandong_auto_restock_state_v1"
+const (
+	liandongRestockStateKey  = "liandong_auto_restock_state_v1"
+	liandongRestockConfigKey = "liandong_auto_restock_config_v1"
+)
 
 type LiandongRestockProduct struct {
 	CNYAmount    int     `json:"cny_amount"`
@@ -54,14 +57,28 @@ type LiandongRestockState struct {
 }
 
 type LiandongRestockStatus struct {
-	Configured      bool                     `json:"configured"`
-	Enabled         bool                     `json:"enabled"`
-	Running         bool                     `json:"running"`
-	IntervalSeconds int                      `json:"interval_seconds"`
-	LastRunAt       string                   `json:"last_run_at,omitempty"`
-	LastError       string                   `json:"last_error,omitempty"`
-	PendingBatch    bool                     `json:"pending_batch"`
-	Products        []LiandongRestockProduct `json:"products"`
+	Configured              bool                     `json:"configured"`
+	MerchantTokenConfigured bool                     `json:"merchant_token_configured"`
+	CodeSecretConfigured    bool                     `json:"code_secret_configured"`
+	Enabled                 bool                     `json:"enabled"`
+	Running                 bool                     `json:"running"`
+	IntervalSeconds         int                      `json:"interval_seconds"`
+	LastRunAt               string                   `json:"last_run_at,omitempty"`
+	LastError               string                   `json:"last_error,omitempty"`
+	PendingBatch            bool                     `json:"pending_batch"`
+	Products                []LiandongRestockProduct `json:"products"`
+}
+
+type LiandongRestockConfigurationUpdate struct {
+	MerchantToken      string                   `json:"merchant_token"`
+	GenerateCodeSecret bool                     `json:"generate_code_secret"`
+	Products           []LiandongRestockProduct `json:"products"`
+}
+
+type liandongRestockStoredConfig struct {
+	MerchantToken string                   `json:"merchant_token"`
+	CodeSecret    string                   `json:"code_secret"`
+	Products      []LiandongRestockProduct `json:"products"`
 }
 
 type LiandongRestockPolicyUpdate struct {
@@ -79,6 +96,7 @@ type liandongRedeemStore interface {
 type LiandongRestockService struct {
 	settingRepo SettingRepository
 	redeem      liandongRedeemStore
+	encryptor   SecretEncryptor
 	baseURL     string
 	token       string
 	codeSecret  []byte
@@ -86,6 +104,7 @@ type LiandongRestockService struct {
 	interval    time.Duration
 	httpClient  *http.Client
 
+	configMu  sync.RWMutex
 	mu        sync.Mutex
 	stateMu   sync.Mutex
 	running   bool
@@ -96,13 +115,16 @@ type LiandongRestockService struct {
 
 // ProvideLiandongRestockService starts the durable background worker. The
 // persisted enabled flag remains authoritative across process restarts.
-func ProvideLiandongRestockService(settingRepo SettingRepository, redeem *RedeemService, cfg *config.Config) *LiandongRestockService {
-	svc := NewLiandongRestockService(settingRepo, redeem, cfg)
+func ProvideLiandongRestockService(settingRepo SettingRepository, redeem *RedeemService, cfg *config.Config, encryptor SecretEncryptor) *LiandongRestockService {
+	svc := NewLiandongRestockService(settingRepo, redeem, cfg, encryptor)
+	if err := svc.loadStoredConfig(context.Background()); err != nil {
+		logger.LegacyPrintf("service.liandong_restock", "[LiandongRestock] load stored configuration failed: %v", err)
+	}
 	svc.StartWorker()
 	return svc
 }
 
-func NewLiandongRestockService(settingRepo SettingRepository, redeem *RedeemService, cfg *config.Config) *LiandongRestockService {
+func NewLiandongRestockService(settingRepo SettingRepository, redeem *RedeemService, cfg *config.Config, encryptor SecretEncryptor) *LiandongRestockService {
 	interval := 5 * time.Minute
 	if cfg != nil && cfg.LiandongRestock.IntervalSecs >= 30 {
 		interval = time.Duration(cfg.LiandongRestock.IntervalSecs) * time.Second
@@ -110,6 +132,7 @@ func NewLiandongRestockService(settingRepo SettingRepository, redeem *RedeemServ
 	s := &LiandongRestockService{
 		settingRepo: settingRepo,
 		redeem:      redeem,
+		encryptor:   encryptor,
 		interval:    interval,
 		httpClient:  &http.Client{Timeout: 20 * time.Second},
 		stop:        make(chan struct{}),
@@ -166,6 +189,12 @@ func (s *LiandongRestockService) StopWorker() {
 }
 
 func (s *LiandongRestockService) configured() bool {
+	s.configMu.RLock()
+	defer s.configMu.RUnlock()
+	return s.configuredLocked()
+}
+
+func (s *LiandongRestockService) configuredLocked() bool {
 	if s.settingRepo == nil || s.redeem == nil || s.baseURL == "" || s.token == "" || len(s.codeSecret) < 32 || len(s.products) == 0 {
 		return false
 	}
@@ -184,8 +213,55 @@ func (s *LiandongRestockService) configured() bool {
 
 func (s *LiandongRestockService) Configured() bool { return s.configured() }
 
+func (s *LiandongRestockService) loadStoredConfig(ctx context.Context) error {
+	if s.settingRepo == nil || s.encryptor == nil {
+		return nil
+	}
+	raw, err := s.settingRepo.GetValue(ctx, liandongRestockConfigKey)
+	if errors.Is(err, ErrSettingNotFound) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	plaintext, err := s.encryptor.Decrypt(raw)
+	if err != nil {
+		return fmt.Errorf("decrypt Liandong restock configuration: %w", err)
+	}
+	var stored liandongRestockStoredConfig
+	if err := json.Unmarshal([]byte(plaintext), &stored); err != nil {
+		return fmt.Errorf("decode Liandong restock configuration: %w", err)
+	}
+	s.applyStoredConfig(stored)
+	return nil
+}
+
+func (s *LiandongRestockService) applyStoredConfig(stored liandongRestockStoredConfig) {
+	s.configMu.Lock()
+	defer s.configMu.Unlock()
+	s.token = strings.TrimSpace(stored.MerchantToken)
+	s.codeSecret = []byte(stored.CodeSecret)
+	s.products = normalizeLiandongProducts(stored.Products)
+}
+
+func normalizeLiandongProducts(products []LiandongRestockProduct) []LiandongRestockProduct {
+	out := cloneLiandongProducts(products)
+	for i := range out {
+		out[i].CurrentStock = nil
+		out[i].LastError = ""
+		out[i].LastRunAt = ""
+		if out[i].Threshold < 0 {
+			out[i].Threshold = 0
+		}
+		if out[i].RestockCount <= 0 {
+			out[i].RestockCount = 10
+		}
+	}
+	return out
+}
+
 func (s *LiandongRestockService) loadState(ctx context.Context) (*LiandongRestockState, error) {
-	state := &LiandongRestockState{Products: cloneLiandongProducts(s.products)}
+	state := &LiandongRestockState{Products: s.configuredProducts()}
 	raw, err := s.settingRepo.GetValue(ctx, liandongRestockStateKey)
 	if errors.Is(err, ErrSettingNotFound) {
 		return state, nil
@@ -206,12 +282,18 @@ func cloneLiandongProducts(in []LiandongRestockProduct) []LiandongRestockProduct
 	return out
 }
 
+func (s *LiandongRestockService) configuredProducts() []LiandongRestockProduct {
+	s.configMu.RLock()
+	defer s.configMu.RUnlock()
+	return cloneLiandongProducts(s.products)
+}
+
 func (s *LiandongRestockService) mergePolicies(saved []LiandongRestockProduct) []LiandongRestockProduct {
 	byCNY := make(map[int]LiandongRestockProduct, len(saved))
 	for _, product := range saved {
 		byCNY[product.CNYAmount] = product
 	}
-	out := cloneLiandongProducts(s.products)
+	out := s.configuredProducts()
 	for i := range out {
 		if policy, ok := byCNY[out[i].CNYAmount]; ok {
 			out[i].Enabled = policy.Enabled
@@ -243,16 +325,144 @@ func (s *LiandongRestockService) Status(ctx context.Context) (*LiandongRestockSt
 	s.mu.Lock()
 	running := s.running
 	s.mu.Unlock()
+	s.configMu.RLock()
+	merchantTokenConfigured := strings.TrimSpace(s.token) != ""
+	codeSecretConfigured := len(s.codeSecret) >= 32
+	intervalSeconds := int(s.interval.Seconds())
+	s.configMu.RUnlock()
 	return &LiandongRestockStatus{
-		Configured:      s.configured(),
-		Enabled:         state.Enabled,
-		Running:         running,
-		IntervalSeconds: int(s.interval.Seconds()),
-		LastRunAt:       state.LastRunAt,
-		LastError:       state.LastError,
-		PendingBatch:    state.PendingBatch != nil,
-		Products:        state.Products,
+		Configured:              s.configured(),
+		MerchantTokenConfigured: merchantTokenConfigured,
+		CodeSecretConfigured:    codeSecretConfigured,
+		Enabled:                 state.Enabled,
+		Running:                 running,
+		IntervalSeconds:         intervalSeconds,
+		LastRunAt:               state.LastRunAt,
+		LastError:               state.LastError,
+		PendingBatch:            state.PendingBatch != nil,
+		Products:                state.Products,
 	}, nil
+}
+
+func (s *LiandongRestockService) UpdateConfiguration(ctx context.Context, input LiandongRestockConfigurationUpdate) (*LiandongRestockStatus, error) {
+	if s.settingRepo == nil || s.encryptor == nil {
+		return nil, errors.New("encrypted Liandong configuration storage is unavailable")
+	}
+
+	s.mu.Lock()
+	running := s.running
+	s.mu.Unlock()
+	if running {
+		return nil, errors.New("stop the active inventory check before changing configuration")
+	}
+
+	s.stateMu.Lock()
+	defer s.stateMu.Unlock()
+	state, err := s.loadState(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if state.Enabled {
+		return nil, errors.New("stop auto restock before changing configuration")
+	}
+	if state.PendingBatch != nil {
+		return nil, errors.New("resolve the pending batch before changing configuration")
+	}
+
+	s.configMu.RLock()
+	token := s.token
+	secret := string(s.codeSecret)
+	s.configMu.RUnlock()
+	if replacement := strings.TrimSpace(input.MerchantToken); replacement != "" {
+		token = replacement
+	}
+	if input.GenerateCodeSecret || len(secret) < 32 {
+		generated := make([]byte, 32)
+		if _, err := rand.Read(generated); err != nil {
+			return nil, fmt.Errorf("generate Liandong code secret: %w", err)
+		}
+		secret = hex.EncodeToString(generated)
+	}
+	products, err := validateLiandongConfiguration(token, secret, input.Products)
+	if err != nil {
+		return nil, err
+	}
+
+	stored := liandongRestockStoredConfig{
+		MerchantToken: token,
+		CodeSecret:    secret,
+		Products:      products,
+	}
+	plaintext, err := json.Marshal(stored)
+	if err != nil {
+		return nil, err
+	}
+	ciphertext, err := s.encryptor.Encrypt(string(plaintext))
+	if err != nil {
+		return nil, fmt.Errorf("encrypt Liandong restock configuration: %w", err)
+	}
+	if err := s.settingRepo.Set(ctx, liandongRestockConfigKey, ciphertext); err != nil {
+		return nil, err
+	}
+	s.applyStoredConfig(stored)
+	state.Products = s.mergePolicies(state.Products)
+	if err := s.saveState(ctx, state); err != nil {
+		return nil, err
+	}
+	return s.statusWithState(state)
+}
+
+func validateLiandongConfiguration(token, secret string, products []LiandongRestockProduct) ([]LiandongRestockProduct, error) {
+	if strings.TrimSpace(token) == "" {
+		return nil, errors.New("Liandong merchant token is required")
+	}
+	if len(secret) < 32 {
+		return nil, errors.New("Liandong code secret must contain at least 32 characters")
+	}
+	if len(products) == 0 || len(products) > 20 {
+		return nil, errors.New("configure between 1 and 20 Liandong products")
+	}
+	seenCNY := make(map[int]struct{}, len(products))
+	seenGoods := make(map[int64]struct{}, len(products))
+	normalized := normalizeLiandongProducts(products)
+	for _, product := range normalized {
+		if product.CNYAmount <= 0 || product.USDCredit <= 0 || product.GoodsID <= 0 {
+			return nil, errors.New("each Liandong product requires a positive CNY amount, USD credit, and numeric goods ID")
+		}
+		if product.Threshold < 0 || product.Threshold > 1000 || product.RestockCount < 1 || product.RestockCount > 1000 {
+			return nil, fmt.Errorf("invalid inventory policy for CNY %d", product.CNYAmount)
+		}
+		if _, exists := seenCNY[product.CNYAmount]; exists {
+			return nil, fmt.Errorf("duplicate CNY amount %d", product.CNYAmount)
+		}
+		if _, exists := seenGoods[product.GoodsID]; exists {
+			return nil, fmt.Errorf("duplicate Liandong goods ID %d", product.GoodsID)
+		}
+		seenCNY[product.CNYAmount] = struct{}{}
+		seenGoods[product.GoodsID] = struct{}{}
+	}
+	return normalized, nil
+}
+
+func (s *LiandongRestockService) statusWithState(state *LiandongRestockState) (*LiandongRestockStatus, error) {
+	s.mu.Lock()
+	running := s.running
+	s.mu.Unlock()
+	s.configMu.RLock()
+	status := &LiandongRestockStatus{
+		Configured:              s.configuredLocked(),
+		MerchantTokenConfigured: strings.TrimSpace(s.token) != "",
+		CodeSecretConfigured:    len(s.codeSecret) >= 32,
+		Enabled:                 state.Enabled,
+		Running:                 running,
+		IntervalSeconds:         int(s.interval.Seconds()),
+		LastRunAt:               state.LastRunAt,
+		LastError:               state.LastError,
+		PendingBatch:            state.PendingBatch != nil,
+		Products:                cloneLiandongProducts(state.Products),
+	}
+	s.configMu.RUnlock()
+	return status, nil
 }
 
 func (s *LiandongRestockService) UpdatePolicies(ctx context.Context, updates []LiandongRestockPolicyUpdate) (*LiandongRestockStatus, error) {
@@ -423,9 +633,12 @@ func newLiandongBatchID() (string, error) {
 }
 
 func (s *LiandongRestockService) deriveCodes(batch *liandongRestockPendingBatch) []string {
+	s.configMu.RLock()
+	secret := append([]byte(nil), s.codeSecret...)
+	s.configMu.RUnlock()
 	codes := make([]string, 0, batch.Count)
 	for i := 0; i < batch.Count; i++ {
-		mac := hmac.New(sha256.New, s.codeSecret)
+		mac := hmac.New(sha256.New, secret)
 		_, _ = fmt.Fprintf(mac, "%s:%d", batch.BatchID, i)
 		digest := strings.ToUpper(hex.EncodeToString(mac.Sum(nil)[:16]))
 		codes = append(codes, "LD-"+digest[0:8]+"-"+digest[8:16]+"-"+digest[16:24]+"-"+digest[24:32])
@@ -475,12 +688,16 @@ func (s *LiandongRestockService) post(ctx context.Context, path string, payload 
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.baseURL+path, bytes.NewReader(body))
+	s.configMu.RLock()
+	baseURL := s.baseURL
+	token := s.token
+	s.configMu.RUnlock()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, baseURL+path, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Merchant-Token", s.token)
+	req.Header.Set("Merchant-Token", token)
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		return nil, err

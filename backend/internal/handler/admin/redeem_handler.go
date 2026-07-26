@@ -46,6 +46,34 @@ type liandongRestockPoliciesRequest struct {
 	Products []service.LiandongRestockPolicyUpdate `json:"products" binding:"required,min=1,dive"`
 }
 
+type liandongRestockConfigurationRequest struct {
+	MerchantToken      string                           `json:"merchant_token"`
+	GenerateCodeSecret bool                             `json:"generate_code_secret"`
+	Products           []service.LiandongRestockProduct `json:"products" binding:"required,min=1,max=20,dive"`
+}
+
+func (h *RedeemHandler) UpdateLiandongRestockConfiguration(c *gin.Context) {
+	if h.liandongRestock == nil {
+		response.BadRequest(c, "Liandong auto restock is unavailable")
+		return
+	}
+	var req liandongRestockConfigurationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request: "+err.Error())
+		return
+	}
+	status, err := h.liandongRestock.UpdateConfiguration(c.Request.Context(), service.LiandongRestockConfigurationUpdate{
+		MerchantToken:      req.MerchantToken,
+		GenerateCodeSecret: req.GenerateCodeSecret,
+		Products:           req.Products,
+	})
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.Success(c, status)
+}
+
 func (h *RedeemHandler) UpdateLiandongRestockPolicies(c *gin.Context) {
 	if h.liandongRestock == nil {
 		response.BadRequest(c, "Liandong auto restock is unavailable")

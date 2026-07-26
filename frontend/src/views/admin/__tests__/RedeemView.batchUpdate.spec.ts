@@ -3,11 +3,12 @@ import { flushPromises, mount } from '@vue/test-utils'
 
 import RedeemView from '../RedeemView.vue'
 
-const { listRedeemCodes, batchUpdateRedeemCodes, getRestockStatus, stopRestock, getAllGroups, showSuccess, showError, showInfo } =
+const { listRedeemCodes, batchUpdateRedeemCodes, getRestockStatus, updateRestockConfiguration, stopRestock, getAllGroups, showSuccess, showError, showInfo } =
   vi.hoisted(() => ({
     listRedeemCodes: vi.fn(),
     batchUpdateRedeemCodes: vi.fn(),
     getRestockStatus: vi.fn(),
+    updateRestockConfiguration: vi.fn(),
     stopRestock: vi.fn(),
     getAllGroups: vi.fn(),
     showSuccess: vi.fn(),
@@ -25,6 +26,7 @@ vi.mock('@/api/admin', () => ({
       batchUpdate: batchUpdateRedeemCodes,
       exportCodes: vi.fn(),
       getLiandongRestockStatus: getRestockStatus,
+      updateLiandongRestockConfiguration: updateRestockConfiguration,
       updateLiandongRestockPolicies: vi.fn(),
       startLiandongRestock: vi.fn(),
       stopLiandongRestock: stopRestock
@@ -113,6 +115,7 @@ describe('admin RedeemView batch update', () => {
     listRedeemCodes.mockReset()
     batchUpdateRedeemCodes.mockReset()
     getRestockStatus.mockReset()
+    updateRestockConfiguration.mockReset()
     stopRestock.mockReset()
     getAllGroups.mockReset()
     showSuccess.mockReset()
@@ -153,12 +156,60 @@ describe('admin RedeemView batch update', () => {
     getAllGroups.mockResolvedValue([])
     getRestockStatus.mockResolvedValue({
       configured: false,
+      merchant_token_configured: false,
+      code_secret_configured: false,
       enabled: false,
       running: false,
       interval_seconds: 300,
       pending_batch: false,
       products: []
     })
+  })
+
+  it('opens first-time configuration and requests a server-generated secret', async () => {
+    updateRestockConfiguration.mockResolvedValue({
+      configured: true,
+      merchant_token_configured: true,
+      code_secret_configured: true,
+      enabled: false,
+      running: false,
+      interval_seconds: 300,
+      pending_batch: false,
+      products: [{ cny_amount: 20, usd_credit: 2.78, goods_id: 12345, threshold: 5, restock_count: 10, enabled: true }]
+    })
+    const wrapper = mount(RedeemView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          AppLayout: { template: '<div><slot /></div>' },
+          TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
+          DataTable: DataTableStub,
+          Pagination: true,
+          ConfirmDialog: true,
+          Select: SelectStub,
+          GroupBadge: true,
+          GroupOptionItem: true,
+          Icon: true,
+          Teleport: true
+        }
+      }
+    })
+
+    await flushPromises()
+    await wrapper.get('[data-test="liandong-config-open"]').trigger('click')
+    await flushPromises()
+    const form = wrapper.get('[data-test="liandong-config-form"]')
+    await form.find('input[type="password"]').setValue('merchant-token')
+    const numberInputs = form.findAll('input[type="number"]')
+    await numberInputs[2].setValue('12345')
+    await form.trigger('submit')
+    await flushPromises()
+
+    expect(updateRestockConfiguration).toHaveBeenCalledWith(expect.objectContaining({
+      merchant_token: 'merchant-token',
+      generate_code_secret: true,
+      products: [expect.objectContaining({ goods_id: 12345 })]
+    }))
   })
 
   it('submits only checked fields for selected redeem codes', async () => {
@@ -204,6 +255,8 @@ describe('admin RedeemView batch update', () => {
   it('stops server-side auto restock from the visible control', async () => {
     const runningStatus = {
       configured: true,
+      merchant_token_configured: true,
+      code_secret_configured: true,
       enabled: true,
       running: false,
       interval_seconds: 300,

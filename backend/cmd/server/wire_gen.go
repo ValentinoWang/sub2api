@@ -82,11 +82,11 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	userService := service.NewUserService(userRepository, settingRepository, apiKeyAuthCacheInvalidator, billingCache)
 	redeemCache := repository.NewRedeemCache(redisClient)
 	redeemService := service.NewRedeemService(redeemCodeRepository, userRepository, subscriptionService, redeemCache, billingCacheService, client, apiKeyAuthCacheInvalidator, affiliateService)
-	liandongRestockService := service.ProvideLiandongRestockService(settingRepository, redeemService, configConfig)
 	secretEncryptor, err := repository.NewAESEncryptor(configConfig)
 	if err != nil {
 		return nil, err
 	}
+	liandongRestockService := service.ProvideLiandongRestockService(settingRepository, redeemService, configConfig, secretEncryptor)
 	openAIContinuityRepository := repository.NewOpenAIContinuityRepository(db, secretEncryptor)
 	totpCache := repository.NewTotpCache(redisClient)
 	totpService := service.NewTotpService(userRepository, secretEncryptor, totpCache, settingService, emailService, emailQueueService)
