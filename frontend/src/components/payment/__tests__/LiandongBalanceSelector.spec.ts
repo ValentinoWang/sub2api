@@ -23,7 +23,12 @@ describe('LiandongBalanceSelector', () => {
     expect(wrapper.text()).toContain('到账 $0.14')
     expect(wrapper.text()).toContain('¥500')
     expect(wrapper.text()).toContain('到账 $69.44')
-    expect(wrapper.findAll('a')).toHaveLength(7)
+    expect(wrapper.text()).not.toContain('1 USD = ¥7.2')
+    const rateSourceLink = wrapper.find('a[href="https://open.er-api.com/v6/latest/USD"]')
+    expect(rateSourceLink.text()).toBe('open.er-api 实时接口')
+    expect(rateSourceLink.attributes('target')).toBe('_blank')
+    expect(rateSourceLink.attributes('rel')).toBe('noopener noreferrer')
+    expect(wrapper.findAll('a')).toHaveLength(8)
   })
 
   it('uses the exact configured product URL and disables missing mappings', () => {
@@ -31,7 +36,7 @@ describe('LiandongBalanceSelector', () => {
       props: { products },
       global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
     })
-    const productLinks = wrapper.findAll('a').slice(1)
+    const productLinks = wrapper.findAll('a').slice(2)
 
     expect(productLinks[0].attributes('href')).toBe('https://www.ldxp.cn/goods/101')
     expect(productLinks[0].attributes('target')).toBe('_blank')

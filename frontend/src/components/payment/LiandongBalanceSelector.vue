@@ -3,7 +3,16 @@
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div>
         <h2 id="liandong-balance-title" class="text-base font-semibold text-gray-900 dark:text-white">Sub2API 额度</h2>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">1 USD = ¥7.2</p>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          汇率按照
+          <a
+            href="https://open.er-api.com/v6/latest/USD"
+            class="font-medium underline underline-offset-2 hover:text-primary-600 dark:hover:text-primary-400"
+            target="_blank"
+            rel="noopener noreferrer"
+          >open.er-api 实时接口</a>
+          计算
+        </p>
       </div>
       <RouterLink class="btn btn-secondary px-3 py-2 text-sm" to="/redeem">兑换卡密</RouterLink>
     </div>
