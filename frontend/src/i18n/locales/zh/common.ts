@@ -184,6 +184,7 @@ export default {
     github: 'GitHub',
     mySubscriptions: '我的订阅',
     buySubscription: '充值/订阅',
+    gettingStarted: '新手指南',
     docs: '文档',
     myOrders: '我的订单',
     orderManagement: '订单管理',

@@ -610,6 +610,59 @@ export default {
     pleaseEnterCode: 'Please enter a redeem code'
   },
 
+  gettingStarted: {
+    title: 'Getting Started',
+    description: 'Set up the platform step by step, from adding credit to your first API request',
+    profileEyebrow: 'New here?',
+    profileTitle: 'Start using Sub2API here',
+    profileDescription: 'Follow the steps to purchase or add credit, redeem a code, create an API key, configure a client, and preserve local Codex memory.',
+    openGuide: 'Open getting started',
+    heading: 'Connect Codex in five steps',
+    intro: 'Each step links directly to the relevant page. Skip anything you have already completed.',
+    startHere: 'Recommended starting point',
+    stepLabel: 'Step {step}',
+    steps: {
+      balance: {
+        title: 'Add usable credit',
+        description: 'Choose an option under Recharge / Subscription. If you already received a code from Liandong Store, go straight to redemption.',
+        primary: 'Purchase credit',
+        secondary: 'Redeem a code'
+      },
+      key: {
+        title: 'Create an API key',
+        description: 'Create your personal API key. Then choose Use to see the Base URL and configuration for Codex or OpenAI-compatible clients.',
+        action: 'Manage API keys'
+      },
+      connect: {
+        title: 'Connect the key to Codex',
+        description: 'Return to the API key list and choose either method below for the target key. The page uses this site’s real Base URL and your key.',
+        action: 'Open API keys'
+      },
+      verify: {
+        title: 'Restart Codex and verify',
+        description: 'Quit Codex completely, reopen it, start a new task, and send a short message. Use the site root as Base URL, without /responses or /Api_subscribe.',
+        primary: 'View usage',
+        secondary: 'Check subscriptions'
+      },
+      memory: {
+        title: 'Switching Codex sign-in or API provider?',
+        description: 'Codex memory is stored locally, not in Sub2API Redis. Codex Memory can unify local memories and task records on the same computer.',
+        action: 'Open Codex Memory guide'
+      }
+    },
+    connect: {
+      ccswitchTitle: 'Option A: CCSwitch (recommended)',
+      ccswitchDescription: 'Install and open CCSwitch, choose Import to CC-Switch on the API key row, then enable the imported Codex provider.',
+      manualTitle: 'Option B: edit the files manually',
+      manualDescription: 'Choose Use on the API key row, select Codex, your OS, and an auth mode, then merge the shown config.toml and auth.json content.',
+      warning: 'Do not replace the entire config.toml. Keep existing [features], [memories], other providers, profiles, and project trust entries.'
+    },
+    helpTitle: 'When something does not work',
+    helpDescription: 'Check the API key, balance, and Base URL first. For Codex sign-in changes or task history, use the dedicated memory guide.',
+    openKeys: 'Check API keys',
+    openMemoryDocs: 'View Codex Memory'
+  },
+
   // Profile
   profile: {
     title: 'Profile Settings',

@@ -4,6 +4,35 @@
       data-testid="profile-shell"
       class="mx-auto max-w-[950px] space-y-6"
     >
+      <section
+        data-testid="profile-getting-started"
+        class="overflow-hidden rounded-lg border border-primary-200 bg-white dark:border-primary-800/70 dark:bg-dark-800"
+        :aria-labelledby="'profile-getting-started-title'"
+      >
+        <div class="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div class="flex min-w-0 items-start gap-4">
+            <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100 text-primary-700 dark:bg-primary-950/60 dark:text-primary-300">
+              <Icon name="book" size="lg" />
+            </div>
+            <div class="min-w-0">
+              <p class="text-xs font-semibold uppercase text-primary-700 dark:text-primary-300">
+                {{ t('gettingStarted.profileEyebrow') }}
+              </p>
+              <h2 id="profile-getting-started-title" class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                {{ t('gettingStarted.profileTitle') }}
+              </h2>
+              <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-600 dark:text-dark-300">
+                {{ t('gettingStarted.profileDescription') }}
+              </p>
+            </div>
+          </div>
+          <RouterLink to="/getting-started" class="btn btn-primary inline-flex min-h-10 flex-shrink-0 items-center justify-center gap-2">
+            {{ t('gettingStarted.openGuide') }}
+            <Icon name="arrowRight" size="sm" />
+          </RouterLink>
+        </div>
+      </section>
+
       <ProfileInfoCard
         :user="user"
         :linuxdo-enabled="linuxdoOAuthEnabled"

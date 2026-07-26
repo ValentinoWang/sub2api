@@ -83,6 +83,10 @@ describe('ProfileView', () => {
           ProfileBalanceNotifyCard: { template: '<div data-testid="profile-balance-notify-card" />' },
           ProfilePasswordForm: { template: '<div data-testid="profile-password-form" />' },
           ProfileTotpCard: { template: '<div data-testid="profile-totp-card" />' },
+          RouterLink: {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>'
+          },
           Icon: true
         }
       }
@@ -95,5 +99,34 @@ describe('ProfileView', () => {
     expect(wrapper.get('[data-testid="profile-shell"]').html()).toContain('profile-info-card')
     expect(wrapper.get('[data-testid="profile-shell"]').html()).toContain('profile-password-form')
     expect(wrapper.get('[data-testid="profile-shell"]').html()).toContain('profile-totp-card')
+  })
+
+  it('shows the getting started section before the long account settings content', async () => {
+    const wrapper = mount(ProfileView, {
+      global: {
+        stubs: {
+          AppLayout: { template: '<div><slot /></div>' },
+          ProfileInfoCard: { template: '<div data-testid="profile-info-card" />' },
+          ProfileBalanceNotifyCard: true,
+          ProfilePasswordForm: true,
+          ProfileTotpCard: true,
+          RouterLink: {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>'
+          },
+          Icon: true
+        }
+      }
+    })
+
+    await flushPromises()
+
+    const guide = wrapper.get('[data-testid="profile-getting-started"]')
+    expect(guide.text()).toContain('gettingStarted.profileTitle')
+    expect(guide.get('a').attributes('href')).toBe('/getting-started')
+
+    const shellChildren = wrapper.get('[data-testid="profile-shell"]').element.children
+    expect(shellChildren[0]?.getAttribute('data-testid')).toBe('profile-getting-started')
+    expect(shellChildren[1]?.getAttribute('data-testid')).toBe('profile-info-card')
   })
 })

@@ -53,3 +53,9 @@ describe('AppSidebar header styles', () => {
     expect(sidebarBrandBlockMatch?.[0]).not.toContain('overflow: hidden;')
   })
 })
+
+describe('AppSidebar getting started entry', () => {
+  it('keeps the guide visible in the user and admin personal navigation', () => {
+    expect(componentSource).toContain("{ path: '/getting-started', label: t('nav.gettingStarted')")
+  })
+})

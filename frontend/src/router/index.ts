@@ -297,6 +297,18 @@ export const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/getting-started',
+    name: 'GettingStarted',
+    component: () => import('@/views/user/GettingStartedView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Getting Started',
+      titleKey: 'gettingStarted.title',
+      descriptionKey: 'gettingStarted.description'
+    }
+  },
+  {
     path: '/subscriptions',
     name: 'Subscriptions',
     component: () => import('@/views/user/SubscriptionsView.vue'),

@@ -615,6 +615,59 @@ export default {
     pleaseEnterCode: '请输入兑换码'
   },
 
+  gettingStarted: {
+    title: '新手指南',
+    description: '从购买额度到发出第一个 API 请求，按步骤完成平台配置',
+    profileEyebrow: '第一次使用？',
+    profileTitle: '从这里开始使用 Sub2API',
+    profileDescription: '按顺序完成购买或充值、兑换、创建 API 密钥和客户端配置，并了解如何保留 Codex 本地记忆。',
+    openGuide: '打开新手指南',
+    heading: '五步接入 Codex',
+    intro: '每一步都可以直接前往对应页面。已经完成的步骤可以跳过。',
+    startHere: '建议从这里开始',
+    stepLabel: '第 {step} 步',
+    steps: {
+      balance: {
+        title: '获取可用额度',
+        description: '前往充值/订阅选择方案；如果已从链动小铺拿到卡密，直接进入兑换页面。',
+        primary: '购买额度',
+        secondary: '兑换卡密'
+      },
+      key: {
+        title: '创建 API 密钥',
+        description: '创建个人 API Key。创建后点击“使用”即可查看 Base URL 和 Codex、OpenAI 兼容客户端配置。',
+        action: '管理 API 密钥'
+      },
+      connect: {
+        title: '把密钥接入 Codex',
+        description: '回到 API 密钥列表，在目标密钥右侧选择下面任一方式。页面会使用当前站点的真实 Base URL 和你的密钥生成配置。',
+        action: '前往 API 密钥'
+      },
+      verify: {
+        title: '重启 Codex 并验证',
+        description: '完全退出后重新打开 Codex，新建任务并发送一条短消息。Base URL 必须是站点根地址，不能带 /responses 或 /Api_subscribe。',
+        primary: '查看使用记录',
+        secondary: '检查订阅状态'
+      },
+      memory: {
+        title: '需要切换 Codex 登录或 API 提供方？',
+        description: 'Codex 记忆保存在本机，不在 Sub2API Redis。使用 Codex Memory 工具可统一同一台电脑上的本地记忆和任务记录。',
+        action: '打开 Codex Memory 指南'
+      }
+    },
+    connect: {
+      ccswitchTitle: '方式 A：CCSwitch（推荐）',
+      ccswitchDescription: '先安装并打开 CCSwitch，再点击密钥行的“导入到 CC-Switch”，启用导入的 Codex provider。',
+      manualTitle: '方式 B：手动修改配置',
+      manualDescription: '点击密钥行的“使用”，选择 Codex、系统和认证模式，按页面内容合并到 ~/.codex/config.toml 与 auth.json。',
+      warning: '不要整文件覆盖 config.toml；保留原有 [features]、[memories]、其他 provider、profiles 和项目授权。'
+    },
+    helpTitle: '使用中遇到问题',
+    helpDescription: '先确认密钥、余额和 Base URL；Codex 登录方式切换或历史任务问题请查看专门的记忆指南。',
+    openKeys: '检查密钥',
+    openMemoryDocs: '查看 Codex Memory'
+  },
+
   // Profile
   profile: {
     title: '个人设置',

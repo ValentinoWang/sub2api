@@ -3,7 +3,7 @@
     <header class="border-b border-gray-200 bg-white dark:border-dark-800 dark:bg-dark-900">
       <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <router-link to="/home" class="flex items-center gap-3 font-semibold">
-          <img src="/logo.png" alt="Sub2API" class="h-8 w-8 object-contain" />
+          <img src="/logo.svg" alt="Sub2API" class="h-8 w-8 object-contain" />
           <span>Sub2API Docs</span>
         </router-link>
         <router-link to="/login" class="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400">{{ copy.login }}</router-link>
