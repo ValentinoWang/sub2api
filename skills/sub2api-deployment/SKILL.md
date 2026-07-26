@@ -1,6 +1,6 @@
 ---
 name: sub2api-deployment
-description: Build, verify, troubleshoot, upload, and safely cut over this Sub2API project's Docker image without compiling on the production server. Use for Sub2API releases, server updates, Docker image transfers, local Docker build failures, Go cache or registry mirror errors, production cutovers, deployment recovery, health or admin-login regressions, and any request to rebuild or deploy the 43.136.113.101 instance or another low-memory Sub2API host.
+description: Build, verify, troubleshoot, upload, notify users about maintenance, and safely cut over this Sub2API project's Docker image without compiling on the production server. Use for Sub2API releases, server updates, Docker image transfers, local Docker build failures, Go cache or registry mirror errors, production cutovers, deployment recovery, health or admin-login regressions, and any request to rebuild or deploy the 43.136.113.101 instance or another low-memory Sub2API host.
 ---
 
 # Sub2API Deployment
@@ -18,8 +18,10 @@ For errors seen during local candidate builds, read [references/local-build-fail
 5. Verify the candidate platform is `linux/amd64`, run `/app/sub2api --version`, and record the image/archive SHA256.
 6. Upload and load the candidate without changing the running container. Recheck current service health after `docker load`.
 7. Before cutover, verify admin login using an authenticated probe or an actual login. Page-shell HTTP 200 alone is insufficient.
-8. Cut over with `--no-build --no-deps`. Never use a mutable `latest` tag as the candidate identity.
-9. Verify health, admin login, API-key authentication, `/responses` SSE completion, PostgreSQL migrations, and recent logs before declaring success.
+8. Publish an active popup maintenance announcement to all users before any command that can restart, recreate, or interrupt a production container. API success and a recorded announcement ID are mandatory; otherwise stop before cutover.
+9. Cut over with `--no-build --no-deps`. Never use a mutable `latest` tag as the candidate identity.
+10. Verify health, admin login, API-key authentication, `/responses` SSE completion, PostgreSQL migrations, and recent logs before declaring success.
+11. Archive the maintenance announcement and publish a recovery popup after acceptance. If acceptance fails, update the original announcement to say maintenance is delayed; never silently leave users waiting.
 
 ## Build And Upload
 
@@ -42,6 +44,17 @@ Password authentication may be supplied interactively or through an existing SSH
 
 Read the candidate image tag from `candidate.env`. On the server, verify that `deploy/docker-compose.server.yml` has no `build:` section and that the candidate image exists. Preserve the current container image ID only for the duration of cutover; remove any temporary rollback tag after acceptance if the user does not want retained rollback images.
 
+Before cutover, publish the maintenance notice through the site's own notification module. Use an admin API key or admin JWT from the environment; never place it in arguments, source, state files, or logs.
+
+```bash
+export SUB2API_BASE_URL='http://43.136.113.101:8080'
+export SUB2API_ADMIN_API_KEY='<admin api key>'
+node skills/sub2api-deployment/scripts/notify-maintenance.js \
+  --event start --release '<version-or-commit>' --eta-minutes 5
+```
+
+Do not continue unless the command returns `maintenance_announcement_id=<id>`. This requirement applies to planned Docker recreation, restart, host reboot, proxy restart, migration, or other work that may interrupt requests. A read-only inspection, image upload, or `docker load` does not require a notice while the running service remains unaffected.
+
 Use the server's existing Compose files and environment:
 
 ```bash
@@ -54,6 +67,23 @@ SUB2API_IMAGE='sub2api-local:<commit>' \
 ```
 
 Do not run this command merely because upload succeeded. Require all pre-cutover gates first.
+
+After every acceptance check succeeds, close the notification lifecycle:
+
+```bash
+node skills/sub2api-deployment/scripts/notify-maintenance.js \
+  --event complete --release '<version-or-commit>'
+```
+
+If cutover or acceptance fails, publish the failure state before recovery work:
+
+```bash
+node skills/sub2api-deployment/scripts/notify-maintenance.js \
+  --event failed --release '<version-or-commit>' \
+  --details '服务恢复时间另行通知。'
+```
+
+The script records only announcement IDs and timestamps under the ignored `.artifacts/` directory. It targets all users with `popup` mode. Never claim deployment completion while its state remains `start` or `failed`.
 
 ## Acceptance
 
