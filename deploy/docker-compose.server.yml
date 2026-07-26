@@ -4,8 +4,9 @@ services:
     # the development host; this low-memory server must never compile it.
     image: ${SUB2API_IMAGE:-sub2api-local:latest}
     environment:
-      - SERVER_MAX_REQUEST_BODY_SIZE=25165824
-      - GATEWAY_MAX_BODY_SIZE=25165824
+      - SERVER_MAX_REQUEST_BODY_SIZE=268435456
+      - GATEWAY_MAX_BODY_SIZE=268435456
+      - GATEWAY_TEXT_MAX_BODY_SIZE=33554432
       - HTTP_PROXY=http://172.18.0.1:7891
       - HTTPS_PROXY=http://172.18.0.1:7891
       - ALL_PROXY=socks5h://172.18.0.1:7891
