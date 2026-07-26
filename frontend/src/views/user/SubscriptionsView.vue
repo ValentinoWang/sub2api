@@ -27,6 +27,24 @@
           <p class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
             {{ t('userSubscriptions.liandongPurchaseTitle') }}
           </p>
+          <div
+            v-if="exchangeRate"
+            class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-left dark:border-amber-800 dark:bg-amber-900/20"
+          >
+            <p class="text-sm font-medium text-amber-900 dark:text-amber-200">
+              {{ t('userSubscriptions.exchangeRateNotice') }}
+            </p>
+            <p class="mt-1 text-xs text-amber-800 dark:text-amber-300">
+              {{ t('userSubscriptions.exchangeRateDetail', {
+                rate: exchangeRate.toFixed(4),
+                time: exchangeRateUpdatedAtLabel,
+                source: exchangeRateSource
+              }) }}
+            </p>
+          </div>
+          <p v-else class="mb-4 text-xs text-amber-700 dark:text-amber-300">
+            {{ t('userSubscriptions.exchangeRateUnavailable') }}
+          </p>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <a
               v-for="product in availableLiandongProducts"
@@ -36,7 +54,12 @@
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span>¥{{ product.cnyAmount }}</span>
+              <span class="flex flex-col items-center">
+                <span>¥{{ product.cnyAmount }}</span>
+                <span v-if="exchangeRate" class="text-xs font-normal opacity-90">
+                  {{ t('userSubscriptions.estimatedUsdCredit', { usd: estimatedUsd(product.cnyAmount) }) }}
+                </span>
+              </span>
               <Icon name="externalLink" size="sm" />
             </a>
           </div>
@@ -277,7 +300,9 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import subscriptionsAPI from '@/api/subscriptions'
+import { paymentAPI } from '@/api/payment'
 import type { UserSubscription } from '@/types'
+import type { PaymentConfig } from '@/types/payment'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { formatDateOnly } from '@/utils/format'
@@ -302,7 +327,24 @@ const appStore = useAppStore()
 
 const subscriptions = ref<UserSubscription[]>([])
 const loading = ref(true)
+const paymentConfig = ref<PaymentConfig | null>(null)
 const availableLiandongProducts = computed(() => LIANDONG_BALANCE_PRODUCTS.filter(product => product.productUrl))
+const exchangeRate = computed(() => {
+  const rate = paymentConfig.value?.balance_exchange_rate_usd_to_cny ?? 0
+  return rate >= 4 && rate <= 10 ? rate : null
+})
+const exchangeRateSource = computed(() => paymentConfig.value?.balance_exchange_rate_source || 'N/A')
+const exchangeRateUpdatedAtLabel = computed(() => {
+  const raw = paymentConfig.value?.balance_exchange_rate_updated_at
+  if (!raw) return 'N/A'
+  const date = new Date(raw)
+  return Number.isNaN(date.getTime()) ? 'N/A' : date.toLocaleString()
+})
+
+function estimatedUsd(cnyAmount: number): string {
+  if (!exchangeRate.value) return '0.00'
+  return (cnyAmount / exchangeRate.value).toFixed(2)
+}
 
 function subscriptionHasPeakRate(subscription: UserSubscription): boolean {
   return hasPeakRate(subscription.group)
@@ -321,6 +363,16 @@ async function loadSubscriptions() {
     appStore.showError(t('userSubscriptions.failedToLoad'))
   } finally {
     loading.value = false
+  }
+}
+
+async function loadExchangeRate() {
+  try {
+    const response = await paymentAPI.getConfig()
+    paymentConfig.value = response.data
+  } catch (error) {
+    console.error('Failed to load exchange rate:', error)
+    paymentConfig.value = null
   }
 }
 
@@ -408,5 +460,6 @@ function formatResetTime(windowStart: string | null, windowHours: number): strin
 
 onMounted(() => {
   loadSubscriptions()
+  loadExchangeRate()
 })
 </script>

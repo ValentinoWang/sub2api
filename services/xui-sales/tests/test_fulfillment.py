@@ -43,6 +43,7 @@ class FakeSub2API:
         self.resolve_calls = 0
         self.grant_calls = 0
         self.balance_grant_calls = 0
+        self.balance_quote_calls = 0
 
     def healthcheck(self) -> None:
         return None
@@ -67,9 +68,22 @@ class FakeSub2API:
             raise Sub2APIError("simulated timeout")
         if order["sub2api_user_id"] != self.user_id:
             raise AssertionError("unexpected Sub2API user")
-        if order["api_balance_cents"] != 1000:
+        expected = order.get("api_credited_balance_cents") or order["api_balance_cents"]
+        if expected != 1000:
             raise AssertionError("unexpected Sub2API balance")
         return 9002
+
+    def balance_quote(self, cny_cents: int) -> dict[str, object]:
+        self.balance_quote_calls += 1
+        if cny_cents != 7200:
+            raise AssertionError("unexpected CNY amount")
+        return {
+            "cny_cents": cny_cents,
+            "usd_cents": 1000,
+            "usd_cny_rate": "7.2",
+            "source": "test",
+            "updated_at": "2026-07-26T00:00:00Z",
+        }
 
 
 class FulfillmentTests(unittest.TestCase):
@@ -161,7 +175,7 @@ class FulfillmentTests(unittest.TestCase):
             "api-balance-10",
             "API balance 10 USD",
             "",
-            100,
+            7200,
             1,
             1,
             0,
@@ -238,6 +252,7 @@ class FulfillmentTests(unittest.TestCase):
         self.assertEqual("api_active", active["api_status"])
         self.assertFalse(active["vpn_required"])
         self.assertEqual(1, sub2api.balance_grant_calls)
+        self.assertEqual(1, sub2api.balance_quote_calls)
         self.assertEqual(0, sub2api.grant_calls)
         self.assertEqual(0, provisioner.calls)
         self.assertEqual("redeemed", self.store.inventory_counts()[0]["status"])
@@ -253,6 +268,7 @@ class FulfillmentTests(unittest.TestCase):
         self.assertEqual("api_failed", self.store.get(order["id"])["api_status"])
         self.assertTrue(fulfill_order(self.store, provisioner, sub2api, order["id"]))
         self.assertEqual(2, sub2api.balance_grant_calls)
+        self.assertEqual(1, sub2api.balance_quote_calls)
         self.assertEqual(0, provisioner.calls)
 
     def test_balance_only_redeem_route_is_idempotent_without_xui(self) -> None:

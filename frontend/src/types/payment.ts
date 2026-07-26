@@ -34,6 +34,9 @@ export interface PaymentConfig {
   order_timeout_minutes: number
   balance_disabled: boolean
   balance_recharge_multiplier: number
+  balance_exchange_rate_usd_to_cny: number
+  balance_exchange_rate_source: string
+  balance_exchange_rate_updated_at: string
   subscription_usd_to_cny_rate: number
   enabled_payment_types: PaymentType[]
   help_image_url: string
@@ -68,6 +71,9 @@ export interface CheckoutInfoResponse {
   plans: SubscriptionPlan[]
   balance_disabled: boolean
   balance_recharge_multiplier: number
+  balance_exchange_rate_usd_to_cny: number
+  balance_exchange_rate_source: string
+  balance_exchange_rate_updated_at: string
   /** Subscription CNY conversion rate (1 USD = X CNY); 0 = disabled, plan price is charged as-is */
   subscription_usd_to_cny_rate: number
   recharge_fee_rate: number

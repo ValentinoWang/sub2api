@@ -107,17 +107,21 @@ func TestParsePaymentConfig(t *testing.T) {
 	t.Run("all values populated", func(t *testing.T) {
 		t.Parallel()
 		vals := map[string]string{
-			SettingPaymentEnabled:      "true",
-			SettingMinRechargeAmount:   "5.00",
-			SettingMaxRechargeAmount:   "1000.00",
-			SettingDailyRechargeLimit:  "5000.00",
-			SettingOrderTimeoutMinutes: "15",
-			SettingMaxPendingOrders:    "5",
-			SettingEnabledPaymentTypes: "alipay,wxpay,stripe",
-			SettingBalancePayDisabled:  "true",
-			SettingLoadBalanceStrategy: "least_amount",
-			SettingProductNamePrefix:   "PRE",
-			SettingProductNameSuffix:   "SUF",
+			SettingPaymentEnabled:               "true",
+			SettingMinRechargeAmount:            "5.00",
+			SettingMaxRechargeAmount:            "1000.00",
+			SettingDailyRechargeLimit:           "5000.00",
+			SettingOrderTimeoutMinutes:          "15",
+			SettingMaxPendingOrders:             "5",
+			SettingEnabledPaymentTypes:          "alipay,wxpay,stripe",
+			SettingBalancePayDisabled:           "true",
+			SettingBalanceRechargeMult:          "0.13888889",
+			SettingBalanceExchangeRateUSDToCNY:  "7.2",
+			SettingBalanceExchangeRateSource:    "frankfurter",
+			SettingBalanceExchangeRateUpdatedAt: "2026-07-26T00:00:00Z",
+			SettingLoadBalanceStrategy:          "least_amount",
+			SettingProductNamePrefix:            "PRE",
+			SettingProductNameSuffix:            "SUF",
 		}
 		cfg := svc.parsePaymentConfig(vals)
 
@@ -147,6 +151,12 @@ func TestParsePaymentConfig(t *testing.T) {
 		}
 		if !cfg.BalanceDisabled {
 			t.Fatal("expected BalanceDisabled=true")
+		}
+		if cfg.BalanceRechargeMultiplier != 0.13888889 || cfg.BalanceExchangeRateUSDToCNY != 7.2 {
+			t.Fatalf("unexpected exchange config: multiplier=%v rate=%v", cfg.BalanceRechargeMultiplier, cfg.BalanceExchangeRateUSDToCNY)
+		}
+		if cfg.BalanceExchangeRateSource != "frankfurter" || cfg.BalanceExchangeRateUpdatedAt != "2026-07-26T00:00:00Z" {
+			t.Fatalf("unexpected exchange metadata: source=%q updated_at=%q", cfg.BalanceExchangeRateSource, cfg.BalanceExchangeRateUpdatedAt)
 		}
 		if cfg.LoadBalanceStrategy != "least_amount" {
 			t.Fatalf("LoadBalanceStrategy = %q, want %q", cfg.LoadBalanceStrategy, "least_amount")
@@ -446,6 +456,40 @@ func TestUpdatePaymentConfig_PersistsVisibleMethodRouting(t *testing.T) {
 	}
 	if repo.values[SettingPaymentVisibleMethodWxpaySource] != VisibleMethodSourceOfficialWechat {
 		t.Fatalf("wxpay source = %q, want %q", repo.values[SettingPaymentVisibleMethodWxpaySource], VisibleMethodSourceOfficialWechat)
+	}
+}
+
+func TestUpdatePaymentConfig_PreservesExchangeRatePrecision(t *testing.T) {
+	repo := &paymentConfigSettingRepoStub{values: map[string]string{
+		SettingPaymentEnabled:    "true",
+		SettingMinRechargeAmount: "5.00",
+	}}
+	svc := &PaymentConfigService{settingRepo: repo}
+
+	multiplier := 0.13888889
+	rate := 7.2
+	err := svc.UpdatePaymentConfig(context.Background(), UpdatePaymentConfigRequest{
+		BalanceRechargeMultiplier:   &multiplier,
+		BalanceExchangeRateUSDToCNY: &rate,
+	})
+	if err != nil {
+		t.Fatalf("UpdatePaymentConfig returned error: %v", err)
+	}
+
+	if got := repo.values[SettingBalanceRechargeMult]; got != "0.13888889" {
+		t.Fatalf("balance recharge multiplier = %q, want full precision", got)
+	}
+	if got := repo.values[SettingBalanceExchangeRateUSDToCNY]; got != "7.2" {
+		t.Fatalf("USD/CNY rate = %q, want 7.2", got)
+	}
+	if got := repo.values[SettingPaymentEnabled]; got != "true" {
+		t.Fatalf("partial exchange update changed payment enabled to %q", got)
+	}
+	if got := repo.values[SettingMinRechargeAmount]; got != "5.00" {
+		t.Fatalf("partial exchange update changed min recharge amount to %q", got)
+	}
+	if _, changed := repo.updates[SettingPaymentEnabled]; changed {
+		t.Fatal("partial exchange update unexpectedly wrote payment enabled")
 	}
 }
 

@@ -47,6 +47,12 @@ def fulfill_order(
                 if claimed["api_fulfillment_type"] == "subscription":
                     redeem_code_id = sub2api.grant_subscription(claimed)
                 elif claimed["api_fulfillment_type"] == "balance":
+                    if (
+                        claimed.get("api_balance_cny_cents") is not None
+                        and claimed.get("api_credited_balance_cents") is None
+                    ):
+                        quote = sub2api.balance_quote(int(claimed["api_balance_cny_cents"]))
+                        claimed = store.freeze_balance_quote(order_id, quote)
                     redeem_code_id = sub2api.grant_balance(claimed)
                 else:
                     raise ValueError("unsupported API fulfillment type")

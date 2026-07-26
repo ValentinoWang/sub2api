@@ -21,7 +21,9 @@ SELECT o.id, o.access_token_hash, o.plan_id, o.plan_name, o.amount_cents,
        f.status AS fulfillment_status, f.api_status, f.vpn_status,
        f.sub2api_user_id, f.sub2api_group_id, f.api_validity_days,
        f.api_redeem_code_id, f.api_error, f.vpn_error,
-       f.api_fulfillment_type, f.api_balance_cents, f.vpn_required
+       f.api_fulfillment_type, f.api_balance_cents, f.api_balance_cny_cents,
+       f.api_credited_balance_cents, f.api_exchange_rate,
+       f.api_exchange_rate_source, f.api_exchange_rate_updated_at, f.vpn_required
 FROM orders AS o
 LEFT JOIN order_fulfillments AS f ON f.order_id = o.id
 """
@@ -207,6 +209,8 @@ class OrderStore:
                 )
             if "api_balance_cents" not in redemption_columns:
                 conn.execute("ALTER TABLE redemption_codes ADD COLUMN api_balance_cents INTEGER")
+            if "api_balance_cny_cents" not in redemption_columns:
+                conn.execute("ALTER TABLE redemption_codes ADD COLUMN api_balance_cny_cents INTEGER")
 
             fulfillment_columns = {
                 row[1] for row in conn.execute("PRAGMA table_info(order_fulfillments)")
@@ -218,6 +222,16 @@ class OrderStore:
                 )
             if "api_balance_cents" not in fulfillment_columns:
                 conn.execute("ALTER TABLE order_fulfillments ADD COLUMN api_balance_cents INTEGER")
+            if "api_balance_cny_cents" not in fulfillment_columns:
+                conn.execute("ALTER TABLE order_fulfillments ADD COLUMN api_balance_cny_cents INTEGER")
+            if "api_credited_balance_cents" not in fulfillment_columns:
+                conn.execute("ALTER TABLE order_fulfillments ADD COLUMN api_credited_balance_cents INTEGER")
+            if "api_exchange_rate" not in fulfillment_columns:
+                conn.execute("ALTER TABLE order_fulfillments ADD COLUMN api_exchange_rate TEXT")
+            if "api_exchange_rate_source" not in fulfillment_columns:
+                conn.execute("ALTER TABLE order_fulfillments ADD COLUMN api_exchange_rate_source TEXT")
+            if "api_exchange_rate_updated_at" not in fulfillment_columns:
+                conn.execute("ALTER TABLE order_fulfillments ADD COLUMN api_exchange_rate_updated_at TEXT")
             if "vpn_required" not in fulfillment_columns:
                 conn.execute(
                     "ALTER TABLE order_fulfillments ADD COLUMN vpn_required "
@@ -241,15 +255,21 @@ class OrderStore:
         sub2api_group_id: int | None = None,
         api_validity_days: int | None = None,
         api_balance_cents: int | None = None,
+        api_balance_cny_cents: int | None = None,
         vpn_required: bool = True,
     ) -> None:
         is_bundle = sub2api_group_id is not None
         if is_bundle != (sub2api_user_id is not None and api_validity_days is not None):
             raise ValueError("bundle fulfillment requires complete Sub2API identity and plan data")
-        is_balance = api_balance_cents is not None
+        is_balance = api_balance_cents is not None or api_balance_cny_cents is not None
         if is_bundle and is_balance:
             raise ValueError("fulfillment cannot grant a subscription and balance")
-        if is_balance and (sub2api_user_id is None or api_balance_cents <= 0 or vpn_required):
+        if is_balance and (
+            sub2api_user_id is None
+            or (api_balance_cents is not None and api_balance_cents <= 0)
+            or (api_balance_cny_cents is not None and api_balance_cny_cents <= 0)
+            or vpn_required
+        ):
             raise ValueError("balance fulfillment requires a user, positive balance, and no VPN")
         api_type = "subscription" if is_bundle else "balance" if is_balance else "none"
         api_required = api_type != "none"
@@ -258,8 +278,8 @@ class OrderStore:
             INSERT INTO order_fulfillments (
                 order_id, status, api_status, vpn_status, sub2api_user_id,
                 sub2api_group_id, api_validity_days, api_fulfillment_type,
-                api_balance_cents, vpn_required, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                api_balance_cents, api_balance_cny_cents, vpn_required, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 order_id,
@@ -271,6 +291,7 @@ class OrderStore:
                 api_validity_days,
                 api_type,
                 api_balance_cents,
+                api_balance_cny_cents,
                 int(vpn_required),
                 now,
                 now,
@@ -506,6 +527,42 @@ class OrderStore:
         assert result is not None, "claimed API fulfillment disappeared"
         return result
 
+    def freeze_balance_quote(self, order_id: str, quote: dict[str, Any]) -> dict[str, Any]:
+        now = int(time.time())
+        with self._transaction(immediate=True) as conn:
+            row = conn.execute(
+                "SELECT api_fulfillment_type, api_balance_cny_cents, "
+                "api_credited_balance_cents FROM order_fulfillments WHERE order_id=?",
+                (order_id,),
+            ).fetchone()
+            if row is None or row["api_fulfillment_type"] != "balance":
+                raise RuntimeError(f"order {order_id} is not a balance fulfillment")
+            if row["api_credited_balance_cents"] is None:
+                if int(quote["cny_cents"]) != row["api_balance_cny_cents"]:
+                    raise RuntimeError("exchange-rate quote does not match the order amount")
+                cur = conn.execute(
+                    """
+                    UPDATE order_fulfillments
+                    SET api_credited_balance_cents=?, api_exchange_rate=?,
+                        api_exchange_rate_source=?, api_exchange_rate_updated_at=?, updated_at=?
+                    WHERE order_id=? AND api_credited_balance_cents IS NULL
+                    """,
+                    (
+                        int(quote["usd_cents"]),
+                        str(quote["usd_cny_rate"]),
+                        str(quote["source"]),
+                        str(quote["updated_at"]),
+                        now,
+                        order_id,
+                    ),
+                )
+                if cur.rowcount != 1:
+                    raise RuntimeError("balance quote changed concurrently")
+            result = conn.execute(ORDER_SELECT + " WHERE o.id=?", (order_id,)).fetchone()
+        frozen = self._row(result)
+        assert frozen is not None, "quoted balance order disappeared"
+        return frozen
+
     def mark_api_active(self, order_id: str, redeem_code_id: int) -> None:
         now = int(time.time())
         with self._transaction(immediate=True) as conn:
@@ -572,8 +629,8 @@ class OrderStore:
                     batch_id, code_hash, code_hint, plan_id, plan_name,
                     duration_days, traffic_gb, ip_limit, status, created_at,
                     sub2api_group_id, api_validity_days, api_fulfillment_type,
-                    api_balance_cents
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available', ?, ?, ?, ?, ?)
+                    api_balance_cents, api_balance_cny_cents
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available', ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     (
@@ -596,6 +653,7 @@ class OrderStore:
                             else "none"
                         ),
                         plan.sub2api_balance_cents,
+                        plan.price_cents if plan.is_api_balance else None,
                     )
                     for code in normalized_codes
                 ],
@@ -626,7 +684,7 @@ class OrderStore:
             row = conn.execute(
                 """
                 SELECT sub2api_group_id, api_validity_days, api_fulfillment_type,
-                       api_balance_cents
+                       api_balance_cents, api_balance_cny_cents
                 FROM redemption_codes WHERE code_hash=?
                 """,
                 (digest,),
@@ -676,13 +734,14 @@ class OrderStore:
                     id, access_token_hash, plan_id, plan_name, amount_cents,
                     duration_days, traffic_gb, ip_limit, status, client_email, source,
                     created_at, updated_at
-                ) VALUES (?, ?, ?, ?, 1, ?, ?, ?, 'paid', ?, 'xianyu_redeem', ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'paid', ?, 'xianyu_redeem', ?, ?)
                 """,
                 (
                     order_id,
                     self._token_hash(token),
                     code["plan_id"],
                     code["plan_name"],
+                    code.get("api_balance_cny_cents") or 1,
                     code["duration_days"],
                     code["traffic_gb"],
                     code["ip_limit"],
@@ -699,6 +758,7 @@ class OrderStore:
                 sub2api_group_id=code["sub2api_group_id"],
                 api_validity_days=code["api_validity_days"],
                 api_balance_cents=code["api_balance_cents"],
+                api_balance_cny_cents=code.get("api_balance_cny_cents"),
                 vpn_required=api_type != "balance",
             )
             cur = conn.execute(

@@ -119,6 +119,10 @@ export default {
     liandongPurchaseDesc:
       'You do not have an active subscription. Buy API credit and Liandong Store will deliver a redemption code after payment.',
     liandongPurchaseTitle: 'Choose an amount and buy from Liandong Store',
+    exchangeRateNotice: 'CNY is converted to USD balance using the actual USD/CNY rate at redemption time',
+    exchangeRateDetail: 'Current reference: 1 USD = CNY {rate}; updated {time}; source: {source}',
+    exchangeRateUnavailable: 'The live rate is unavailable. Redemption waits for a valid rate to prevent an incorrect credit.',
+    estimatedUsdCredit: 'Estimated credit ${usd}',
     redeemPurchasedCode: 'Already have a code? Redeem it',
     failedToLoad: 'Failed to load subscriptions',
     status: {

@@ -115,6 +115,10 @@ export default {
     noActiveSubscriptionsDesc: '您没有任何有效订阅。请联系管理员获取订阅。',
     liandongPurchaseDesc: '您还没有有效订阅。可购买额度后使用 API，卡密将在付款后由链动小铺发放。',
     liandongPurchaseTitle: '选择金额，前往链动小铺购买',
+    exchangeRateNotice: '人民币将在兑换时按实际 USD/CNY 汇率换算为美元余额',
+    exchangeRateDetail: '当前参考：1 USD = ¥{rate}；更新于 {time}；来源：{source}',
+    exchangeRateUnavailable: '实时汇率暂不可用。为避免错误入账，兑换服务将等待汇率恢复后再处理。',
+    estimatedUsdCredit: '预计到账 ${usd}',
     redeemPurchasedCode: '已有卡密，去兑换',
     failedToLoad: '加载订阅失败',
     status: {

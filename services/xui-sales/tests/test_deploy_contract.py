@@ -12,15 +12,24 @@ class DeployContractTests(unittest.TestCase):
     def test_service_credentials_are_file_backed(self) -> None:
         web = (DEPLOY / "xui-sales.service").read_text(encoding="utf-8")
         recover = (DEPLOY / "xui-sales-recover.service").read_text(encoding="utf-8")
+        exchange_rate = (DEPLOY / "sub2api-exchange-rate-sync.service").read_text(
+            encoding="utf-8"
+        )
+
+        for unit in (web, recover, exchange_rate):
+            self.assertIn("LoadCredential=sub2api_admin_api_key:", unit)
+            self.assertNotIn("Environment=SUB2API_ADMIN_API_KEY=", unit)
+            self.assertIn("NoNewPrivileges=true", unit)
+            self.assertIn("ProtectSystem=strict", unit)
 
         for unit in (web, recover):
             self.assertIn("LoadCredential=xui_api_token:", unit)
             self.assertIn("LoadCredential=redemption_pepper:", unit)
-            self.assertIn("LoadCredential=sub2api_admin_api_key:", unit)
-            self.assertNotIn("Environment=SUB2API_ADMIN_API_KEY=", unit)
             self.assertNotIn("Environment=XUI_API_TOKEN=", unit)
-            self.assertIn("NoNewPrivileges=true", unit)
-            self.assertIn("ProtectSystem=strict", unit)
+
+        self.assertIn("WorkingDirectory=/opt/xui-sales", exchange_rate)
+        self.assertIn("EnvironmentFile=/etc/xui-sales/xui-sales.env", exchange_rate)
+        self.assertIn("ExecStart=/usr/bin/python3 -m xui_sales.exchange_rate_sync", exchange_rate)
 
     def test_sub2api_plain_http_is_confined_to_loopback_tunnel(self) -> None:
         tunnel = (DEPLOY / "xui-sales-sub2api-tunnel.service").read_text(encoding="utf-8")
