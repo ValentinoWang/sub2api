@@ -175,6 +175,40 @@ func TestPrepareOpenAIContinuityHTTPRequestDropsPersistedCompactionTriggerBefore
 	require.Equal(t, "message", gjson.GetBytes(recovered, "input.1.type").String())
 }
 
+func TestPrepareOpenAIContinuityHTTPRequestRebasesOnCurrentCompaction(t *testing.T) {
+	svc, repo := continuityTestService(t, nil)
+	c := continuityTestContext(10, 20)
+	persisted := []json.RawMessage{
+		json.RawMessage(`{"type":"message","role":"user","content":"old user message"}`),
+		json.RawMessage(`{"type":"message","role":"assistant","content":"old assistant message"}`),
+		json.RawMessage(`{"type":"function_call","name":"old_tool","call_id":"call_old","arguments":"{}"}`),
+	}
+	replayJSON, err := json.Marshal(persisted)
+	require.NoError(t, err)
+	digest := sha256.Sum256(replayJSON)
+	sessionHash := svc.GenerateExplicitSessionHash(c, []byte(`{"prompt_cache_key":"task-current-compaction"}`))
+	repo.latest = &OpenAIContinuitySnapshot{
+		SessionHash: sessionHash, ReplayInput: replayJSON,
+		ReplaySHA256: hex.EncodeToString(digest[:]), UpstreamAccountID: 100,
+	}
+	body := []byte(`{"model":"gpt-5.6-sol","prompt_cache_key":"task-current-compaction","previous_response_id":"resp_old","input":[{"type":"message","role":"developer","content":"current instructions"},{"type":"compaction","id":"cmp_current","encrypted_content":"replacement-state"},{"type":"message","role":"user","content":"continue after compaction"}]}`)
+
+	recovered, replay, _, enabled, err := svc.PrepareOpenAIContinuityHTTPRequest(context.Background(), c, body)
+	require.NoError(t, err)
+	require.True(t, enabled)
+	require.Len(t, replay, 3)
+	require.Len(t, gjson.GetBytes(recovered, "input").Array(), 3)
+	require.Empty(t, gjson.GetBytes(recovered, "previous_response_id").String())
+	require.Equal(t, "developer", gjson.GetBytes(recovered, "input.0.role").String())
+	require.Equal(t, "compaction", gjson.GetBytes(recovered, "input.1.type").String())
+	require.Equal(t, "continue after compaction", gjson.GetBytes(recovered, "input.2.content").String())
+	require.False(t, gjson.GetBytes(recovered, "input.#(content==\"old user message\")").Exists())
+	require.False(t, gjson.GetBytes(recovered, "input.#(name==\"old_tool\")").Exists())
+	for i := range replay {
+		require.JSONEq(t, gjson.GetBytes(body, "input").Array()[i].Raw, string(replay[i]))
+	}
+}
+
 func TestCommitOpenAIContinuityHTTPResponseRequiresCanonicalCompletedOutput(t *testing.T) {
 	svc, repo := continuityTestService(t, nil)
 	c := continuityTestContext(10, 20)

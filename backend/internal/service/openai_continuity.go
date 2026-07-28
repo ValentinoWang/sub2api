@@ -174,6 +174,15 @@ func appendOpenAIContinuityOutput(input, output []json.RawMessage) []json.RawMes
 	return merged
 }
 
+func openAIContinuityInputContainsCompaction(items []json.RawMessage) bool {
+	for _, item := range items {
+		if gjson.GetBytes(item, "type").String() == "compaction" {
+			return true
+		}
+	}
+	return false
+}
+
 // OpenAIContinuityEnabledForHTTPRequest reports whether this authenticated
 // request has an explicit task identity and is inside the continuity rollout.
 func (s *OpenAIGatewayService) OpenAIContinuityEnabledForHTTPRequest(c *gin.Context, body []byte) bool {
@@ -204,14 +213,23 @@ func (s *OpenAIGatewayService) PrepareOpenAIContinuityHTTPRequest(
 	if snapshot == nil && hasPrevious {
 		return nil, nil, sessionHash, true, errors.New("durable continuity snapshot not found for previous_response_id")
 	}
-	fullInput, fullInputExists, err := buildOpenAIWSReplayInputSequence(
-		persisted,
-		len(persisted) > 0,
-		body,
-		snapshot != nil,
-	)
+	currentInput, currentInputExists, err := openAIWSExtractNormalizedInputSequence(body)
 	if err != nil {
-		return nil, nil, sessionHash, true, fmt.Errorf("build HTTP continuity replay: %w", err)
+		return nil, nil, sessionHash, true, fmt.Errorf("extract current HTTP continuity input: %w", err)
+	}
+	compactionRebased := openAIContinuityInputContainsCompaction(currentInput)
+	fullInput := cloneOpenAIWSRawMessages(currentInput)
+	fullInputExists := currentInputExists
+	if !compactionRebased {
+		fullInput, fullInputExists, err = buildOpenAIWSReplayInputSequence(
+			persisted,
+			len(persisted) > 0,
+			body,
+			snapshot != nil,
+		)
+		if err != nil {
+			return nil, nil, sessionHash, true, fmt.Errorf("build HTTP continuity replay: %w", err)
+		}
 	}
 	if snapshot == nil {
 		return body, fullInput, sessionHash, true, nil
@@ -238,6 +256,12 @@ func (s *OpenAIGatewayService) PrepareOpenAIContinuityHTTPRequest(
 		}
 		logger.FromContext(ctx).Info("codex.http_continuity.dropped_stale_trigger",
 			zap.Int("replay_input_count", len(fullInput)),
+		)
+	}
+	if compactionRebased {
+		logger.FromContext(ctx).Info("codex.http_continuity.compaction_rebased",
+			zap.Int("old_replay_input_count", len(persisted)),
+			zap.Int("new_replay_input_count", len(fullInput)),
 		)
 	}
 	return recovered, fullInput, sessionHash, true, nil
