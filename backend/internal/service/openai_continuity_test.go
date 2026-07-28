@@ -149,6 +149,32 @@ func TestPrepareOpenAIContinuityHTTPRequestRecoversAcrossAccounts(t *testing.T) 
 	require.Len(t, gjson.GetBytes(recovered, "input").Array(), 3)
 }
 
+func TestPrepareOpenAIContinuityHTTPRequestDropsPersistedCompactionTriggerBeforeNextTurn(t *testing.T) {
+	svc, repo := continuityTestService(t, nil)
+	c := continuityTestContext(10, 20)
+	persisted := []json.RawMessage{
+		json.RawMessage(`{"type":"compaction","id":"cmp_1","encrypted_content":"opaque-state"}`),
+		json.RawMessage(`{"type":"compaction_trigger"}`),
+	}
+	replayJSON, err := json.Marshal(persisted)
+	require.NoError(t, err)
+	digest := sha256.Sum256(replayJSON)
+	sessionHash := svc.GenerateExplicitSessionHash(c, []byte(`{"prompt_cache_key":"task-compact"}`))
+	repo.latest = &OpenAIContinuitySnapshot{
+		SessionHash: sessionHash, ReplayInput: replayJSON,
+		ReplaySHA256: hex.EncodeToString(digest[:]), UpstreamAccountID: 100,
+	}
+	body := []byte(`{"model":"gpt-5.6-sol","prompt_cache_key":"task-compact","previous_response_id":"resp_old","input":[{"type":"message","role":"user","content":"continue"}]}`)
+
+	recovered, replay, _, enabled, err := svc.PrepareOpenAIContinuityHTTPRequest(context.Background(), c, body)
+	require.NoError(t, err)
+	require.True(t, enabled)
+	require.False(t, HasCompactionTriggerInInput(recovered))
+	require.Len(t, replay, 2)
+	require.Equal(t, "compaction", gjson.GetBytes(recovered, "input.0.type").String())
+	require.Equal(t, "message", gjson.GetBytes(recovered, "input.1.type").String())
+}
+
 func TestCommitOpenAIContinuityHTTPResponseRequiresCanonicalCompletedOutput(t *testing.T) {
 	svc, repo := continuityTestService(t, nil)
 	c := continuityTestContext(10, 20)

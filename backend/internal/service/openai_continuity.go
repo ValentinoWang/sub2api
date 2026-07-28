@@ -11,8 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
+	"go.uber.org/zap"
 )
 
 var ErrOpenAIContinuityReplayTooLarge = errors.New("openai continuity replay exceeds configured durable size")
@@ -221,6 +223,22 @@ func (s *OpenAIGatewayService) PrepareOpenAIContinuityHTTPRequest(
 	recovered, err = setOpenAIWSPayloadInputSequence(recovered, fullInput, fullInputExists)
 	if err != nil {
 		return nil, nil, sessionHash, true, fmt.Errorf("set HTTP continuity replay: %w", err)
+	}
+	recovered, removedStaleTrigger, err := DropStaleCompactionTriggers(recovered)
+	if err != nil {
+		return nil, nil, sessionHash, true, fmt.Errorf("drop stale compact trigger from HTTP continuity replay: %w", err)
+	}
+	if removedStaleTrigger {
+		fullInput, fullInputExists, err = openAIWSExtractNormalizedInputSequence(recovered)
+		if err != nil {
+			return nil, nil, sessionHash, true, fmt.Errorf("extract normalized HTTP continuity replay: %w", err)
+		}
+		if !fullInputExists {
+			fullInput = nil
+		}
+		logger.FromContext(ctx).Info("codex.http_continuity.dropped_stale_trigger",
+			zap.Int("replay_input_count", len(fullInput)),
+		)
 	}
 	return recovered, fullInput, sessionHash, true, nil
 }
