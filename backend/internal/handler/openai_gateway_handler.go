@@ -729,23 +729,26 @@ func isOpenAIRemoteCompactionV2Request(c *gin.Context, body []byte) bool {
 	return false
 }
 
-// normalizeOpenAIResponsesCompactRequest keeps Codex remote compaction v2 on
-// its native streaming /responses wire and preserves the legacy body-signal
-// promotion for clients that do not explicitly advertise that protocol.
+// normalizeOpenAIResponsesCompactRequest removes replayed non-final triggers,
+// keeps remote compaction v2 on its native streaming /responses wire, and
+// preserves legacy body-signal promotion for a remaining final trigger.
 // 返回归一化后的 body；ok=false 表示错误响应已写出，调用方应直接 return。
 func (h *OpenAIGatewayHandler) normalizeOpenAIResponsesCompactRequest(c *gin.Context, reqLog *zap.Logger, body []byte) ([]byte, bool) {
 	isCompactRequest := service.IsOpenAIResponsesCompactPathForTest(c)
-	if !isCompactRequest && isBareOpenAIResponsesPath(c) && service.HasCompactionTriggerInInput(body) {
+	if !isCompactRequest && isBareOpenAIResponsesPath(c) {
+		normalizedBody, removedStaleTrigger, err := service.DropStaleCompactionTriggers(body)
+		if err != nil {
+			h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize remote compact request body")
+			return nil, false
+		}
+		if removedStaleTrigger {
+			reqLog.Info("codex.remote_compact.dropped_stale_trigger")
+		}
+		body = normalizedBody
+		if !service.HasCompactionTriggerInInput(body) {
+			return body, true
+		}
 		if isOpenAIRemoteCompactionV2Request(c, body) {
-			normalizedBody, removedStaleTrigger, err := service.DropStaleCompactionTriggers(body)
-			if err != nil {
-				h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize remote compact request body")
-				return nil, false
-			}
-			if removedStaleTrigger {
-				reqLog.Info("codex.remote_compact.dropped_stale_trigger")
-			}
-			body = normalizedBody
 			return body, true
 		}
 		c.Request.URL.Path = strings.TrimRight(c.Request.URL.Path, "/") + "/compact"

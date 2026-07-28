@@ -101,6 +101,49 @@ func TestNormalizeOpenAIResponsesCompactRequest_RemoteV2DropsStaleTriggerBeforeN
 	require.Equal(t, "continue after compact", gjson.GetBytes(normalized, "input.1.content").String())
 }
 
+func TestNormalizeOpenAIResponsesCompactRequest_DropsStaleTriggerWithoutBetaHeader(t *testing.T) {
+	h := &OpenAIGatewayHandler{}
+	body := []byte(`{
+		"model":"gpt-5.6-sol",
+		"stream":true,
+		"input":[
+			{"type":"compaction","id":"cmp_1","encrypted_content":"opaque-state"},
+			{"type":"compaction_trigger"},
+			{"type":"message","role":"user","content":"continue after compact"}
+		]
+	}`)
+	c := newCompactBodySignalTestContext(t, "/responses", body)
+
+	normalized, ok := h.normalizeOpenAIResponsesCompactRequest(c, zap.NewNop(), body)
+	require.True(t, ok)
+	require.Equal(t, "/responses", c.Request.URL.Path)
+	require.False(t, service.HasCompactionTriggerInInput(normalized))
+	require.True(t, gjson.GetBytes(normalized, "stream").Bool())
+	require.Equal(t, "opaque-state", gjson.GetBytes(normalized, "input.0.encrypted_content").String())
+	require.Equal(t, "continue after compact", gjson.GetBytes(normalized, "input.1.content").String())
+}
+
+func TestNormalizeOpenAIResponsesCompactRequest_DropsStaleTriggerAndPromotesFinalTrigger(t *testing.T) {
+	h := &OpenAIGatewayHandler{}
+	body := []byte(`{
+		"model":"gpt-5.6-sol",
+		"stream":true,
+		"input":[
+			{"type":"compaction_trigger"},
+			{"type":"message","role":"user","content":"compact this turn"},
+			{"type":"compaction_trigger"}
+		]
+	}`)
+	c := newCompactBodySignalTestContext(t, "/responses", body)
+
+	normalized, ok := h.normalizeOpenAIResponsesCompactRequest(c, zap.NewNop(), body)
+	require.True(t, ok)
+	require.Equal(t, "/responses/compact", c.Request.URL.Path)
+	require.Len(t, gjson.GetBytes(normalized, "input").Array(), 2)
+	require.Equal(t, "message", gjson.GetBytes(normalized, "input.0.type").String())
+	require.Equal(t, "compaction_trigger", gjson.GetBytes(normalized, "input.1.type").String())
+}
+
 func TestNormalizeOpenAIResponsesCompactRequest_BodySignalTrailingSlashPromoted(t *testing.T) {
 	h := &OpenAIGatewayHandler{}
 	body := []byte(`{"model":"gpt-5.5","input":[{"type":"compaction_trigger"}]}`)
