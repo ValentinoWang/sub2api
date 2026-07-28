@@ -737,6 +737,15 @@ func (h *OpenAIGatewayHandler) normalizeOpenAIResponsesCompactRequest(c *gin.Con
 	isCompactRequest := service.IsOpenAIResponsesCompactPathForTest(c)
 	if !isCompactRequest && isBareOpenAIResponsesPath(c) && service.HasCompactionTriggerInInput(body) {
 		if isOpenAIRemoteCompactionV2Request(c, body) {
+			normalizedBody, removedStaleTrigger, err := service.DropStaleCompactionTriggers(body)
+			if err != nil {
+				h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize remote compact request body")
+				return nil, false
+			}
+			if removedStaleTrigger {
+				reqLog.Info("codex.remote_compact.dropped_stale_trigger")
+			}
+			body = normalizedBody
 			return body, true
 		}
 		c.Request.URL.Path = strings.TrimRight(c.Request.URL.Path, "/") + "/compact"
