@@ -208,15 +208,10 @@ func (s *ProxySubscriptionService) importLocked(ctx context.Context, name, sourc
 		previousByFingerprint[node.Fingerprint] = node
 	}
 
-	usedPorts := make(map[int]struct{})
-	for _, subscription := range state.Subscriptions {
-		for _, node := range subscription.Nodes {
-			usedPorts[node.Port] = struct{}{}
-		}
-	}
-	for _, node := range previous.Nodes {
-		delete(usedPorts, node.Port)
-	}
+	// Keep removed nodes' ports reserved for this reconciliation. Mihomo may
+	// still own those sockets while hot-reloading, so immediate reuse can leave
+	// the replacement listeners absent even when the controller returns 2xx.
+	usedPorts := reservedProxySubscriptionPorts(state)
 
 	result := &ProxySubscriptionImportResult{SubscriptionID: subscriptionID, NodeCount: len(nodes)}
 	createdProxies := make([]*Proxy, 0)
@@ -440,6 +435,19 @@ func (s *ProxySubscriptionService) restoreConfig(ctx context.Context, previous [
 
 func (s *ProxySubscriptionService) deactivateProxies(ctx context.Context, proxies []*Proxy) {
 	s.setProxyStatusesBestEffort(ctx, proxies, proxySubscriptionInactiveStatus)
+}
+
+func reservedProxySubscriptionPorts(state *proxySubscriptionRuntimeState) map[int]struct{} {
+	usedPorts := make(map[int]struct{})
+	if state == nil {
+		return usedPorts
+	}
+	for _, subscription := range state.Subscriptions {
+		for _, node := range subscription.Nodes {
+			usedPorts[node.Port] = struct{}{}
+		}
+	}
+	return usedPorts
 }
 
 func (s *ProxySubscriptionService) setProxyStatusesBestEffort(ctx context.Context, proxies []*Proxy, status string) {

@@ -37,6 +37,17 @@ func TestProxySubscriptionFetchIgnoresEnvironmentProxy(t *testing.T) {
 	require.Equal(t, []byte("subscription"), body)
 }
 
+func TestReservedProxySubscriptionPortsPreventImmediateReuse(t *testing.T) {
+	state := &proxySubscriptionRuntimeState{Subscriptions: []proxySubscriptionRuntimeEntry{
+		{Nodes: []proxySubscriptionRuntimeNode{{Port: 20000}, {Port: 20001}}},
+	}}
+
+	usedPorts := reservedProxySubscriptionPorts(state)
+	port, err := allocateProxySubscriptionPort(20000, 20002, usedPorts)
+	require.NoError(t, err)
+	require.Equal(t, 20002, port)
+}
+
 func TestRenderProxySubscriptionMihomoConfig(t *testing.T) {
 	state := proxySubscriptionTestState(t)
 	raw, err := renderProxySubscriptionMihomoConfig(state)
