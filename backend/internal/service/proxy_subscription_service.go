@@ -83,7 +83,7 @@ func NewProxySubscriptionService(admin AdminService, cfg *config.Config) *ProxyS
 	service.fetchClient = &http.Client{
 		Timeout: 25 * time.Second,
 		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
+			Proxy: nil,
 			DialContext: (&net.Dialer{
 				Timeout:   10 * time.Second,
 				KeepAlive: 30 * time.Second,

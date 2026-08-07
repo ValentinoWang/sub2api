@@ -1,6 +1,10 @@
 package service
 
 import (
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,6 +14,28 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
+
+func TestProxySubscriptionFetchIgnoresEnvironmentProxy(t *testing.T) {
+	t.Setenv("HTTP_PROXY", "http://127.0.0.1:1")
+	t.Setenv("HTTPS_PROXY", "http://127.0.0.1:1")
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, err := w.Write([]byte("subscription"))
+		require.NoError(t, err)
+	}))
+	defer server.Close()
+
+	service := NewProxySubscriptionService(nil, nil)
+	transport, ok := service.fetchClient.Transport.(*http.Transport)
+	require.True(t, ok)
+	require.Nil(t, transport.Proxy)
+
+	sourceURL, err := url.Parse(server.URL)
+	require.NoError(t, err)
+	body, err := service.fetch(context.Background(), sourceURL)
+	require.NoError(t, err)
+	require.Equal(t, []byte("subscription"), body)
+}
 
 func TestRenderProxySubscriptionMihomoConfig(t *testing.T) {
 	state := proxySubscriptionTestState(t)
