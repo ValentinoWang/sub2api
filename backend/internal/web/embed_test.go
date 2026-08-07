@@ -4,7 +4,9 @@ package web
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
+	"io"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
@@ -716,6 +718,67 @@ func TestNewFrontendServer(t *testing.T) {
 
 		assert.NotEmpty(t, server.baseHTML)
 		assert.Contains(t, string(server.baseHTML), "<!doctype html>")
+	})
+}
+
+func TestEmbeddedFrontendCompressesStaticAssets(t *testing.T) {
+	server, err := NewFrontendServer(&mockSettingsProvider{settings: map[string]string{"test": "value"}})
+	require.NoError(t, err)
+
+	entries, err := fs.ReadDir(server.distFS, "assets")
+	require.NoError(t, err)
+	assetPath := ""
+	for _, entry := range entries {
+		candidate := "assets/" + entry.Name()
+		if !entry.IsDir() && filepath.Ext(candidate) == ".js" {
+			assetPath = candidate
+			break
+		}
+	}
+	require.NotEmpty(t, assetPath)
+	original, err := fs.ReadFile(server.distFS, assetPath)
+	require.NoError(t, err)
+
+	requestAsset := func(acceptEncoding, byteRange string) *httptest.ResponseRecorder {
+		router := gin.New()
+		router.Use(server.Middleware())
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest(http.MethodGet, "/"+assetPath, nil)
+		request.Header.Set("Accept-Encoding", acceptEncoding)
+		if byteRange != "" {
+			request.Header.Set("Range", byteRange)
+		}
+		router.ServeHTTP(writer, request)
+		return writer
+	}
+
+	t.Run("serves_gzip_with_cache_headers", func(t *testing.T) {
+		writer := requestAsset("br, gzip", "")
+		require.Equal(t, http.StatusOK, writer.Code)
+		assert.Equal(t, "gzip", writer.Header().Get("Content-Encoding"))
+		assert.Contains(t, writer.Header().Values("Vary"), "Accept-Encoding")
+		assert.Equal(t, staticAssetsCacheControl, writer.Header().Get("Cache-Control"))
+
+		reader, err := gzip.NewReader(writer.Body)
+		require.NoError(t, err)
+		decompressed, err := io.ReadAll(reader)
+		require.NoError(t, err)
+		require.NoError(t, reader.Close())
+		assert.Equal(t, original, decompressed)
+	})
+
+	t.Run("honors_zero_quality", func(t *testing.T) {
+		writer := requestAsset("gzip;q=0, *;q=1", "")
+		require.Equal(t, http.StatusOK, writer.Code)
+		assert.Empty(t, writer.Header().Get("Content-Encoding"))
+		assert.Equal(t, original, writer.Body.Bytes())
+	})
+
+	t.Run("skips_range_requests", func(t *testing.T) {
+		writer := requestAsset("gzip", "bytes=0-31")
+		require.Equal(t, http.StatusPartialContent, writer.Code)
+		assert.Empty(t, writer.Header().Get("Content-Encoding"))
+		assert.Equal(t, original[:32], writer.Body.Bytes())
 	})
 }
 
