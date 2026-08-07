@@ -2,11 +2,15 @@ package admin
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/handler/dto"
+	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 
@@ -15,7 +19,46 @@ import (
 
 // ProxyHandler handles admin proxy management
 type ProxyHandler struct {
-	adminService service.AdminService
+	adminService             service.AdminService
+	proxySubscriptionService *service.ProxySubscriptionService
+}
+
+// ProvideProxyHandler wires the optional proxy subscription runtime without
+// widening NewProxyHandler, which is also used by lightweight tests.
+func ProvideProxyHandler(adminService service.AdminService, proxySubscriptionService *service.ProxySubscriptionService) *ProxyHandler {
+	h := NewProxyHandler(adminService)
+	h.proxySubscriptionService = proxySubscriptionService
+	return h
+}
+
+type ImportProxySubscriptionRequest struct {
+	Name string `json:"name" binding:"required"`
+	URL  string `json:"url" binding:"required"`
+}
+
+// ImportSubscription fetches and imports a VLESS/Hysteria2 subscription.
+// POST /api/v1/admin/proxies/subscriptions/import
+func (h *ProxyHandler) ImportSubscription(c *gin.Context) {
+	var req ImportProxySubscriptionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request")
+		return
+	}
+	if h.proxySubscriptionService == nil {
+		response.ErrorFrom(c, infraerrors.New(http.StatusServiceUnavailable, "PROXY_SUBSCRIPTION_DISABLED", "Proxy subscription runtime is not enabled"))
+		return
+	}
+
+	input := service.ProxySubscriptionImportInput{
+		Name: strings.TrimSpace(req.Name),
+		URL:  strings.TrimSpace(req.URL),
+	}
+	// The input contains a secret-bearing URL. The idempotency coordinator only
+	// receives a digest, while the execution closure receives the actual value.
+	payloadDigest := sha256.Sum256([]byte(input.Name + "\x00" + input.URL))
+	executeAdminIdempotentJSON(c, "admin.proxies.subscriptions.import", hex.EncodeToString(payloadDigest[:]), service.DefaultWriteIdempotencyTTL(), func(ctx context.Context) (any, error) {
+		return h.proxySubscriptionService.Import(ctx, input)
+	})
 }
 
 // NewProxyHandler creates a new admin proxy handler

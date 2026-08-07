@@ -159,6 +159,16 @@ export default {
       // Batch import
       standardAdd: '标准添加',
       batchAdd: '快捷添加',
+      subscriptionAdd: '订阅导入',
+      subscriptionName: '订阅名称',
+      subscriptionNamePlaceholder: '例如：业务出口节点',
+      subscriptionUrl: '订阅地址',
+      subscriptionUrlPlaceholder: '请输入 HTTPS 订阅地址',
+      subscriptionUrlHint: '支持 Base64 或纯文本的 VLESS、Hysteria2 节点列表。订阅地址按敏感信息处理。',
+      toggleSubscriptionUrl: '显示或隐藏订阅地址',
+      importSubscription: '导入订阅',
+      subscriptionImportSuccess: '订阅导入完成：共 {node_count} 个，创建 {created} 个，复用 {reused} 个，停用 {deactivated} 个',
+      subscriptionImportFailed: '订阅导入失败',
       batchInput: '代理列表',
       batchInputPlaceholder:
         "每行输入一个代理，支持以下格式：\nsocks5://user:pass{'@'}192.168.1.1:1080\nhttp://192.168.1.1:8080\nhttps://user:pass{'@'}proxy.example.com:443",

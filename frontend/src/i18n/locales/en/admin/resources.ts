@@ -158,6 +158,16 @@ export default {
       // Batch import
       standardAdd: 'Standard Add',
       batchAdd: 'Quick Add',
+      subscriptionAdd: 'Subscription',
+      subscriptionName: 'Subscription Name',
+      subscriptionNamePlaceholder: 'For example: business egress nodes',
+      subscriptionUrl: 'Subscription URL',
+      subscriptionUrlPlaceholder: 'Enter an HTTPS subscription URL',
+      subscriptionUrlHint: 'Supports Base64 or plain-text VLESS and Hysteria2 node lists. The URL is treated as sensitive.',
+      toggleSubscriptionUrl: 'Show or hide subscription URL',
+      importSubscription: 'Import Subscription',
+      subscriptionImportSuccess: 'Import complete: {node_count} total, {created} created, {reused} reused, {deactivated} deactivated',
+      subscriptionImportFailed: 'Failed to import subscription',
       batchInput: 'Proxy List',
       batchInputPlaceholder:
         "Enter one proxy per line in the following formats:\nsocks5://user:pass{'@'}192.168.1.1:1080\nhttp://192.168.1.1:8080\nhttps://user:pass{'@'}proxy.example.com:443",

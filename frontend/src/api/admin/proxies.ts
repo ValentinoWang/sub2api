@@ -212,6 +212,32 @@ export async function batchCreate(
   return data
 }
 
+export interface ImportProxySubscriptionRequest {
+  name: string
+  url: string
+}
+
+export interface ImportProxySubscriptionResult {
+  subscription_id: string
+  node_count: number
+  created: number
+  reused: number
+  deactivated: number
+}
+
+export async function importSubscription(
+  request: ImportProxySubscriptionRequest
+): Promise<ImportProxySubscriptionResult> {
+  const requestID =
+    globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  const { data } = await apiClient.post<ImportProxySubscriptionResult>(
+    '/admin/proxies/subscriptions/import',
+    request,
+    { headers: { 'Idempotency-Key': `proxy-subscription-import-${requestID}` } }
+  )
+  return data
+}
+
 export async function batchDelete(ids: number[]): Promise<{
   deleted_ids: number[]
   skipped: Array<{ id: number; reason: string }>
@@ -269,6 +295,7 @@ export const proxiesAPI = {
   getStats,
   getProxyAccounts,
   batchCreate,
+  importSubscription,
   batchDelete,
   exportData,
   importData
