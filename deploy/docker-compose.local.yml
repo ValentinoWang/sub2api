@@ -202,10 +202,20 @@ services:
       - GATEWAY_IMAGE_CONCURRENCY_OVERFLOW_MODE=${GATEWAY_IMAGE_CONCURRENCY_OVERFLOW_MODE:-reject}
       - GATEWAY_IMAGE_CONCURRENCY_WAIT_TIMEOUT_SECONDS=${GATEWAY_IMAGE_CONCURRENCY_WAIT_TIMEOUT_SECONDS:-30}
       - GATEWAY_IMAGE_CONCURRENCY_MAX_WAITING_REQUESTS=${GATEWAY_IMAGE_CONCURRENCY_MAX_WAITING_REQUESTS:-100}
+      - PROXY_SUBSCRIPTION_ENABLED=${PROXY_SUBSCRIPTION_ENABLED:-true}
+      - PROXY_SUBSCRIPTION_STATE_PATH=/app/data/mihomo/subscriptions.json
+      - PROXY_SUBSCRIPTION_CONFIG_PATH=/app/data/mihomo/config.yaml
+      - PROXY_SUBSCRIPTION_CONTROLLER_CONFIG_PATH=/root/.config/mihomo/config.yaml
+      - PROXY_SUBSCRIPTION_CONTROLLER_URL=http://mihomo:9090
+      - PROXY_SUBSCRIPTION_PROXY_HOST=mihomo
+      - PROXY_SUBSCRIPTION_PORT_START=${PROXY_SUBSCRIPTION_PORT_START:-20000}
+      - PROXY_SUBSCRIPTION_PORT_END=${PROXY_SUBSCRIPTION_PORT_END:-29999}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      mihomo:
         condition: service_healthy
     networks:
       - sub2api-network
@@ -215,6 +225,29 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  mihomo:
+    image: metacubex/mihomo:v1.19.29@sha256:e1d7dadaa9368a52d420d65007e0e0d87cb148d292faa67326eda3fef5757f59
+    container_name: sub2api-mihomo
+    restart: unless-stopped
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        test -f /root/.config/mihomo/config.yaml || cp /bootstrap.yaml /root/.config/mihomo/config.yaml
+        chmod 600 /root/.config/mihomo/config.yaml
+        exec /mihomo -d /root/.config/mihomo
+    volumes:
+      - ./data/mihomo:/root/.config/mihomo:Z
+      - ./mihomo/bootstrap.yaml:/bootstrap.yaml:ro,Z
+    networks:
+      - sub2api-network
+    healthcheck:
+      test: ["CMD", "/mihomo", "-t", "-d", "/root/.config/mihomo"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   # ===========================================================================
   # PostgreSQL Database

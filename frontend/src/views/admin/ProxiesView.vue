@@ -377,7 +377,7 @@
       <div
         class="mb-6 flex items-center justify-between gap-3 border-b border-gray-200 dark:border-dark-600"
       >
-        <div class="flex min-w-0 shrink-0">
+        <div class="flex min-w-0 flex-wrap">
           <button
             type="button"
             @click="createMode = 'standard'"
@@ -415,6 +415,19 @@
               />
             </svg>
             {{ t('admin.proxies.batchAdd') }}
+          </button>
+          <button
+            type="button"
+            @click="createMode = 'subscription'"
+            :class="[
+              '-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors',
+              createMode === 'subscription'
+                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            ]"
+          >
+            <Icon name="link" size="sm" class="mr-1.5 inline" />
+            {{ t('admin.proxies.subscriptionAdd') }}
           </button>
         </div>
         <ProxyAdBanner />
@@ -531,7 +544,7 @@
       </form>
 
       <!-- Batch Add Form -->
-      <div v-else class="space-y-5">
+      <div v-else-if="createMode === 'batch'" class="space-y-5">
         <div>
           <label class="input-label">{{ t('admin.proxies.batchInput') }}</label>
           <textarea
@@ -589,6 +602,46 @@
 
       </div>
 
+      <form
+        v-else
+        id="import-proxy-subscription-form"
+        class="space-y-5"
+        @submit.prevent="handleSubscriptionImport"
+      >
+        <div>
+          <label class="input-label">{{ t('admin.proxies.subscriptionName') }}</label>
+          <input
+            v-model="subscriptionForm.name"
+            type="text"
+            required
+            class="input"
+            :placeholder="t('admin.proxies.subscriptionNamePlaceholder')"
+          />
+        </div>
+        <div>
+          <label class="input-label">{{ t('admin.proxies.subscriptionUrl') }}</label>
+          <div class="relative">
+            <input
+              v-model="subscriptionForm.url"
+              :type="subscriptionUrlVisible ? 'text' : 'password'"
+              required
+              autocomplete="off"
+              class="input pr-10"
+              :placeholder="t('admin.proxies.subscriptionUrlPlaceholder')"
+            />
+            <button
+              type="button"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              :title="t('admin.proxies.toggleSubscriptionUrl')"
+              @click="subscriptionUrlVisible = !subscriptionUrlVisible"
+            >
+              <Icon :name="subscriptionUrlVisible ? 'eyeOff' : 'eye'" size="md" />
+            </button>
+          </div>
+          <p class="input-hint mt-2">{{ t('admin.proxies.subscriptionUrlHint') }}</p>
+        </div>
+      </form>
+
       <template #footer>
         <div class="flex justify-end gap-3">
           <button @click="closeCreateModal" type="button" class="btn btn-secondary">
@@ -624,7 +677,7 @@
             {{ submitting ? t('admin.proxies.creating') : t('common.create') }}
           </button>
           <button
-            v-else
+            v-else-if="createMode === 'batch'"
             @click="handleBatchCreate"
             type="button"
             :disabled="submitting || batchParseResult.valid === 0"
@@ -655,6 +708,15 @@
                 ? t('admin.proxies.importing')
                 : t('admin.proxies.importProxies', { count: batchParseResult.valid })
             }}
+          </button>
+          <button
+            v-else
+            type="submit"
+            form="import-proxy-subscription-form"
+            :disabled="submitting || !subscriptionForm.name.trim() || !subscriptionForm.url.trim()"
+            class="btn btn-primary"
+          >
+            {{ submitting ? t('admin.proxies.importing') : t('admin.proxies.importSubscription') }}
           </button>
         </div>
       </template>
@@ -1059,6 +1121,7 @@ const sortState = reactive({
 
 const showCreateModal = ref(false)
 const createPasswordVisible = ref(false)
+const subscriptionUrlVisible = ref(false)
 const showEditModal = ref(false)
 const editPasswordVisible = ref(false)
 const editPasswordDirty = ref(false)
@@ -1105,7 +1168,7 @@ const qualityReportProxy = ref<Proxy | null>(null)
 const qualityReport = ref<ProxyQualityCheckResult | null>(null)
 
 // Batch import state
-const createMode = ref<'standard' | 'batch'>('standard')
+const createMode = ref<'standard' | 'batch' | 'subscription'>('standard')
 const batchInput = ref('')
 const batchParseResult = reactive({
   total: 0,
@@ -1132,6 +1195,11 @@ const createForm = reactive({
   fallback_mode: 'none' as 'none' | 'proxy' | 'direct',
   backup_proxy_id: null as number | null,
   expiry_warn_days: 7 as number,
+})
+
+const subscriptionForm = reactive({
+  name: '',
+  url: ''
 })
 
 const editForm = reactive({
@@ -1262,6 +1330,9 @@ const closeCreateModal = () => {
   createForm.backup_proxy_id = null
   createForm.expiry_warn_days = 7
   createPasswordVisible.value = false
+  subscriptionUrlVisible.value = false
+  subscriptionForm.name = ''
+  subscriptionForm.url = ''
   batchInput.value = ''
   batchParseResult.total = 0
   batchParseResult.valid = 0
@@ -1366,6 +1437,29 @@ const handleBatchCreate = async () => {
   } catch (error: any) {
     appStore.showError(error.response?.data?.detail || t('admin.proxies.failedToImport'))
     console.error('Error batch creating proxies:', error)
+  } finally {
+    submitting.value = false
+  }
+}
+
+const handleSubscriptionImport = async () => {
+  const name = subscriptionForm.name.trim()
+  const url = subscriptionForm.url.trim()
+  if (!name || !url) return
+
+  submitting.value = true
+  try {
+    const result = await adminAPI.proxies.importSubscription({ name, url })
+    appStore.showSuccess(t('admin.proxies.subscriptionImportSuccess', {
+      node_count: result.node_count,
+      created: result.created,
+      reused: result.reused,
+      deactivated: result.deactivated
+    }))
+    closeCreateModal()
+    loadProxies()
+  } catch (error: any) {
+    appStore.showError(error.response?.data?.detail || t('admin.proxies.subscriptionImportFailed'))
   } finally {
     submitting.value = false
   }

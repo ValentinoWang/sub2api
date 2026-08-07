@@ -1,0 +1,9 @@
+allow-lan: true
+bind-address: "*"
+mode: global
+log-level: info
+ipv6: false
+external-controller: 0.0.0.0:9090
+secret: ""
+proxies: []
+listeners: []

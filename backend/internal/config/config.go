@@ -10,6 +10,7 @@ import (
 	"net/textproto"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -104,6 +105,7 @@ type Config struct {
 	BatchImage              BatchImageConfig              `mapstructure:"batch_image"`
 	ImageStorage            ImageStorageConfig            `mapstructure:"image_storage"`
 	Plugins                 PluginConfig                  `mapstructure:"plugins"`
+	ProxySubscription       ProxySubscriptionConfig       `mapstructure:"proxy_subscription"`
 }
 
 // PluginConfig 控制管理员手动上传的本地进程插件。
@@ -115,6 +117,19 @@ type PluginConfig struct {
 	MaxUploadBytes       int64             `mapstructure:"max_upload_bytes"`
 	MaxUncompressedBytes int64             `mapstructure:"max_uncompressed_bytes"`
 	StartTimeoutSeconds  int               `mapstructure:"start_timeout_seconds"`
+}
+
+// ProxySubscriptionConfig controls the optional Mihomo sidecar used to turn
+// VLESS/Hysteria2 subscription nodes into ordinary HTTP proxies for Sub2API.
+type ProxySubscriptionConfig struct {
+	Enabled              bool   `mapstructure:"enabled"`
+	StatePath            string `mapstructure:"state_path"`
+	ConfigPath           string `mapstructure:"config_path"`
+	ControllerConfigPath string `mapstructure:"controller_config_path"`
+	ControllerURL        string `mapstructure:"controller_url"`
+	ProxyHost            string `mapstructure:"proxy_host"`
+	PortStart            int    `mapstructure:"port_start"`
+	PortEnd              int    `mapstructure:"port_end"`
 }
 
 type LogConfig struct {
@@ -2066,6 +2081,16 @@ func setDefaults() {
 	// Security - disable direct fallback on proxy error
 	viper.SetDefault("security.proxy_fallback.allow_direct_on_error", false)
 
+	// Proxy subscription runtime (disabled unless a Mihomo sidecar is deployed).
+	viper.SetDefault("proxy_subscription.enabled", false)
+	viper.SetDefault("proxy_subscription.state_path", "/app/data/mihomo/subscriptions.json")
+	viper.SetDefault("proxy_subscription.config_path", "/app/data/mihomo/config.yaml")
+	viper.SetDefault("proxy_subscription.controller_config_path", "/root/.config/mihomo/config.yaml")
+	viper.SetDefault("proxy_subscription.controller_url", "http://mihomo:9090")
+	viper.SetDefault("proxy_subscription.proxy_host", "mihomo")
+	viper.SetDefault("proxy_subscription.port_start", 20000)
+	viper.SetDefault("proxy_subscription.port_end", 29999)
+
 	// Billing
 	viper.SetDefault("billing.circuit_breaker.enabled", true)
 	viper.SetDefault("billing.circuit_breaker.failure_threshold", 5)
@@ -2660,6 +2685,24 @@ func (c *Config) Validate() error {
 	}
 	if c.Plugins.StartTimeoutSeconds < 1 || c.Plugins.StartTimeoutSeconds > 120 {
 		return fmt.Errorf("plugins.start_timeout_seconds must be between 1 and 120")
+	}
+	if c.ProxySubscription.Enabled {
+		if !filepath.IsAbs(c.ProxySubscription.StatePath) || !filepath.IsAbs(c.ProxySubscription.ConfigPath) || !filepath.IsAbs(c.ProxySubscription.ControllerConfigPath) {
+			return fmt.Errorf("proxy_subscription state_path, config_path, and controller_config_path must be absolute")
+		}
+		if c.ProxySubscription.StatePath == c.ProxySubscription.ConfigPath {
+			return fmt.Errorf("proxy_subscription state_path and config_path must differ")
+		}
+		controllerURL, parseErr := url.Parse(c.ProxySubscription.ControllerURL)
+		if parseErr != nil || controllerURL.Host == "" || (controllerURL.Scheme != "http" && controllerURL.Scheme != "https") {
+			return fmt.Errorf("proxy_subscription.controller_url must be an absolute HTTP(S) URL")
+		}
+		if strings.TrimSpace(c.ProxySubscription.ProxyHost) == "" {
+			return fmt.Errorf("proxy_subscription.proxy_host is required")
+		}
+		if c.ProxySubscription.PortStart < 1 || c.ProxySubscription.PortEnd > 65535 || c.ProxySubscription.PortStart > c.ProxySubscription.PortEnd {
+			return fmt.Errorf("proxy_subscription port range must be within 1-65535 and start at or before end")
+		}
 	}
 	if c.Server.ReadHeaderTimeout < 1 || c.Server.ReadHeaderTimeout > 60 {
 		return fmt.Errorf("server.read_header_timeout must be between 1 and 60 seconds")
