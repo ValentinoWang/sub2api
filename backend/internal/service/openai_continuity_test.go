@@ -97,14 +97,74 @@ func TestApplyOpenAIContinuityRecoveryDropsUpstreamAnchorAndPreservesOrder(t *te
 	}
 	payload := []byte(`{"type":"response.create","previous_response_id":"resp_old","input":[{"type":"message","role":"user","content":"next"}]}`)
 
-	recovered, fullInput, err := applyOpenAIContinuityRecovery(payload, persisted)
+	recovered, fullInput, rebaseReason, err := applyOpenAIContinuityRecovery(payload, persisted)
 	require.NoError(t, err)
+	require.Empty(t, rebaseReason)
 	require.Len(t, fullInput, 3)
 	require.Empty(t, openAIWSPayloadStringFromRaw(recovered, "previous_response_id"))
 	items, exists, err := openAIWSExtractNormalizedInputSequence(recovered)
 	require.NoError(t, err)
 	require.True(t, exists)
 	require.Len(t, items, 3)
+}
+
+func TestOpenAIContinuityRecoveryRebasesOnlyOnLongTailOverlap(t *testing.T) {
+	persisted := make([]json.RawMessage, 0, 8)
+	for i := 0; i < 8; i++ {
+		role := "user"
+		if i%2 == 1 {
+			role = "assistant"
+		}
+		persisted = append(persisted, json.RawMessage(fmt.Sprintf(`{"type":"message","role":"%s","content":"turn-%d"}`, role, i)))
+	}
+
+	longTailCurrent := append([]json.RawMessage{
+		json.RawMessage(`{"type":"message","role":"developer","content":"current instructions"}`),
+	}, persisted...)
+	payload, err := json.Marshal(map[string]any{
+		"type":  "response.create",
+		"input": longTailCurrent,
+	})
+	require.NoError(t, err)
+	recovered, replay, reason, err := applyOpenAIContinuityRecovery(payload, persisted)
+	require.NoError(t, err)
+	require.Equal(t, "persisted_tail_overlap", reason)
+	require.Len(t, replay, 9)
+	require.Len(t, gjson.GetBytes(recovered, "input").Array(), 9)
+	require.Equal(t, "developer", gjson.GetBytes(recovered, "input.0.role").String())
+
+	shortCurrent := []json.RawMessage{
+		json.RawMessage(`{"type":"message","role":"developer","content":"current instructions"}`),
+		persisted[6],
+		persisted[7],
+	}
+	shortPayload, err := json.Marshal(map[string]any{
+		"type":  "response.create",
+		"input": shortCurrent,
+	})
+	require.NoError(t, err)
+	_, shortReplay, shortReason, err := applyOpenAIContinuityRecovery(shortPayload, persisted)
+	require.NoError(t, err)
+	require.Empty(t, shortReason)
+	require.Len(t, shortReplay, 11)
+}
+
+func TestAppendOpenAIContinuityOutputDeduplicatesToolItemsByTypeAndCallID(t *testing.T) {
+	input := []json.RawMessage{
+		json.RawMessage(`{"type":"function_call","id":"fc-1","call_id":"call-1","name":"lookup","arguments":"{}"}`),
+		json.RawMessage(`{"type":"function_call_output","call_id":"call-1","output":"ok"}`),
+	}
+	output := []json.RawMessage{
+		json.RawMessage(`{"type":"function_call","id":"fc-1","call_id":"call-1","name":"lookup","arguments":"{}"}`),
+		json.RawMessage(`{"type":"function_call_output","call_id":"call-1","output":"ok"}`),
+		json.RawMessage(`{"type":"message","role":"assistant","content":"done"}`),
+	}
+
+	merged := appendOpenAIContinuityOutput(input, output)
+	require.Len(t, merged, 3)
+	require.Equal(t, "function_call", gjson.GetBytes(merged[0], "type").String())
+	require.Equal(t, "function_call_output", gjson.GetBytes(merged[1], "type").String())
+	require.Equal(t, "message", gjson.GetBytes(merged[2], "type").String())
 }
 
 func TestCommitOpenAIContinuityReplayPersistsCompletedSnapshot(t *testing.T) {

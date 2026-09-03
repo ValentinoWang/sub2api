@@ -426,7 +426,7 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 		if ownershipErr != nil {
 			reqLog.Warn("openai.previous_response_owner_lookup_failed", zap.Error(ownershipErr))
 		}
-		if !owned {
+		if !owned && !h.gatewayService.OpenAIContinuityEnabledForHTTPRequest(c, body) {
 			reqLog.Warn("openai.request_validation_failed", zap.String("reason", "previous_response_owner_mismatch"))
 			h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "previous_response_id is not available for this user")
 			return
@@ -672,7 +672,16 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 		// 跨 passthrough 边界的 failover：从 Kiro 等透传账号切到 Bedrock 等非透传账号前，
 		// 从不可变的 canonical forwardBody 派生本次尝试 body 并整块剔除上游私有的加密
 		// reasoning item（含耦合的 id/summary），避免非透传上游 400 拒绝 Kiro reasoning 形态。
-		attemptBody := h.deriveOpenAIForwardAttemptBody(reqLog, forwardBody, account, &passthroughFailoverState)
+		attemptBody, continuityReplayInput, continuitySessionHash, continuityEnabled, continuityErr := h.gatewayService.PrepareOpenAIContinuityHTTPRequest(c.Request.Context(), c, forwardBody)
+		if continuityErr != nil {
+			if accountReleaseFunc != nil {
+				accountReleaseFunc()
+			}
+			reqLog.Error("openai.http_continuity_prepare_failed", zap.Int64("account_id", account.ID), zap.Error(continuityErr))
+			h.handleStreamingAwareError(c, http.StatusInternalServerError, "continuity_error", "Failed to restore durable task continuity", streamStarted)
+			return
+		}
+		attemptBody = h.deriveOpenAIForwardAttemptBody(reqLog, attemptBody, account, &passthroughFailoverState)
 		result, err := func() (*service.OpenAIForwardResult, error) {
 			defer func() {
 				if accountReleaseFunc != nil {
@@ -859,6 +868,13 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 			h.gatewayService.ReportOpenAIAccountScheduleResult(account, openAIAccountScheduleModel(c, account, forwardModel, requireCompact, result), openAIForwardSucceededForScheduling(result), result.FirstTokenMs)
 		} else {
 			h.gatewayService.ReportOpenAIAccountScheduleResult(account, openAIAccountScheduleModel(c, account, forwardModel, requireCompact, result), openAIForwardSucceededForScheduling(result), nil)
+		}
+		if continuityEnabled && result != nil {
+			commitCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			if commitErr := h.gatewayService.CommitOpenAIContinuityHTTPResponse(commitCtx, c, continuitySessionHash, account.ID, continuityReplayInput, result); commitErr != nil {
+				reqLog.Error("openai.http_continuity_commit_failed", zap.Int64("account_id", account.ID), zap.String("response_id", result.ResponseID), zap.Error(commitErr))
+			}
+			cancel()
 		}
 
 		// 使用量记录通过有界 worker 池提交，避免请求热路径创建无界 goroutine。

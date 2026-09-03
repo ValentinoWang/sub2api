@@ -106,6 +106,15 @@ type Config struct {
 	ImageStorage            ImageStorageConfig            `mapstructure:"image_storage"`
 	Plugins                 PluginConfig                  `mapstructure:"plugins"`
 	ProxySubscription       ProxySubscriptionConfig       `mapstructure:"proxy_subscription"`
+	LiandongRestock         LiandongRestockConfig         `mapstructure:"liandong_restock"`
+}
+
+type LiandongRestockConfig struct {
+	BaseURL       string `mapstructure:"base_url"`
+	MerchantToken string `mapstructure:"merchant_token"`
+	CodeSecret    string `mapstructure:"code_secret"`
+	ProductsJSON  string `mapstructure:"products_json"`
+	IntervalSecs  int    `mapstructure:"interval_seconds"`
 }
 
 // PluginConfig 控制管理员手动上传的本地进程插件。
@@ -1019,6 +1028,8 @@ type GatewayConfig struct {
 	OpenAICompactModel string `mapstructure:"openai_compact_model"`
 	// OpenAIWS: OpenAI Responses WebSocket 配置（默认开启，可按需回滚到 HTTP）
 	OpenAIWS GatewayOpenAIWSConfig `mapstructure:"openai_ws"`
+	// OpenAIContinuity: provider-independent Codex turn ledger. Disabled by default.
+	OpenAIContinuity GatewayOpenAIContinuityConfig `mapstructure:"openai_continuity"`
 	// Live: ChatGPT Frameless Live 会话配置。
 	Live GatewayLiveConfig `mapstructure:"live"`
 	// OpenAIScheduler: OpenAI 高级调度器粘性逃逸配置
@@ -1333,6 +1344,16 @@ type GatewayOpenAIWSConfig struct {
 	StickyPreviousResponseTTLSeconds int `mapstructure:"sticky_previous_response_ttl_seconds"`
 
 	SchedulerScoreWeights GatewayOpenAIWSSchedulerScoreWeights `mapstructure:"scheduler_score_weights"`
+}
+
+// GatewayOpenAIContinuityConfig controls the durable, tenant-isolated replay
+// ledger used when a Codex task moves between upstream OpenAI accounts.
+type GatewayOpenAIContinuityConfig struct {
+	Enabled        bool    `mapstructure:"enabled"`
+	Secret         string  `mapstructure:"secret"`
+	APIKeyIDs      []int64 `mapstructure:"api_key_ids"`
+	RetentionDays  int     `mapstructure:"retention_days"`
+	MaxReplayBytes int64   `mapstructure:"max_replay_bytes"`
 }
 
 // GatewayOpenAIWSSchedulerScoreWeights 账号调度打分权重。
@@ -2444,6 +2465,11 @@ func setDefaults() {
 	viper.SetDefault("gateway.openai_ws.metadata_bridge_enabled", true)
 	viper.SetDefault("gateway.openai_ws.sticky_response_id_ttl_seconds", 3600)
 	viper.SetDefault("gateway.openai_ws.sticky_previous_response_ttl_seconds", 3600)
+	viper.SetDefault("gateway.openai_continuity.enabled", false)
+	viper.SetDefault("gateway.openai_continuity.secret", "")
+	viper.SetDefault("gateway.openai_continuity.api_key_ids", []int64{})
+	viper.SetDefault("gateway.openai_continuity.retention_days", 30)
+	viper.SetDefault("gateway.openai_continuity.max_replay_bytes", int64(32*1024*1024))
 	viper.SetDefault("gateway.openai_ws.scheduler_score_weights.priority", 1.0)
 	viper.SetDefault("gateway.openai_ws.scheduler_score_weights.load", 1.0)
 	viper.SetDefault("gateway.openai_ws.scheduler_score_weights.queue", 0.7)
@@ -3539,6 +3565,22 @@ func (c *Config) Validate() error {
 	}
 	if c.Gateway.OpenAIWS.StickyPreviousResponseTTLSeconds < 0 {
 		return fmt.Errorf("gateway.openai_ws.sticky_previous_response_ttl_seconds must be non-negative")
+	}
+	if c.Gateway.OpenAIContinuity.Enabled {
+		if len(strings.TrimSpace(c.Gateway.OpenAIContinuity.Secret)) < 32 {
+			return fmt.Errorf("gateway.openai_continuity.secret must be at least 32 characters when enabled")
+		}
+		if c.Gateway.OpenAIContinuity.RetentionDays <= 0 {
+			return fmt.Errorf("gateway.openai_continuity.retention_days must be positive")
+		}
+		if c.Gateway.OpenAIContinuity.MaxReplayBytes <= 0 {
+			return fmt.Errorf("gateway.openai_continuity.max_replay_bytes must be positive")
+		}
+	}
+	for _, apiKeyID := range c.Gateway.OpenAIContinuity.APIKeyIDs {
+		if apiKeyID <= 0 {
+			return fmt.Errorf("gateway.openai_continuity.api_key_ids must contain only positive IDs")
+		}
 	}
 	if c.Gateway.OpenAIHTTP2.FallbackErrorThreshold < 0 {
 		return fmt.Errorf("gateway.openai_http2.fallback_error_threshold must be non-negative")

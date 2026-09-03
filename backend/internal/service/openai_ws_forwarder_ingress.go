@@ -544,6 +544,26 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 		}
 	}
 	refreshIngressRouteState(firstPayload)
+	continuitySessionHash := s.GenerateExplicitSessionHash(c, firstPayload.rawForHash)
+	continuitySnapshot, continuityEnabled, continuityLoadErr := s.loadOpenAIContinuityReplay(ctx, c, continuitySessionHash)
+	if continuityLoadErr != nil {
+		return continuityLoadErr
+	}
+	continuityReplayInput, continuityDecodeErr := decodeOpenAIContinuityReplay(continuitySnapshot)
+	if continuityDecodeErr != nil {
+		return continuityDecodeErr
+	}
+	continuityNeedsRecovery := continuitySnapshot != nil && (firstPayload.previousResponseID == "" || continuitySnapshot.UpstreamAccountID != account.ID)
+	if continuityNeedsRecovery {
+		recoveredPayload, recoveredInput, _, recoveryErr := applyOpenAIContinuityRecovery(firstPayload.payloadRaw, continuityReplayInput)
+		if recoveryErr != nil {
+			return fmt.Errorf("apply OpenAI continuity recovery: %w", recoveryErr)
+		}
+		firstPayload.payloadRaw = recoveredPayload
+		firstPayload.payloadBytes = len(recoveredPayload)
+		firstPayload.previousResponseID = ""
+		continuityReplayInput = recoveredInput
+	}
 
 	if forceHTTPBridge || s.shouldBridgeOpenAIWSHTTP(account, firstPayload.payloadBytes, firstPayload.previousResponseID) {
 		logOpenAIWSModeInfo(
@@ -561,7 +581,8 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 		// cannot reuse another model's upstream cache identity.
 		grokCacheSeedPayload := firstPayload.payloadRaw
 		var bridgeReplayInput []json.RawMessage
-		bridgeReplayInputExists := false
+		bridgeReplayInputExists := len(continuityReplayInput) > 0
+		bridgeReplayInput = cloneOpenAIWSRawMessages(continuityReplayInput)
 		var bridgeAccountFailoverInput []json.RawMessage
 		bridgeAccountFailoverInputExists := false
 		for turn := 1; ; turn++ {
@@ -691,6 +712,15 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 					cloneOpenAIWSRawMessages(result.wsAccountFailoverReplayInput)...,
 				)
 				bridgeAccountFailoverInputExists = true
+			}
+			if continuityEnabled && len(result.wsCanonicalOutput) > 0 {
+				bridgeReplayInput = appendOpenAIContinuityOutputForWSRequest(bridgeReplayInput, result.wsCanonicalOutput, nil)
+				bridgeReplayInputExists = true
+			}
+			if continuityEnabled {
+				if err := s.commitOpenAIContinuityReplay(ctx, c, continuitySessionHash, account.ID, strings.TrimSpace(result.RequestID), bridgeReplayInput, rememberedOpenAICodexWindowID(c)); err != nil {
+					return fmt.Errorf("commit websocket http bridge continuity: %w", err)
+				}
 			}
 			if bridgeTurnState := strings.TrimSpace(result.ResponseHeaders.Get(openAIWSTurnStateHeader)); bridgeTurnState != "" {
 				turnState = bridgeTurnState
@@ -947,6 +977,7 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 		tokenEventCount := 0
 		terminalEventCount := 0
 		replayCollector := &openAIWSToolCallReplayCollector{}
+		canonicalOutputCollector := &openAIWSCanonicalOutputCollector{}
 		firstEventType := ""
 		lastEventType := ""
 		needModelReplace := false
@@ -1118,6 +1149,7 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 					}
 				}
 				replayCollector.AddEvent(eventType, upstreamMessage)
+				canonicalOutputCollector.AddEvent(eventType, upstreamMessage)
 				if err := writeClientMessage(upstreamMessage); err != nil {
 					if isOpenAIWSClientDisconnectError(err) {
 						clientDisconnected = true
@@ -1191,6 +1223,7 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 					result.wsReplayInput = replayInput
 					result.wsReplayInputExists = true
 				}
+				result.wsCanonicalOutput = canonicalOutputCollector.Items()
 				if imageCount > 0 {
 					result.ImageCount = imageCount
 					result.ImageSize = imageSizeTier
@@ -1271,10 +1304,13 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 	turnPrevRecoveryTried := false
 	lastTurnFinishedAt := time.Time{}
 	lastTurnResponseID := ""
+	if continuitySnapshot != nil {
+		lastTurnResponseID = strings.TrimSpace(continuitySnapshot.UpstreamResponseID)
+	}
 	lastTurnPayload := []byte(nil)
 	var lastTurnStrictState *openAIWSIngressPreviousTurnStrictState
-	lastTurnReplayInput := []json.RawMessage(nil)
-	lastTurnReplayInputExists := false
+	lastTurnReplayInput := cloneOpenAIWSRawMessages(continuityReplayInput)
+	lastTurnReplayInputExists := len(continuityReplayInput) > 0
 	currentTurnReplayInput := []json.RawMessage(nil)
 	currentTurnReplayInputExists := false
 	skipBeforeTurn := false
@@ -1745,6 +1781,15 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 		if result.wsReplayInputExists {
 			lastTurnReplayInput = append(lastTurnReplayInput, cloneOpenAIWSRawMessages(result.wsReplayInput)...)
 			lastTurnReplayInputExists = true
+		}
+		if continuityEnabled && len(result.wsCanonicalOutput) > 0 {
+			lastTurnReplayInput = appendOpenAIContinuityOutputForWSRequest(lastTurnReplayInput, result.wsCanonicalOutput, nil)
+			lastTurnReplayInputExists = true
+		}
+		if continuityEnabled {
+			if err := s.commitOpenAIContinuityReplay(ctx, c, continuitySessionHash, account.ID, responseID, lastTurnReplayInput, rememberedOpenAICodexWindowID(c)); err != nil {
+				return fmt.Errorf("commit websocket continuity: %w", err)
+			}
 		}
 		nextStrictState, strictStateErr := buildOpenAIWSIngressPreviousTurnStrictState(currentPayload)
 		if strictStateErr != nil {

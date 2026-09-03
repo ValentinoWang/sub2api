@@ -19,6 +19,8 @@ import (
 
 var ErrOpenAIContinuityReplayTooLarge = errors.New("openai continuity replay exceeds configured durable size")
 
+const openAIContinuityRecoveryMinOverlapItems = 8
+
 const codexLocalCompactionSummaryPrefix = "Another language model started to solve this problem and produced a summary of its thinking process. You also have access to the state of the tools that were used by that language model. Use this to build on the work that has already been done and avoid duplicating work. Here is the summary produced by the other language model, use the information in this summary to assist with your own analysis:"
 
 const openAICodexWindowIDContextKey = "openai_codex_window_id"
@@ -159,27 +161,137 @@ func decodeOpenAIContinuityReplay(snapshot *OpenAIContinuitySnapshot) ([]json.Ra
 	return items, nil
 }
 
-func applyOpenAIContinuityRecovery(payload []byte, persisted []json.RawMessage) ([]byte, []json.RawMessage, error) {
-	fullInput, fullInputExists, err := buildOpenAIWSReplayInputSequence(persisted, len(persisted) > 0, payload, true)
+func openAIContinuityReplaceableCurrentPrefix(items []json.RawMessage) bool {
+	for _, item := range items {
+		if gjson.GetBytes(item, "type").String() != "message" {
+			return false
+		}
+		switch gjson.GetBytes(item, "role").String() {
+		case "developer", "system":
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+func openAIContinuityOverlapContainsConversationHistory(items []json.RawMessage) bool {
+	hasUserMessage := false
+	hasAssistantContext := false
+	for _, item := range items {
+		itemType := gjson.GetBytes(item, "type").String()
+		if itemType == "message" {
+			switch gjson.GetBytes(item, "role").String() {
+			case "user":
+				hasUserMessage = true
+			case "assistant":
+				hasAssistantContext = true
+			}
+		}
+		if isCodexToolCallContextItemType(itemType) {
+			hasAssistantContext = true
+		}
+	}
+	return hasUserMessage && hasAssistantContext
+}
+
+func openAIContinuityRecoveryHasLongTailOverlap(persisted, current []json.RawMessage) bool {
+	if len(persisted) < openAIContinuityRecoveryMinOverlapItems || len(current) < openAIContinuityRecoveryMinOverlapItems {
+		return false
+	}
+	persistedFingerprints := make([][sha256.Size]byte, len(persisted))
+	for idx := range persisted {
+		persistedFingerprints[idx] = sha256.Sum256(normalizeOpenAIWSJSONForCompareOrRaw(persisted[idx]))
+	}
+	currentFingerprints := make([][sha256.Size]byte, len(current))
+	for idx := range current {
+		currentFingerprints[idx] = sha256.Sum256(normalizeOpenAIWSJSONForCompareOrRaw(current[idx]))
+	}
+	for currentEnd := range currentFingerprints {
+		overlap := 0
+		for overlap < len(persistedFingerprints) && overlap <= currentEnd {
+			persistedIdx := len(persistedFingerprints) - 1 - overlap
+			currentIdx := currentEnd - overlap
+			if persistedFingerprints[persistedIdx] != currentFingerprints[currentIdx] {
+				break
+			}
+			overlap++
+		}
+		if overlap < openAIContinuityRecoveryMinOverlapItems || overlap*2 < len(current) {
+			continue
+		}
+		currentStart := currentEnd - overlap + 1
+		if openAIContinuityReplaceableCurrentPrefix(current[:currentStart]) && openAIContinuityOverlapContainsConversationHistory(current[currentStart:currentEnd+1]) {
+			return true
+		}
+	}
+	return false
+}
+
+func buildOpenAIContinuityRecoveryInputSequence(persisted []json.RawMessage, payload []byte) ([]json.RawMessage, bool, string, error) {
+	current, currentExists, err := openAIWSExtractNormalizedInputSequence(payload)
 	if err != nil {
-		return nil, nil, err
+		return nil, false, "", err
+	}
+	if len(persisted) == 0 {
+		return cloneOpenAIWSRawMessages(current), currentExists, "", nil
+	}
+	if !currentExists || len(current) == 0 {
+		return cloneOpenAIWSRawMessages(persisted), true, "", nil
+	}
+	if openAIWSRawItemsHasPrefix(current, persisted) {
+		return cloneOpenAIWSRawMessages(current), true, "", nil
+	}
+	if openAIContinuityRecoveryHasLongTailOverlap(persisted, current) {
+		return cloneOpenAIWSRawMessages(current), true, "persisted_tail_overlap", nil
+	}
+	merged := append(cloneOpenAIWSRawMessages(persisted), cloneOpenAIWSRawMessages(current)...)
+	return merged, true, "", nil
+}
+
+func applyOpenAIContinuityRecovery(payload []byte, persisted []json.RawMessage) ([]byte, []json.RawMessage, string, error) {
+	fullInput, fullInputExists, rebaseReason, err := buildOpenAIContinuityRecoveryInputSequence(persisted, payload)
+	if err != nil {
+		return nil, nil, "", err
 	}
 	withoutPrevious, _, err := dropPreviousResponseIDFromRawPayload(payload)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, "", err
 	}
 	recovered, err := setOpenAIWSPayloadInputSequence(withoutPrevious, fullInput, fullInputExists)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, "", err
 	}
-	return recovered, fullInput, nil
+	return recovered, fullInput, rebaseReason, nil
 }
 
 func appendOpenAIContinuityOutput(input, output []json.RawMessage) []json.RawMessage {
 	merged := make([]json.RawMessage, 0, len(input)+len(output))
-	merged = append(merged, cloneOpenAIWSRawMessages(input)...)
-	merged = append(merged, cloneOpenAIWSRawMessages(output)...)
+	seen := make(map[string]struct{}, len(input)+len(output))
+	appendUnique := func(items []json.RawMessage) {
+		for _, item := range items {
+			key := openAIContinuityItemKey(item)
+			if _, exists := seen[key]; exists {
+				continue
+			}
+			seen[key] = struct{}{}
+			merged = append(merged, append(json.RawMessage(nil), item...))
+		}
+	}
+	appendUnique(input)
+	appendUnique(output)
 	return merged
+}
+
+func openAIContinuityItemKey(item json.RawMessage) string {
+	itemType := strings.TrimSpace(gjson.GetBytes(item, "type").String())
+	if id := strings.TrimSpace(gjson.GetBytes(item, "id").String()); id != "" {
+		return itemType + "\x00id\x00" + id
+	}
+	if callID := strings.TrimSpace(gjson.GetBytes(item, "call_id").String()); callID != "" {
+		return itemType + "\x00call_id\x00" + callID
+	}
+	return itemType + "\x00raw\x00" + string(item)
 }
 
 // appendOpenAIContinuityOutputForWSRequest rebases the durable ledger when a
@@ -359,13 +471,14 @@ func (s *OpenAIGatewayService) PrepareOpenAIContinuityHTTPRequest(
 	compactionRebased := compactionRebaseReason != ""
 	fullInput := cloneOpenAIWSRawMessages(currentInput)
 	fullInputExists := currentInputExists
+	recoveryRebaseReason := ""
 	if !compactionRebased {
-		fullInput, fullInputExists, err = buildOpenAIWSReplayInputSequence(
-			persisted,
-			len(persisted) > 0,
-			body,
-			snapshot != nil,
-		)
+		if snapshot == nil {
+			fullInput = cloneOpenAIWSRawMessages(currentInput)
+			fullInputExists = currentInputExists
+		} else {
+			fullInput, fullInputExists, recoveryRebaseReason, err = buildOpenAIContinuityRecoveryInputSequence(persisted, body)
+		}
 		if err != nil {
 			return nil, nil, sessionHash, true, fmt.Errorf("build HTTP continuity replay: %w", err)
 		}
@@ -402,6 +515,13 @@ func (s *OpenAIGatewayService) PrepareOpenAIContinuityHTTPRequest(
 			zap.Int("old_replay_input_count", len(persisted)),
 			zap.Int("new_replay_input_count", len(fullInput)),
 			zap.String("reason", compactionRebaseReason),
+		)
+	}
+	if recoveryRebaseReason != "" {
+		logger.FromContext(ctx).Info("codex.http_continuity.recovery_rebased",
+			zap.Int("old_replay_input_count", len(persisted)),
+			zap.Int("new_replay_input_count", len(fullInput)),
+			zap.String("reason", recoveryRebaseReason),
 		)
 	}
 	return recovered, fullInput, sessionHash, true, nil

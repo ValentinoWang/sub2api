@@ -137,6 +137,66 @@ type openAIWSToolCallReplayCollector struct {
 	allSeen  map[string]struct{}
 }
 
+// openAIWSCanonicalOutputCollector keeps the terminal Responses output in a
+// stable item form for durable continuity commits. It deduplicates item.done
+// and response.completed copies by id/call_id.
+type openAIWSCanonicalOutputCollector struct {
+	items []json.RawMessage
+	seen  map[string]struct{}
+}
+
+func (c *openAIWSCanonicalOutputCollector) AddEvent(eventType string, message []byte) {
+	switch strings.TrimSpace(eventType) {
+	case "response.output_item.done":
+		c.addItem(gjson.GetBytes(message, "item"))
+	case "response.completed", "response.done":
+		output := gjson.GetBytes(message, "response.output")
+		if output.IsArray() {
+			for _, item := range output.Array() {
+				c.addItem(item)
+			}
+		}
+	}
+}
+
+func (c *openAIWSCanonicalOutputCollector) Items() []json.RawMessage {
+	return cloneOpenAIWSRawMessages(c.items)
+}
+
+func (c *openAIWSCanonicalOutputCollector) addItem(item gjson.Result) {
+	if !item.Exists() || item.Type != gjson.JSON {
+		return
+	}
+	raw := strings.TrimSpace(item.Raw)
+	if raw == "" || !strings.HasPrefix(raw, "{") {
+		return
+	}
+	key := strings.TrimSpace(item.Get("id").String())
+	if key == "" {
+		key = strings.TrimSpace(item.Get("call_id").String())
+	}
+	if key == "" {
+		key = raw
+	}
+	if c.seen == nil {
+		c.seen = make(map[string]struct{})
+	}
+	if _, ok := c.seen[key]; ok {
+		return
+	}
+	c.seen[key] = struct{}{}
+	c.items = append(c.items, json.RawMessage(raw))
+}
+
+func canonicalOpenAIOutputFromResponse(body []byte) []json.RawMessage {
+	if strings.TrimSpace(gjson.GetBytes(body, "status").String()) != "completed" {
+		return nil
+	}
+	collector := &openAIWSCanonicalOutputCollector{}
+	collector.AddEvent("response.completed", []byte(`{"response":`+string(body)+`}`))
+	return collector.Items()
+}
+
 func (c *openAIWSToolCallReplayCollector) AddEvent(eventType string, message []byte) {
 	switch strings.TrimSpace(eventType) {
 	case "response.output_item.done":

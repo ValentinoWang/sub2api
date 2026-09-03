@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sub2API Deployment"
+  short_description: "Build, notify users, and cut over safely"
+  default_prompt: "Use $sub2api-deployment to build and deploy Sub2API with mandatory maintenance and recovery notices."
