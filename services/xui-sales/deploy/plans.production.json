@@ -1,0 +1,34 @@
+[
+  {
+    "id": "monthly-400gb",
+    "name": "月度 API + 网络稳定器组合套餐",
+    "description": "API 中转订阅 30 天，网络稳定器 400 GB，最多 3 个 IP",
+    "price_cny": "0.00",
+    "duration_days": 30,
+    "traffic_gb": 400,
+    "ip_limit": 3,
+    "enabled": false,
+    "sub2api_group_id": 3,
+    "api_validity_days": 30
+  },
+  {
+    "id": "monthly-50gb",
+    "name": "网络稳定器 50GB/月",
+    "description": "网络稳定器服务 30 天，流量 50GB，最多 3 个 IP",
+    "price_cny": "15.00",
+    "duration_days": 30,
+    "traffic_gb": 50,
+    "ip_limit": 3,
+    "enabled": true
+  },
+  {
+    "id": "monthly-100gb",
+    "name": "网络稳定器 100GB/月",
+    "description": "网络稳定器服务 30 天，流量 100GB，最多 3 个 IP",
+    "price_cny": "25.00",
+    "duration_days": 30,
+    "traffic_gb": 100,
+    "ip_limit": 3,
+    "enabled": true
+  }
+]

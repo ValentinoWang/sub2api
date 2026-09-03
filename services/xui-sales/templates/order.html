@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>订单 {{ order.id }} · LA Network</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='lucide.min.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body data-order-id="{{ order.id }}" data-order-token="{{ token }}">
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">LA</span><span>LA Network</span></a>
+  </header>
+  <main class="order-main">
+    <section class="order-panel">
+      <div class="order-header">
+        <div>
+          <p class="eyebrow">订单 {{ order.id }}</p>
+          <h1>{{ order.plan_name }}</h1>
+        </div>
+        {% if order.source == 'alipay' %}<p class="order-price">¥{{ order.amount }}</p>{% else %}<span class="source-badge">联动小铺卡密</span>{% endif %}
+      </div>
+      <div class="order-status" data-order-status="{{ order.status }}">
+        <i data-lucide="loader-circle"></i>
+        <div>
+          <strong id="status-title">{% if order.status == 'active' %}订阅已开通{% elif order.source == 'xianyu_redeem' %}兑换成功{% else %}等待支付{% endif %}</strong>
+          <p id="status-copy">{% if order.status == 'active' %}请妥善保存下方订阅地址。{% elif order.source == 'xianyu_redeem' %}正在创建专属订阅。{% else %}支付宝异步确认后会自动开通。{% endif %}</p>
+        </div>
+      </div>
+
+      {% if order.has_api %}
+      <div class="fulfillment-grid" aria-label="服务状态">
+        <span>{% if order.api_fulfillment_type == 'balance' %}API 额度{% else %}API 套餐{% endif %} <strong id="api-state">{{ order.api_status }}</strong></span>
+        {% if order.has_vpn %}
+        <span>网络稳定器 <strong id="vpn-state">{{ order.vpn_status }}</strong></span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <div id="subscription-block" class="subscription-block{% if not order.subscription_url %} hidden{% endif %}">
+        <label for="subscription-url">通用订阅地址</label>
+        <div class="copy-row">
+          <input id="subscription-url" readonly value="{{ order.subscription_url or '' }}">
+          <button class="icon-button" type="button" data-copy-target="subscription-url" title="复制订阅地址" aria-label="复制订阅地址"><i data-lucide="copy"></i></button>
+        </div>
+      </div>
+
+      {% if order.status != 'active' and order.source == 'alipay' %}
+      <form id="pay-form" method="post" action="{{ url_for('pay_order', order_id=order.id) }}">
+        <input type="hidden" name="token" value="{{ token }}">
+        <button class="pay-button" type="submit" {% if not payment_ready %}disabled{% endif %}>
+          <i data-lucide="credit-card"></i>{% if payment_ready %}前往支付宝付款{% else %}收款配置中{% endif %}
+        </button>
+      </form>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

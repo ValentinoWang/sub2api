@@ -1,0 +1,30 @@
+[Unit]
+Description=Encrypted tunnel from xui-sales to Sub2API
+After=network-online.target
+Wants=network-online.target
+Before=xui-sales.service xui-sales-recover.service
+
+[Service]
+Type=simple
+User=xui-sales
+Group=xui-sales
+ExecStart=/usr/bin/ssh -NT -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/etc/xui-sales/sub2api-known_hosts -i /etc/xui-sales/sub2api-tunnel -L 127.0.0.1:19080:127.0.0.1:8080 root@43.136.113.101
+Restart=always
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

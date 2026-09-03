@@ -1,0 +1,40 @@
+[Unit]
+Description=x-ui sales and bundle fulfillment service
+After=network-online.target x-ui.service xui-sales-sub2api-tunnel.service
+Wants=network-online.target xui-sales-sub2api-tunnel.service
+
+[Service]
+Type=simple
+User=xui-sales
+Group=xui-sales
+WorkingDirectory=/opt/xui-sales
+EnvironmentFile=/etc/x-ui/install-result.env
+EnvironmentFile=/etc/xui-sales/xui-sales.env
+LoadCredential=xui_api_token:/etc/xui-sales/xui-api-token
+LoadCredential=redemption_pepper:/etc/xui-sales/redemption-pepper
+LoadCredential=sub2api_admin_api_key:/etc/xui-sales/sub2api-admin-api-key
+UnsetEnvironment=XUI_USERNAME XUI_PASSWORD XUI_API_TOKEN XUI_PANEL_PORT XUI_WEB_BASE_PATH XUI_DB_TYPE
+Environment=XUI_API_TOKEN_FILE=/run/credentials/xui-sales.service/xui_api_token
+Environment=REDEMPTION_PEPPER_FILE=/run/credentials/xui-sales.service/redemption_pepper
+Environment=SUB2API_ADMIN_API_KEY_FILE=/run/credentials/xui-sales.service/sub2api_admin_api_key
+ExecStart=/usr/bin/gunicorn --workers 1 --threads 4 --timeout 20 --bind 127.0.0.1:18080 --error-logfile - wsgi:app
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+ReadWritePaths=/var/lib/xui-sales
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

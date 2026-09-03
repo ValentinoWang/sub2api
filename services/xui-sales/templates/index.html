@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>LA Network 套餐</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='lucide.min.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="LA Network 首页">
+      <span class="brand-mark">LA</span>
+      <span>LA Network</span>
+    </a>
+    <span class="service-state"><span class="status-dot"></span>节点在线</span>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="plans-title">
+      <div>
+        <p class="eyebrow">VLESS REALITY · 洛杉矶节点</p>
+        <h1 id="plans-title">选择订阅套餐</h1>
+        <p class="intro-copy">使用联动小铺发放的一次性兑换码开通套餐，完成后显示专属订阅地址。</p>
+      </div>
+      <div class="trust-row" aria-label="服务保障">
+        <span><i data-lucide="shield-check"></i>一次性卡密核销</span>
+        <span><i data-lucide="zap"></i>自动开通</span>
+        <span><i data-lucide="refresh-cw"></i>12 小时订阅更新</span>
+      </div>
+    </section>
+
+    <section class="redeem-section" aria-labelledby="redeem-title">
+      <div class="redeem-heading">
+        <p class="eyebrow">联动小铺卡密</p>
+        <h2 id="redeem-title">兑换套餐</h2>
+      </div>
+      <form class="redeem-form" method="post" action="{{ url_for('redeem') }}">
+        <div class="field-group field-code">
+          <label for="redemption-code">兑换码</label>
+          <input id="redemption-code" name="code" required autocomplete="one-time-code" spellcheck="false" placeholder="LA-XXXXXX-XXXXXX-XXXXXX-XXXXXXXX">
+        </div>
+        <div class="field-group">
+          <label for="sub2api-email">Sub2API 账户邮箱（API 商品）</label>
+          <input id="sub2api-email" name="sub2api_email" type="email" autocomplete="email" placeholder="name@example.com">
+        </div>
+        <button class="redeem-button" type="submit"><i data-lucide="key-round"></i>立即兑换</button>
+        {% if redeem_error %}<p class="form-error" role="alert">{{ redeem_error }}</p>{% endif %}
+      </form>
+    </section>
+
+    {% if plans %}
+    <section class="plans" aria-label="套餐列表">
+      {% for plan in plans %}
+      <article class="plan">
+        <div class="plan-heading">
+          <div>
+            <h2>{{ plan.name }}</h2>
+            <p>{{ plan.description }}</p>
+          </div>
+          <span class="plan-badge">{% if plan.is_api_balance %}API 额度{% else %}{{ plan.duration_days }} 天{% endif %}</span>
+        </div>
+        <p class="price"><span>¥</span>{{ plan.price_text }}</p>
+        <ul class="plan-details">
+          {% if plan.is_api_balance %}
+          <li><i data-lucide="wallet-cards"></i><span>USD {{ plan.sub2api_balance_text }} API 额度</span></li>
+          <li><i data-lucide="user-check"></i><span>充值到指定 Sub2API 账户</span></li>
+          <li><i data-lucide="shield-check"></i><span>不创建网络稳定器订阅</span></li>
+          {% else %}
+          <li><i data-lucide="gauge"></i><span>{{ plan.traffic_gb }} GB 流量</span></li>
+          <li><i data-lucide="monitor-smartphone"></i><span>{% if plan.ip_limit == 0 %}不限设备 IP{% else %}最多 {{ plan.ip_limit }} 个 IP{% endif %}</span></li>
+          <li><i data-lucide="calendar-days"></i><span>有效期 {{ plan.duration_days }} 天</span></li>
+          {% endif %}
+        </ul>
+        <form method="post" action="{{ url_for('create_order') }}">
+          <input type="hidden" name="plan_id" value="{{ plan.id }}">
+          <button class="pay-button" type="submit" {% if not payments_enabled %}disabled{% endif %}>
+            <i data-lucide="credit-card"></i>
+            {% if payments_enabled %}支付宝购买{% else %}收款配置中{% endif %}
+          </button>
+        </form>
+      </article>
+      {% endfor %}
+    </section>
+    {% endif %}
+  </main>
+
+  <footer>
+    <span>LA Network</span>
+    <span>VLESS · TCP · REALITY</span>
+  </footer>
+</body>
+</html>

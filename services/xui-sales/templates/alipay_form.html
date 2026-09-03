@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>跳转支付宝 · LA Network</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="handoff-main">
+    <section class="handoff-panel">
+      <span class="brand-mark">LA</span>
+      <h1>订单已经创建</h1>
+      <p>点击后进入支付宝完成付款。</p>
+      <form method="post" action="{{ gateway }}">
+        {% for name, value in params.items() %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+        <button class="pay-button" type="submit">前往支付宝</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,35 @@
+[Unit]
+Description=Recover incomplete x-ui and Sub2API bundle fulfillment jobs
+After=network-online.target x-ui.service xui-sales.service xui-sales-sub2api-tunnel.service
+Wants=network-online.target xui-sales-sub2api-tunnel.service
+
+[Service]
+Type=oneshot
+User=xui-sales
+Group=xui-sales
+WorkingDirectory=/opt/xui-sales
+EnvironmentFile=/etc/x-ui/install-result.env
+EnvironmentFile=/etc/xui-sales/xui-sales.env
+LoadCredential=xui_api_token:/etc/xui-sales/xui-api-token
+LoadCredential=redemption_pepper:/etc/xui-sales/redemption-pepper
+LoadCredential=sub2api_admin_api_key:/etc/xui-sales/sub2api-admin-api-key
+UnsetEnvironment=XUI_USERNAME XUI_PASSWORD XUI_API_TOKEN XUI_PANEL_PORT XUI_WEB_BASE_PATH XUI_DB_TYPE
+Environment=XUI_API_TOKEN_FILE=/run/credentials/xui-sales-recover.service/xui_api_token
+Environment=REDEMPTION_PEPPER_FILE=/run/credentials/xui-sales-recover.service/redemption_pepper
+Environment=SUB2API_ADMIN_API_KEY_FILE=/run/credentials/xui-sales-recover.service/sub2api_admin_api_key
+ExecStart=/usr/bin/python3 -m xui_sales.manage recover --minimum-age 60 --limit 20
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+ReadWritePaths=/var/lib/xui-sales
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
