@@ -26,17 +26,21 @@
             />
           </div>
           <div class="min-w-0">
-            <h1 class="auth-gradient-text truncate text-3xl font-extrabold tracking-tight">
-              {{ siteName }}
+            <h1 class="truncate text-3xl font-extrabold tracking-tight">
+              <BrandWordmark :name="siteName" />
             </h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-dark-300">
+            <p class="auth-domain mt-1">{{ BRAND_DOMAIN }}</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-dark-300">
               {{ siteSubtitle }}
             </p>
           </div>
         </div>
 
-        <p class="mb-8 text-2xl font-semibold leading-snug text-gray-800 dark:text-gray-100">
-          {{ t('home.heroSubtitle') }}
+        <p class="mb-2 text-2xl font-semibold leading-snug text-gray-800 dark:text-gray-100">
+          {{ t('home.meme.tagline') }}
+        </p>
+        <p class="mb-8 text-sm text-gray-500 dark:text-dark-300">
+          {{ t('home.meme.taglineSub') }}
         </p>
 
         <ul class="space-y-4">
@@ -100,11 +104,11 @@
                 class="h-16 w-16 rounded-2xl object-contain"
               />
             </div>
-            <h1 class="auth-gradient-text mb-2 text-3xl font-bold tracking-tight">
-              {{ siteName }}
+            <h1 class="mb-2 text-3xl font-bold tracking-tight">
+              <BrandWordmark :name="siteName" />
             </h1>
             <p class="text-sm text-gray-500 dark:text-dark-400">
-              {{ siteSubtitle }}
+              {{ t('home.meme.tagline') }}
             </p>
           </template>
         </div>
@@ -123,7 +127,7 @@
 
         <!-- Copyright -->
         <div class="mt-8 text-center text-xs text-gray-400 dark:text-dark-500">
-          &copy; {{ currentYear }} {{ siteName }}. All rights reserved.
+          &copy; {{ currentYear }} {{ BRAND_DOMAIN }} · {{ t('home.meme.footer') }}
         </div>
       </div>
     </div>
@@ -136,11 +140,13 @@ import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores'
 import { sanitizeUrl } from '@/utils/url'
 import Icon from '@/components/icons/Icon.vue'
+import BrandWordmark from '@/components/common/BrandWordmark.vue'
+import { BRAND_DOMAIN, resolveBrandName } from '@/constants/brand'
 
 const { t } = useI18n()
 const appStore = useAppStore()
 
-const siteName = computed(() => appStore.siteName || 'Sub2API')
+const siteName = computed(() => resolveBrandName(appStore.siteName))
 const siteLogo = computed(() =>
   sanitizeUrl(appStore.siteLogo || '', {
     allowRelative: true,
@@ -317,14 +323,15 @@ onMounted(() => {
   z-index: -1;
 }
 
-.auth-gradient-text {
-  background: linear-gradient(100deg, #0f172a 0%, #0d9488 45%, #0891b2 70%, #4f46e5 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+
+.auth-domain {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #0d9488;
 }
-.dark .auth-gradient-text {
-  background-image: linear-gradient(100deg, #ffffff 0%, #5eead4 40%, #67e8f9 65%, #a5b4fc 100%);
+.dark .auth-domain {
+  color: #5eead4;
 }
 
 .auth-feature {

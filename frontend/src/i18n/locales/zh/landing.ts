@@ -18,17 +18,34 @@ export default {
       badge: '新一代 AI API 网关',
       status: 'online'
     },
-    terminal: {
-      online: 'online',
-      routing: '智能路由 · 选择最优上游',
-      streaming: '流式响应中'
-    },
     flow: {
-      client: '你的应用',
+      client: '你 · rest',
+      clientSub: '睡觉 / 摸鱼 / 休息',
       gateway: '统一网关',
       gatewaySub: '鉴权 · 路由 · 计费',
       pool: '账号池',
-      upstream: '上游模型'
+      upstream: 'AI · build',
+      upstreamSub: '写代码 / 跑任务 / 交付'
+    },
+    meme: {
+      tagline: '人去 rest，AI 去 build。',
+      taglineSub: '睡一觉，科技自己长出来了。',
+      youRest: 'you · rest',
+      aiBuild: 'ai · build',
+      nightShift: '夜班日志',
+      ctaTitle: '准备好去 rest 了吗？',
+      ctaDesc: '剩下的交给 AI 去 build。',
+      footer: '人去 rest，AI 去 build。'
+    },
+    terminal: {
+      online: 'online',
+      routing: '智能路由 · 选择最优上游',
+      streaming: '流式响应中',
+      youSleep: '去睡了，剩下的交给你 💤',
+      agentAck: '收到。今晚排期：build · test · ship',
+      building: '构建中',
+      done: '12 commits · 48 tests · PR ready',
+      goodMorning: '早 ☀️'
     },
     // 新增：面向用户的价值主张
     heroSubtitle: '一个密钥，畅用多个 AI 模型',
@@ -207,8 +224,8 @@ export default {
 
   // Setup Wizard
   setup: {
-    title: 'Sub2API 安装向导',
-    description: '配置您的 Sub2API 实例',
+    title: 'rest2build 安装向导',
+    description: '配置您的 rest2build 实例',
     database: {
       title: '数据库配置',
       description: '连接到您的 PostgreSQL 数据库',

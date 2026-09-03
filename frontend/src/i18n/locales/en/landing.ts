@@ -18,17 +18,34 @@ export default {
       badge: 'Next-gen AI API Gateway',
       status: 'online'
     },
-    terminal: {
-      online: 'online',
-      routing: 'Smart routing · picking best upstream',
-      streaming: 'Streaming response'
-    },
     flow: {
-      client: 'Your App',
+      client: 'You · rest',
+      clientSub: 'sleep / slack off / chill',
       gateway: 'Unified Gateway',
       gatewaySub: 'auth · routing · billing',
       pool: 'Account Pool',
-      upstream: 'Upstream Models'
+      upstream: 'AI · build',
+      upstreamSub: 'code / run tasks / ship'
+    },
+    meme: {
+      tagline: 'You rest. AI builds.',
+      taglineSub: 'Sleep on it. The tech grows itself overnight.',
+      youRest: 'you · rest',
+      aiBuild: 'ai · build',
+      nightShift: 'night shift log',
+      ctaTitle: 'Ready to rest?',
+      ctaDesc: 'Leave the building to AI.',
+      footer: 'You rest. AI builds.'
+    },
+    terminal: {
+      online: 'online',
+      routing: 'Smart routing · picking best upstream',
+      streaming: 'Streaming response',
+      youSleep: 'going to sleep, you take it from here 💤',
+      agentAck: 'ack. tonight: build · test · ship',
+      building: 'building',
+      done: '12 commits · 48 tests · PR ready',
+      goodMorning: 'morning ☀️'
     },
     // User-focused value proposition
     heroSubtitle: 'One Key, All AI Models',
@@ -207,8 +224,8 @@ export default {
 
   // Setup Wizard
   setup: {
-    title: 'Sub2API Setup',
-    description: 'Configure your Sub2API instance',
+    title: 'rest2build Setup',
+    description: 'Configure your rest2build instance',
     database: {
       title: 'Database Configuration',
       description: 'Connect to your PostgreSQL database',

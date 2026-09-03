@@ -32,7 +32,7 @@
             alt="Logo"
             class="h-9 w-9 shrink-0 rounded-lg object-contain"
           />
-          <span class="min-w-0 truncate text-base font-semibold">{{ siteName }}</span>
+          <span class="min-w-0 truncate text-base font-semibold"><BrandWordmark :name="siteName" /></span>
         </div>
         <div class="flex max-w-full shrink-0 flex-wrap items-center justify-end gap-2">
           <LocaleSwitcher />
@@ -82,8 +82,10 @@
             class="h-20 w-20 rounded-2xl object-contain"
           />
         </div>
-        <h1 class="home-gradient-text [overflow-wrap:anywhere] text-3xl font-bold tracking-tight md:text-4xl">{{ siteName }}</h1>
-        <p class="mt-4 whitespace-pre-wrap [overflow-wrap:anywhere] text-base text-gray-600 dark:text-dark-300">{{ siteSubtitle }}</p>
+        <p class="home-domain mb-3">{{ BRAND_DOMAIN }}</p>
+        <h1 class="[overflow-wrap:anywhere] text-3xl font-bold tracking-tight md:text-4xl"><BrandWordmark :name="siteName" /></h1>
+        <p class="mt-3 text-lg font-semibold text-gray-800 dark:text-gray-100">{{ t('home.meme.tagline') }}</p>
+        <p class="mt-2 whitespace-pre-wrap [overflow-wrap:anywhere] text-base text-gray-600 dark:text-dark-300">{{ siteSubtitle }}</p>
         <router-link
           :to="isAuthenticated ? dashboardPath : '/login'"
           class="home-cta-primary mt-8 inline-flex min-h-10 items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold"
@@ -94,7 +96,7 @@
     </main>
 
     <footer class="relative z-10 min-w-0 border-t border-gray-200/60 px-4 py-5 text-center text-sm text-gray-500 [overflow-wrap:anywhere] sm:px-6 dark:border-white/5 dark:text-dark-400">
-      &copy; {{ currentYear }} {{ siteName }}
+      &copy; {{ currentYear }} {{ BRAND_DOMAIN }} · {{ t('home.meme.footer') }}
     </footer>
   </div>
 
@@ -130,8 +132,11 @@
           <div class="home-logo-halo h-9 w-9 shrink-0">
             <img :src="siteLogo || '/logo.svg'" alt="Logo" class="h-9 w-9 rounded-xl object-contain" />
           </div>
-          <span class="hidden min-w-0 truncate text-sm font-semibold tracking-tight sm:inline">{{ siteName }}</span>
-          <span class="home-mono-tag hidden md:inline-flex">GATEWAY</span>
+          <span class="hidden min-w-0 truncate text-base font-semibold tracking-tight sm:inline"><BrandWordmark :name="siteName" /></span>
+          <span class="home-mode-pill hidden md:inline-flex" :title="t('home.meme.tagline')">
+            <span class="home-mode-seg home-mode-rest"><Icon name="moon" size="xs" />{{ t('home.meme.youRest') }}</span>
+            <span class="home-mode-seg home-mode-build"><span class="home-pulse-dot"></span>{{ t('home.meme.aiBuild') }}</span>
+          </span>
         </div>
 
         <!-- Nav Actions -->
@@ -206,7 +211,7 @@
           <div class="min-w-0 text-center lg:text-left" data-reveal>
             <div class="home-eyebrow mb-6">
               <span class="home-pulse-dot"></span>
-              <span>{{ t('home.hero.badge') }}</span>
+              <span class="font-mono tracking-wide">{{ BRAND_DOMAIN }}</span>
               <span class="home-eyebrow-sep"></span>
               <span class="font-mono text-[11px] uppercase tracking-[0.18em] opacity-70">{{ t('home.hero.status') }}</span>
             </div>
@@ -214,14 +219,15 @@
             <h1
               class="home-hero-title mb-5 text-5xl font-extrabold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl"
             >
-              <span class="home-gradient-text">{{ siteName }}</span>
+              <BrandWordmark :name="siteName" />
             </h1>
-            <p class="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100 md:text-2xl">
-              {{ siteSubtitle }}
+            <p class="mb-3 text-2xl font-bold text-gray-900 dark:text-white md:text-3xl">
+              {{ t('home.meme.tagline') }}
             </p>
-            <p class="mx-auto mb-9 max-w-xl text-base leading-relaxed text-gray-600 dark:text-dark-300 md:text-lg lg:mx-0">
-              {{ t('home.heroDescription') }}
+            <p class="mx-auto mb-4 max-w-xl text-base leading-relaxed text-gray-600 dark:text-dark-300 md:text-lg lg:mx-0">
+              {{ t('home.meme.taglineSub') }}
             </p>
+            <p class="home-caption mb-9">{{ siteSubtitle }} · {{ t('home.heroDescription') }}</p>
 
             <!-- CTA Buttons -->
             <div class="flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -285,7 +291,7 @@
                     <span class="btn-minimize"></span>
                     <span class="btn-maximize"></span>
                   </div>
-                  <span class="terminal-title">gateway — zsh</span>
+                  <span class="terminal-title">agent — {{ t('home.meme.nightShift') }}</span>
                   <span class="terminal-status">
                     <span class="terminal-status-dot"></span>{{ t('home.terminal.online') }}
                   </span>
@@ -293,35 +299,40 @@
                 <!-- Terminal content -->
                 <div class="terminal-body">
                   <div class="code-line line-1">
+                    <span class="code-time">23:58</span>
                     <span class="code-prompt">$</span>
-                    <span class="code-cmd">curl</span>
-                    <span class="code-flag">-X POST</span>
-                    <span class="code-url">/v1/messages</span>
+                    <span class="code-cmd">you:</span>
+                    <span class="code-string">{{ t('home.terminal.youSleep') }}</span>
                   </div>
                   <div class="code-line line-2">
-                    <span class="code-flag">-H</span>
-                    <span class="code-string">"x-api-key: sk-••••••••"</span>
-                    <span class="code-flag">-d</span>
-                    <span class="code-string">'{ "model": "claude-sonnet-4" }'</span>
+                    <span class="code-time">23:58</span>
+                    <span class="code-arrow">→</span>
+                    <span class="code-cmd">agent:</span>
+                    <span class="code-comment">{{ t('home.terminal.agentAck') }}</span>
                   </div>
                   <div class="code-line line-3">
-                    <span class="code-arrow">→</span>
-                    <span class="code-comment">{{ t('home.terminal.routing') }}</span>
+                    <span class="code-time">00:02</span>
+                    <span class="code-flag">POST</span>
+                    <span class="code-url">/v1/messages</span>
+                    <span class="code-tag">claude-sonnet-4</span>
                     <span class="code-tag">account #3</span>
-                    <span class="code-tag">sticky</span>
                   </div>
                   <div class="code-line line-4">
+                    <span class="code-time">03:41</span>
                     <span class="code-arrow">▍</span>
-                    <span class="code-comment">{{ t('home.terminal.streaming') }}</span>
+                    <span class="code-comment">{{ t('home.terminal.building') }}</span>
                     <span class="code-stream"></span>
                   </div>
                   <div class="code-line line-5">
-                    <span class="code-success">200 OK</span>
-                    <span class="code-response">{ "content": "Hello!" }</span>
-                    <span class="code-meta">412 ms</span>
+                    <span class="code-time">06:12</span>
+                    <span class="code-success">✓ done</span>
+                    <span class="code-response">{{ t('home.terminal.done') }}</span>
                   </div>
                   <div class="code-line line-6">
+                    <span class="code-time">07:30</span>
                     <span class="code-prompt">$</span>
+                    <span class="code-cmd">you:</span>
+                    <span class="code-string">{{ t('home.terminal.goodMorning') }}</span>
                     <span class="cursor"></span>
                   </div>
                 </div>
@@ -360,6 +371,7 @@
                 <Icon name="terminal" size="md" />
               </div>
               <span class="home-flow-label">{{ t('home.flow.client') }}</span>
+              <span class="home-flow-sub">{{ t('home.flow.clientSub') }}</span>
             </div>
             <div class="home-flow-link" aria-hidden="true"><span class="home-flow-packet"></span></div>
             <div class="home-flow-node home-flow-node-core">
@@ -382,6 +394,7 @@
                 <Icon name="sparkles" size="md" />
               </div>
               <span class="home-flow-label">{{ t('home.flow.upstream') }}</span>
+              <span class="home-flow-sub">{{ t('home.flow.upstreamSub') }}</span>
             </div>
           </div>
         </section>
@@ -495,10 +508,10 @@
           <div class="relative z-10 flex flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left">
             <div>
               <h2 class="text-2xl font-bold tracking-tight text-white md:text-3xl">
-                {{ t('home.cta.title') }}
+                {{ t('home.meme.ctaTitle') }}
               </h2>
               <p class="mt-2 text-sm text-white/75 md:text-base">
-                {{ t('home.heroSubtitle') }}
+                {{ t('home.meme.ctaDesc') }}
               </p>
             </div>
             <router-link
@@ -519,7 +532,7 @@
         class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left"
       >
         <p class="text-sm text-gray-500 dark:text-dark-400">
-          &copy; {{ currentYear }} {{ siteName }}. {{ t('home.footer.allRightsReserved') }}
+          &copy; {{ currentYear }} <span class="font-mono">{{ BRAND_DOMAIN }}</span> · {{ t('home.meme.footer') }}
         </p>
         <div class="flex items-center gap-5">
           <a
@@ -551,6 +564,8 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore, useAppStore } from '@/stores'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
+import BrandWordmark from '@/components/common/BrandWordmark.vue'
+import { BRAND_DOMAIN, resolveBrandName } from '@/constants/brand'
 import { sanitizeUrl } from '@/utils/url'
 import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
 
@@ -560,7 +575,7 @@ const authStore = useAuthStore()
 const appStore = useAppStore()
 
 // Site settings - directly from appStore (already initialized from injected config)
-const siteName = computed(() => appStore.cachedPublicSettings?.site_name || appStore.siteName || 'Sub2API')
+const siteName = computed(() => resolveBrandName(appStore.cachedPublicSettings?.site_name || appStore.siteName))
 const siteLogo = computed(() => sanitizeUrl(appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true }))
 const siteSubtitle = computed(() => appStore.cachedPublicSettings?.site_subtitle || 'AI API Gateway Platform')
 const docUrl = computed(() => sanitizeUrl(appStore.cachedPublicSettings?.doc_url || appStore.docUrl || ''))
@@ -639,11 +654,9 @@ function toggleTheme() {
 
 // Initialize theme
 function initTheme() {
+  // Dark-first: only an explicit "light" choice opts out.
   const savedTheme = localStorage.getItem('theme')
-  if (
-    savedTheme === 'dark' ||
-    (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  ) {
+  if (savedTheme !== 'light') {
     isDark.value = true
     document.documentElement.classList.add('dark')
   }
@@ -868,20 +881,6 @@ onBeforeUnmount(() => {
   background: rgba(255, 255, 255, 0.07);
 }
 
-.home-mono-tag {
-  align-items: center;
-  border-radius: 6px;
-  border: 1px solid rgba(20, 184, 166, 0.35);
-  background: rgba(20, 184, 166, 0.08);
-  color: #0f766e;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  padding: 2px 8px;
-}
-.dark .home-mono-tag {
-  color: #5eead4;
-}
 
 .home-logo-halo {
   position: relative;
@@ -897,6 +896,56 @@ onBeforeUnmount(() => {
   filter: blur(8px);
   opacity: 0.55;
   z-index: -1;
+}
+
+.home-mode-pill {
+  align-items: center;
+  overflow: hidden;
+  border-radius: 9999px;
+  border: 1px solid var(--home-glass-border);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.home-mode-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+}
+.home-mode-rest {
+  color: rgb(100 116 139);
+  background: rgba(148, 163, 184, 0.12);
+}
+.home-mode-build {
+  color: #0f766e;
+  background: rgba(20, 184, 166, 0.12);
+}
+.dark .home-mode-rest {
+  color: rgb(148 163 184);
+}
+.dark .home-mode-build {
+  color: #5eead4;
+}
+
+.home-domain {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #0d9488;
+}
+.dark .home-domain {
+  color: #5eead4;
+}
+
+.home-caption {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: rgb(107 114 128);
+}
+.dark .home-caption {
+  color: rgb(100 116 139);
 }
 
 /* ============ Buttons ============ */
@@ -998,25 +1047,6 @@ onBeforeUnmount(() => {
   }
 }
 
-.home-gradient-text {
-  background: linear-gradient(100deg, #0f172a 0%, #0d9488 45%, #0891b2 70%, #4f46e5 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: home-gradient-shift 8s ease-in-out infinite alternate;
-}
-.dark .home-gradient-text {
-  background-image: linear-gradient(100deg, #ffffff 0%, #5eead4 40%, #67e8f9 65%, #a5b4fc 100%);
-}
-@keyframes home-gradient-shift {
-  from {
-    background-position: 0% 50%;
-  }
-  to {
-    background-position: 100% 50%;
-  }
-}
 
 .home-hero-title {
   text-wrap: balance;
@@ -1440,7 +1470,7 @@ onBeforeUnmount(() => {
   position: relative;
   display: block;
   width: 100%;
-  max-width: 460px;
+  max-width: 500px;
 }
 
 .terminal-glow {
@@ -1651,6 +1681,12 @@ onBeforeUnmount(() => {
   }
 }
 
+.code-time {
+  width: 38px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #475569;
+}
 .code-prompt {
   color: #22c55e;
   font-weight: bold;
@@ -1775,7 +1811,6 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   .home-aurora,
   .home-particle,
-  .home-gradient-text,
   .home-pulse-dot::after,
   .home-flow-packet,
   .home-flow-icon-core,

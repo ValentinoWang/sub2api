@@ -23,10 +23,9 @@ function initIOSViewportZoomFix() {
 }
 
 function initThemeClass() {
+  // Dark-first: the hacker-culture default. Only an explicit "light" choice opts out.
   const savedTheme = localStorage.getItem('theme')
-  const shouldUseDark =
-    savedTheme === 'dark' ||
-    (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const shouldUseDark = savedTheme !== 'light'
   document.documentElement.classList.toggle('dark', shouldUseDark)
 }
 
