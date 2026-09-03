@@ -164,7 +164,7 @@ export default {
       subscriptionNamePlaceholder: '例如：业务出口节点',
       subscriptionUrl: '订阅地址',
       subscriptionUrlPlaceholder: '请输入 HTTPS 订阅地址',
-      subscriptionUrlHint: '支持 Base64 或纯文本的 VLESS、Hysteria2 节点列表。订阅地址按敏感信息处理。',
+      subscriptionUrlHint: '支持 Base64 或纯文本的 VLESS、Hysteria2、Shadowsocks 节点列表。订阅地址按敏感信息处理。',
       toggleSubscriptionUrl: '显示或隐藏订阅地址',
       importSubscription: '导入订阅',
       subscriptionImportSuccess: '订阅导入完成：共 {node_count} 个，创建 {created} 个，复用 {reused} 个，停用 {deactivated} 个',

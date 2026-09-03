@@ -36,7 +36,7 @@ type ImportProxySubscriptionRequest struct {
 	URL  string `json:"url" binding:"required"`
 }
 
-// ImportSubscription fetches and imports a VLESS/Hysteria2 subscription.
+// ImportSubscription fetches and imports a VLESS/Hysteria2/Shadowsocks subscription.
 // POST /api/v1/admin/proxies/subscriptions/import
 func (h *ProxyHandler) ImportSubscription(c *gin.Context) {
 	var req ImportProxySubscriptionRequest

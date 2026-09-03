@@ -28,6 +28,8 @@ import (
 const (
 	proxySubscriptionStateVersion   = 1
 	proxySubscriptionInactiveStatus = "inactive"
+	proxySubscriptionFetchAttempts  = 3
+	proxySubscriptionRetryDelay     = 150 * time.Millisecond
 )
 
 type ProxySubscriptionImportInput struct {
@@ -142,29 +144,72 @@ func (s *ProxySubscriptionService) Import(ctx context.Context, input ProxySubscr
 }
 
 func (s *ProxySubscriptionService) fetch(ctx context.Context, sourceURL *url.URL) ([]byte, error) {
+	var lastErr error
+	for attempt := 0; attempt < proxySubscriptionFetchAttempts; attempt++ {
+		body, retryable, err := s.fetchOnce(ctx, sourceURL)
+		if err == nil {
+			return body, nil
+		}
+		lastErr = err
+		if !retryable || attempt+1 == proxySubscriptionFetchAttempts {
+			return nil, err
+		}
+
+		timer := time.NewTimer(time.Duration(attempt+1) * proxySubscriptionRetryDelay)
+		select {
+		case <-ctx.Done():
+			if !timer.Stop() {
+				<-timer.C
+			}
+			return nil, ctx.Err()
+		case <-timer.C:
+		}
+	}
+	return nil, lastErr
+}
+
+func (s *ProxySubscriptionService) fetchOnce(ctx context.Context, sourceURL *url.URL) ([]byte, bool, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, sourceURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	req.Header.Set("Accept", "text/plain, application/octet-stream;q=0.9, */*;q=0.1")
 	req.Header.Set("User-Agent", "Sub2API-Proxy-Subscription/1.0")
 	resp, err := s.fetchClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, isRetryableProxySubscriptionFetchError(err), err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("subscription server returned HTTP %d", resp.StatusCode)
+		return nil, isRetryableProxySubscriptionStatus(resp.StatusCode), fmt.Errorf("subscription server returned HTTP %d", resp.StatusCode)
 	}
 	limited := io.LimitReader(resp.Body, maxProxySubscriptionBytes+1)
 	body, err := io.ReadAll(limited)
 	if err != nil {
-		return nil, err
+		return nil, isRetryableProxySubscriptionFetchError(err), err
 	}
 	if len(body) > maxProxySubscriptionBytes {
-		return nil, fmt.Errorf("subscription response exceeds %d bytes", maxProxySubscriptionBytes)
+		return nil, false, fmt.Errorf("subscription response exceeds %d bytes", maxProxySubscriptionBytes)
 	}
-	return body, nil
+	return body, false, nil
+}
+
+func isRetryableProxySubscriptionFetchError(err error) bool {
+	if err == nil || errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return false
+	}
+	if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+		return true
+	}
+	var networkErr net.Error
+	return errors.As(err, &networkErr)
+}
+
+func isRetryableProxySubscriptionStatus(status int) bool {
+	return status == http.StatusRequestTimeout ||
+		status == http.StatusTooEarly ||
+		status == http.StatusTooManyRequests ||
+		(status >= http.StatusInternalServerError && status <= 599)
 }
 
 func (s *ProxySubscriptionService) importLocked(ctx context.Context, name, sourceURL string, nodes []ProxySubscriptionNode) (*ProxySubscriptionImportResult, error) {

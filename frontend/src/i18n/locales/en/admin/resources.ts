@@ -163,7 +163,7 @@ export default {
       subscriptionNamePlaceholder: 'For example: business egress nodes',
       subscriptionUrl: 'Subscription URL',
       subscriptionUrlPlaceholder: 'Enter an HTTPS subscription URL',
-      subscriptionUrlHint: 'Supports Base64 or plain-text VLESS and Hysteria2 node lists. The URL is treated as sensitive.',
+      subscriptionUrlHint: 'Supports Base64 or plain-text VLESS, Hysteria2, and Shadowsocks node lists. The URL is treated as sensitive.',
       toggleSubscriptionUrl: 'Show or hide subscription URL',
       importSubscription: 'Import Subscription',
       subscriptionImportSuccess: 'Import complete: {node_count} total, {created} created, {reused} reused, {deactivated} deactivated',

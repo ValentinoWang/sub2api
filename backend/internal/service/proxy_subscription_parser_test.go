@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,12 +16,13 @@ func TestParseProxySubscriptionSupportedNodes(t *testing.T) {
 		"vless://22222222-2222-2222-2222-222222222222@reality.example.test:443?security=reality&type=tcp&servername=www.example.com&pbk=fake-public-key&sid=abcd&fp=chrome&flow=xtls-rprx-vision#Reality",
 		"vless://33333333-3333-3333-3333-333333333333@xhttp.example.test:443?security=tls&type=xhttp&sni=xhttp.example.test&host=xhttp.example.test&path=%2Fapi&mode=auto&ech=dns.example.test#XHTTP",
 		"hysteria2://fake-password@hy2.example.test:8443?sni=hy2.example.test&insecure=1&mport=20000-30000#HY2",
+		"ss://" + base64.RawURLEncoding.EncodeToString([]byte("aes-256-gcm:fake-password")) + "@ss.example.test:8388#SS%20node",
 	}
-	raw := base64.StdEncoding.EncodeToString([]byte(lines[0] + "\n" + lines[1] + "\n" + lines[2] + "\n" + lines[3]))
+	raw := base64.StdEncoding.EncodeToString([]byte(strings.Join(lines, "\n")))
 
 	nodes, err := ParseProxySubscription([]byte(raw))
 	require.NoError(t, err)
-	require.Len(t, nodes, 4)
+	require.Len(t, nodes, 5)
 
 	ws := nodes[0].MihomoConfig
 	require.Equal(t, "vless", ws["type"])
@@ -40,6 +42,23 @@ func TestParseProxySubscriptionSupportedNodes(t *testing.T) {
 	require.Equal(t, "hysteria2", hy2["type"])
 	require.Equal(t, "20000-30000", hy2["ports"])
 	require.Equal(t, true, hy2["skip-cert-verify"])
+
+	ss := nodes[4].MihomoConfig
+	require.Equal(t, "SS node", nodes[4].Name)
+	require.Equal(t, "ss", ss["type"])
+	require.Equal(t, "aes-256-gcm", ss["cipher"])
+	require.Equal(t, "fake-password", ss["password"])
+	require.Equal(t, true, ss["udp"])
+}
+
+func TestParseProxySubscriptionLegacyShadowsocksURI(t *testing.T) {
+	encoded := base64.RawURLEncoding.EncodeToString([]byte("chacha20-ietf-poly1305:legacy-password@legacy.example.test:8389"))
+	nodes, err := ParseProxySubscription([]byte("ss://" + encoded + "#Legacy"))
+	require.NoError(t, err)
+	require.Len(t, nodes, 1)
+	require.Equal(t, "Legacy", nodes[0].Name)
+	require.Equal(t, "legacy.example.test", nodes[0].MihomoConfig["server"])
+	require.Equal(t, 8389, nodes[0].MihomoConfig["port"])
 }
 
 func TestParseProxySubscriptionFixture(t *testing.T) {
@@ -60,7 +79,7 @@ func TestParseProxySubscriptionFixture(t *testing.T) {
 }
 
 func TestParseProxySubscriptionRejectsPartialImport(t *testing.T) {
-	raw := "vless://11111111-1111-1111-1111-111111111111@ok.example.test:443?security=tls&type=ws&sni=ok.example.test\nss://unsupported@example.test:443"
+	raw := "vless://11111111-1111-1111-1111-111111111111@ok.example.test:443?security=tls&type=ws&sni=ok.example.test\ntrojan://unsupported@example.test:443"
 	_, err := ParseProxySubscription([]byte(raw))
 	require.ErrorContains(t, err, "unsupported protocol")
 }

@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -9,6 +11,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -37,6 +41,73 @@ func TestProxySubscriptionFetchIgnoresEnvironmentProxy(t *testing.T) {
 	require.Equal(t, []byte("subscription"), body)
 }
 
+func TestProxySubscriptionFetchRetriesTruncatedResponse(t *testing.T) {
+	var requests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		if requests.Add(1) == 1 {
+			w.Header().Set("Content-Length", "20")
+			_, err := w.Write([]byte("partial"))
+			require.NoError(t, err)
+			return
+		}
+		_, err := w.Write([]byte("subscription"))
+		require.NoError(t, err)
+	}))
+	defer server.Close()
+
+	service := NewProxySubscriptionService(nil, nil)
+	sourceURL, err := url.Parse(server.URL)
+	require.NoError(t, err)
+	body, err := service.fetch(context.Background(), sourceURL)
+	require.NoError(t, err)
+	require.Equal(t, []byte("subscription"), body)
+	require.EqualValues(t, 2, requests.Load())
+}
+
+func TestProxySubscriptionFetchDoesNotRetryClientError(t *testing.T) {
+	var requests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests.Add(1)
+		http.Error(w, "invalid subscription", http.StatusBadRequest)
+	}))
+	defer server.Close()
+
+	service := NewProxySubscriptionService(nil, nil)
+	sourceURL, err := url.Parse(server.URL)
+	require.NoError(t, err)
+	_, err = service.fetch(context.Background(), sourceURL)
+	require.EqualError(t, err, "subscription server returned HTTP 400")
+	require.EqualValues(t, 1, requests.Load())
+}
+
+func TestProxySubscriptionFetchStopsRetryingWhenContextCanceled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var requests atomic.Int32
+	service := NewProxySubscriptionService(nil, nil)
+	service.fetchClient = &http.Client{Transport: proxySubscriptionRoundTripFunc(func(req *http.Request) (*http.Response, error) {
+		requests.Add(1)
+		cancel()
+		return &http.Response{
+			StatusCode: http.StatusBadGateway,
+			Header:     make(http.Header),
+			Body:       io.NopCloser(strings.NewReader("")),
+			Request:    req,
+		}, nil
+	})}
+	sourceURL, err := url.Parse("https://subscription.example.test/list")
+	require.NoError(t, err)
+	_, err = service.fetch(ctx, sourceURL)
+	require.ErrorIs(t, err, context.Canceled)
+	require.EqualValues(t, 1, requests.Load())
+}
+
+type proxySubscriptionRoundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f proxySubscriptionRoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
 func TestReservedProxySubscriptionPortsPreventImmediateReuse(t *testing.T) {
 	state := &proxySubscriptionRuntimeState{Subscriptions: []proxySubscriptionRuntimeEntry{
 		{Nodes: []proxySubscriptionRuntimeNode{{Port: 20000}, {Port: 20001}}},
@@ -56,8 +127,8 @@ func TestRenderProxySubscriptionMihomoConfig(t *testing.T) {
 	var config map[string]any
 	require.NoError(t, yaml.Unmarshal(raw, &config))
 	require.Equal(t, "controller-test-secret", config["secret"])
-	require.Len(t, config["proxies"], 2)
-	require.Len(t, config["listeners"], 2)
+	require.Len(t, config["proxies"], 3)
+	require.Len(t, config["listeners"], 3)
 
 	listeners := config["listeners"].([]any)
 	first := listeners[0].(map[string]any)
@@ -141,6 +212,7 @@ func proxySubscriptionTestState(t *testing.T) *proxySubscriptionRuntimeState {
 	lines := []string{
 		"vless://11111111-1111-1111-1111-111111111111@ws.example.test:443?security=tls&type=ws&sni=edge.example.test&host=edge.example.test&path=%2Fws&ech=dns.example.test#WS",
 		"hysteria2://fake-password@hy2.example.test:8443?sni=hy2.example.test&insecure=1&mport=20000-30000#HY2",
+		"ss://" + base64.RawURLEncoding.EncodeToString([]byte("aes-256-gcm:fake-password")) + "@ss.example.test:8388#SS",
 	}
 	nodes := make([]proxySubscriptionRuntimeNode, 0, len(lines))
 	for i, line := range lines {

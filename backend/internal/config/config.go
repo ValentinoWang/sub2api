@@ -120,7 +120,7 @@ type PluginConfig struct {
 }
 
 // ProxySubscriptionConfig controls the optional Mihomo sidecar used to turn
-// VLESS/Hysteria2 subscription nodes into ordinary HTTP proxies for Sub2API.
+// VLESS/Hysteria2/Shadowsocks subscription nodes into ordinary HTTP proxies for Sub2API.
 type ProxySubscriptionConfig struct {
 	Enabled              bool   `mapstructure:"enabled"`
 	StatePath            string `mapstructure:"state_path"`

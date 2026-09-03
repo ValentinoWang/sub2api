@@ -103,9 +103,13 @@ func decodeProxySubscription(raw []byte) (string, error) {
 }
 
 func parseProxySubscriptionURI(raw string) (ProxySubscriptionNode, error) {
+	raw = strings.TrimSpace(raw)
 	u, err := url.Parse(raw)
 	if err != nil {
 		return ProxySubscriptionNode{}, fmt.Errorf("invalid URI: %w", err)
+	}
+	if strings.EqualFold(u.Scheme, "ss") {
+		return parseShadowsocksSubscriptionURI(raw, u)
 	}
 	if u.Hostname() == "" {
 		return ProxySubscriptionNode{}, fmt.Errorf("missing server host")
@@ -136,12 +140,112 @@ func parseProxySubscriptionURI(raw string) (ProxySubscriptionNode, error) {
 	case "hysteria2", "hy2":
 		config, err = parseHysteria2MihomoConfig(u)
 	default:
-		err = fmt.Errorf("unsupported protocol %q; supported protocols are vless and hysteria2", u.Scheme)
+		err = fmt.Errorf("unsupported protocol %q; supported protocols are vless, hysteria2, and shadowsocks", u.Scheme)
 	}
 	if err != nil {
 		return ProxySubscriptionNode{}, err
 	}
 	return ProxySubscriptionNode{Name: name, Fingerprint: fingerprint, SourceURI: strings.TrimSpace(raw), MihomoConfig: config}, nil
+}
+
+func parseShadowsocksSubscriptionURI(raw string, parsed *url.URL) (ProxySubscriptionNode, error) {
+	schemeSeparator := strings.Index(raw, "://")
+	if schemeSeparator < 0 {
+		return ProxySubscriptionNode{}, fmt.Errorf("invalid shadowsocks URI scheme separator")
+	}
+	payload := raw[schemeSeparator+3:]
+	if fragmentAt := strings.IndexByte(payload, '#'); fragmentAt >= 0 {
+		payload = payload[:fragmentAt]
+	}
+	if queryAt := strings.IndexByte(payload, '?'); queryAt >= 0 {
+		payload = payload[:queryAt]
+	}
+
+	var credentials, endpoint string
+	if separatorAt := strings.LastIndexByte(payload, '@'); separatorAt >= 0 {
+		decoded, err := decodeShadowsocksBase64(payload[:separatorAt])
+		if err != nil {
+			return ProxySubscriptionNode{}, fmt.Errorf("invalid shadowsocks credentials: %w", err)
+		}
+		credentials = decoded
+		endpoint = payload[separatorAt+1:]
+	} else {
+		decoded, err := decodeShadowsocksBase64(payload)
+		if err != nil {
+			return ProxySubscriptionNode{}, fmt.Errorf("invalid legacy shadowsocks URI: %w", err)
+		}
+		separatorAt := strings.LastIndexByte(decoded, '@')
+		if separatorAt < 0 {
+			return ProxySubscriptionNode{}, fmt.Errorf("legacy shadowsocks URI is missing server endpoint")
+		}
+		credentials = decoded[:separatorAt]
+		endpoint = decoded[separatorAt+1:]
+	}
+
+	credentialParts := strings.SplitN(credentials, ":", 2)
+	if len(credentialParts) != 2 || strings.TrimSpace(credentialParts[0]) == "" || credentialParts[1] == "" {
+		return ProxySubscriptionNode{}, fmt.Errorf("shadowsocks cipher or password is missing")
+	}
+	endpointURL, err := url.Parse("//" + endpoint)
+	if err != nil {
+		return ProxySubscriptionNode{}, fmt.Errorf("invalid shadowsocks server endpoint: %w", err)
+	}
+	if endpointURL.Hostname() == "" {
+		return ProxySubscriptionNode{}, fmt.Errorf("shadowsocks server host is missing")
+	}
+	if net.ParseIP(endpointURL.Hostname()) == nil && strings.ContainsAny(endpointURL.Hostname(), " /\\") {
+		return ProxySubscriptionNode{}, fmt.Errorf("invalid shadowsocks server host")
+	}
+	port, err := strconv.Atoi(endpointURL.Port())
+	if err != nil || port < 1 || port > 65535 {
+		return ProxySubscriptionNode{}, fmt.Errorf("invalid shadowsocks server port")
+	}
+	if plugin := strings.TrimSpace(parsed.Query().Get("plugin")); plugin != "" {
+		return ProxySubscriptionNode{}, fmt.Errorf("unsupported shadowsocks plugin")
+	}
+
+	name, err := url.PathUnescape(parsed.Fragment)
+	if err != nil {
+		return ProxySubscriptionNode{}, fmt.Errorf("invalid node name encoding")
+	}
+	name = sanitizeProxySubscriptionNodeName(name)
+	if name == "" {
+		name = fmt.Sprintf("ss-%s-%d", endpointURL.Hostname(), port)
+	}
+	hash := sha256.Sum256([]byte(raw))
+	return ProxySubscriptionNode{
+		Name:        name,
+		Fingerprint: hex.EncodeToString(hash[:]),
+		SourceURI:   raw,
+		MihomoConfig: map[string]any{
+			"type":     "ss",
+			"server":   endpointURL.Hostname(),
+			"port":     port,
+			"cipher":   strings.TrimSpace(credentialParts[0]),
+			"password": credentialParts[1],
+			"udp":      true,
+		},
+	}, nil
+}
+
+func decodeShadowsocksBase64(encoded string) (string, error) {
+	encoded, err := url.PathUnescape(strings.TrimSpace(encoded))
+	if err != nil {
+		return "", fmt.Errorf("invalid Base64 escaping")
+	}
+	encodings := []*base64.Encoding{
+		base64.StdEncoding,
+		base64.RawStdEncoding,
+		base64.URLEncoding,
+		base64.RawURLEncoding,
+	}
+	for _, encoding := range encodings {
+		decoded, decodeErr := encoding.DecodeString(encoded)
+		if decodeErr == nil && len(decoded) > 0 {
+			return string(decoded), nil
+		}
+	}
+	return "", fmt.Errorf("credentials are not valid Base64")
 }
 
 func parseVLESSMihomoConfig(u *url.URL) (map[string]any, error) {
