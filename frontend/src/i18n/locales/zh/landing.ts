@@ -14,6 +14,22 @@ export default {
     login: '登录',
     getStarted: '立即开始',
     goToDashboard: '进入控制台',
+    hero: {
+      badge: '新一代 AI API 网关',
+      status: 'online'
+    },
+    terminal: {
+      online: 'online',
+      routing: '智能路由 · 选择最优上游',
+      streaming: '流式响应中'
+    },
+    flow: {
+      client: '你的应用',
+      gateway: '统一网关',
+      gatewaySub: '鉴权 · 路由 · 计费',
+      pool: '账号池',
+      upstream: '上游模型'
+    },
     // 新增：面向用户的价值主张
     heroSubtitle: '一个密钥，畅用多个 AI 模型',
     heroDescription: '无需管理多个订阅账号，一站式接入 Claude、GPT、Gemini 等主流 AI 服务',

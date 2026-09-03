@@ -14,6 +14,22 @@ export default {
     login: 'Login',
     getStarted: 'Get Started',
     goToDashboard: 'Go to Dashboard',
+    hero: {
+      badge: 'Next-gen AI API Gateway',
+      status: 'online'
+    },
+    terminal: {
+      online: 'online',
+      routing: 'Smart routing · picking best upstream',
+      streaming: 'Streaming response'
+    },
+    flow: {
+      client: 'Your App',
+      gateway: 'Unified Gateway',
+      gatewaySub: 'auth · routing · billing',
+      pool: 'Account Pool',
+      upstream: 'Upstream Models'
+    },
     // User-focused value proposition
     heroSubtitle: 'One Key, All AI Models',
     heroDescription: 'No need to manage multiple subscriptions. Access Claude, GPT, Gemini and more with a single API key',
