@@ -36,59 +36,59 @@
           </div>
         </div>
 
-        <p class="mb-2 text-2xl font-semibold leading-snug text-gray-800 dark:text-gray-100">
+        <p class="mb-1 text-2xl font-semibold leading-snug text-gray-800 dark:text-gray-100">
           {{ t('home.meme.tagline') }}
         </p>
-        <p class="mb-8 text-sm text-gray-500 dark:text-dark-300">
+        <p class="mb-5 text-sm text-gray-500 dark:text-dark-300">
           {{ t('home.meme.taglineSub') }}
         </p>
 
-        <ul class="space-y-4">
-          <li class="auth-feature">
-            <div class="auth-feature-icon" style="--icon-from: #38bdf8; --icon-to: #2563eb">
-              <Icon name="server" size="md" class="text-white" />
-            </div>
+        <RelayStationVisual
+          compact
+          :left-label="t('home.station.you')"
+          :core-label="t('home.station.core')"
+          :latency-title="t('home.station.latencyLive')"
+          :latency-probing="t('home.station.probing')"
+          :latency-unavailable="t('home.station.unavailable')"
+          :latency-ms="latencyMs"
+          :latency-state="latencyState"
+          :stamp-text="t('home.station.stamp')"
+        />
+
+        <ul class="mt-4 grid grid-cols-2 gap-3">
+          <li class="auth-sell">
+            <span class="auth-sell-dot" style="background: #2dd4bf"></span>
             <div>
-              <p class="text-sm font-semibold">
-                {{ t('home.features.unifiedGateway') }}
-              </p>
-              <p class="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-dark-300">
-                {{ t('home.features.unifiedGatewayDesc') }}
-              </p>
+              <p class="auth-sell-title">{{ t('home.sell.latency') }}</p>
+              <p class="auth-sell-desc">{{ t('home.sell.latencyDesc') }}</p>
             </div>
           </li>
-          <li class="auth-feature">
-            <div class="auth-feature-icon" style="--icon-from: #2dd4bf; --icon-to: #0d9488">
-              <Icon name="users" size="md" class="text-white" />
-            </div>
+          <li class="auth-sell">
+            <span class="auth-sell-dot" style="background: #fb7185"></span>
             <div>
-              <p class="text-sm font-semibold">
-                {{ t('home.features.multiAccount') }}
-              </p>
-              <p class="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-dark-300">
-                {{ t('home.features.multiAccountDesc') }}
-              </p>
+              <p class="auth-sell-title">{{ t('home.sell.stable') }}</p>
+              <p class="auth-sell-desc">{{ t('home.sell.stableDesc') }}</p>
             </div>
           </li>
-          <li class="auth-feature">
-            <div class="auth-feature-icon" style="--icon-from: #a78bfa; --icon-to: #7c3aed">
-              <Icon name="calculator" size="md" class="text-white" />
-            </div>
+          <li class="auth-sell">
+            <span class="auth-sell-dot" style="background: #60a5fa"></span>
             <div>
-              <p class="text-sm font-semibold">
-                {{ t('home.features.balanceQuota') }}
-              </p>
-              <p class="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-dark-300">
-                {{ t('home.features.balanceQuotaDesc') }}
-              </p>
+              <p class="auth-sell-title">{{ t('home.sell.relay') }}</p>
+              <p class="auth-sell-desc">{{ t('home.sell.relayDesc') }}</p>
+            </div>
+          </li>
+          <li class="auth-sell">
+            <span class="auth-sell-dot" style="background: #a78bfa"></span>
+            <div>
+              <p class="auth-sell-title">{{ t('home.sell.billing') }}</p>
+              <p class="auth-sell-desc">{{ t('home.sell.billingDesc') }}</p>
             </div>
           </li>
         </ul>
 
-        <div class="mt-10 flex flex-wrap items-center gap-2">
-          <span class="auth-endpoint"><i>POST</i>/v1/messages</span>
-          <span class="auth-endpoint"><i>POST</i>/v1/chat/completions</span>
-          <span class="auth-endpoint"><i>POST</i>/v1/responses</span>
+        <div class="auth-address mt-5">
+          <span class="auth-address-label">{{ t('home.address.title') }}</span>
+          <code class="auth-address-url">{{ apiBaseUrl }}</code>
         </div>
       </aside>
 
@@ -139,8 +139,9 @@ import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores'
 import { sanitizeUrl } from '@/utils/url'
-import Icon from '@/components/icons/Icon.vue'
 import BrandWordmark from '@/components/common/BrandWordmark.vue'
+import RelayStationVisual from '@/components/common/RelayStationVisual.vue'
+import { useLatencyProbe } from '@/composables/useLatencyProbe'
 import { BRAND_DOMAIN, resolveBrandName } from '@/constants/brand'
 
 const { t } = useI18n()
@@ -160,8 +161,15 @@ const settingsLoaded = computed(() => appStore.publicSettingsLoaded)
 
 const currentYear = computed(() => new Date().getFullYear())
 
+const apiBaseUrl = computed(() => {
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  return origin && !/^https?:\/\/(localhost|127\.0\.0\.1)/.test(origin) ? origin : `https://${BRAND_DOMAIN}`
+})
+const { latencyMs, state: latencyState, probe: probeLatency } = useLatencyProbe()
+
 onMounted(() => {
   appStore.fetchPublicSettings()
+  void probeLatency()
 })
 </script>
 
@@ -334,63 +342,70 @@ onMounted(() => {
   color: #5eead4;
 }
 
-.auth-feature {
+.auth-sell {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  border-radius: 16px;
+  gap: 10px;
+  border-radius: 14px;
   border: 1px solid var(--auth-glass-border);
   background: var(--auth-glass);
   backdrop-filter: blur(12px);
-  padding: 14px 16px;
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease;
+  padding: 10px 12px;
 }
-.auth-feature:hover {
-  transform: translateX(4px);
-  border-color: rgba(20, 184, 166, 0.45);
-}
-.auth-feature-icon {
-  display: flex;
-  height: 38px;
-  width: 38px;
+.auth-sell-dot {
+  margin-top: 6px;
+  width: 7px;
+  height: 7px;
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--icon-from), var(--icon-to));
-  box-shadow: 0 10px 22px -12px var(--icon-to);
+  border-radius: 9999px;
+  box-shadow: 0 0 10px currentColor;
 }
-
-.auth-endpoint {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 8px;
-  border: 1px solid var(--auth-glass-border);
-  background: var(--auth-glass);
-  padding: 4px 10px 4px 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px;
-  color: rgb(55 65 81);
-}
-.dark .auth-endpoint {
-  color: rgb(203 213 225);
-}
-.auth-endpoint i {
-  font-style: normal;
-  font-size: 10px;
+.auth-sell-title {
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  border-radius: 4px;
-  padding: 1px 5px;
-  background: rgba(20, 184, 166, 0.15);
+}
+.auth-sell-desc {
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgb(107 114 128);
+}
+.dark .auth-sell-desc {
+  color: rgb(148 163 184);
+}
+.auth-address {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(20, 184, 166, 0.35);
+  background: rgba(20, 184, 166, 0.08);
+  padding: 8px 12px;
+}
+.auth-address-label {
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: rgb(107 114 128);
+}
+.dark .auth-address-label {
+  color: rgb(148 163 184);
+}
+.auth-address-url {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
   color: #0f766e;
 }
-.dark .auth-endpoint i {
+.dark .auth-address-url {
   color: #5eead4;
 }
+
+
 
 /* Card */
 .auth-card {

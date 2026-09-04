@@ -27,6 +27,35 @@ export default {
       upstream: 'AI · build',
       upstreamSub: 'code / run tasks / ship'
     },
+    sell: {
+      kicker: 'AI API Relay',
+      latency: 'Low latency',
+      latencyDesc: 'Edge-close routing, measured live',
+      stable: 'Never goes dark',
+      stableDesc: 'Account pool auto-failover, online 24/7',
+      relay: 'One base URL',
+      relayDesc: 'Claude / GPT / Gemini behind a single endpoint',
+      billing: 'Pay as you go',
+      billingDesc: 'Usage-based billing with quotas'
+    },
+    station: {
+      you: 'you · rest',
+      core: '.lol relay',
+      latencyLive: 'live latency',
+      probing: 'probing…',
+      unavailable: 'n/a',
+      stamp: 'NEVER GOES DARK'
+    },
+    address: {
+      title: 'API Base URL',
+      hint: 'Paste it as the Base URL in your client. Anthropic & OpenAI compatible.',
+      copy: 'Copy',
+      copied: 'Copied'
+    },
+    nightShift: {
+      title: 'Night shift log',
+      subtitle: 'You sleep. The agent keeps working through the relay.'
+    },
     meme: {
       tagline: 'You rest. AI builds.',
       taglineSub: 'Sleep on it. The tech grows itself overnight.',

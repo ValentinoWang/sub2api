@@ -206,31 +206,30 @@
     <main class="relative z-10 flex-1 px-4 pb-16 pt-12 sm:px-6 lg:pt-20">
       <div class="mx-auto max-w-6xl">
         <!-- Hero Section -->
-        <section class="mb-20 grid min-w-0 grid-cols-1 items-center gap-12 lg:mb-28 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
+        <section class="mb-16 grid min-w-0 grid-cols-1 items-center gap-12 lg:mb-20 lg:grid-cols-[1fr_1.05fr] lg:gap-8">
           <!-- Left: Text Content -->
           <div class="min-w-0 text-center lg:text-left" data-reveal>
             <div class="home-eyebrow mb-6">
               <span class="home-pulse-dot"></span>
               <span class="font-mono tracking-wide">{{ BRAND_DOMAIN }}</span>
               <span class="home-eyebrow-sep"></span>
-              <span class="font-mono text-[11px] uppercase tracking-[0.18em] opacity-70">{{ t('home.hero.status') }}</span>
+              <span class="font-mono text-[11px] uppercase tracking-[0.18em] opacity-70">{{ t('home.sell.kicker') }}</span>
             </div>
 
             <h1
-              class="home-hero-title mb-5 text-5xl font-extrabold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl"
+              class="home-hero-title mb-4 text-5xl font-extrabold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl"
             >
               <BrandWordmark :name="siteName" />
             </h1>
             <p class="mb-3 text-2xl font-bold text-gray-900 dark:text-white md:text-3xl">
               {{ t('home.meme.tagline') }}
             </p>
-            <p class="mx-auto mb-4 max-w-xl text-base leading-relaxed text-gray-600 dark:text-dark-300 md:text-lg lg:mx-0">
+            <p class="mx-auto mb-7 max-w-xl text-base leading-relaxed text-gray-600 dark:text-dark-300 md:text-lg lg:mx-0">
               {{ t('home.meme.taglineSub') }}
             </p>
-            <p class="home-caption mb-9">{{ siteSubtitle }} · {{ t('home.heroDescription') }}</p>
 
             <!-- CTA Buttons -->
-            <div class="flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
+            <div class="mb-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <router-link
                 :to="isAuthenticated ? dashboardPath : '/login'"
                 class="home-cta-primary home-cta-lg inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold"
@@ -258,17 +257,85 @@
               </router-link>
             </div>
 
-            <!-- Endpoint chips -->
-            <div class="mt-9 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
-              <span class="home-endpoint"><i class="home-endpoint-method">POST</i>/v1/messages</span>
-              <span class="home-endpoint"><i class="home-endpoint-method">POST</i>/v1/chat/completions</span>
-              <span class="home-endpoint"><i class="home-endpoint-method">POST</i>/v1/responses</span>
-              <span class="home-endpoint"><i class="home-endpoint-method">GET</i>/v1/models</span>
+            <!-- API base URL card -->
+            <div class="home-address text-left">
+              <div class="home-address-head">
+                <span class="home-address-title">{{ t('home.address.title') }}</span>
+                <span class="home-address-sub">{{ siteSubtitle }}</span>
+              </div>
+              <div class="home-address-row">
+                <code class="home-address-url">{{ apiBaseUrl }}</code>
+                <button type="button" class="home-address-copy" :class="{ 'is-copied': copied }" @click="copyBaseUrl">
+                  <Icon :name="copied ? 'check' : 'copy'" size="sm" />
+                  {{ copied ? t('home.address.copied') : t('home.address.copy') }}
+                </button>
+              </div>
+              <p class="home-address-hint">{{ t('home.address.hint') }}</p>
+              <div class="mt-3 flex flex-wrap items-center gap-2">
+                <span class="home-endpoint"><i class="home-endpoint-method">POST</i>/v1/messages</span>
+                <span class="home-endpoint"><i class="home-endpoint-method">POST</i>/v1/chat/completions</span>
+                <span class="home-endpoint"><i class="home-endpoint-method">POST</i>/v1/responses</span>
+                <span class="home-endpoint"><i class="home-endpoint-method">GET</i>/v1/models</span>
+              </div>
             </div>
           </div>
 
-          <!-- Right: Terminal Animation -->
+          <!-- Right: Key visual -->
           <div class="flex min-w-0 justify-center lg:justify-end" data-reveal data-reveal-delay="1">
+            <RelayStationVisual
+              :left-label="t('home.station.you')"
+              :core-label="t('home.station.core')"
+              :latency-title="t('home.station.latencyLive')"
+              :latency-probing="t('home.station.probing')"
+              :latency-unavailable="t('home.station.unavailable')"
+              :latency-ms="latencyMs"
+              :latency-state="latencyState"
+              :stamp-text="t('home.station.stamp')"
+            />
+          </div>
+        </section>
+
+        <!-- Selling points -->
+        <section class="mb-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-reveal>
+          <div class="home-sell">
+            <div class="home-sell-icon" style="--icon-from: #2dd4bf; --icon-to: #0891b2"><Icon name="bolt" size="md" class="text-white" /></div>
+            <div class="home-sell-body">
+              <p class="home-sell-title">{{ t('home.sell.latency') }}<span v-if="latencyState === 'ok' && latencyMs !== null" class="home-sell-live">{{ latencyMs }} ms</span></p>
+              <p class="home-sell-desc">{{ t('home.sell.latencyDesc') }}</p>
+            </div>
+          </div>
+          <div class="home-sell">
+            <div class="home-sell-icon" style="--icon-from: #fb7185; --icon-to: #e11d48"><Icon name="shield" size="md" class="text-white" /></div>
+            <div class="home-sell-body">
+              <p class="home-sell-title">{{ t('home.sell.stable') }}</p>
+              <p class="home-sell-desc">{{ t('home.sell.stableDesc') }}</p>
+            </div>
+          </div>
+          <div class="home-sell">
+            <div class="home-sell-icon" style="--icon-from: #60a5fa; --icon-to: #4f46e5"><Icon name="swap" size="md" class="text-white" /></div>
+            <div class="home-sell-body">
+              <p class="home-sell-title">{{ t('home.sell.relay') }}</p>
+              <p class="home-sell-desc">{{ t('home.sell.relayDesc') }}</p>
+            </div>
+          </div>
+          <div class="home-sell">
+            <div class="home-sell-icon" style="--icon-from: #a78bfa; --icon-to: #7c3aed"><Icon name="calculator" size="md" class="text-white" /></div>
+            <div class="home-sell-body">
+              <p class="home-sell-title">{{ t('home.sell.billing') }}</p>
+              <p class="home-sell-desc">{{ t('home.sell.billingDesc') }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Night shift terminal -->
+        <section class="mb-20">
+          <div class="mb-8 text-center" data-reveal>
+            <span class="home-section-kicker">{{ t('home.nightShift.subtitle') }}</span>
+            <h2 class="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+              {{ t('home.nightShift.title') }}
+            </h2>
+          </div>
+          <div class="flex min-w-0 justify-center" data-reveal>
             <div class="terminal-container">
               <div class="terminal-glow" aria-hidden="true"></div>
 
@@ -346,22 +413,6 @@
             </div>
           </div>
         </section>
-
-        <!-- Feature Tags -->
-        <div class="mb-20 flex flex-wrap items-center justify-center gap-3 md:gap-4" data-reveal>
-          <div class="home-chip">
-            <Icon name="swap" size="sm" class="text-primary-500" />
-            <span>{{ t('home.tags.subscriptionToApi') }}</span>
-          </div>
-          <div class="home-chip">
-            <Icon name="shield" size="sm" class="text-primary-500" />
-            <span>{{ t('home.tags.stickySession') }}</span>
-          </div>
-          <div class="home-chip">
-            <Icon name="chart" size="sm" class="text-primary-500" />
-            <span>{{ t('home.tags.realtimeBilling') }}</span>
-          </div>
-        </div>
 
         <!-- Request Flow -->
         <section class="mb-20" data-reveal>
@@ -565,6 +616,8 @@ import { useAuthStore, useAppStore } from '@/stores'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
 import BrandWordmark from '@/components/common/BrandWordmark.vue'
+import RelayStationVisual from '@/components/common/RelayStationVisual.vue'
+import { useLatencyProbe } from '@/composables/useLatencyProbe'
 import { BRAND_DOMAIN, resolveBrandName } from '@/constants/brand'
 import { sanitizeUrl } from '@/utils/url'
 import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
@@ -611,6 +664,27 @@ const userInitial = computed(() => {
   if (!user || !user.email) return ''
   return user.email.charAt(0).toUpperCase()
 })
+
+// API base URL shown on the cover: the real origin this page is served from
+const apiBaseUrl = computed(() => {
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  return origin && !/^https?:\/\/(localhost|127\.0\.0\.1)/.test(origin) ? origin : `https://${BRAND_DOMAIN}`
+})
+const copied = ref(false)
+let copiedTimer: ReturnType<typeof setTimeout> | null = null
+async function copyBaseUrl() {
+  try {
+    await navigator.clipboard.writeText(apiBaseUrl.value)
+    copied.value = true
+    if (copiedTimer) clearTimeout(copiedTimer)
+    copiedTimer = setTimeout(() => (copied.value = false), 1600)
+  } catch {
+    /* clipboard unavailable: leave the URL selectable */
+  }
+}
+
+// Live latency probe against this deployment's /health
+const { latencyMs, state: latencyState, probe: probeLatency } = useLatencyProbe()
 
 // Current year for footer
 const currentYear = computed(() => new Date().getFullYear())
@@ -704,11 +778,13 @@ onMounted(() => {
   }
 
   initReveal()
+  void probeLatency()
 })
 
 onBeforeUnmount(() => {
   revealObserver?.disconnect()
   revealObserver = null
+  if (copiedTimer) clearTimeout(copiedTimer)
 })
 </script>
 
@@ -1082,29 +1158,162 @@ onBeforeUnmount(() => {
   color: #5eead4;
 }
 
-/* ============ Chips ============ */
-.home-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  border-radius: 9999px;
+/* ============ API address card ============ */
+.home-address {
+  border-radius: 18px;
   border: 1px solid var(--home-glass-border);
   background: var(--home-glass);
-  backdrop-filter: blur(12px);
-  padding: 10px 18px;
+  backdrop-filter: blur(14px);
+  padding: 16px 18px;
+}
+.home-address-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.home-address-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.home-address-sub {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: rgb(107 114 128);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.home-address-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.home-address-url {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 10px;
+  border: 1px solid rgba(20, 184, 166, 0.35);
+  background: rgba(20, 184, 166, 0.08);
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 14px;
-  font-weight: 500;
-  color: rgb(55 65 81);
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: 600;
+  color: #0f766e;
 }
-.home-chip:hover {
-  transform: translateY(-2px);
-  border-color: rgba(20, 184, 166, 0.5);
-  box-shadow: 0 10px 30px -14px rgba(20, 184, 166, 0.6);
+.dark .home-address-url {
+  color: #5eead4;
 }
-.dark .home-chip {
-  color: rgb(226 232 240);
+.home-address-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #14b8a6 0%, #0891b2 60%, #4f46e5 140%);
+  box-shadow: 0 8px 20px -10px rgba(20, 184, 166, 0.6);
+  transition: transform 0.15s ease, filter 0.15s ease;
+  white-space: nowrap;
 }
+.home-address-copy:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+.home-address-copy.is-copied {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+@media (max-width: 639px) {
+  .home-address-row {
+    flex-direction: column;
+  }
+  .home-address-url {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+  }
+  .home-address-copy {
+    justify-content: center;
+    padding: 10px 14px;
+  }
+}
+.home-address-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgb(107 114 128);
+}
+.dark .home-address-hint {
+  color: rgb(148 163 184);
+}
+
+/* ============ Selling points ============ */
+.home-sell {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--home-glass-border);
+  background: var(--home-glass);
+  backdrop-filter: blur(14px);
+  padding: 18px;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.home-sell:hover {
+  transform: translateY(-3px);
+  border-color: rgba(20, 184, 166, 0.45);
+  box-shadow: 0 18px 40px -22px rgba(20, 184, 166, 0.55);
+}
+.home-sell-icon {
+  display: flex;
+  height: 40px;
+  width: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--icon-from), var(--icon-to));
+  box-shadow: 0 10px 22px -12px var(--icon-to);
+}
+.home-sell-body {
+  min-width: 0;
+}
+.home-sell-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.home-sell-live {
+  border-radius: 6px;
+  padding: 1px 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0f766e;
+  background: rgba(20, 184, 166, 0.14);
+}
+.dark .home-sell-live {
+  color: #5eead4;
+}
+.home-sell-desc {
+  margin-top: 3px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgb(107 114 128);
+}
+.dark .home-sell-desc {
+  color: rgb(148 163 184);
+}
+
+/* ============ Chips ============ */
 
 .home-section-kicker {
   display: inline-block;

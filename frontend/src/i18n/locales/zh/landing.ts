@@ -27,6 +27,35 @@ export default {
       upstream: 'AI · build',
       upstreamSub: '写代码 / 跑任务 / 交付'
     },
+    sell: {
+      kicker: 'AI API 中转站',
+      latency: '低延迟',
+      latencyDesc: '就近接入，延迟实时可测',
+      stable: '永不跑路',
+      stableDesc: '账号池自动切换，7×24 在线',
+      relay: '一个地址',
+      relayDesc: 'Claude / GPT / Gemini 一站接入',
+      billing: '按量计费',
+      billingDesc: '用多少付多少，配额可控'
+    },
+    station: {
+      you: '你 · rest',
+      core: '.lol 中转站',
+      latencyLive: '实时延迟',
+      probing: '测量中…',
+      unavailable: '暂不可测',
+      stamp: '永不跑路'
+    },
+    address: {
+      title: 'API 接入地址',
+      hint: '填到客户端的 Base URL 即可，兼容 Anthropic / OpenAI 协议',
+      copy: '复制',
+      copied: '已复制'
+    },
+    nightShift: {
+      title: '夜班日志',
+      subtitle: '你睡了，agent 还在通过中转站干活'
+    },
     meme: {
       tagline: '人去 rest，AI 去 build。',
       taglineSub: '睡一觉，科技自己长出来了。',
