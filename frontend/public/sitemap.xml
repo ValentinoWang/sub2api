@@ -46,6 +46,16 @@
     <changefreq>weekly</changefreq>
   </url>
   <url>
+    <loc>https://ai.rest2build.lol/status</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>hourly</changefreq>
+  </url>
+  <url>
+    <loc>https://ai.rest2build.lol/share</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
     <loc>https://ai.rest2build.lol/verify/xianyu</loc>
     <lastmod>2026-09-04</lastmod>
     <changefreq>weekly</changefreq>

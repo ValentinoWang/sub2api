@@ -6502,6 +6502,38 @@
                 </p>
               </div>
 
+              <!-- Xianyu store name (public verify page) -->
+              <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ t("admin.settings.site.xianyuStoreName") }}
+                </label>
+                <input
+                  v-model="form.xianyu_store_name"
+                  type="text"
+                  class="input"
+                  :placeholder="t('admin.settings.site.xianyuStoreNamePlaceholder')"
+                />
+                <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t("admin.settings.site.xianyuStoreNameHint") }}
+                </p>
+              </div>
+
+              <!-- First top-up bonus tiers -->
+              <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ t("admin.settings.site.firstTopupBonusTiers") }}
+                </label>
+                <textarea
+                  v-model="form.first_topup_bonus_tiers"
+                  rows="3"
+                  class="input font-mono text-xs"
+                  :placeholder="FIRST_TOPUP_TIERS_EXAMPLE"
+                ></textarea>
+                <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t("admin.settings.site.firstTopupBonusTiersHint") }}
+                </p>
+              </div>
+
               <!-- Doc URL -->
               <div>
                 <label
@@ -7170,6 +7202,30 @@
                 </p>
               </div>
               <Toggle v-model="form.model_plaza_require_auth" />
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ t('admin.settings.features.publicStatusPage') }}
+                </label>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('admin.settings.features.publicStatusPageHint') }}
+                </p>
+              </div>
+              <Toggle v-model="form.public_status_page_enabled" />
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ t('admin.settings.features.lifecycleEmails') }}
+                </label>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('admin.settings.features.lifecycleEmailsHint') }}
+                </p>
+              </div>
+              <Toggle v-model="form.lifecycle_emails_enabled" />
             </div>
 
             <div v-if="form.model_plaza_enabled">
@@ -9499,6 +9555,10 @@ type SettingsForm = Omit<
 
 const schedulingThresholdPlatforms = SCHEDULING_THRESHOLD_PLATFORMS;
 
+// Language-neutral JSON sample. Kept out of i18n because vue-i18n parses "{" as a placeholder.
+const FIRST_TOPUP_TIERS_EXAMPLE =
+  '[{"min_amount": 10, "bonus_amount": 2}, {"min_amount": 50, "bonus_amount": 15}]';
+
 const form = reactive<SettingsForm>({
   registration_enabled: true,
   email_verify_enabled: false,
@@ -9537,6 +9597,8 @@ const form = reactive<SettingsForm>({
   site_subtitle: "Subscription to API Conversion Platform",
   api_base_url: "",
   contact_info: "",
+  xianyu_store_name: "",
+  first_topup_bonus_tiers: "",
   doc_url: "",
   home_content: "",
   compact_home_enabled: false,
@@ -9775,6 +9837,8 @@ const form = reactive<SettingsForm>({
   // Model Plaza feature switches + description
   model_plaza_enabled: false,
   model_plaza_require_auth: false,
+  public_status_page_enabled: false,
+  lifecycle_emails_enabled: false,
   model_plaza_description: '',
   // Plugin management menu visibility; plugin runtime is unaffected.
   plugin_management_enabled: false,

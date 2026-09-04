@@ -158,6 +158,8 @@ type UpdateSettingsRequest struct {
 	SiteSubtitle                string                `json:"site_subtitle"`
 	APIBaseURL                  string                `json:"api_base_url"`
 	ContactInfo                 string                `json:"contact_info"`
+	XianyuStoreName             string                `json:"xianyu_store_name"`
+	FirstTopupBonusTiers        string                `json:"first_topup_bonus_tiers"`
 	DocURL                      string                `json:"doc_url"`
 	HomeContent                 string                `json:"home_content"`
 	CompactHomeEnabled          bool                  `json:"compact_home_enabled"`
@@ -343,9 +345,11 @@ type UpdateSettingsRequest struct {
 	AvailableChannelsEnabled *bool `json:"available_channels_enabled"`
 
 	// Model Plaza feature switches + description
-	ModelPlazaEnabled     *bool   `json:"model_plaza_enabled"`
-	ModelPlazaRequireAuth *bool   `json:"model_plaza_require_auth"`
-	ModelPlazaDescription *string `json:"model_plaza_description"`
+	ModelPlazaEnabled       *bool   `json:"model_plaza_enabled"`
+	ModelPlazaRequireAuth   *bool   `json:"model_plaza_require_auth"`
+	PublicStatusPageEnabled *bool   `json:"public_status_page_enabled"`
+	LifecycleEmailsEnabled  *bool   `json:"lifecycle_emails_enabled"`
+	ModelPlazaDescription   *string `json:"model_plaza_description"`
 
 	// Plugin management menu visibility switch; plugin runtime is unaffected.
 	PluginManagementEnabled *bool `json:"plugin_management_enabled"`
@@ -1617,6 +1621,8 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		SiteSubtitle:                           req.SiteSubtitle,
 		APIBaseURL:                             req.APIBaseURL,
 		ContactInfo:                            req.ContactInfo,
+		XianyuStoreName:                        req.XianyuStoreName,
+		FirstTopupBonusTiers:                   req.FirstTopupBonusTiers,
 		DocURL:                                 req.DocURL,
 		HomeContent:                            req.HomeContent,
 		CompactHomeEnabled:                     req.CompactHomeEnabled,
@@ -1935,6 +1941,18 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 			}
 			return previousSettings.ModelPlazaRequireAuth
 		}(),
+		PublicStatusPageEnabled: func() bool {
+			if req.PublicStatusPageEnabled != nil {
+				return *req.PublicStatusPageEnabled
+			}
+			return previousSettings.PublicStatusPageEnabled
+		}(),
+		LifecycleEmailsEnabled: func() bool {
+			if req.LifecycleEmailsEnabled != nil {
+				return *req.LifecycleEmailsEnabled
+			}
+			return previousSettings.LifecycleEmailsEnabled
+		}(),
 		ModelPlazaDescription: func() string {
 			if req.ModelPlazaDescription != nil {
 				return *req.ModelPlazaDescription
@@ -2239,6 +2257,8 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		SiteSubtitle:                                           updatedSettings.SiteSubtitle,
 		APIBaseURL:                                             updatedSettings.APIBaseURL,
 		ContactInfo:                                            updatedSettings.ContactInfo,
+		XianyuStoreName:                                        updatedSettings.XianyuStoreName,
+		FirstTopupBonusTiers:                                   updatedSettings.FirstTopupBonusTiers,
 		DocURL:                                                 updatedSettings.DocURL,
 		HomeContent:                                            updatedSettings.HomeContent,
 		CompactHomeEnabled:                                     updatedSettings.CompactHomeEnabled,
@@ -2368,6 +2388,8 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 
 		ModelPlazaEnabled:       updatedSettings.ModelPlazaEnabled,
 		ModelPlazaRequireAuth:   updatedSettings.ModelPlazaRequireAuth,
+		PublicStatusPageEnabled: updatedSettings.PublicStatusPageEnabled,
+		LifecycleEmailsEnabled:  updatedSettings.LifecycleEmailsEnabled,
 		ModelPlazaDescription:   updatedSettings.ModelPlazaDescription,
 		PluginManagementEnabled: updatedSettings.PluginManagementEnabled,
 

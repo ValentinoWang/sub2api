@@ -251,6 +251,8 @@ func (h *SettingHandler) GetSettings(c *gin.Context) {
 		SiteSubtitle:                                           settings.SiteSubtitle,
 		APIBaseURL:                                             settings.APIBaseURL,
 		ContactInfo:                                            settings.ContactInfo,
+		XianyuStoreName:                                        settings.XianyuStoreName,
+		FirstTopupBonusTiers:                                   settings.FirstTopupBonusTiers,
 		DocURL:                                                 settings.DocURL,
 		HomeContent:                                            settings.HomeContent,
 		CompactHomeEnabled:                                     settings.CompactHomeEnabled,
@@ -384,6 +386,8 @@ func (h *SettingHandler) GetSettings(c *gin.Context) {
 
 		ModelPlazaEnabled:       settings.ModelPlazaEnabled,
 		ModelPlazaRequireAuth:   settings.ModelPlazaRequireAuth,
+		PublicStatusPageEnabled: settings.PublicStatusPageEnabled,
+		LifecycleEmailsEnabled:  settings.LifecycleEmailsEnabled,
 		PluginManagementEnabled: settings.PluginManagementEnabled,
 		ModelPlazaDescription:   settings.ModelPlazaDescription,
 

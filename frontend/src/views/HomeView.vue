@@ -674,7 +674,7 @@
           <p class="mt-1 text-gray-600 dark:text-dark-300">{{ t('marketing.lab') }} · {{ t('marketing.positioning') }}</p>
           <p class="mt-3 text-xs leading-relaxed text-gray-500 dark:text-dark-400">{{ t('marketing.disclaimer') }}</p>
           <router-link :to="PUBLIC_PAGES.verify" class="home-verify mt-4">
-            <Icon name="badge" size="sm" />{{ t('marketing.footer.verifyHint') }}：{{ XIANYU_STORE_NAME }}
+            <Icon name="badge" size="sm" />{{ t('marketing.footer.verifyHint') }}：{{ storeName }}
           </router-link>
         </div>
         <div>
@@ -731,7 +731,7 @@ import Icon from '@/components/icons/Icon.vue'
 import BrandWordmark from '@/components/common/BrandWordmark.vue'
 import RelayStationVisual from '@/components/common/RelayStationVisual.vue'
 import { useLatencyProbe } from '@/composables/useLatencyProbe'
-import { BRAND_DOMAIN, PUBLIC_PAGES, XIANYU_STORE_NAME, resolveBrandName } from '@/constants/brand'
+import { BRAND_DOMAIN, PUBLIC_PAGES, resolveBrandName, resolveStoreName } from '@/constants/brand'
 import { sanitizeUrl } from '@/utils/url'
 import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
 
@@ -766,10 +766,13 @@ const publicLinks = computed(() => [
   { to: PUBLIC_PAGES.business, label: t('marketing.nav.business') },
   { to: PUBLIC_PAGES.security, label: t('marketing.nav.security') },
   { to: PUBLIC_PAGES.benchmarks, label: t('marketing.nav.benchmarks') },
+  { to: PUBLIC_PAGES.share, label: t('marketing.nav.share') },
+  { to: PUBLIC_PAGES.status, label: t('marketing.nav.status') },
   { to: PUBLIC_PAGES.models, label: t('marketing.nav.models') },
   { to: PUBLIC_PAGES.keyUsage, label: t('marketing.nav.keyUsage') }
 ])
 const legalDocuments = computed(() => appStore.cachedPublicSettings?.login_agreement_documents ?? [])
+const storeName = computed(() => resolveStoreName(appStore.cachedPublicSettings?.xianyu_store_name))
 
 const authStore = useAuthStore()
 const appStore = useAppStore()

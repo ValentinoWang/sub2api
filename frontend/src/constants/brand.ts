@@ -25,6 +25,8 @@ export const PUBLIC_PAGES = {
   security: '/security',
   benchmarks: '/benchmarks',
   verify: '/verify/xianyu',
+  share: '/share',
+  status: '/status',
   keyUsage: '/key-usage'
 } as const
 
@@ -51,6 +53,12 @@ export interface WordmarkParts {
  * so the wordmark can style "rest" and "build" differently. Returns null when the
  * name does not follow that shape (it is then rendered as plain text).
  */
+/** Admin-configured store name wins; the constant is the fallback. */
+export function resolveStoreName(raw?: string | null): string {
+  const name = typeof raw === 'string' ? raw.trim() : ''
+  return name || XIANYU_STORE_NAME
+}
+
 export function splitWordmark(name: string): WordmarkParts | null {
   const match = /^([A-Za-z]+)2([A-Za-z]+)$/.exec(name.trim())
   if (!match) return null

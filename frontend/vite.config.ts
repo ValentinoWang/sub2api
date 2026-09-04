@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv, Plugin } from 'vite'
+import { prerenderPublicPages } from './prerender.config'
 import vue from '@vitejs/plugin-vue'
 import checker from 'vite-plugin-checker'
 import { resolve } from 'path'
@@ -89,7 +90,8 @@ export default defineConfig(({ mode }) => {
       checker({
         vueTsc: true
       }),
-      injectPublicSettings(backendUrl)
+      injectPublicSettings(backendUrl),
+      prerenderPublicPages()
     ],
   resolve: {
     alias: {

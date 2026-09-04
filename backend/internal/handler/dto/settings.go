@@ -153,6 +153,8 @@ type SystemSettings struct {
 	SiteSubtitle                string           `json:"site_subtitle"`
 	APIBaseURL                  string           `json:"api_base_url"`
 	ContactInfo                 string           `json:"contact_info"`
+	XianyuStoreName             string           `json:"xianyu_store_name"`
+	FirstTopupBonusTiers        string           `json:"first_topup_bonus_tiers"`
 	DocURL                      string           `json:"doc_url"`
 	HomeContent                 string           `json:"home_content"`
 	CompactHomeEnabled          bool             `json:"compact_home_enabled"`
@@ -318,6 +320,8 @@ type SystemSettings struct {
 	// Model Plaza feature (public group/model pricing showcase)
 	ModelPlazaEnabled       bool   `json:"model_plaza_enabled"`
 	ModelPlazaRequireAuth   bool   `json:"model_plaza_require_auth"`
+	PublicStatusPageEnabled bool   `json:"public_status_page_enabled"`
+	LifecycleEmailsEnabled  bool   `json:"lifecycle_emails_enabled"`
 	ModelPlazaDescription   string `json:"model_plaza_description"`
 	PluginManagementEnabled bool   `json:"plugin_management_enabled"`
 
@@ -379,6 +383,8 @@ type PublicSettings struct {
 	SiteSubtitle                        string                   `json:"site_subtitle"`
 	APIBaseURL                          string                   `json:"api_base_url"`
 	ContactInfo                         string                   `json:"contact_info"`
+	XianyuStoreName                     string                   `json:"xianyu_store_name"`
+	FirstTopupBonusTiers                string                   `json:"first_topup_bonus_tiers"`
 	DocURL                              string                   `json:"doc_url"`
 	HomeContent                         string                   `json:"home_content"`
 	CompactHomeEnabled                  bool                     `json:"compact_home_enabled"`
@@ -421,6 +427,7 @@ type PublicSettings struct {
 
 	ModelPlazaEnabled       bool `json:"model_plaza_enabled"`
 	ModelPlazaRequireAuth   bool `json:"model_plaza_require_auth"`
+	PublicStatusPageEnabled bool `json:"public_status_page_enabled"`
 	PluginManagementEnabled bool `json:"plugin_management_enabled"`
 
 	AffiliateEnabled bool `json:"affiliate_enabled"`

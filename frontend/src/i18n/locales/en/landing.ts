@@ -331,6 +331,8 @@ export default {
       business: 'Business',
       security: 'Security',
       benchmarks: 'Latency test',
+      share: 'Share card',
+      status: 'Service status',
       verify: 'Store verification',
       models: 'Models',
       keyUsage: 'Key usage',
@@ -569,9 +571,63 @@ export default {
         max: 'Max',
         testedAt: 'Tested at',
         empty: 'Not run yet',
+        serverSide: 'Server-side monitoring →',
         method: 'Method: 20 sequential GET /health requests (no-store); round-trip time of HTTP 200 responses.'
       }
     }
+  },
+
+  // Share card generator (/share)
+  share: {
+    title: 'Share card',
+    subtitle: 'Generate a .lol-styled image with your live latency. Good for marketplace listings, group chats and social feeds.',
+    size: 'Size',
+    note: 'One line',
+    notePlaceholder: 'e.g. the agent shipped 12 commits overnight',
+    latency: 'Measured latency',
+    remeasure: 'Re-measure',
+    download: 'Download PNG',
+    copyImage: 'Copy image',
+    copied: 'Copied',
+    scan: 'Scan to open',
+    hint: 'Rendered entirely in your browser; nothing is uploaded. The latency figure is measured from your current network.'
+  },
+  // Affiliate promo assets (user affiliate page)
+  affiliateAssets: {
+    title: 'Promo assets',
+    description: 'The QR code, copy and poster all carry your invite code; sign-ups via them are bound automatically.',
+    qrTitle: 'Invite QR code',
+    qrHint: 'Right-click or long-press to save',
+    copyTitle: 'Copy-ready text',
+    copy: 'Copy',
+    copied: 'Copied',
+    posterTitle: 'Poster',
+    posterHint: '.lol-styled share image with your invite QR in the corner',
+    posterDownload: 'Download poster',
+    posterSquare: 'Square (marketplace cover)',
+    posterWide: 'Wide (chats / feeds)',
+    templates: [
+      'You rest, AI builds. One base URL for Claude / GPT / Gemini, live-measured latency, per-user keys you can revoke anytime. Sign up with my link: {link}',
+      'Using Codex CLI / Claude Code? {domain} is an independent multi-model relay with BYOK support that never touches your account. Invite link: {link}',
+      'Students and open-source maintainers can apply for a free allowance, no reviews or referrals required. Rules are public on the site: {link}'
+    ]
+  },
+
+  // Public status page (/status)
+  statusPage: {
+    title: 'Service status',
+    subtitle: 'Read-only summary of scheduled server-side probes (channel monitor), auto-refreshing every 60 seconds.',
+    loading: 'Loading…',
+    error: 'The status endpoint is temporarily unavailable.',
+    disabled: 'The public status page is not enabled on this site.',
+    empty: 'No enabled monitors.',
+    generatedAt: 'Generated',
+    autoRefresh: 'refreshes every 60 s',
+    since: 'since',
+    columns: { service: 'Service', status: 'Status', success: 'Success', samples: 'Samples', lastChecked: 'Last probe' },
+    overall: { operational: 'All operational', degraded: 'Partially degraded', failed: 'Incident', unknown: 'No data' },
+    status: { operational: 'Operational', degraded: 'Degraded', failed: 'Failed', error: 'Error', unknown: 'Unknown' },
+    method: 'Success rate and P50 / P95 come from scheduled server-side probes of each upstream; sample counts and window start are reported alongside. They do not represent your region or time of day; use the latency self-test for that.'
   },
 
   // Common

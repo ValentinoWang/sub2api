@@ -572,6 +572,8 @@ export default {
 
   // Model Plaza (public group/model pricing showcase)
   modelPlaza: {
+    sourceType: '来源类型',
+    lastUpdated: '最近更新',
     title: '模型广场',
     description: '按分组浏览可用模型与价格',
     loading: '加载中...',

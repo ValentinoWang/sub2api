@@ -341,6 +341,8 @@ func (s *SettingService) buildSystemSettingsUpdates(ctx context.Context, setting
 	updates[SettingKeySiteSubtitle] = settings.SiteSubtitle
 	updates[SettingKeyAPIBaseURL] = settings.APIBaseURL
 	updates[SettingKeyContactInfo] = settings.ContactInfo
+	updates[SettingKeyXianyuStoreName] = settings.XianyuStoreName
+	updates[SettingKeyFirstTopupBonusTiers] = settings.FirstTopupBonusTiers
 	updates[SettingKeyDocURL] = settings.DocURL
 	updates[SettingKeyHomeContent] = settings.HomeContent
 	updates[SettingKeyCompactHomeEnabled] = strconv.FormatBool(settings.CompactHomeEnabled)
@@ -434,6 +436,8 @@ func (s *SettingService) buildSystemSettingsUpdates(ctx context.Context, setting
 	// Model plaza feature switches + description
 	updates[SettingKeyModelPlazaEnabled] = strconv.FormatBool(settings.ModelPlazaEnabled)
 	updates[SettingKeyModelPlazaRequireAuth] = strconv.FormatBool(settings.ModelPlazaRequireAuth)
+	updates[SettingKeyPublicStatusPageEnabled] = strconv.FormatBool(settings.PublicStatusPageEnabled)
+	updates[SettingKeyLifecycleEmailsEnabled] = strconv.FormatBool(settings.LifecycleEmailsEnabled)
 	updates[SettingKeyModelPlazaDescription] = settings.ModelPlazaDescription
 	updates[SettingKeyPluginManagementEnabled] = strconv.FormatBool(settings.PluginManagementEnabled)
 

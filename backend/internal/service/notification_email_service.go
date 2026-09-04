@@ -1077,6 +1077,30 @@ var notificationEmailEventDefinitions = map[string]NotificationEmailEventInfo{
 		Optional:     true,
 		Placeholders: append(append([]string{}, notificationEmailCommonPlaceholders...), "subscription_group", "expiry_time", "days_remaining", "unsubscribe_url"),
 	},
+	NotificationEmailEventUserWelcome: {
+		Event:        NotificationEmailEventUserWelcome,
+		Label:        "Welcome email",
+		Description:  "Optional welcome sent shortly after registration (lifecycle emails must be enabled).",
+		Category:     "lifecycle",
+		Optional:     true,
+		Placeholders: append(append([]string{}, notificationEmailCommonPlaceholders...), "site_url"),
+	},
+	NotificationEmailEventUserInactive: {
+		Event:        NotificationEmailEventUserInactive,
+		Label:        "Inactivity reminder",
+		Description:  "Optional nudge sent once when a user has not called the API for 7 days.",
+		Category:     "lifecycle",
+		Optional:     true,
+		Placeholders: append(append([]string{}, notificationEmailCommonPlaceholders...), "site_url", "days_inactive"),
+	},
+	NotificationEmailEventUserWinback: {
+		Event:        NotificationEmailEventUserWinback,
+		Label:        "Win-back email",
+		Description:  "Optional win-back sent once after 30 days without API activity.",
+		Category:     "lifecycle",
+		Optional:     true,
+		Placeholders: append(append([]string{}, notificationEmailCommonPlaceholders...), "site_url", "days_inactive"),
+	},
 	NotificationEmailEventBalanceLow: {
 		Event:        NotificationEmailEventBalanceLow,
 		Label:        "Low balance alert",
@@ -1252,6 +1276,74 @@ var notificationEmailOfficialTemplates = map[string]map[string]notificationEmail
 <p>您的 <strong>{{subscription_group}}</strong> 订阅将在 <strong>{{days_remaining}}</strong> 天后到期。</p>
 <p>到期时间：<strong>{{expiry_time}}</strong></p>
 <p class="muted"><a href="{{unsubscribe_url}}">退订此类订阅提醒</a></p>`),
+		},
+	},
+	NotificationEmailEventUserWelcome: {
+		notificationEmailDefaultLocale: {
+			Subject: "[{{site_name}}] You rest. AI builds. Welcome aboard",
+			HTML: notificationEmailCard("#14b8a6", "Welcome to {{site_name}}", `
+<p>Hello {{recipient_name}},</p>
+<p>Your account is ready. One base URL, per-user keys you can revoke anytime, and usage you can see in real time.</p>
+<p>Three things to do first:</p>
+<ol>
+<li>Create an API key in the console and paste it into your client (Codex CLI, Claude Code, or any OpenAI / Anthropic SDK).</li>
+<li>Send one request and check it on the usage page.</li>
+<li>Bookmark the public status and latency pages so you can verify us instead of trusting us.</li>
+</ol>
+<p><a class="button" href="{{site_url}}">Open the console</a></p>
+<p>We never ask for your account password and never resell upstream keys. Reply to this email if anything is unclear.</p>`),
+		},
+		notificationEmailLocaleChinese: {
+			Subject: "[{{site_name}}] 人去 rest，AI 去 build。欢迎加入",
+			HTML: notificationEmailCard("#14b8a6", "欢迎来到 {{site_name}}", `
+<p>{{recipient_name}}，您好：</p>
+<p>账号已经就绪。一个接入地址、独立可撤销的密钥、实时可查的用量。</p>
+<p>建议先做三件事：</p>
+<ol>
+<li>在控制台创建 API 密钥，填到你的客户端（Codex CLI、Claude Code 或任意 OpenAI / Anthropic SDK）。</li>
+<li>发一条请求，在用量页确认它出现了。</li>
+<li>收藏公开状态页和延迟实测页，用数据核对我们，而不是只听我们说。</li>
+</ol>
+<p><a class="button" href="{{site_url}}">打开控制台</a></p>
+<p>我们不会索取账号密码，也不出售上游密钥。有任何不清楚的地方直接回复这封邮件。</p>`),
+		},
+	},
+	NotificationEmailEventUserInactive: {
+		notificationEmailDefaultLocale: {
+			Subject: "[{{site_name}}] Your key has been quiet for {{days_inactive}} days",
+			HTML: notificationEmailCard("#0891b2", "Still there?", `
+<p>Hello {{recipient_name}},</p>
+<p>No requests have gone through your key for <strong>{{days_inactive}}</strong> days. If setup got in the way, the integration guides for Codex CLI, Claude Code and OpenAI-compatible SDKs are public, and the latency self-test shows what to expect from your network.</p>
+<p><a class="button" href="{{site_url}}">Back to the console</a></p>
+<p>If you have moved on, no action is needed; this reminder is sent only once.</p>`),
+		},
+		notificationEmailLocaleChinese: {
+			Subject: "[{{site_name}}] 你的密钥已经 {{days_inactive}} 天没动静了",
+			HTML: notificationEmailCard("#0891b2", "还在吗？", `
+<p>{{recipient_name}}，您好：</p>
+<p>你的密钥已经 <strong>{{days_inactive}}</strong> 天没有请求了。如果是接入卡住了，站内有 Codex CLI、Claude Code 和 OpenAI 兼容 SDK 的公开接入指南，延迟实测页也能看到你当前网络的表现。</p>
+<p><a class="button" href="{{site_url}}">回到控制台</a></p>
+<p>如果你已经不再需要，无需任何操作；这封提醒只会发一次。</p>`),
+		},
+	},
+	NotificationEmailEventUserWinback: {
+		notificationEmailDefaultLocale: {
+			Subject: "[{{site_name}}] Anything we could have done better?",
+			HTML: notificationEmailCard("#4f46e5", "It has been {{days_inactive}} days", `
+<p>Hello {{recipient_name}},</p>
+<p>Your account has been idle for <strong>{{days_inactive}}</strong> days. Your key, balance and usage history are still here.</p>
+<p>If latency, model availability or pricing put you off, the public status page and model list are the fastest way to check whether things have changed. If something was broken, reply and tell us; that is how the FAQ gets written.</p>
+<p><a class="button" href="{{site_url}}">Take another look</a></p>
+<p>This is the last automated email you will receive from us about inactivity.</p>`),
+		},
+		notificationEmailLocaleChinese: {
+			Subject: "[{{site_name}}] 有什么我们本可以做得更好？",
+			HTML: notificationEmailCard("#4f46e5", "已经 {{days_inactive}} 天了", `
+<p>{{recipient_name}}，您好：</p>
+<p>你的账号已经 <strong>{{days_inactive}}</strong> 天没有使用了。密钥、余额和用量记录都还在。</p>
+<p>如果当时是延迟、模型可用性或价格让你放弃，公开状态页和模型列表是最快的核对方式。如果是哪里坏了，直接回复告诉我们，FAQ 就是这么写出来的。</p>
+<p><a class="button" href="{{site_url}}">再看一眼</a></p>
+<p>这是你收到的最后一封关于闲置的自动邮件。</p>`),
 		},
 	},
 	NotificationEmailEventBalanceLow: {

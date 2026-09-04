@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 )
 
 // PlazaOfficialPricing 模型广场展示用的官方参考价（USD per token），与计费同源：
@@ -48,6 +49,7 @@ type PlazaGroup struct {
 	PeakEnd            string
 	PeakRateMultiplier float64
 	IsExclusive        bool
+	UpdatedAt          time.Time // last config change of the group (for the public plaza)
 	// 图片按次实付倍率：ImageRateIndependent 为 true 时，图片计费模型的实付
 	// = 档位价 × ImageRateMultiplier，不乘分组/用户专属倍率（与计费口径一致）。
 	ImageRateIndependent bool
@@ -120,6 +122,7 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 		g := &groups[i]
 		byGroup[g.ID] = &PlazaGroup{
 			ID:                        g.ID,
+			UpdatedAt:                 g.UpdatedAt,
 			Name:                      g.Name,
 			Description:               g.Description,
 			Platform:                  g.Platform,

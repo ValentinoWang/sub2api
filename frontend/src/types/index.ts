@@ -140,6 +140,12 @@ export interface RegisterRequest {
   promo_code?: string
   invitation_code?: string
   aff_code?: string
+  utm_source?: string
+  utm_medium?: string
+  utm_campaign?: string
+  utm_content?: string
+  utm_term?: string
+  landing_path?: string
 }
 
 export interface AffiliateInvitee {
@@ -233,6 +239,9 @@ export interface PublicSettings {
   site_subtitle: string
   api_base_url: string
   contact_info: string
+  xianyu_store_name?: string
+  first_topup_bonus_tiers?: string
+  public_status_page_enabled?: boolean
   doc_url: string
   home_content: string
   compact_home_enabled: boolean

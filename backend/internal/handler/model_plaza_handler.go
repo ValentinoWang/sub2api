@@ -2,6 +2,7 @@ package handler
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
@@ -93,6 +94,7 @@ type modelPlazaGroup struct {
 	ImageRateMultiplier  float64 `json:"image_rate_multiplier"`
 	// 分组是否启用长上下文阶梯计费；关闭时模型实付列只展示最低档/基础价。
 	LongContextPricingEnabled bool              `json:"long_context_pricing_enabled"`
+	UpdatedAt                 string            `json:"updated_at,omitempty"`
 	Models                    []modelPlazaModel `json:"models"`
 }
 
@@ -194,6 +196,7 @@ func toModelPlazaGroupDTO(g *service.PlazaGroup, userRates map[int64]float64) mo
 	}
 	dto := modelPlazaGroup{
 		ID:                        g.ID,
+		UpdatedAt:                 formatModelPlazaUpdatedAt(g.UpdatedAt),
 		Name:                      g.Name,
 		Description:               g.Description,
 		Platform:                  g.Platform,
@@ -244,4 +247,12 @@ func toModelPlazaOfficialPricing(p *service.PlazaOfficialPricing) *modelPlazaOff
 		CacheReadPrice:    p.CacheReadPrice,
 		Intervals:         toUserPricingIntervals(p.Intervals),
 	}
+}
+
+// formatModelPlazaUpdatedAt renders the group change timestamp for the public plaza (RFC3339, UTC).
+func formatModelPlazaUpdatedAt(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.UTC().Format(time.RFC3339)
 }

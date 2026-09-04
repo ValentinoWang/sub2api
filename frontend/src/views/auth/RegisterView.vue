@@ -354,6 +354,7 @@ import {
 } from '@/api/auth'
 import { buildAuthErrorMessage } from '@/utils/authError'
 import { extractApiErrorCode, extractI18nErrorMessage } from '@/utils/apiError'
+import { campaignRegisterFields, consumePendingPromo, peekPendingPromo } from '@/utils/campaign'
 import {
   formatRegistrationEmailSuffixWhitelistForMessage,
   isRegistrationEmailSuffixAllowed,
@@ -516,6 +517,12 @@ function syncAffiliateReferralCode(): string {
 
 onMounted(async () => {
   syncAffiliateReferralCode()
+  // ?promo= on any landing page (or directly on /register) pre-fills the promo code field.
+  const promoFromUrl = typeof route?.query?.promo === 'string' ? route.query.promo.trim() : ''
+  const pendingPromo = promoFromUrl || peekPendingPromo()
+  if (pendingPromo && !formData.promo_code) {
+    formData.promo_code = pendingPromo.slice(0, 64)
+  }
 
   try {
     const settings = await getPublicSettings()
@@ -1031,9 +1038,11 @@ async function handleRegister(): Promise<void> {
       tencent_captcha_randstr: tencentCaptchaEnabled.value ? tencentCaptchaRandstr.value : undefined,
       promo_code: formData.promo_code || undefined,
       invitation_code: formData.invitation_code || undefined,
-      ...(affCode ? { aff_code: affCode } : {})
+      ...(affCode ? { aff_code: affCode } : {}),
+      ...campaignRegisterFields()
     })
     clearAffiliateReferralCode()
+    consumePendingPromo()
 
     // Show success toast
     appStore.showSuccess(t('auth.accountCreatedSuccess', { siteName: siteName.value }))

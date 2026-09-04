@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"log/slog"
 	"math"
 	"strconv"
@@ -337,6 +338,7 @@ func (s *PaymentService) doBalance(ctx context.Context, o *dbent.PaymentOrder, l
 		if err := s.applyAffiliateRebateForOrder(ctx, o); err != nil {
 			return err
 		}
+		s.applyFirstTopupBonus(ctx, o)
 		// Code already created and redeemed — just mark completed
 		return s.markCompleted(ctx, o, lease, "RECHARGE_SUCCESS")
 	case redeemActionCreate:
@@ -353,7 +355,52 @@ func (s *PaymentService) doBalance(ctx context.Context, o *dbent.PaymentOrder, l
 	if err := s.applyAffiliateRebateForOrder(ctx, o); err != nil {
 		return err
 	}
+	s.applyFirstTopupBonus(ctx, o)
 	return s.markCompleted(ctx, o, lease, "RECHARGE_SUCCESS")
+}
+
+const paymentAuditFirstTopupBonus = "FIRST_TOPUP_BONUS"
+
+// applyFirstTopupBonus credits the configured first top-up bonus exactly once for a user's
+// first completed balance order. Best effort: a failure never blocks fulfillment, and the
+// audit log row makes retries idempotent.
+func (s *PaymentService) applyFirstTopupBonus(ctx context.Context, o *dbent.PaymentOrder) {
+	if s == nil || o == nil || s.settingService == nil || s.userRepo == nil || s.entClient == nil {
+		return
+	}
+	if o.OrderType != payment.OrderTypeBalance || o.Amount <= 0 {
+		return
+	}
+	tiers := s.settingService.FirstTopupBonusTiers(ctx)
+	if len(tiers) == 0 {
+		return
+	}
+	if s.hasAuditLog(ctx, o.ID, paymentAuditFirstTopupBonus) {
+		return
+	}
+	previous, err := s.entClient.PaymentOrder.Query().Where(
+		paymentorder.UserIDEQ(o.UserID),
+		paymentorder.OrderTypeEQ(payment.OrderTypeBalance),
+		paymentorder.StatusEQ(OrderStatusCompleted),
+		paymentorder.IDNEQ(o.ID),
+	).Count(ctx)
+	if err != nil || previous > 0 {
+		return
+	}
+	bonus := PickFirstTopupBonus(tiers, o.Amount)
+	if bonus <= 0 {
+		return
+	}
+	if err := s.userRepo.UpdateBalance(ctx, o.UserID, bonus); err != nil {
+		logger.LegacyPrintf("service.payment", "[Payment] first top-up bonus credit failed: order=%d user=%d bonus=%.4f err=%v", o.ID, o.UserID, bonus, err)
+		return
+	}
+	s.writeAuditLog(ctx, o.ID, paymentAuditFirstTopupBonus, "system", map[string]any{
+		"bonusAmount":  bonus,
+		"orderAmount":  o.Amount,
+		"tierCount":    len(tiers),
+		"firstTopupOf": o.UserID,
+	})
 }
 
 func (s *PaymentService) markCompleted(ctx context.Context, o *dbent.PaymentOrder, lease *paymentFulfillmentLease, auditAction string) error {

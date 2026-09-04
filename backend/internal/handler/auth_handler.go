@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"log/slog"
 	"strings"
 	"sync"
@@ -57,6 +58,14 @@ type RegisterRequest struct {
 	PromoCode             string `json:"promo_code"`      // 注册优惠码
 	InvitationCode        string `json:"invitation_code"` // 邀请码
 	AffCode               string `json:"aff_code"`        // 邀请返利码
+	// Optional first-touch campaign attribution captured by the frontend. Persisted only when
+	// the admin has defined user attributes with matching keys (utm_source, utm_medium, ...).
+	UTMSource   string `json:"utm_source"`
+	UTMMedium   string `json:"utm_medium"`
+	UTMCampaign string `json:"utm_campaign"`
+	UTMContent  string `json:"utm_content"`
+	UTMTerm     string `json:"utm_term"`
+	LandingPath string `json:"landing_path"`
 }
 
 // SendVerifyCodeRequest 发送验证码请求
@@ -204,7 +213,49 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
+	h.persistRegistrationAttribution(c.Request.Context(), user.ID, &req)
 	h.respondWithTokenPair(c, user)
+}
+
+// registrationAttributionKeys lists the user attribute keys that may receive campaign data.
+var registrationAttributionKeys = []string{"utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "landing_path"}
+
+// persistRegistrationAttribution stores UTM / landing attribution into user attributes when
+// the administrator has defined enabled attributes with those keys. Best effort: never fails
+// registration.
+func (h *AuthHandler) persistRegistrationAttribution(ctx context.Context, userID int64, req *RegisterRequest) {
+	if h.userAttributeService == nil || req == nil {
+		return
+	}
+	values := map[string]string{
+		"utm_source":   strings.TrimSpace(req.UTMSource),
+		"utm_medium":   strings.TrimSpace(req.UTMMedium),
+		"utm_campaign": strings.TrimSpace(req.UTMCampaign),
+		"utm_content":  strings.TrimSpace(req.UTMContent),
+		"utm_term":     strings.TrimSpace(req.UTMTerm),
+		"landing_path": strings.TrimSpace(req.LandingPath),
+	}
+	var inputs []service.UpdateUserAttributeInput
+	for _, key := range registrationAttributionKeys {
+		value := values[key]
+		if value == "" {
+			continue
+		}
+		if len(value) > 120 {
+			value = value[:120]
+		}
+		def, err := h.userAttributeService.GetDefinitionByKey(ctx, key)
+		if err != nil || def == nil || !def.Enabled {
+			continue
+		}
+		inputs = append(inputs, service.UpdateUserAttributeInput{AttributeID: def.ID, Value: value})
+	}
+	if len(inputs) == 0 {
+		return
+	}
+	if err := h.userAttributeService.UpdateUserAttributes(ctx, userID, inputs); err != nil {
+		logger.LegacyPrintf("handler.auth", "[Auth] Failed to persist registration attribution for user %d: %v", userID, err)
+	}
 }
 
 // SendVerifyCode 发送邮箱验证码

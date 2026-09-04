@@ -83,6 +83,52 @@
           </div>
         </div>
 
+        <!-- Promo assets: QR, copy-ready text, poster -->
+        <div class="card p-6">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('affiliateAssets.title') }}</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-dark-400">{{ t('affiliateAssets.description') }}</p>
+
+          <div class="mt-5 grid gap-5 md:grid-cols-[auto_1fr]">
+            <div class="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 dark:border-dark-700 dark:bg-dark-900">
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('affiliateAssets.qrTitle') }}</p>
+              <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR" class="h-44 w-44 rounded-lg bg-white" data-testid="affiliate-qr" />
+              <div v-else class="h-44 w-44 animate-pulse rounded-lg bg-gray-100 dark:bg-dark-800"></div>
+              <p class="text-xs text-gray-400 dark:text-dark-500">{{ t('affiliateAssets.qrHint') }}</p>
+            </div>
+            <div class="space-y-3">
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('affiliateAssets.copyTitle') }}</p>
+              <div
+                v-for="(tpl, i) in copyTemplates"
+                :key="i"
+                class="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-dark-700 dark:bg-dark-900 sm:flex-row sm:items-start"
+              >
+                <p class="min-w-0 flex-1 whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300">{{ tpl }}</p>
+                <button class="btn btn-secondary btn-sm shrink-0" @click="copyTemplate(tpl)">
+                  <Icon name="copy" size="sm" />
+                  <span>{{ t('affiliateAssets.copy') }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-dark-700 dark:bg-dark-900 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('affiliateAssets.posterTitle') }}</p>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">{{ t('affiliateAssets.posterHint') }}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button class="btn btn-primary btn-sm" :disabled="posterBusy" @click="downloadPoster('square')">
+                <Icon name="download" size="sm" />
+                <span>{{ t('affiliateAssets.posterSquare') }}</span>
+              </button>
+              <button class="btn btn-secondary btn-sm" :disabled="posterBusy" @click="downloadPoster('og')">
+                <Icon name="download" size="sm" />
+                <span>{{ t('affiliateAssets.posterWide') }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="card p-6">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -140,7 +186,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import QRCode from 'qrcode'
 import { useI18n } from 'vue-i18n'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
@@ -151,6 +198,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useClipboard } from '@/composables/useClipboard'
 import { formatCurrency, formatDateTime } from '@/utils/format'
 import { extractApiErrorMessage } from '@/utils/apiError'
+import { BRAND_DOMAIN, resolveBrandName } from '@/constants/brand'
+import { downloadCanvas, renderShareCard, type ShareCardSize } from '@/composables/useShareCard'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -166,6 +215,55 @@ const inviteLink = computed(() => {
   if (typeof window === 'undefined') return `/register?aff=${encodeURIComponent(detail.value.aff_code)}`
   return `${window.location.origin}/register?aff=${encodeURIComponent(detail.value.aff_code)}`
 })
+
+// ---- promo assets ----
+const qrDataUrl = ref('')
+const posterBusy = ref(false)
+const copyTemplates = computed(() => {
+  if (!inviteLink.value) return [] as string[]
+  const params = { link: inviteLink.value, domain: BRAND_DOMAIN }
+  return [0, 1, 2].map((i) => t(`affiliateAssets.templates.${i}`, params))
+})
+watch(
+  inviteLink,
+  async (link) => {
+    if (!link) {
+      qrDataUrl.value = ''
+      return
+    }
+    try {
+      qrDataUrl.value = await QRCode.toDataURL(link, { margin: 1, width: 352, color: { dark: '#0f172a', light: '#ffffff' } })
+    } catch {
+      qrDataUrl.value = ''
+    }
+  },
+  { immediate: true }
+)
+async function copyTemplate(text: string): Promise<void> {
+  await copyToClipboard(text, t('affiliateAssets.copied'))
+}
+async function downloadPoster(size: ShareCardSize): Promise<void> {
+  if (!detail.value || !inviteLink.value || posterBusy.value) return
+  posterBusy.value = true
+  try {
+    const canvas = document.createElement('canvas')
+    await renderShareCard(canvas, {
+      size,
+      brand: resolveBrandName(appStore.cachedPublicSettings?.site_name || appStore.siteName),
+      domain: BRAND_DOMAIN,
+      headline: t('home.meme.tagline'),
+      subline: t('home.meme.taglineSub'),
+      note: `${t('affiliate.yourCode')}: ${detail.value.aff_code}`,
+      meta: new Date().toISOString().slice(0, 10),
+      qrText: inviteLink.value,
+      qrCaption: t('affiliate.inviteLink'),
+      footer: t('marketing.nonOfficialShort')
+    })
+    await downloadCanvas(canvas, `rest2build-invite-${detail.value.aff_code}-${size}.png`)
+  } finally {
+    posterBusy.value = false
+  }
+}
 
 // Rebate rate is a percentage in the range [0, 100]; backend already clamps it.
 // We trim trailing zeros (e.g. 20.00 → "20", 12.50 → "12.5") for a cleaner UI.

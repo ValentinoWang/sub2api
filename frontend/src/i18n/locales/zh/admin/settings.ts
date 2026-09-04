@@ -14,6 +14,10 @@ export default {
         payment: '支付设置',
       },
       features: {
+        publicStatusPage: '公开状态页',
+        publicStatusPageHint: '开启后 /status 与 /api/v1/public/status 免登录展示渠道监控的聚合状态（名称、成功率、延迟、样本数），不含账号与配额细节。',
+        lifecycleEmails: '生命周期邮件',
+        lifecycleEmailsHint: '开启后发送欢迎邮件、7 天未调用提醒和 30 天流失召回。需要先配置 SMTP；每种邮件每位用户只发一次。',
         channelMonitor: {
           title: '渠道监控',
           description: '启用后在 V1 主动探测与 V2 被动用量监控中二选一。关闭后两种模式的后台任务均停止，用户端入口隐藏。',
@@ -584,6 +588,11 @@ export default {
         testNoResults: '无搜索结果',
       },
       site: {
+        xianyuStoreName: '闲鱼店铺名称',
+        xianyuStoreNamePlaceholder: '例如：Rest2Build AI 接入实验室',
+        xianyuStoreNameHint: '展示在 /verify/xianyu 店铺验证页与首页页脚，用于防冒充。留空则使用前端内置默认值。',
+        firstTopupBonusTiers: '首充阶梯赠送',
+        firstTopupBonusTiersHint: 'JSON 数组。用户首笔成功充值金额 ≥ min_amount 时赠送 bonus_amount（取满足条件的最高档）。留空即关闭；充值页会展示阶梯。',
         title: '站点设置',
         description: '自定义站点品牌',
         backendMode: 'Backend 模式',

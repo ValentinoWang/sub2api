@@ -285,6 +285,11 @@ export default {
 
   // Payment System
   payment: {
+    firstTopupBonus: {
+      title: 'First top-up bonus',
+      desc: 'Your first completed top-up earns an extra balance bonus by tier; the credited amount is authoritative.',
+      tier: 'Top up {min}, get +{bonus}'
+    },
     title: 'Recharge / Subscription',
     amountLabel: 'Amount',
     paymentAmount: 'Payment Amount',

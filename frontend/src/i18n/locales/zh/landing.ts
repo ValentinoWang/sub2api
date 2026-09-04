@@ -331,6 +331,8 @@ export default {
       business: '企业服务',
       security: '安全策略',
       benchmarks: '实测工具',
+      share: '分享卡片',
+      status: '服务状态',
       verify: '店铺验证',
       models: '模型列表',
       keyUsage: '用量查询',
@@ -569,9 +571,63 @@ export default {
         max: '最大',
         testedAt: '测试时间',
         empty: '尚未运行',
+        serverSide: '服务端定时监控 →',
         method: '方法：串行发起 20 次 GET /health（no-store），统计 HTTP 200 的往返耗时。'
       }
     }
+  },
+
+  // Share card generator (/share)
+  share: {
+    title: '分享卡片',
+    subtitle: '一键生成 .lol 风格图片，带上你此刻的实测延迟。适合闲鱼详情、群聊和朋友圈。',
+    size: '尺寸',
+    note: '一句话',
+    notePlaceholder: '例如：今晚 agent 交付了 12 个 commits',
+    latency: '实测延迟',
+    remeasure: '重新测',
+    download: '下载 PNG',
+    copyImage: '复制图片',
+    copied: '已复制',
+    scan: '扫码直达',
+    hint: '图片完全在你的浏览器里生成，不会上传。延迟数字来自你当前网络的实测。'
+  },
+  // Affiliate promo assets (user affiliate page)
+  affiliateAssets: {
+    title: '推广素材',
+    description: '二维码、可复制文案和海报都带你的邀请码，扫码注册自动绑定。',
+    qrTitle: '邀请二维码',
+    qrHint: '右键或长按保存',
+    copyTitle: '可复制文案',
+    copy: '复制',
+    copied: '已复制',
+    posterTitle: '海报',
+    posterHint: '.lol 风格分享图，右下角是你的邀请二维码',
+    posterDownload: '下载海报',
+    posterSquare: '正方形（闲鱼主图）',
+    posterWide: '横版（社群 / 朋友圈）',
+    templates: [
+      '人去 rest，AI 去 build。一个地址接 Claude / GPT / Gemini，延迟实时可测，独立密钥可随时撤销。用我的邀请链接注册：{link}',
+      '在用 Codex CLI / Claude Code 的朋友：{domain} 是独立第三方多模型接入站，BYOK 也支持，不碰你的账号。邀请链接：{link}',
+      '学生 / 开源项目可以申请公益额度，不要求好评和拉新。规则和申请方式都在站内公开：{link}'
+    ]
+  },
+
+  // Public status page (/status)
+  statusPage: {
+    title: '服务状态',
+    subtitle: '由服务端定时探测（渠道监控）汇总的只读状态，每 60 秒自动刷新。',
+    loading: '加载中…',
+    error: '状态接口暂时不可用。',
+    disabled: '站点尚未开放公开状态页。',
+    empty: '暂无启用的监控项。',
+    generatedAt: '生成于',
+    autoRefresh: '每 60 秒刷新',
+    since: '自',
+    columns: { service: '服务', status: '状态', success: '成功率', samples: '样本', lastChecked: '最后探测' },
+    overall: { operational: '全部正常', degraded: '部分降级', failed: '存在故障', unknown: '暂无数据' },
+    status: { operational: '正常', degraded: '降级', failed: '故障', error: '错误', unknown: '未知' },
+    method: '成功率与 P50 / P95 来自服务端对各上游的定时探测，样本数与窗口起点随数据一起给出；不代表你所在地区或时段的体验，实测请用延迟实测工具。'
   },
 
   // Common

@@ -14,6 +14,10 @@ export default {
         payment: 'Payment',
       },
       features: {
+        publicStatusPage: 'Public status page',
+        publicStatusPageHint: 'Exposes /status and /api/v1/public/status without login: aggregated monitor status (name, success rate, latency, samples), no account or quota details.',
+        lifecycleEmails: 'Lifecycle emails',
+        lifecycleEmailsHint: 'Sends a welcome email, a 7-day inactivity nudge and a 30-day win-back. Requires SMTP; each email is sent at most once per user.',
         channelMonitor: {
           title: 'Channel Monitor',
           description: 'Choose either V1 active probes or V2 passive usage monitoring. When disabled, both background jobs stop and the user entry is hidden.',
@@ -591,6 +595,11 @@ export default {
         testNoResults: 'No results found',
       },
       site: {
+        xianyuStoreName: 'Xianyu store name',
+        xianyuStoreNamePlaceholder: 'e.g. Rest2Build AI Integration Lab',
+        xianyuStoreNameHint: 'Shown on the /verify/xianyu page and the home footer to prevent impersonation. Empty falls back to the built-in default.',
+        firstTopupBonusTiers: 'First top-up bonus tiers',
+        firstTopupBonusTiersHint: 'JSON array. On a user’s first completed top-up, the highest tier whose min_amount is met grants bonus_amount. Empty disables; the payment page displays the tiers.',
         title: 'Site Settings',
         description: 'Customize site branding',
         backendMode: 'Backend Mode',

@@ -13,6 +13,7 @@ import { useRoutePrefetch } from '@/composables/useRoutePrefetch'
 import { getSetupStatus } from '@/api/setup'
 import { resolveCompletedSetupRedirectPath } from './setupRedirect'
 import { resolveRouteDocumentTitle } from './title'
+import { captureCampaignParams } from '@/utils/campaign'
 
 /**
  * Route definitions with lazy loading
@@ -61,6 +62,26 @@ const routes: RouteRecordRaw[] = [
     }
   })),
 
+  {
+    path: '/status',
+    name: 'PublicStatus',
+    component: () => import('@/views/public/StatusView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Service Status',
+      titleKey: 'statusPage.title'
+    }
+  },
+  {
+    path: '/share',
+    name: 'ShareCard',
+    component: () => import('@/views/public/ShareCardView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Share Card',
+      titleKey: 'share.title'
+    }
+  },
   {
     path: '/login',
     name: 'Login',
@@ -772,7 +793,7 @@ let authInitialized = false
 const navigationLoading = useNavigationLoadingState()
 // 延迟初始化预加载，传入 router 实例
 let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
-const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks']
+const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks']
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
   '/auth/linuxdo/callback',
@@ -801,6 +822,7 @@ function isBackendModePublicRouteAllowed(path: string, hasPendingAuthSession: bo
 }
 
 router.beforeEach(async (to, _from, next) => {
+  captureCampaignParams(to.query as Record<string, unknown>, to.path)
   // 开始导航加载状态
   navigationLoading.startNavigation()
 

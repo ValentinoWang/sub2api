@@ -53,6 +53,24 @@
                 :max="globalMaxAmount"
               />
               <p v-if="amountError" class="mt-2 text-xs text-amber-600 dark:text-amber-300">{{ amountError }}</p>
+              <div
+                v-if="firstTopupTiers.length > 0"
+                class="mt-4 rounded-xl border border-primary-200 bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-900/20"
+                data-testid="first-topup-bonus"
+              >
+                <p class="text-sm font-medium text-primary-800 dark:text-primary-200">{{ t('payment.firstTopupBonus.title') }}</p>
+                <p class="mt-1 text-xs text-primary-700/80 dark:text-primary-300/80">{{ t('payment.firstTopupBonus.desc') }}</p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <span
+                    v-for="tier in firstTopupTiers"
+                    :key="tier.min_amount"
+                    class="rounded-lg bg-white px-2.5 py-1 font-mono text-xs font-semibold text-primary-700 shadow-sm dark:bg-dark-900 dark:text-primary-300"
+                    :class="{ 'ring-2 ring-primary-400': activeTier && activeTier.min_amount === tier.min_amount }"
+                  >
+                    {{ t('payment.firstTopupBonus.tier', { min: tier.min_amount, bonus: tier.bonus_amount }) }}
+                  </span>
+                </div>
+              </div>
             </div>
             <div v-if="enabledMethods.length >= 1" class="card p-6">
               <PaymentMethodSelector
@@ -301,6 +319,34 @@ const authStore = useAuthStore()
 const paymentStore = usePaymentStore()
 const subscriptionStore = useSubscriptionStore()
 const appStore = useAppStore()
+
+// First top-up bonus tiers (admin setting, JSON). Display only; the server decides eligibility.
+interface FirstTopupTier {
+  min_amount: number
+  bonus_amount: number
+}
+const firstTopupTiers = computed<FirstTopupTier[]>(() => {
+  const raw = appStore.cachedPublicSettings?.first_topup_bonus_tiers
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) return []
+    return parsed
+      .map((t) => ({ min_amount: Number((t as FirstTopupTier)?.min_amount), bonus_amount: Number((t as FirstTopupTier)?.bonus_amount) }))
+      .filter((t) => t.min_amount > 0 && t.bonus_amount > 0)
+      .sort((a, b) => a.min_amount - b.min_amount)
+  } catch {
+    return []
+  }
+})
+const activeTier = computed<FirstTopupTier | null>(() => {
+  const value = Number(amount.value)
+  let hit: FirstTopupTier | null = null
+  for (const tier of firstTopupTiers.value) {
+    if (value >= tier.min_amount) hit = tier
+  }
+  return hit
+})
 
 const user = computed(() => authStore.user)
 const activeSubscriptions = computed(() => subscriptionStore.activeSubscriptions)

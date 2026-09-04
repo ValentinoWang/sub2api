@@ -477,6 +477,8 @@ export interface SystemSettings {
   site_subtitle: string;
   api_base_url: string;
   contact_info: string;
+  xianyu_store_name: string;
+  first_topup_bonus_tiers: string;
   doc_url: string;
   home_content: string;
   compact_home_enabled: boolean;
@@ -726,6 +728,8 @@ export interface SystemSettings {
   // Model Plaza feature switches + description
   model_plaza_enabled: boolean;
   model_plaza_require_auth: boolean;
+  public_status_page_enabled: boolean;
+  lifecycle_emails_enabled: boolean;
   model_plaza_description: string;
   plugin_management_enabled: boolean;
 
@@ -816,6 +820,8 @@ export interface UpdateSettingsRequest {
   site_subtitle?: string;
   api_base_url?: string;
   contact_info?: string;
+  xianyu_store_name?: string;
+  first_topup_bonus_tiers?: string;
   doc_url?: string;
   home_content?: string;
   compact_home_enabled?: boolean;
@@ -1026,6 +1032,8 @@ export interface UpdateSettingsRequest {
   // Model Plaza feature switches + description
   model_plaza_enabled?: boolean;
   model_plaza_require_auth?: boolean;
+  public_status_page_enabled?: boolean;
+  lifecycle_emails_enabled?: boolean;
   model_plaza_description?: string;
   plugin_management_enabled?: boolean;
 

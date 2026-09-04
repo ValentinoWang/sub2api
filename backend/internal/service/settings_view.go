@@ -154,6 +154,8 @@ type SystemSettings struct {
 	SiteSubtitle                string
 	APIBaseURL                  string
 	ContactInfo                 string
+	XianyuStoreName             string
+	FirstTopupBonusTiers        string
 	DocURL                      string
 	HomeContent                 string
 	CompactHomeEnabled          bool
@@ -214,6 +216,8 @@ type SystemSettings struct {
 	// Model Plaza feature (public group/model pricing showcase)
 	ModelPlazaEnabled       bool   `json:"model_plaza_enabled"`
 	ModelPlazaRequireAuth   bool   `json:"model_plaza_require_auth"`
+	PublicStatusPageEnabled bool   `json:"public_status_page_enabled"`
+	LifecycleEmailsEnabled  bool   `json:"lifecycle_emails_enabled"`
 	ModelPlazaDescription   string `json:"model_plaza_description"`
 	PluginManagementEnabled bool   `json:"plugin_management_enabled"`
 
@@ -344,6 +348,8 @@ type PublicSettings struct {
 	SiteSubtitle                        string
 	APIBaseURL                          string
 	ContactInfo                         string
+	XianyuStoreName                     string
+	FirstTopupBonusTiers                string
 	DocURL                              string
 	HomeContent                         string
 	CompactHomeEnabled                  bool
@@ -393,6 +399,7 @@ type PublicSettings struct {
 	// Model Plaza feature (public group/model pricing showcase)
 	ModelPlazaEnabled       bool `json:"model_plaza_enabled"`
 	ModelPlazaRequireAuth   bool `json:"model_plaza_require_auth"`
+	PublicStatusPageEnabled bool `json:"public_status_page_enabled"`
 	PluginManagementEnabled bool `json:"plugin_management_enabled"`
 
 	// Affiliate (邀请返利) feature toggle

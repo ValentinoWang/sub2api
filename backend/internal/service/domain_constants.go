@@ -352,6 +352,8 @@ const (
 	SettingKeySiteSubtitle                = "site_subtitle"                 // 网站副标题
 	SettingKeyAPIBaseURL                  = "api_base_url"                  // API端点地址（用于客户端配置和导入）
 	SettingKeyContactInfo                 = "contact_info"                  // 客服联系方式
+	SettingKeyXianyuStoreName             = "xianyu_store_name"             // 唯一闲鱼店铺名称（店铺验证页展示）
+	SettingKeyFirstTopupBonusTiers        = "first_topup_bonus_tiers"       // 首充阶梯赠送（JSON: [{"min_amount":10,"bonus_amount":2}]）
 	SettingKeyDocURL                      = "doc_url"                       // 文档链接
 	SettingKeyHomeContent                 = "home_content"                  // 首页内容（支持 Markdown/HTML，或 URL 作为 iframe src）
 	SettingKeyCompactHomeEnabled          = "compact_home_enabled"          // 是否启用内置简洁首页
@@ -512,6 +514,12 @@ const (
 	// logged-in user. When false the page is public and anonymous visitors see only
 	// non-exclusive groups.
 	SettingKeyModelPlazaRequireAuth = "model_plaza_require_auth"
+
+	// SettingKeyPublicStatusPageEnabled exposes an aggregated, read-only channel monitor
+	// summary at /api/v1/public/status without authentication. Default false.
+	SettingKeyPublicStatusPageEnabled = "public_status_page_enabled"
+	// SettingKeyLifecycleEmailsEnabled turns on welcome / inactivity / win-back emails. Default false.
+	SettingKeyLifecycleEmailsEnabled = "lifecycle_emails_enabled"
 
 	// SettingKeyModelPlazaDescription stores the Markdown blurb rendered at the top of
 	// the Model Plaza page (global pricing notes, exchange rate, promotions, ...).

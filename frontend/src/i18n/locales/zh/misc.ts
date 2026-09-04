@@ -309,6 +309,11 @@ export default {
 
   // Payment System
   payment: {
+    firstTopupBonus: {
+      title: '首充赠送',
+      desc: '首笔成功充值按金额阶梯额外赠送余额，以到账为准。',
+      tier: '充 {min} 送 {bonus}'
+    },
     title: '充值/订阅',
     amountLabel: '充值金额',
     paymentAmount: '支付金额',

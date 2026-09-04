@@ -13,8 +13,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
@@ -42,6 +44,19 @@ type FrontendServer struct {
 	cache       *HTMLCache
 	settings    PublicSettingsProvider
 	overrideDir string // local file override directory
+
+	// Prerendered public pages (dist/<route>/index.html, produced at build time). Served with the
+	// same settings injection as index.html and cached per settings snapshot.
+	prerenderMu    sync.Mutex
+	prerendered    map[string]*prerenderedPage
+	lastSettingsJS []byte
+}
+
+// prerenderedPage caches one build-time page plus its rendered form for the current settings.
+type prerenderedPage struct {
+	base        []byte
+	settingsKey string
+	rendered    []byte
 }
 
 // NewFrontendServer creates a new frontend server with settings injection
@@ -78,9 +93,16 @@ func NewFrontendServer(settingsProvider PublicSettingsProvider) (*FrontendServer
 
 // InvalidateCache invalidates the HTML cache (call when settings change)
 func (s *FrontendServer) InvalidateCache() {
-	if s != nil && s.cache != nil {
+	if s == nil {
+		return
+	}
+	if s.cache != nil {
 		s.cache.Invalidate()
 	}
+	s.prerenderMu.Lock()
+	s.prerendered = nil
+	s.lastSettingsJS = nil
+	s.prerenderMu.Unlock()
 }
 
 // Middleware returns the Gin middleware handler
@@ -97,6 +119,13 @@ func (s *FrontendServer) Middleware() gin.HandlerFunc {
 		cleanPath := strings.TrimPrefix(path, "/")
 		if cleanPath == "" {
 			cleanPath = "index.html"
+		}
+
+		// Prerendered public pages win over the directory redirect the file server would
+		// otherwise issue for an extension-less route such as /codex-cli.
+		if page := s.prerenderedPath(cleanPath); page != "" {
+			s.servePrerendered(c, page)
+			return
 		}
 
 		// For index.html or SPA routes, serve with injected settings
@@ -188,6 +217,7 @@ func (s *FrontendServer) serveIndexHTML(c *gin.Context) {
 
 	rendered := s.injectSettings(settingsJSON)
 	s.cache.Set(rendered, settingsJSON)
+	s.rememberSettingsJSON(settingsJSON)
 
 	// Replace nonce placeholder with actual nonce before serving
 	content := replaceNoncePlaceholder(rendered, nonce)
@@ -202,13 +232,19 @@ func (s *FrontendServer) serveIndexHTML(c *gin.Context) {
 }
 
 func (s *FrontendServer) injectSettings(settingsJSON []byte) []byte {
+	return injectSettingsInto(s.baseHTML, settingsJSON)
+}
+
+// injectSettingsInto applies the public-settings script and branding to any index-style page,
+// so prerendered public pages get the same treatment as index.html.
+func injectSettingsInto(base, settingsJSON []byte) []byte {
 	// Create the script tag to inject with nonce placeholder
 	// The placeholder will be replaced with actual nonce at request time
 	script := []byte(`<script nonce="` + NonceHTMLPlaceholder + `">window.__APP_CONFIG__=` + string(settingsJSON) + `;</script>`)
 
 	// Inject before </head>
 	headClose := []byte("</head>")
-	result := bytes.Replace(s.baseHTML, headClose, append(script, headClose...), 1)
+	result := bytes.Replace(base, headClose, append(script, headClose...), 1)
 
 	// Apply custom branding before the browser paints the static defaults.
 	result = injectSiteTitle(result, settingsJSON)
@@ -392,4 +428,99 @@ func serveIndexHTML(c *gin.Context, fsys fs.FS) {
 func HasEmbeddedFrontend() bool {
 	_, err := frontendFS.ReadFile("dist/index.html")
 	return err == nil
+}
+
+// rememberSettingsJSON stores the latest injected settings so prerendered pages can reuse them
+// without an extra settings fetch per request.
+func (s *FrontendServer) rememberSettingsJSON(settingsJSON []byte) {
+	s.prerenderMu.Lock()
+	s.lastSettingsJS = append([]byte(nil), settingsJSON...)
+	s.prerenderMu.Unlock()
+}
+
+// prerenderedPath maps an extension-less SPA route ("codex-cli") to its build-time prerendered
+// document ("codex-cli/index.html") when one exists in the embedded dist.
+func (s *FrontendServer) prerenderedPath(cleanPath string) string {
+	if cleanPath == "" || cleanPath == "index.html" || strings.Contains(cleanPath, "..") {
+		return ""
+	}
+	if path.Ext(cleanPath) != "" {
+		return ""
+	}
+	candidate := path.Join(strings.Trim(cleanPath, "/"), "index.html")
+	if candidate == "index.html" || !s.fileExists(candidate) {
+		return ""
+	}
+	return candidate
+}
+
+// servePrerendered serves a prerendered public page with settings injection, mirroring
+// serveIndexHTML but keyed per page. Any failure falls back to the SPA shell.
+func (s *FrontendServer) servePrerendered(c *gin.Context, page string) {
+	nonce := middleware.GetNonceFromContext(c)
+	settingsJSON := s.currentSettingsJSON(c)
+
+	s.prerenderMu.Lock()
+	if s.prerendered == nil {
+		s.prerendered = make(map[string]*prerenderedPage)
+	}
+	entry := s.prerendered[page]
+	if entry == nil {
+		file, err := s.distFS.Open(page)
+		if err != nil {
+			s.prerenderMu.Unlock()
+			s.serveIndexHTML(c)
+			return
+		}
+		base, readErr := io.ReadAll(file)
+		_ = file.Close()
+		if readErr != nil {
+			s.prerenderMu.Unlock()
+			s.serveIndexHTML(c)
+			return
+		}
+		entry = &prerenderedPage{base: base}
+		s.prerendered[page] = entry
+	}
+	key := string(settingsJSON)
+	if entry.rendered == nil || entry.settingsKey != key {
+		if len(settingsJSON) > 0 {
+			entry.rendered = injectSettingsInto(entry.base, settingsJSON)
+		} else {
+			entry.rendered = entry.base
+		}
+		entry.settingsKey = key
+	}
+	content := replaceNoncePlaceholder(entry.rendered, nonce)
+	s.prerenderMu.Unlock()
+
+	c.Header("Cache-Control", "no-cache")
+	c.Data(http.StatusOK, "text/html; charset=utf-8", content)
+	c.Abort()
+}
+
+// currentSettingsJSON reuses the snapshot captured by the last index.html render and only falls
+// back to a fresh fetch when nothing has been rendered yet.
+func (s *FrontendServer) currentSettingsJSON(c *gin.Context) []byte {
+	s.prerenderMu.Lock()
+	cached := s.lastSettingsJS
+	s.prerenderMu.Unlock()
+	if len(cached) > 0 {
+		return cached
+	}
+	if s.settings == nil {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+	defer cancel()
+	settings, err := s.settings.GetPublicSettingsForInjection(ctx)
+	if err != nil {
+		return nil
+	}
+	settingsJSON, err := json.Marshal(settings)
+	if err != nil {
+		return nil
+	}
+	s.rememberSettingsJSON(settingsJSON)
+	return settingsJSON
 }

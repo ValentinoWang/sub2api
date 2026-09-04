@@ -35,6 +35,10 @@
       <p v-if="group.description" class="mt-2 text-sm text-gray-500 dark:text-dark-400">
         {{ group.description }}
       </p>
+      <p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] text-gray-500 dark:text-dark-400">
+        <span>{{ t('modelPlaza.sourceType') }} · {{ platformLabel(group.platform) }}</span>
+        <span v-if="group.updated_at" data-testid="plaza-updated-at">{{ t('modelPlaza.lastUpdated') }} · {{ formatUpdatedAt(group.updated_at) }}</span>
+      </p>
       <p
         v-if="peakNote"
         class="mt-1.5 inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400"
@@ -79,7 +83,7 @@ import GroupBadge from '@/components/common/GroupBadge.vue'
 import PlazaModelPricingTable from './PlazaModelPricingTable.vue'
 import type { ModelPlazaGroup } from '@/api/modelPlaza'
 import type { GroupPlatform, SubscriptionType } from '@/types'
-import { platformBorderStrongClass } from '@/utils/platformColors'
+import { platformBorderStrongClass, platformLabel } from '@/utils/platformColors'
 import { hasPeakRate, formatPeakRateWindow, serverTimezoneLabel } from '@/utils/peak-rate'
 import { useAppStore } from '@/stores/app'
 
@@ -118,4 +122,10 @@ const longContextNote = computed(() => {
   )
   return hasOfficialLadder ? t('modelPlaza.detail.longContextDisabledNote') : ''
 })
+
+function formatUpdatedAt(value: string): string {
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return value
+  return d.toISOString().slice(0, 10)
+}
 </script>

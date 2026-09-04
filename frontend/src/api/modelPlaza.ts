@@ -56,6 +56,8 @@ export interface PlazaModel {
 }
 
 export interface ModelPlazaGroup {
+  /** ISO timestamp of the last group config change (pricing / models). */
+  updated_at?: string
   id: number
   name: string
   description: string

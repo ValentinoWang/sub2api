@@ -203,6 +203,8 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		// Model plaza feature (default disabled; opt-in, public unless require_auth)
 		SettingKeyModelPlazaEnabled:       "false",
 		SettingKeyModelPlazaRequireAuth:   "false",
+		SettingKeyPublicStatusPageEnabled: "false",
+		SettingKeyLifecycleEmailsEnabled:  "false",
 		SettingKeyModelPlazaDescription:   "",
 		SettingKeyPluginManagementEnabled: "false",
 
@@ -355,6 +357,8 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		SiteSubtitle:                           s.getStringOrDefault(settings, SettingKeySiteSubtitle, "Subscription to API Conversion Platform"),
 		APIBaseURL:                             settings[SettingKeyAPIBaseURL],
 		ContactInfo:                            settings[SettingKeyContactInfo],
+		XianyuStoreName:                        settings[SettingKeyXianyuStoreName],
+		FirstTopupBonusTiers:                   settings[SettingKeyFirstTopupBonusTiers],
 		DocURL:                                 settings[SettingKeyDocURL],
 		HomeContent:                            settings[SettingKeyHomeContent],
 		CompactHomeEnabled:                     settings[SettingKeyCompactHomeEnabled] == "true",
@@ -820,6 +824,8 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 	// Model plaza feature (default: disabled; strict true)
 	result.ModelPlazaEnabled = settings[SettingKeyModelPlazaEnabled] == "true"
 	result.ModelPlazaRequireAuth = settings[SettingKeyModelPlazaRequireAuth] == "true"
+	result.PublicStatusPageEnabled = settings[SettingKeyPublicStatusPageEnabled] == "true"
+	result.LifecycleEmailsEnabled = settings[SettingKeyLifecycleEmailsEnabled] == "true"
 	result.ModelPlazaDescription = settings[SettingKeyModelPlazaDescription]
 	result.PluginManagementEnabled = settings[SettingKeyPluginManagementEnabled] == "true"
 

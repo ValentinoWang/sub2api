@@ -53,6 +53,25 @@ func (s *SettingService) GetRegistrationEmailSuffixWhitelist(ctx context.Context
 }
 
 // IsPromoCodeEnabled 检查是否启用优惠码功能
+// IsPublicStatusPageEnabled reports whether the unauthenticated /api/v1/public/status
+// summary is exposed. Default false.
+func (s *SettingService) IsPublicStatusPageEnabled(ctx context.Context) bool {
+	value, err := s.settingRepo.GetValue(ctx, SettingKeyPublicStatusPageEnabled)
+	if err != nil {
+		return false
+	}
+	return value == "true"
+}
+
+// IsLifecycleEmailsEnabled reports whether welcome / inactivity / win-back emails are sent. Default false.
+func (s *SettingService) IsLifecycleEmailsEnabled(ctx context.Context) bool {
+	value, err := s.settingRepo.GetValue(ctx, SettingKeyLifecycleEmailsEnabled)
+	if err != nil {
+		return false
+	}
+	return value == "true"
+}
+
 func (s *SettingService) IsPromoCodeEnabled(ctx context.Context) bool {
 	value, err := s.settingRepo.GetValue(ctx, SettingKeyPromoCodeEnabled)
 	if err != nil {

@@ -20,7 +20,7 @@
       <template v-else-if="pageKey === 'verify'">
         <div class="mk-store">
           <span class="mk-store-label">{{ t('marketing.pages.verify.platform') }} · {{ t('marketing.pages.verify.storeLabel') }}</span>
-          <strong class="mk-store-name">{{ XIANYU_STORE_NAME }}</strong>
+          <strong class="mk-store-name">{{ storeName }}</strong>
           <span class="mk-store-domain">{{ BRAND_DOMAIN }}</span>
         </div>
         <section class="mk-section">
@@ -100,6 +100,8 @@
             ></span>
           </div>
           <p class="mk-bench-note">
+            <router-link :to="PUBLIC_PAGES.status" class="underline decoration-dotted underline-offset-4">{{ t('marketing.pages.benchmarks.serverSide') }}</router-link>
+            ·
             {{ t('marketing.pages.benchmarks.method') }}
             <template v-if="bench.testedAt"> · {{ t('marketing.pages.benchmarks.testedAt') }}: {{ bench.testedAt }}</template>
             <template v-else> · {{ t('marketing.pages.benchmarks.empty') }}</template>
@@ -121,7 +123,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores'
 import PublicPageLayout from '@/components/layout/PublicPageLayout.vue'
-import { BRAND_DOMAIN, XIANYU_STORE_NAME } from '@/constants/brand'
+import { BRAND_DOMAIN, PUBLIC_PAGES, resolveStoreName } from '@/constants/brand'
 
 export type MarketingPageKey =
   | 'publicBenefit'
@@ -182,6 +184,7 @@ const steps = computed<Section[]>(() => {
 })
 
 const contactInfo = computed(() => appStore.cachedPublicSettings?.contact_info || appStore.contactInfo || '')
+const storeName = computed(() => resolveStoreName(appStore.cachedPublicSettings?.xianyu_store_name))
 
 const apiBaseUrl = computed(() => {
   const origin = typeof window !== 'undefined' ? window.location.origin : ''

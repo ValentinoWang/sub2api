@@ -332,6 +332,12 @@ func diffSettings(before *service.SystemSettings, after *service.SystemSettings,
 	if before.ContactInfo != after.ContactInfo {
 		changed = append(changed, "contact_info")
 	}
+	if before.XianyuStoreName != after.XianyuStoreName {
+		changed = append(changed, "xianyu_store_name")
+	}
+	if before.FirstTopupBonusTiers != after.FirstTopupBonusTiers {
+		changed = append(changed, "first_topup_bonus_tiers")
+	}
 	if before.DocURL != after.DocURL {
 		changed = append(changed, "doc_url")
 	}
@@ -581,6 +587,12 @@ func diffSettings(before *service.SystemSettings, after *service.SystemSettings,
 	}
 	if before.ModelPlazaRequireAuth != after.ModelPlazaRequireAuth {
 		changed = append(changed, "model_plaza_require_auth")
+	}
+	if before.PublicStatusPageEnabled != after.PublicStatusPageEnabled {
+		changed = append(changed, "public_status_page_enabled")
+	}
+	if before.LifecycleEmailsEnabled != after.LifecycleEmailsEnabled {
+		changed = append(changed, "lifecycle_emails_enabled")
 	}
 	if before.ModelPlazaDescription != after.ModelPlazaDescription {
 		changed = append(changed, "model_plaza_description")
