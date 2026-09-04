@@ -6,10 +6,5 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "vite.config.ts",
-    "prerender.config.ts",
-    "src/constants/brand.ts",
-    "src/i18n/locales/zh/landing.ts"
-  ]
+  "include": ["vite.config.ts"]
 }
