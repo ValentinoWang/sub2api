@@ -29,12 +29,13 @@ ORDER BY u.id
 LIMIT $3`
 
 // Last activity is derived from api_keys.last_used_at (cheap, indexed per user) rather than
-// scanning usage_logs. Users who never used a key fall back to their registration time.
+// scanning usage_logs. Deleted keys are excluded so a long-dead key cannot keep a dormant user
+// looking active forever. Users who never used a key fall back to their registration time.
 const lifecycleInactiveSQL = `
 SELECT u.id, u.email, COALESCE(u.username, ''), u.created_at, la.last_active
 FROM users u
 LEFT JOIN LATERAL (
-    SELECT MAX(k.last_used_at) AS last_active FROM api_keys k WHERE k.user_id = u.id
+    SELECT MAX(k.last_used_at) AS last_active FROM api_keys k WHERE k.user_id = u.id AND k.deleted_at IS NULL
 ) la ON TRUE
 WHERE u.deleted_at IS NULL
   AND u.status = 'active'

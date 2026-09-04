@@ -1034,6 +1034,9 @@ var notificationEmailEventOrder = []string{
 	NotificationEmailEventCyberPolicyNotice,
 	NotificationEmailEventOpsAlert,
 	NotificationEmailEventOpsScheduledReport,
+	NotificationEmailEventUserWelcome,
+	NotificationEmailEventUserInactive,
+	NotificationEmailEventUserWinback,
 }
 
 var notificationEmailEventDefinitions = map[string]NotificationEmailEventInfo{

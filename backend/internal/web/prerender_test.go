@@ -36,6 +36,10 @@ func TestPrerenderedPathOnlyMatchesExtensionlessRoutes(t *testing.T) {
 	if got := s.prerenderedPath("codex-cli"); got != "codex-cli/index.html" {
 		t.Errorf("codex-cli should map to its prerendered page, got %q", got)
 	}
+	// The literal file URL must resolve to the same injected document, not the raw file.
+	if got := s.prerenderedPath("codex-cli/index.html"); got != "codex-cli/index.html" {
+		t.Errorf("codex-cli/index.html should map to the prerendered page, got %q", got)
+	}
 	for _, path := range []string{"", "index.html", "assets/app.js", "logo.svg", "dashboard", "../etc/passwd"} {
 		if got := s.prerenderedPath(path); got != "" {
 			t.Errorf("path %q must not resolve to a prerendered page, got %q", path, got)

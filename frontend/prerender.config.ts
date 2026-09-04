@@ -86,15 +86,30 @@ function renderPage(baseHTML: string, page: PrerenderPage, siteName: string): st
         ${faq}
         <p><a href="/home">${esc(zh.marketing.pages.common.backHome)}</a> · <a href="/login">${esc(zh.marketing.pages.common.login)}</a></p>
       </main>`
+  // Each tag must actually be found: a silently unmatched pattern would leave every prerendered
+  // page carrying the home page's title, description and canonical, which is worse than not
+  // prerendering at all. The replacement is passed as a function so "$&" and friends in the copy
+  // are inserted literally instead of being read as replacement patterns.
+  const substitutions: Array<[string, RegExp, string]> = [
+    ['title', /<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`],
+    ['meta description', /<meta\s+name="description"[\s\S]*?\/?>/, `<meta name="description" content="${esc(page.description)}" />`],
+    ['canonical', /<link\s+rel="canonical"[\s\S]*?\/?>/, `<link rel="canonical" href="${esc(url)}" />`],
+    ['og:title', /<meta\s+property="og:title"[\s\S]*?\/?>/, `<meta property="og:title" content="${esc(title)}" />`],
+    ['og:description', /<meta\s+property="og:description"[\s\S]*?\/?>/, `<meta property="og:description" content="${esc(page.description)}" />`],
+    ['og:url', /<meta\s+property="og:url"[\s\S]*?\/?>/, `<meta property="og:url" content="${esc(url)}" />`],
+    ['crawler seed', /<main[\s\S]*?<\/main>/, seed]
+  ]
+
   let html = baseHTML
-  html = html.replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
-  html = html.replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/, `<meta name="description" content="${esc(page.description)}" />`)
-  html = html.replace(/<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${esc(url)}" />`)
-  html = html.replace(/<meta property="og:title" content="[^"]*" \/>/, `<meta property="og:title" content="${esc(title)}" />`)
-  html = html.replace(/<meta property="og:description" content="[^"]*" \/>/, `<meta property="og:description" content="${esc(page.description)}" />`)
-  html = html.replace(/<meta property="og:url" content="[^"]*" \/>/, `<meta property="og:url" content="${esc(url)}" />`)
-  // Replace the seed block inside #app (everything between the first <main and </main>).
-  html = html.replace(/<main[\s\S]*?<\/main>/, seed)
+  for (const [label, pattern, replacement] of substitutions) {
+    if (!pattern.test(html)) {
+      throw new Error(
+        `[prerender] ${page.route}: no ${label} tag matched in index.html. ` +
+          'The template changed shape; update prerender.config.ts instead of shipping pages with the wrong metadata.'
+      )
+    }
+    html = html.replace(pattern, () => replacement)
+  }
   return html
 }
 

@@ -11232,6 +11232,8 @@ async function saveSettings() {
       site_subtitle: form.site_subtitle,
       api_base_url: form.api_base_url,
       contact_info: form.contact_info,
+      xianyu_store_name: form.xianyu_store_name,
+      first_topup_bonus_tiers: form.first_topup_bonus_tiers,
       doc_url: form.doc_url,
       home_content: form.home_content,
       compact_home_enabled: form.compact_home_enabled,

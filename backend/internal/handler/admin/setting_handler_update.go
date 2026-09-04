@@ -153,13 +153,16 @@ type UpdateSettingsRequest struct {
 	GoogleOAuthFrontendRedirectURL string `json:"google_oauth_frontend_redirect_url"`
 
 	// OEM设置
-	SiteName                    string                `json:"site_name"`
-	SiteLogo                    string                `json:"site_logo"`
-	SiteSubtitle                string                `json:"site_subtitle"`
-	APIBaseURL                  string                `json:"api_base_url"`
-	ContactInfo                 string                `json:"contact_info"`
-	XianyuStoreName             string                `json:"xianyu_store_name"`
-	FirstTopupBonusTiers        string                `json:"first_topup_bonus_tiers"`
+	SiteName     string `json:"site_name"`
+	SiteLogo     string `json:"site_logo"`
+	SiteSubtitle string `json:"site_subtitle"`
+	APIBaseURL   string `json:"api_base_url"`
+	ContactInfo  string `json:"contact_info"`
+	// Pointers so a client that omits the key keeps the stored value instead of clearing it.
+	// These two are edited on a page that builds its payload by hand, where a missing key is an
+	// easy mistake to make and a silent data loss if it binds to "".
+	XianyuStoreName             *string               `json:"xianyu_store_name"`
+	FirstTopupBonusTiers        *string               `json:"first_topup_bonus_tiers"`
 	DocURL                      string                `json:"doc_url"`
 	HomeContent                 string                `json:"home_content"`
 	CompactHomeEnabled          bool                  `json:"compact_home_enabled"`
@@ -1621,8 +1624,8 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		SiteSubtitle:                           req.SiteSubtitle,
 		APIBaseURL:                             req.APIBaseURL,
 		ContactInfo:                            req.ContactInfo,
-		XianyuStoreName:                        req.XianyuStoreName,
-		FirstTopupBonusTiers:                   req.FirstTopupBonusTiers,
+		XianyuStoreName:                        stringOrPrevious(req.XianyuStoreName, previousSettings.XianyuStoreName),
+		FirstTopupBonusTiers:                   stringOrPrevious(req.FirstTopupBonusTiers, previousSettings.FirstTopupBonusTiers),
 		DocURL:                                 req.DocURL,
 		HomeContent:                            req.HomeContent,
 		CompactHomeEnabled:                     req.CompactHomeEnabled,
@@ -2495,4 +2498,13 @@ func (h *SettingHandler) ensureUserAttributeDefinition(ctx context.Context, key,
 		return
 	}
 	slog.Info("dingtalk: created user attribute definition", "key", key, "name", name, "type", attrType)
+}
+
+// stringOrPrevious keeps the stored value when the request omitted the field entirely. An
+// explicit empty string still clears it, so the admin can blank a setting on purpose.
+func stringOrPrevious(requested *string, previous string) string {
+	if requested == nil {
+		return previous
+	}
+	return *requested
 }

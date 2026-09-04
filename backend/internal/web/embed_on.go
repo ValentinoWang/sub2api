@@ -444,10 +444,14 @@ func (s *FrontendServer) prerenderedPath(cleanPath string) string {
 	if cleanPath == "" || cleanPath == "index.html" || strings.Contains(cleanPath, "..") {
 		return ""
 	}
-	if path.Ext(cleanPath) != "" {
+	// Both /codex-cli and its literal file URL /codex-cli/index.html must go through the same
+	// injection path; otherwise the second one is served raw, without public settings or
+	// branding, and crawlers see two different documents for one page.
+	route := strings.TrimSuffix(strings.Trim(cleanPath, "/"), "/index.html")
+	if route == "" || route == "index.html" || path.Ext(route) != "" {
 		return ""
 	}
-	candidate := path.Join(strings.Trim(cleanPath, "/"), "index.html")
+	candidate := path.Join(route, "index.html")
 	if candidate == "index.html" || !s.fileExists(candidate) {
 		return ""
 	}

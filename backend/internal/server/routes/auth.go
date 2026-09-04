@@ -247,6 +247,14 @@ func RegisterAuthRoutes(
 		settings.GET("/email-unsubscribe", h.Setting.UnsubscribeNotificationEmail)
 	}
 
+	// 公开只读状态（无需认证）：由 public_status_page_enabled 开关控制，
+	// handler 内有 30s 缓存，同样按客户端 IP 兜底限流。
+	publicInfo := v1.Group("/public")
+	publicInfo.Use(panelRateLimiter.PublicIP())
+	{
+		publicInfo.GET("/status", h.PublicStatus.Get)
+	}
+
 	// 需要认证的当前用户信息
 	authenticated := v1.Group("")
 	authenticated.Use(gin.HandlerFunc(jwtAuth))

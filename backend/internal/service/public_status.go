@@ -125,6 +125,8 @@ func applyPublicStatusTimeline(item *PublicStatusItem, timeline []UserMonitorTim
 	}
 }
 
+// percentileIndex maps a percentile to an index into a sorted slice of length n.
+// n <= 0 returns 0 so a caller that forgets the emptiness check cannot index out of range.
 func percentileIndex(n int, p float64) int {
 	if n <= 1 {
 		return 0
