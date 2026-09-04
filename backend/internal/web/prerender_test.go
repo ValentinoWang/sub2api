@@ -74,6 +74,63 @@ func TestMiddlewareServesPrerenderedPageWithInjectedSettings(t *testing.T) {
 	}
 }
 
+func TestSubstitutePrerenderPlaceholdersUsesConfiguredNames(t *testing.T) {
+	html := []byte("<title>x｜" + prerenderSiteNamePlaceholder + "</title><p>" + prerenderStoreNamePlaceholder + "</p>")
+
+	t.Run("admin values win", func(t *testing.T) {
+		got := string(substitutePrerenderPlaceholders(html, []byte(`{"site_name":"My Gateway","xianyu_store_name":"My Store"}`)))
+		if !strings.Contains(got, "My Gateway") || !strings.Contains(got, "My Store") {
+			t.Errorf("configured names must appear, got %q", got)
+		}
+		if strings.Contains(got, prerenderSiteNamePlaceholder) || strings.Contains(got, prerenderStoreNamePlaceholder) {
+			t.Errorf("no placeholder may survive, got %q", got)
+		}
+	})
+
+	t.Run("unset and upstream-default site names fall back to the fork brand", func(t *testing.T) {
+		for _, settings := range []string{`{}`, `{"site_name":""}`, `{"site_name":"Sub2API"}`} {
+			got := string(substitutePrerenderPlaceholders(html, []byte(settings)))
+			if !strings.Contains(got, prerenderDefaultSiteName) {
+				t.Errorf("settings %s must fall back to %q, got %q", settings, prerenderDefaultSiteName, got)
+			}
+			if !strings.Contains(got, prerenderDefaultStoreName) {
+				t.Errorf("settings %s must fall back to the default store name, got %q", settings, got)
+			}
+		}
+	})
+
+	t.Run("names are HTML escaped", func(t *testing.T) {
+		got := string(substitutePrerenderPlaceholders(html, []byte(`{"xianyu_store_name":"<script>alert(1)</script>"}`)))
+		if strings.Contains(got, "<script>") {
+			t.Errorf("store name must be escaped, got %q", got)
+		}
+	})
+
+	t.Run("nil settings still clear the placeholders", func(t *testing.T) {
+		got := string(substitutePrerenderPlaceholders(html, nil))
+		if strings.Contains(got, "__SUB2API_") {
+			t.Errorf("placeholders must never reach a visitor, got %q", got)
+		}
+	})
+}
+
+// A prerendered page's own title is the point of prerendering; the SPA shell's site-name
+// branding must not overwrite it.
+func TestPrerenderedTitleSurvivesBranding(t *testing.T) {
+	page := []byte("<head><title>Codex CLI｜" + prerenderSiteNamePlaceholder + "</title></head><body></body>")
+	settings := []byte(`{"site_name":"My Gateway"}`)
+
+	branded := string(substitutePrerenderPlaceholders(injectSettingsInto(page, settings, false), settings))
+	if !strings.Contains(branded, "<title>Codex CLI｜My Gateway</title>") {
+		t.Errorf("prerendered title must keep its page name and take the configured site name, got %q", branded)
+	}
+
+	shell := string(injectSettingsInto(page, settings, true))
+	if strings.Contains(shell, "Codex CLI") {
+		t.Errorf("the SPA shell path should still rebrand the title wholesale, got %q", shell)
+	}
+}
+
 func TestInvalidateCacheClearsPrerenderedPages(t *testing.T) {
 	s := newPrerenderTestServer(t)
 	s.prerendered = map[string]*prerenderedPage{"codex-cli/index.html": {base: []byte("x")}}

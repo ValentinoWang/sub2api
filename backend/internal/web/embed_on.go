@@ -232,12 +232,17 @@ func (s *FrontendServer) serveIndexHTML(c *gin.Context) {
 }
 
 func (s *FrontendServer) injectSettings(settingsJSON []byte) []byte {
-	return injectSettingsInto(s.baseHTML, settingsJSON)
+	return injectSettingsInto(s.baseHTML, settingsJSON, true)
 }
 
 // injectSettingsInto applies the public-settings script and branding to any index-style page,
 // so prerendered public pages get the same treatment as index.html.
-func injectSettingsInto(base, settingsJSON []byte) []byte {
+//
+// brandTitle rewrites the document title from the configured site name. That is right for the SPA
+// shell, whose title is a generic placeholder, but wrong for a prerendered page: those carry a
+// page-specific title that is the whole point of prerendering, and they pick up the site name
+// through substitutePrerenderPlaceholders instead.
+func injectSettingsInto(base, settingsJSON []byte, brandTitle bool) []byte {
 	// Create the script tag to inject with nonce placeholder
 	// The placeholder will be replaced with actual nonce at request time
 	script := []byte(`<script nonce="` + NonceHTMLPlaceholder + `">window.__APP_CONFIG__=` + string(settingsJSON) + `;</script>`)
@@ -247,7 +252,9 @@ func injectSettingsInto(base, settingsJSON []byte) []byte {
 	result := bytes.Replace(base, headClose, append(script, headClose...), 1)
 
 	// Apply custom branding before the browser paints the static defaults.
-	result = injectSiteTitle(result, settingsJSON)
+	if brandTitle {
+		result = injectSiteTitle(result, settingsJSON)
+	}
 	result = injectSiteFavicon(result, settingsJSON)
 
 	return result
@@ -489,9 +496,9 @@ func (s *FrontendServer) servePrerendered(c *gin.Context, page string) {
 	key := string(settingsJSON)
 	if entry.rendered == nil || entry.settingsKey != key {
 		if len(settingsJSON) > 0 {
-			entry.rendered = injectSettingsInto(entry.base, settingsJSON)
+			entry.rendered = substitutePrerenderPlaceholders(injectSettingsInto(entry.base, settingsJSON, false), settingsJSON)
 		} else {
-			entry.rendered = entry.base
+			entry.rendered = substitutePrerenderPlaceholders(entry.base, nil)
 		}
 		entry.settingsKey = key
 	}
@@ -527,4 +534,42 @@ func (s *FrontendServer) currentSettingsJSON(c *gin.Context) []byte {
 	}
 	s.rememberSettingsJSON(settingsJSON)
 	return settingsJSON
+}
+
+// Placeholders the prerender build leaves in the static HTML for values an administrator can
+// rename. Keep in sync with PRERENDER_PLACEHOLDERS in frontend/prerender.config.ts.
+const (
+	prerenderSiteNamePlaceholder  = "__SUB2API_SITE_NAME__"
+	prerenderStoreNamePlaceholder = "__SUB2API_XIANYU_STORE_NAME__"
+
+	// Fork defaults, mirroring resolveBrandName / resolveStoreName in frontend/src/constants/brand.ts.
+	prerenderDefaultSiteName  = "rest2build"
+	prerenderDefaultStoreName = "Rest2Build AI 接入实验室"
+	// The upstream project's stock site name is treated as "unset" so a deployment that never
+	// customised it still shows the fork brand rather than the upstream one.
+	upstreamDefaultSiteName = "Sub2API"
+)
+
+// substitutePrerenderPlaceholders fills the admin-configurable values into a prerendered page so
+// a crawler that never runs JavaScript reads the same names the Vue app renders.
+func substitutePrerenderPlaceholders(html, settingsJSON []byte) []byte {
+	var cfg struct {
+		SiteName        string `json:"site_name"`
+		XianyuStoreName string `json:"xianyu_store_name"`
+	}
+	if len(settingsJSON) > 0 {
+		_ = json.Unmarshal(settingsJSON, &cfg)
+	}
+
+	siteName := strings.TrimSpace(cfg.SiteName)
+	if siteName == "" || siteName == upstreamDefaultSiteName {
+		siteName = prerenderDefaultSiteName
+	}
+	storeName := strings.TrimSpace(cfg.XianyuStoreName)
+	if storeName == "" {
+		storeName = prerenderDefaultStoreName
+	}
+
+	result := bytes.ReplaceAll(html, []byte(prerenderSiteNamePlaceholder), []byte(htmlpkg.EscapeString(siteName)))
+	return bytes.ReplaceAll(result, []byte(prerenderStoreNamePlaceholder), []byte(htmlpkg.EscapeString(storeName)))
 }

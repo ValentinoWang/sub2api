@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Plugin, ResolvedConfig } from 'vite'
 import zh from './src/i18n/locales/zh/landing'
-import { BRAND_DOMAIN, PUBLIC_PAGES, XIANYU_STORE_NAME } from './src/constants/brand'
+import { BRAND_DOMAIN, PUBLIC_PAGES } from './src/constants/brand'
 
 type Section = { h: string; p?: string; items?: string[] }
 
@@ -21,6 +21,16 @@ interface PrerenderPage {
   description: string
   body: string
 }
+
+/**
+ * Values the backend substitutes at serve time. Anything an administrator can rename must go
+ * through a placeholder: baking it in here would make the crawler-facing copy disagree with what
+ * the Vue app renders, which matters most on the store-verification page.
+ */
+export const PRERENDER_PLACEHOLDERS = {
+  siteName: '__SUB2API_SITE_NAME__',
+  storeName: '__SUB2API_XIANYU_STORE_NAME__'
+} as const
 
 function esc(value: unknown): string {
   return String(value ?? '')
@@ -60,7 +70,7 @@ export function buildPrerenderPages(): PrerenderPage[] {
       route: PUBLIC_PAGES.verify,
       title: p.verify.title,
       description: p.verify.subtitle,
-      body: `<p><strong>${esc(p.verify.platform)} · ${esc(p.verify.storeLabel)}：${esc(XIANYU_STORE_NAME)}</strong></p><ul>${p.verify.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`
+      body: `<p><strong>${esc(p.verify.platform)} · ${esc(p.verify.storeLabel)}：${PRERENDER_PLACEHOLDERS.storeName}</strong></p><ul>${p.verify.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`
     },
     { route: PUBLIC_PAGES.codex, title: p.codex.title, description: p.codex.subtitle, body: guideHTML(p.codex as never) },
     { route: PUBLIC_PAGES.claudeCode, title: p.claudeCode.title, description: p.claudeCode.subtitle, body: guideHTML(p.claudeCode as never) },
@@ -72,9 +82,9 @@ export function buildPrerenderPages(): PrerenderPage[] {
   return pages
 }
 
-function renderPage(baseHTML: string, page: PrerenderPage, siteName: string): string {
+function renderPage(baseHTML: string, page: PrerenderPage): string {
   const url = `https://${BRAND_DOMAIN}${page.route}`
-  const title = `${page.title}｜${siteName}`
+  const title = `${page.title}｜${PRERENDER_PLACEHOLDERS.siteName}`
   const faq = zh.marketing.faq.items.map((f) => `<p><strong>${esc(f.q)}</strong> ${esc(f.a)}</p>`).join('')
   const seed = `<main style="max-width: 720px; margin: 48px auto; padding: 0 20px; font-family: system-ui, sans-serif; line-height: 1.6">
         <p>${esc(zh.marketing.nonOfficialShort)}</p>
@@ -131,7 +141,7 @@ export function prerenderPublicPages(): Plugin {
       for (const page of buildPrerenderPages()) {
         const dir = join(outDir, page.route.replace(/^\//, ''))
         mkdirSync(dir, { recursive: true })
-        writeFileSync(join(dir, 'index.html'), renderPage(baseHTML, page, 'rest2build'), 'utf8')
+        writeFileSync(join(dir, 'index.html'), renderPage(baseHTML, page), 'utf8')
         count++
       }
       config.logger.info(`[prerender] wrote ${count} public pages under ${outDir}`)
