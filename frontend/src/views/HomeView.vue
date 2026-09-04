@@ -215,6 +215,7 @@
               <span class="home-eyebrow-sep"></span>
               <span class="font-mono text-[11px] uppercase tracking-[0.18em] opacity-70">{{ t('home.sell.kicker') }}</span>
             </div>
+            <p class="home-positioning mb-3">{{ t('marketing.positioning') }} · {{ t('marketing.nonOfficialShort') }}</p>
 
             <h1
               class="home-hero-title mb-4 text-5xl font-extrabold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl"
@@ -324,6 +325,63 @@
               <p class="home-sell-title">{{ t('home.sell.billing') }}</p>
               <p class="home-sell-desc">{{ t('home.sell.billingDesc') }}</p>
             </div>
+          </div>
+        </section>
+
+        <!-- Two access modes -->
+        <section class="mb-20">
+          <div class="mb-8 text-center" data-reveal>
+            <span class="home-section-kicker">{{ t('marketing.modes.kicker') }}</span>
+            <h2 class="mt-3 text-3xl font-bold tracking-tight md:text-4xl">{{ t('marketing.modes.title') }}</h2>
+          </div>
+          <div class="grid gap-5 md:grid-cols-2">
+            <div class="home-mode" data-reveal>
+              <div class="home-mode-head">
+                <span class="home-mode-badge">MANAGED</span>
+                <h3 class="text-lg font-bold">{{ t('marketing.modes.managed.title') }}</h3>
+              </div>
+              <p class="home-mode-desc">{{ t('marketing.modes.managed.desc') }}</p>
+              <ul class="home-mode-points">
+                <li v-for="(pt, i) in stringList('marketing.modes.managed.points')" :key="i"><Icon name="checkCircle" size="sm" class="text-primary-500" />{{ pt }}</li>
+              </ul>
+            </div>
+            <div class="home-mode home-mode-byok" data-reveal data-reveal-delay="1">
+              <div class="home-mode-head">
+                <span class="home-mode-badge home-mode-badge-byok">BYOK</span>
+                <h3 class="text-lg font-bold">{{ t('marketing.modes.byok.title') }}</h3>
+              </div>
+              <p class="home-mode-desc">{{ t('marketing.modes.byok.desc') }}</p>
+              <ul class="home-mode-points">
+                <li v-for="(pt, i) in stringList('marketing.modes.byok.points')" :key="i"><Icon name="shield" size="sm" class="text-indigo-400" />{{ pt }}</li>
+              </ul>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <router-link :to="PUBLIC_PAGES.codex" class="home-mode-link">Codex CLI →</router-link>
+                <router-link :to="PUBLIC_PAGES.claudeCode" class="home-mode-link">Claude Code →</router-link>
+                <router-link :to="PUBLIC_PAGES.openaiCompat" class="home-mode-link">OpenAI SDK →</router-link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Free tier vs business -->
+        <section class="mb-20">
+          <div class="mb-8 text-center" data-reveal>
+            <span class="home-section-kicker">{{ t('marketing.lines.kicker') }}</span>
+            <h2 class="mt-3 text-3xl font-bold tracking-tight md:text-4xl">{{ t('marketing.lines.title') }}</h2>
+          </div>
+          <div class="grid gap-5 md:grid-cols-2">
+            <router-link :to="PUBLIC_PAGES.publicBenefit" class="home-line home-line-benefit" data-reveal>
+              <Icon name="gift" size="lg" class="home-line-icon" />
+              <h3 class="text-xl font-bold">{{ t('marketing.lines.benefit.title') }}</h3>
+              <p class="home-line-desc">{{ t('marketing.lines.benefit.desc') }}</p>
+              <span class="home-line-cta">{{ t('marketing.lines.benefit.cta') }} →</span>
+            </router-link>
+            <router-link :to="PUBLIC_PAGES.business" class="home-line home-line-business" data-reveal data-reveal-delay="1">
+              <Icon name="document" size="lg" class="home-line-icon" />
+              <h3 class="text-xl font-bold">{{ t('marketing.lines.business.title') }}</h3>
+              <p class="home-line-desc">{{ t('marketing.lines.business.desc') }}</p>
+              <span class="home-line-cta">{{ t('marketing.lines.business.cta') }} →</span>
+            </router-link>
           </div>
         </section>
 
@@ -553,6 +611,37 @@
           </div>
         </section>
 
+        <!-- Trust principles -->
+        <section class="mb-20">
+          <div class="mb-8 text-center" data-reveal>
+            <span class="home-section-kicker">{{ t('marketing.trust.kicker') }}</span>
+            <h2 class="mt-3 text-3xl font-bold tracking-tight md:text-4xl">{{ t('marketing.trust.title') }}</h2>
+          </div>
+          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
+            <li v-for="(item, i) in stringList('marketing.trust.items')" :key="i" class="home-trust">
+              <Icon name="lock" size="sm" class="text-primary-500" />{{ item }}
+            </li>
+          </ul>
+          <p class="mt-6 text-center text-xs text-gray-500 dark:text-dark-400">
+            {{ t('marketing.disclaimer') }}
+            <router-link :to="PUBLIC_PAGES.security" class="underline decoration-dotted underline-offset-4">{{ t('marketing.nav.security') }}</router-link>
+          </p>
+        </section>
+
+        <!-- FAQ (static, crawlable) -->
+        <section class="mb-20">
+          <div class="mb-8 text-center" data-reveal>
+            <span class="home-section-kicker">{{ t('marketing.faq.kicker') }}</span>
+            <h2 class="mt-3 text-3xl font-bold tracking-tight md:text-4xl">{{ t('marketing.faq.title') }}</h2>
+          </div>
+          <div class="mx-auto max-w-3xl space-y-3" data-reveal>
+            <details v-for="(item, i) in faqItems" :key="i" class="home-faq" :open="i === 0">
+              <summary class="home-faq-q">{{ item.q }}</summary>
+              <p class="home-faq-a">{{ item.a }}</p>
+            </details>
+          </div>
+        </section>
+
         <!-- CTA -->
         <section class="home-cta-panel" data-reveal>
           <div class="home-cta-panel-grid" aria-hidden="true"></div>
@@ -578,9 +667,33 @@
     </main>
 
     <!-- Footer -->
-    <footer class="relative z-10 border-t border-gray-200/60 px-6 py-8 dark:border-white/5">
+    <footer class="relative z-10 border-t border-gray-200/60 px-6 py-10 dark:border-white/5">
+      <div class="mx-auto grid max-w-6xl gap-8 text-sm md:grid-cols-[1.2fr_1fr_1fr]">
+        <div>
+          <p class="text-base font-semibold"><BrandWordmark :name="siteName" /></p>
+          <p class="mt-1 text-gray-600 dark:text-dark-300">{{ t('marketing.lab') }} · {{ t('marketing.positioning') }}</p>
+          <p class="mt-3 text-xs leading-relaxed text-gray-500 dark:text-dark-400">{{ t('marketing.disclaimer') }}</p>
+          <router-link :to="PUBLIC_PAGES.verify" class="home-verify mt-4">
+            <Icon name="badge" size="sm" />{{ t('marketing.footer.verifyHint') }}：{{ XIANYU_STORE_NAME }}
+          </router-link>
+        </div>
+        <div>
+          <p class="home-footer-h">{{ t('marketing.nav.publicInfo') }}</p>
+          <ul class="mt-3 space-y-2 text-gray-500 dark:text-dark-400">
+            <li v-for="link in publicLinks" :key="link.to"><router-link :to="link.to" class="hover:text-gray-900 dark:hover:text-white">{{ link.label }}</router-link></li>
+          </ul>
+        </div>
+        <div>
+          <p class="home-footer-h">{{ t('marketing.nav.legal') }}</p>
+          <ul class="mt-3 space-y-2 text-gray-500 dark:text-dark-400">
+            <li v-for="doc in legalDocuments" :key="doc.id"><router-link :to="`/legal/${doc.id}`" class="hover:text-gray-900 dark:hover:text-white">{{ doc.title }}</router-link></li>
+            <li v-if="docUrl"><a :href="docUrl" target="_blank" rel="noopener noreferrer" class="hover:text-gray-900 dark:hover:text-white">{{ t('home.docs') }}</a></li>
+            <li><a :href="githubUrl" target="_blank" rel="noopener noreferrer" class="hover:text-gray-900 dark:hover:text-white">{{ t('marketing.footer.builtOn') }}</a></li>
+          </ul>
+        </div>
+      </div>
       <div
-        class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left"
+        class="mx-auto mt-8 flex max-w-6xl flex-col items-center justify-between gap-4 border-t border-gray-200/60 pt-6 text-center dark:border-white/5 sm:flex-row sm:text-left"
       >
         <p class="text-sm text-gray-500 dark:text-dark-400">
           &copy; {{ currentYear }} <span class="font-mono">{{ BRAND_DOMAIN }}</span> · {{ t('home.meme.footer') }}
@@ -618,11 +731,45 @@ import Icon from '@/components/icons/Icon.vue'
 import BrandWordmark from '@/components/common/BrandWordmark.vue'
 import RelayStationVisual from '@/components/common/RelayStationVisual.vue'
 import { useLatencyProbe } from '@/composables/useLatencyProbe'
-import { BRAND_DOMAIN, resolveBrandName } from '@/constants/brand'
+import { BRAND_DOMAIN, PUBLIC_PAGES, XIANYU_STORE_NAME, resolveBrandName } from '@/constants/brand'
 import { sanitizeUrl } from '@/utils/url'
 import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
 
-const { t } = useI18n()
+const { t, tm, rt } = useI18n()
+
+// vue-i18n tm() returns raw resources; normalise to plain strings.
+function i18nStr(value: unknown): string {
+  if (typeof value === 'string') return value
+  try {
+    return rt(value as never)
+  } catch {
+    return ''
+  }
+}
+function stringList(key: string): string[] {
+  const raw = tm(key) as unknown
+  return Array.isArray(raw) ? raw.map(i18nStr).filter(Boolean) : []
+}
+const faqItems = computed(() => {
+  const raw = tm('marketing.faq.items') as unknown
+  if (!Array.isArray(raw)) return [] as Array<{ q: string; a: string }>
+  return raw.map((entry) => {
+    const item = entry as Record<string, unknown>
+    return { q: i18nStr(item.q), a: i18nStr(item.a) }
+  })
+})
+const publicLinks = computed(() => [
+  { to: PUBLIC_PAGES.codex, label: t('marketing.nav.codex') },
+  { to: PUBLIC_PAGES.claudeCode, label: t('marketing.nav.claudeCode') },
+  { to: PUBLIC_PAGES.openaiCompat, label: t('marketing.nav.openaiCompat') },
+  { to: PUBLIC_PAGES.publicBenefit, label: t('marketing.nav.publicBenefit') },
+  { to: PUBLIC_PAGES.business, label: t('marketing.nav.business') },
+  { to: PUBLIC_PAGES.security, label: t('marketing.nav.security') },
+  { to: PUBLIC_PAGES.benchmarks, label: t('marketing.nav.benchmarks') },
+  { to: PUBLIC_PAGES.models, label: t('marketing.nav.models') },
+  { to: PUBLIC_PAGES.keyUsage, label: t('marketing.nav.keyUsage') }
+])
+const legalDocuments = computed(() => appStore.cachedPublicSettings?.login_agreement_documents ?? [])
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
@@ -1311,6 +1458,199 @@ onBeforeUnmount(() => {
 }
 .dark .home-sell-desc {
   color: rgb(148 163 184);
+}
+
+/* ============ Positioning / modes / lines / trust / FAQ / footer ============ */
+.home-positioning {
+  font-size: 13px;
+  color: rgb(107 114 128);
+}
+.dark .home-positioning {
+  color: rgb(148 163 184);
+}
+.home-mode {
+  border-radius: 20px;
+  border: 1px solid var(--home-glass-border);
+  background: var(--home-glass);
+  backdrop-filter: blur(14px);
+  padding: 24px;
+}
+.home-mode-byok {
+  border-color: rgba(99, 102, 241, 0.35);
+}
+.home-mode-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.home-mode-badge {
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: #0f766e;
+  background: rgba(20, 184, 166, 0.14);
+}
+.home-mode-badge-byok {
+  color: #4338ca;
+  background: rgba(99, 102, 241, 0.14);
+}
+.dark .home-mode-badge {
+  color: #5eead4;
+}
+.dark .home-mode-badge-byok {
+  color: #a5b4fc;
+}
+.home-mode-desc {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgb(75 85 99);
+}
+.dark .home-mode-desc {
+  color: rgb(203 213 225);
+}
+.home-mode-points {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+  font-size: 13.5px;
+}
+.home-mode-points li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.home-mode-link {
+  border-radius: 8px;
+  border: 1px solid var(--home-glass-border);
+  padding: 4px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  transition: border-color 0.2s ease;
+}
+.home-mode-link:hover {
+  border-color: rgba(99, 102, 241, 0.6);
+}
+.home-line {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 20px;
+  border: 1px solid var(--home-glass-border);
+  background: var(--home-glass);
+  backdrop-filter: blur(14px);
+  padding: 26px;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.home-line:hover {
+  transform: translateY(-3px);
+}
+.home-line-benefit:hover {
+  border-color: rgba(20, 184, 166, 0.5);
+  box-shadow: 0 18px 40px -22px rgba(20, 184, 166, 0.55);
+}
+.home-line-business:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 18px 40px -22px rgba(99, 102, 241, 0.55);
+}
+.home-line-icon {
+  color: #0d9488;
+}
+.home-line-business .home-line-icon {
+  color: #6366f1;
+}
+.home-line-desc {
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgb(75 85 99);
+}
+.dark .home-line-desc {
+  color: rgb(203 213 225);
+}
+.home-line-cta {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f766e;
+}
+.home-line-business .home-line-cta {
+  color: #4f46e5;
+}
+.dark .home-line-cta {
+  color: #5eead4;
+}
+.dark .home-line-business .home-line-cta {
+  color: #a5b4fc;
+}
+.home-trust {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--home-glass-border);
+  background: var(--home-glass);
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.home-faq {
+  border-radius: 14px;
+  border: 1px solid var(--home-glass-border);
+  background: var(--home-glass);
+  padding: 4px 18px;
+}
+.home-faq-q {
+  cursor: pointer;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  list-style: none;
+}
+.home-faq-q::-webkit-details-marker {
+  display: none;
+}
+.home-faq-q::before {
+  content: '+';
+  display: inline-block;
+  width: 18px;
+  color: #0d9488;
+  font-weight: 700;
+}
+.home-faq[open] .home-faq-q::before {
+  content: '−';
+}
+.home-faq-a {
+  padding: 0 0 14px 18px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgb(75 85 99);
+}
+.dark .home-faq-a {
+  color: rgb(203 213 225);
+}
+.home-footer-h {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(107 114 128);
+}
+.home-verify {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9999px;
+  border: 1px solid rgba(20, 184, 166, 0.4);
+  background: rgba(20, 184, 166, 0.08);
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f766e;
+}
+.dark .home-verify {
+  color: #5eead4;
 }
 
 /* ============ Chips ============ */

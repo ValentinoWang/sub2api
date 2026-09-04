@@ -8,6 +8,26 @@
 export const BRAND_NAME = 'rest2build'
 export const BRAND_DOMAIN = 'ai.rest2build.lol'
 
+/** Public-facing lab name used on marketplace listings and the verify page. */
+export const BRAND_LAB_NAME = 'Rest2Build AI 接入实验室'
+/** The one and only Xianyu (闲鱼) store name. Shown on /verify/xianyu to stop impersonation. */
+export const XIANYU_STORE_NAME = 'Rest2Build AI 接入实验室'
+
+/** Public, crawlable pages. Keep in sync with public/sitemap.xml and the router. */
+export const PUBLIC_PAGES = {
+  home: '/home',
+  models: '/model-plaza',
+  codex: '/codex-cli',
+  claudeCode: '/claude-code',
+  openaiCompat: '/openai-compatible-api',
+  publicBenefit: '/public-benefit',
+  business: '/business-invoice',
+  security: '/security',
+  benchmarks: '/benchmarks',
+  verify: '/verify/xianyu',
+  keyUsage: '/key-usage'
+} as const
+
 /**
  * Upstream project default site name. The backend still ships this as the default
  * `site_name`, so when the admin has not customised the name we treat it as "unset"

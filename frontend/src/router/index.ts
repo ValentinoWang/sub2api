@@ -39,6 +39,28 @@ const routes: RouteRecordRaw[] = [
       title: 'Home'
     }
   },
+  // ==================== Public marketing / info pages ====================
+  ...([
+    ['/public-benefit', 'PublicBenefit', 'publicBenefit', 'Free Tier'],
+    ['/business-invoice', 'BusinessInvoice', 'business', 'Business Services'],
+    ['/security', 'SecurityPolicy', 'security', 'Security'],
+    ['/verify/xianyu', 'VerifyXianyu', 'verify', 'Store Verification'],
+    ['/codex-cli', 'GuideCodex', 'codex', 'Codex CLI'],
+    ['/claude-code', 'GuideClaudeCode', 'claudeCode', 'Claude Code'],
+    ['/openai-compatible-api', 'GuideOpenAICompat', 'openaiCompat', 'OpenAI-compatible API'],
+    ['/benchmarks', 'Benchmarks', 'benchmarks', 'Latency Test']
+  ] as const).map(([path, name, marketingPage, title]) => ({
+    path,
+    name,
+    component: () => import('@/views/public/MarketingPageView.vue'),
+    meta: {
+      requiresAuth: false,
+      title,
+      titleKey: `marketing.pages.${marketingPage}.title`,
+      marketingPage
+    }
+  })),
+
   {
     path: '/login',
     name: 'Login',
@@ -750,7 +772,7 @@ let authInitialized = false
 const navigationLoading = useNavigationLoadingState()
 // 延迟初始化预加载，传入 router 实例
 let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
-const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal']
+const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks']
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
   '/auth/linuxdo/callback',

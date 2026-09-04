@@ -128,6 +128,7 @@
         <!-- Copyright -->
         <div class="mt-8 text-center text-xs text-gray-400 dark:text-dark-500">
           &copy; {{ currentYear }} {{ BRAND_DOMAIN }} · {{ t('home.meme.footer') }}
+          <p class="mt-2 text-[11px] leading-relaxed">{{ t('marketing.nonOfficialShort') }}</p>
         </div>
       </div>
     </div>
