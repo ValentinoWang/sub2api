@@ -44,6 +44,14 @@ type UserLifecycleRepository interface {
 	MarkSent(ctx context.Context, userID int64, event string) error
 }
 
+// LifecycleClaimRepository optionally provides an atomic send claim. The
+// fallback keeps older implementations usable while the SQL repository
+// prevents duplicate sends when multiple workers scan the same candidates.
+type LifecycleClaimRepository interface {
+	TryClaim(ctx context.Context, userID int64, event string) (bool, error)
+	ReleaseClaim(ctx context.Context, userID int64, event string) error
+}
+
 // UserLifecycleService sends welcome, inactivity and win-back emails on a ticker. It is a no-op
 // unless the lifecycle_emails_enabled setting is on and SMTP is configured.
 type UserLifecycleService struct {
@@ -151,10 +159,23 @@ func (s *UserLifecycleService) runInactive(ctx context.Context, now time.Time, e
 }
 
 func (s *UserLifecycleService) deliver(ctx context.Context, c LifecycleCandidate, event string, vars map[string]string) {
+	claimRepo, hasClaim := s.repo.(LifecycleClaimRepository)
+	if hasClaim {
+		claimed, err := claimRepo.TryClaim(ctx, c.UserID, event)
+		if err != nil {
+			slog.Warn("user_lifecycle: claim failed", "event", event, "user_id", c.UserID, "error", err)
+			return
+		}
+		if !claimed {
+			return
+		}
+	}
 	email := strings.TrimSpace(c.Email)
 	if email == "" || isReservedEmail(email) {
 		// Synthetic OAuth mailboxes cannot receive mail; record so we do not retry forever.
-		_ = s.repo.MarkSent(ctx, c.UserID, event)
+		if !hasClaim {
+			_ = s.repo.MarkSent(ctx, c.UserID, event)
+		}
 		return
 	}
 	name := strings.TrimSpace(c.Username)
@@ -178,7 +199,13 @@ func (s *UserLifecycleService) deliver(ctx context.Context, c LifecycleCandidate
 	})
 	cancel()
 	if err != nil {
+		if hasClaim {
+			_ = claimRepo.ReleaseClaim(ctx, c.UserID, event)
+		}
 		slog.Warn("user_lifecycle: send failed", "event", event, "user_id", c.UserID, "error", err)
+		return
+	}
+	if hasClaim {
 		return
 	}
 	if err := s.repo.MarkSent(ctx, c.UserID, event); err != nil {

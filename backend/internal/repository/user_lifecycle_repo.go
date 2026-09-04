@@ -100,3 +100,31 @@ func (r *userLifecycleRepository) MarkSent(ctx context.Context, userID int64, ev
 		userID, event)
 	return err
 }
+
+// TryClaim atomically reserves a lifecycle email before SMTP delivery. This
+// closes the scan/send race when multiple application instances run together.
+func (r *userLifecycleRepository) TryClaim(ctx context.Context, userID int64, event string) (bool, error) {
+	if r == nil || r.db == nil {
+		return false, nil
+	}
+	result, err := r.db.ExecContext(ctx,
+		`INSERT INTO user_lifecycle_emails (user_id, event, sent_at) VALUES ($1, $2, NOW())
+		 ON CONFLICT (user_id, event) DO NOTHING`,
+		userID, event)
+	if err != nil {
+		return false, err
+	}
+	count, err := result.RowsAffected()
+	return count == 1, err
+}
+
+// ReleaseClaim allows a failed SMTP delivery to be retried on the next pass.
+func (r *userLifecycleRepository) ReleaseClaim(ctx context.Context, userID int64, event string) error {
+	if r == nil || r.db == nil {
+		return nil
+	}
+	_, err := r.db.ExecContext(ctx,
+		`DELETE FROM user_lifecycle_emails WHERE user_id = $1 AND event = $2`,
+		userID, event)
+	return err
+}
