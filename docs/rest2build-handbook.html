@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>rest2build 上线手册</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+
+<style>
+  :root {
+    --ground: #f7f8f7;
+    --surface: #ffffff;
+    --surface-sunk: #eef1f0;
+    --ink: #131a18;
+    --ink-muted: #5c6866;
+    --ink-faint: #8b9895;
+    --rule: #dde2e0;
+    --rule-strong: #c6cecb;
+    --accent: #0e7c6b;
+    --accent-wash: #e4f0ed;
+    --warn: #9a6212;
+    --warn-wash: #f6ecdc;
+    --critical: #a32c3e;
+    --critical-wash: #f7e4e6;
+    --shadow: 0 1px 2px rgba(19, 26, 24, 0.06);
+
+    --measure: 68ch;
+    --step-0: 1rem;
+    --step-1: 1.1rem;
+    --step-2: 1.35rem;
+    --step-3: 1.75rem;
+    --step-4: 2.35rem;
+
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --serif: "IBM Plex Serif", Georgia, "Songti SC", serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0c1211;
+      --surface: #131b19;
+      --surface-sunk: #182220;
+      --ink: #e6edeb;
+      --ink-muted: #98a6a3;
+      --ink-faint: #6e7c79;
+      --rule: #22302d;
+      --rule-strong: #33443f;
+      --accent: #4fd1bb;
+      --accent-wash: #12302b;
+      --warn: #d9a441;
+      --warn-wash: #302716;
+      --critical: #e8697d;
+      --critical-wash: #341a20;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0c1211;
+    --surface: #131b19;
+    --surface-sunk: #182220;
+    --ink: #e6edeb;
+    --ink-muted: #98a6a3;
+    --ink-faint: #6e7c79;
+    --rule: #22302d;
+    --rule-strong: #33443f;
+    --accent: #4fd1bb;
+    --accent-wash: #12302b;
+    --warn: #d9a441;
+    --warn-wash: #302716;
+    --critical: #e8697d;
+    --critical-wash: #341a20;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 78ch;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  /* ---- masthead ---- */
+  .masthead { display: flex; flex-direction: column; gap: 1rem; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: var(--step-4);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .lede {
+    max-width: var(--measure);
+    margin: 0;
+    font-size: var(--step-1);
+    color: var(--ink-muted);
+  }
+
+  /* ---- spec strip: mono key/value facts ---- */
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .spec > div {
+    background: var(--surface);
+    padding: 0.7rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .spec dt {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .spec dd {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+
+  /* ---- sections ---- */
+  section { display: flex; flex-direction: column; gap: 1.15rem; }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: var(--step-3);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: var(--step-1);
+    margin: 0;
+  }
+
+  p { margin: 0; max-width: var(--measure); }
+  .muted { color: var(--ink-muted); }
+
+  code, .k {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-sunk);
+    border-radius: 2px;
+    padding: 0.1em 0.34em;
+    word-break: break-word;
+  }
+  .k-accent { color: var(--accent); }
+
+  /* ---- switchboard ---- */
+  .switches {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--rule);
+  }
+  .switch {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.35rem 1rem;
+    align-items: baseline;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .switch-key { font-family: var(--mono); font-size: 0.88rem; font-weight: 500; }
+  .switch-note { grid-column: 1 / -1; font-size: 0.9rem; color: var(--ink-muted); max-width: var(--measure); }
+
+  .pill {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .pill-off { background: var(--surface-sunk); color: var(--ink-muted); }
+  .pill-empty { background: var(--warn-wash); color: var(--warn); }
+
+  /* ---- shipped: route lists ---- */
+  .group { display: flex; flex-direction: column; gap: 0.6rem; }
+  .routes { display: flex; flex-direction: column; gap: 0.45rem; margin: 0; padding: 0; list-style: none; }
+  .routes li {
+    display: grid;
+    grid-template-columns: minmax(11rem, auto) 1fr;
+    gap: 0.2rem 1rem;
+    align-items: baseline;
+    padding-left: 0.85rem;
+    border-left: 2px solid var(--rule-strong);
+  }
+  .routes .path { font-family: var(--mono); font-size: 0.86rem; color: var(--accent); }
+  .routes .what { font-size: 0.93rem; color: var(--ink-muted); }
+
+  /* ---- findings: severity encoded ---- */
+  .findings { display: flex; flex-direction: column; gap: 0.9rem; }
+  .finding {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.3rem 0.85rem;
+    padding: 0.85rem 1rem 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left-width: 3px;
+    border-radius: 2px;
+    box-shadow: var(--shadow);
+  }
+  .sev-critical { border-left-color: var(--critical); }
+  .sev-high { border-left-color: var(--warn); }
+  .sev-low { border-left-color: var(--rule-strong); }
+
+  .sev {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.45rem;
+    border-radius: 2px;
+    align-self: start;
+    white-space: nowrap;
+  }
+  .sev-critical .sev { background: var(--critical-wash); color: var(--critical); }
+  .sev-high .sev { background: var(--warn-wash); color: var(--warn); }
+  .sev-low .sev { background: var(--surface-sunk); color: var(--ink-muted); }
+
+  .finding h3 { font-size: var(--step-0); }
+  .finding p { grid-column: 2; font-size: 0.93rem; color: var(--ink-muted); }
+
+  /* ---- open decisions ---- */
+  .decisions { display: flex; flex-direction: column; gap: 1.4rem; }
+  .decision { display: flex; flex-direction: column; gap: 0.4rem; padding-left: 1rem; border-left: 2px solid var(--accent); }
+  .decision p { font-size: 0.95rem; color: var(--ink-muted); }
+
+  /* ---- checklist: a real sequence, so it is numbered ---- */
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 0.75rem; }
+  ol.steps li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 1.9rem 1fr;
+    gap: 0.75rem;
+    align-items: baseline;
+  }
+  ol.steps li::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+  ol.steps p { font-size: 0.95rem; }
+
+  /* ---- verification table ---- */
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 0.55rem 0.8rem 0.55rem 0; border-bottom: 1px solid var(--rule); }
+  th {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+    font-size: 0.87rem;
+    color: var(--ink-faint);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  @media (max-width: 34rem) {
+    .page { padding: 2.5rem 1.15rem 4rem; gap: 2.5rem; }
+    .routes li, .switch { grid-template-columns: 1fr; }
+    .finding { grid-template-columns: 1fr; }
+    .finding p { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">交付手册 · ai.rest2build.lol</p>
+    <h1>rest2build 上线手册</h1>
+    <p class="lede">
+      本轮把站点从上游默认外观改成了 rest2build 品牌，加了一批面向获客与信任的功能，
+      并在事后审计中修掉了八个缺陷。这份手册记录 main 上现在有什么、后台要打开哪些开关、
+      审计发现了什么，以及还剩哪些决策需要你拍板。
+    </p>
+    <dl class="spec">
+      <div><dt>当前 main</dt><dd>e1616903</dd></div>
+      <div><dt>本轮提交</dt><dd>6 个</dd></div>
+      <div><dt>新增迁移</dt><dd>233 · 234</dd></div>
+      <div><dt>预渲染页</dt><dd>10 页</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <h2>部署后要打开的开关</h2>
+    <p class="muted">
+      新功能一律默认关闭，部署本身不会改变站点行为。以下四项在后台「系统设置」里配置，
+      配置前它们不产生任何效果。
+    </p>
+    <div class="switches">
+      <div class="switch">
+        <span class="switch-key">public_status_page_enabled</span>
+        <span class="pill pill-off">默认关</span>
+        <span class="switch-note">
+          开启后 <code>/status</code> 与 <code>/api/v1/public/status</code> 免登录展示渠道监控的聚合状态。
+          关闭时接口返回 <code>enabled: false</code>，页面显示「尚未开放」。
+        </span>
+      </div>
+      <div class="switch">
+        <span class="switch-key">lifecycle_emails_enabled</span>
+        <span class="pill pill-off">默认关</span>
+        <span class="switch-note">
+          欢迎信、7 天未调用提醒、30 天流失召回。<strong>需先配好 SMTP</strong>，否则任务空转。
+          每位用户每种邮件只发一次，可退订。
+        </span>
+      </div>
+      <div class="switch">
+        <span class="switch-key">first_topup_bonus_tiers</span>
+        <span class="pill pill-empty">默认空</span>
+        <span class="switch-note">
+          JSON 阶梯，例如 <code>[{"min_amount":10,"bonus_amount":2}]</code>。留空即关闭。
+          填写后充值页会展示阶梯并高亮当前金额命中的那一档。
+        </span>
+      </div>
+      <div class="switch">
+        <span class="switch-key">xianyu_store_name</span>
+        <span class="pill pill-empty">默认空</span>
+        <span class="switch-note">
+          唯一闲鱼店铺名，显示在 <code>/verify/xianyu</code> 与首页页脚。
+          留空回退到内置默认名「Rest2Build AI 接入实验室」。
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>本轮上线的东西</h2>
+
+    <div class="group">
+      <h3>公开页面</h3>
+      <p class="muted">全部预渲染，不执行 JavaScript 的抓取器也能读到每页真实内容与独立元数据。</p>
+      <ul class="routes">
+        <li><span class="path">/codex-cli</span><span class="what">Codex CLI 接入、配置与错误排查，BYOK 优先</span></li>
+        <li><span class="path">/claude-code</span><span class="what">Claude Code 自有账号与 API Key 接入</span></li>
+        <li><span class="path">/openai-compatible-api</span><span class="what">OpenAI 兼容接口与迁移测试清单</span></li>
+        <li><span class="path">/public-benefit</span><span class="what">公益额度规则：不收钱、不开票、不要求好评</span></li>
+        <li><span class="path">/business-invoice</span><span class="what">企业技术服务与发票原则</span></li>
+        <li><span class="path">/security</span><span class="what">密钥、日志与数据保留策略</span></li>
+        <li><span class="path">/benchmarks</span><span class="what">访客侧延迟实测，20 次采样算 P50 / P95</span></li>
+        <li><span class="path">/status</span><span class="what">服务端定时探测的只读汇总，60 秒刷新</span></li>
+        <li><span class="path">/share</span><span class="what">分享卡片生成器，图片在浏览器本地渲染</span></li>
+        <li><span class="path">/verify/xianyu</span><span class="what">唯一店铺公示，防冒充</span></li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>用户侧</h3>
+      <ul class="routes">
+        <li><span class="path">返利页</span><span class="what">邀请二维码、三段可复制文案、带邀请码的海报下载</span></li>
+        <li><span class="path">充值页</span><span class="what">首充阶梯展示与当前金额命中高亮</span></li>
+        <li><span class="path">注册页</span><span class="what">?promo= 自动填码，utm_* 首触归因随注册提交</span></li>
+        <li><span class="path">模型广场</span><span class="what">分组头补来源平台与最近配置更新时间</span></li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>后端</h3>
+      <ul class="routes">
+        <li><span class="path">GET /api/v1/public/status</span><span class="what">免登录聚合状态，30 秒缓存，不含账号与配额</span></li>
+        <li><span class="path">迁移 233</span><span class="what">生命周期邮件发送记账表，保证每人每种只发一次</span></li>
+        <li><span class="path">迁移 234</span><span class="what">首充赠送按用户唯一的领取表</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>审计发现</h2>
+    <p class="muted">
+      功能上线后做了一轮四路并行审计。八项发现全部已修并推送，按严重度排列。
+    </p>
+    <div class="findings">
+
+      <article class="finding sev-critical">
+        <span class="sev">严重</span>
+        <h3>保存设置会清空店铺名与首充阶梯</h3>
+        <p>
+          设置页的提交内容是手写对象，漏了这两个键；后端字段是非指针字符串，缺键即绑定为空串并无条件写库。
+          后果是店铺名永远存不进去，且管理员改任何无关设置都会顺手抹掉已配置的值。
+          两端都修了：补齐提交内容，后端改为指针语义——缺键保留原值，显式传空串仍可清空。
+        </p>
+      </article>
+
+      <article class="finding sev-critical">
+        <span class="sev">严重</span>
+        <h3>首充赠送可能重复发钱</h3>
+        <p>
+          原本靠订单审计日志做幂等，但那个唯一键是 <code>(order_id, action)</code>：
+          同一用户两笔订单并发履约时挡不住，订单退款后下一笔又会被当成「首充」，
+          而且先加余额后写日志，中间崩溃会让重试再发一次。
+          改成按用户唯一的领取表，加钱前原子占位；加钱失败释放占位，崩溃则宁可漏发也不重发。
+        </p>
+      </article>
+
+      <article class="finding sev-high">
+        <span class="sev">高</span>
+        <h3>公开状态接口从未注册路由</h3>
+        <p>
+          处理器写好了也接进了依赖注入，所以编译毫无问题，但没有任何路由指向它，
+          <code>/api/v1/public/status</code> 实际返回 404。已注册，并加了覆盖测试：
+          只要处理器集合里有字段没被任何路由引用就失败——这类断裂编译器抓不到。
+        </p>
+      </article>
+
+      <article class="finding sev-high">
+        <span class="sev">高</span>
+        <h3>预渲染页标题被品牌注入覆盖</h3>
+        <p>
+          后端的品牌注入会把整个 <code>&lt;title&gt;</code> 换成「站点名 - AI API Gateway」。
+          预渲染页也走这条路径，只要后台配了站点名，10 个页面的标题就全变成同一个，
+          每页独立元数据的意义荡然无存。现在预渲染页不再走整体标题品牌化。
+        </p>
+      </article>
+
+      <article class="finding sev-high">
+        <span class="sev">中</span>
+        <h3>验证页店铺名写死在构建期</h3>
+        <p>
+          管理员改了店铺名后，不执行 JavaScript 的抓取器仍会看到默认值——
+          而这个页面的全部意义就是证明哪家店是真的。改为构建期输出占位符、服务端替换成实际配置值并做转义。
+        </p>
+      </article>
+
+      <article class="finding sev-high">
+        <span class="sev">中</span>
+        <h3>生命周期邮件在后台模板列表不可见</h3>
+        <p>
+          三个事件没进事件顺序表，而那个表才是后台模板编辑器的数据源。
+          发信正常，但管理员无法预览或修改文案。
+        </p>
+      </article>
+
+      <article class="finding sev-low">
+        <span class="sev">低</span>
+        <h3>活跃度统计含已删除的密钥</h3>
+        <p>
+          一把很久前删掉的密钥能让沉默用户一直显示为活跃，从而收不到流失召回。已在查询里排除软删除。
+        </p>
+      </article>
+
+      <article class="finding sev-low">
+        <span class="sev">低</span>
+        <h3>带扩展名的 URL 绕过设置注入</h3>
+        <p>
+          <code>/codex-cli/index.html</code> 会被原样返回，同一页面产生两份不同的可抓取文档。
+          现在两种 URL 形态走同一条注入路径。
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>还需要你拍板</h2>
+    <div class="decisions">
+
+      <div class="decision">
+        <h3>「永不跑路」印章与不承诺永久稳定的原则冲突</h3>
+        <p>
+          首页主视觉右下角那枚红色印章是你明确要的，我保留了。
+          但你给的运营方案里写明「不承诺永久稳定、绝不封号」。
+          要对齐方案的话，改一行即可换成「状态公开 · 可随时撤销」——同样是承诺，但可验证。
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>robots.txt 默认拒绝 GPTBot</h3>
+        <p>
+          搜索爬虫 <code>OAI-SearchBot</code> 与 <code>Googlebot</code> 已放行，
+          训练爬虫 <code>GPTBot</code> 按方案示例默认拒绝，等于放弃被训练数据收录。
+          要放开同样改一行。
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>域名规划尚未定案</h3>
+        <p>
+          方案里是 <code>rest2build.lol</code> 主站加 api / docs / status / subscription 子域，
+          而当前全站以 <code>ai.rest2build.lol</code> 为准——canonical、站点地图、接入地址都指向它。
+          定下来之后我把常量与站点地图一并改掉。
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>上线步骤</h2>
+    <ol class="steps">
+      <li><p>部署最新 main（<code>e1616903</code>）。迁移 233 与 234 会在启动时自动执行。</p></li>
+      <li><p>确认 <code>schema_migrations</code> 里出现这两条记录，表 <code>user_lifecycle_emails</code> 与 <code>user_first_topup_bonus</code> 已建。</p></li>
+      <li><p>后台打开 <code>public_status_page_enabled</code>，访问 <code>/status</code> 确认有数据。</p></li>
+      <li><p>填 <code>xianyu_store_name</code>，保存后访问 <code>/verify/xianyu</code> 确认显示的是你填的名字。</p></li>
+      <li><p>需要首充活动就填 <code>first_topup_bonus_tiers</code>，到充值页确认阶梯展示正确。</p></li>
+      <li><p>配好 SMTP 后再打开 <code>lifecycle_emails_enabled</code>。任务启动 2 分钟后首次运行，之后每 30 分钟一轮。</p></li>
+      <li><p>抽查 <code>/codex-cli</code> 的页面标题是否是它自己的而非站点名——这条能一次性验证预渲染与品牌注入都正常。</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>验证情况</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>检查项</th><th>范围</th><th>结果</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>前端单元测试</td><td class="num">246 文件 / 1759 用例</td><td>通过</td></tr>
+          <tr><td>前端类型检查与 ESLint</td><td class="num">全量</td><td>通过</td></tr>
+          <tr><td>后端测试</td><td class="num">8 个包</td><td>通过</td></tr>
+          <tr><td>预渲染端到端</td><td class="num">真实中间件</td><td>通过</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">
+      本轮新增回归测试三组：路由覆盖（防止处理器接线了却没挂路由）、
+      公开状态的百分位与边界、生命周期邮件事件的后台可见性；
+      预渲染另有单测与一个端到端测试，断言配置的店铺名能真正到达访客手里。
+    </p>
+  </section>
+
+  <footer>
+    <p>rest2build · 独立第三方 AI API 接入服务，非 OpenAI、Anthropic 或其他模型厂商官方服务。</p>
+    <p>基于开源项目 Sub2API 构建。手册对应 main 分支 e1616903。</p>
+  </footer>
+
+</div>
+</body>
+</html>
