@@ -68,7 +68,10 @@ export default {
     notEnabledDesc: 'The administrator has not enabled the recharge/subscription entry. Please contact admin.',
     notConfiguredTitle: 'Recharge / Subscription URL not configured',
     notConfiguredDesc:
-      'The administrator enabled the entry but has not configured a recharge/subscription URL. Please contact admin.'
+      'The administrator enabled the entry but has not configured a recharge/subscription URL. Please contact admin.',
+    fulfillmentTitle: 'Redeem a Liandong Store code',
+    fulfillmentDescription: 'Bought a one-time code from the Liandong Store? Enter it on the redeem page to receive the balance or subscription immediately. Checkout is for direct payment; codes are for store fulfillment.',
+    goToRedeem: 'Open redeem page'
   },
 
   // Custom Page (iframe embed)

@@ -125,6 +125,10 @@
                 <Icon name="download" size="sm" />
                 <span>{{ t('affiliateAssets.posterWide') }}</span>
               </button>
+              <button class="btn btn-secondary btn-sm" :disabled="posterBusy" @click="downloadXianyuCover">
+                <Icon name="download" size="sm" />
+                <span>{{ t('affiliateAssets.xianyuCover') }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -260,6 +264,27 @@ async function downloadPoster(size: ShareCardSize): Promise<void> {
       footer: t('marketing.nonOfficialShort')
     })
     await downloadCanvas(canvas, `rest2build-invite-${detail.value.aff_code}-${size}.png`)
+  } finally {
+    posterBusy.value = false
+  }
+}
+
+async function downloadXianyuCover(): Promise<void> {
+  if (!detail.value || posterBusy.value) return
+  posterBusy.value = true
+  try {
+    const canvas = document.createElement('canvas')
+    await renderShareCard(canvas, {
+      size: 'square',
+      brand: resolveBrandName(appStore.cachedPublicSettings?.site_name || appStore.siteName),
+      domain: BRAND_DOMAIN,
+      headline: t('affiliateAssets.xianyuHeadline'),
+      subline: t('affiliateAssets.xianyuSubline'),
+      note: t('affiliateAssets.xianyuNote'),
+      meta: t('affiliateAssets.xianyuMeta'),
+      footer: t('marketing.nonOfficialShort')
+    })
+    await downloadCanvas(canvas, `rest2build-xianyu-cover-${detail.value.aff_code}.png`)
   } finally {
     posterBusy.value = false
   }

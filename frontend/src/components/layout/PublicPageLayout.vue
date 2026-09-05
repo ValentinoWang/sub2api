@@ -73,6 +73,7 @@ const currentYear = computed(() => new Date().getFullYear())
 const navLinks = computed(() => [
   { to: PUBLIC_PAGES.codex, label: t('marketing.nav.codex') },
   { to: PUBLIC_PAGES.claudeCode, label: t('marketing.nav.claudeCode') },
+  { to: PUBLIC_PAGES.openaiCompat, label: t('marketing.nav.openaiCompat') },
   { to: PUBLIC_PAGES.publicBenefit, label: t('marketing.nav.publicBenefit') },
   { to: PUBLIC_PAGES.business, label: t('marketing.nav.business') },
   { to: PUBLIC_PAGES.benchmarks, label: t('marketing.nav.benchmarks') },

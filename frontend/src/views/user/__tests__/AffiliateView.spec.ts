@@ -32,6 +32,15 @@ vi.mock('@/composables/useClipboard', () => ({
   useClipboard: () => ({ copyToClipboard }),
 }))
 
+const { renderShareCard, downloadCanvas } = vi.hoisted(() => ({
+  renderShareCard: vi.fn().mockResolvedValue(undefined),
+  downloadCanvas: vi.fn().mockResolvedValue(undefined),
+}))
+vi.mock('@/composables/useShareCard', () => ({
+  renderShareCard,
+  downloadCanvas,
+}))
+
 vi.mock('vue-i18n', async (importOriginal) => {
   const actual = await importOriginal<typeof import('vue-i18n')>()
   return {
@@ -112,5 +121,19 @@ describe('AffiliateView', () => {
       `${window.location.origin}/register?aff=${encodeURIComponent(affiliateCode)}`,
       'affiliate.linkCopied',
     )
+  })
+
+  it('offers a separate marketplace cover without an invite QR', async () => {
+    const wrapper = mount(AffiliateView, {
+      global: {
+        stubs: { AppLayout: { template: '<main><slot /></main>' }, Icon: true },
+      },
+    })
+    await flushPromises()
+
+    const coverButton = wrapper.findAll('button').find((button) => button.text() === 'affiliateAssets.xianyuCover')
+    expect(coverButton).toBeDefined()
+    await coverButton!.trigger('click')
+    expect(renderShareCard).toHaveBeenCalledWith(expect.anything(), expect.not.objectContaining({ qrText: expect.anything() }))
   })
 })

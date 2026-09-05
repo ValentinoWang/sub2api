@@ -29,8 +29,8 @@ export default {
     },
     sell: {
       kicker: 'AI API 中转站',
-      latency: '低延迟',
-      latencyDesc: '就近接入，延迟实时可测',
+      latency: '本站访问延迟',
+      latencyDesc: '浏览器到本站 /health 的实时 RTT，不代表上游模型耗时',
       stable: '永不跑路',
       stableDesc: '账号池自动切换，7×24 在线',
       relay: '一个地址',
@@ -41,7 +41,7 @@ export default {
     station: {
       you: '你 · rest',
       core: '.lol 中转站',
-      latencyLive: '实时延迟',
+      latencyLive: '本站 RTT',
       probing: '测量中…',
       unavailable: '暂不可测',
       stamp: '永不跑路'
@@ -595,17 +595,22 @@ export default {
   // Affiliate promo assets (user affiliate page)
   affiliateAssets: {
     title: '推广素材',
-    description: '二维码、可复制文案和海报都带你的邀请码，扫码注册自动绑定。',
+    description: '邀请二维码和邀请海报用于裂变；闲鱼主图单独生成且不包含二维码，避免平台素材违规。',
     qrTitle: '邀请二维码',
     qrHint: '右键或长按保存',
     copyTitle: '可复制文案',
     copy: '复制',
     copied: '已复制',
     posterTitle: '海报',
-    posterHint: '.lol 风格分享图，右下角是你的邀请二维码',
+    posterHint: '邀请海报带二维码；闲鱼主图不带二维码。',
     posterDownload: '下载海报',
-    posterSquare: '正方形（闲鱼主图）',
-    posterWide: '横版（社群 / 朋友圈）',
+    posterSquare: '正方形邀请海报',
+    posterWide: '横版邀请海报（社群 / 朋友圈）',
+    xianyuCover: '闲鱼主图（无二维码）',
+    xianyuHeadline: 'AI API 接入服务',
+    xianyuSubline: 'Claude / GPT / Gemini 一站接入',
+    xianyuNote: '独立第三方技术服务，按需使用，密钥可撤销',
+    xianyuMeta: '闲鱼主图 · 不含二维码',
     templates: [
       '人去 rest，AI 去 build。一个地址接 Claude / GPT / Gemini，延迟实时可测，独立密钥可随时撤销。用我的邀请链接注册：{link}',
       '在用 Codex CLI / Claude Code 的朋友：{domain} 是独立第三方多模型接入站，BYOK 也支持，不碰你的账号。邀请链接：{link}',

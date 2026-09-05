@@ -66,7 +66,10 @@ export default {
     notEnabledTitle: '该功能未开启',
     notEnabledDesc: '管理员暂未开启充值/订阅入口，请联系管理员。',
     notConfiguredTitle: '充值/订阅链接未配置',
-    notConfiguredDesc: '管理员已开启入口，但尚未配置充值/订阅链接，请联系管理员。'
+    notConfiguredDesc: '管理员已开启入口，但尚未配置充值/订阅链接，请联系管理员。',
+    fulfillmentTitle: '联动小铺兑换',
+    fulfillmentDescription: '已通过联动小铺购买一次性兑换码？在这里输入兑换码，余额或订阅会即时到账。在线支付适合直接充值，兑换码适合小铺订单发货。',
+    goToRedeem: '前往兑换码'
   },
 
   // Custom Page (iframe embed)

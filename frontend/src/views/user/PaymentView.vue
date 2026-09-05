@@ -10,7 +10,21 @@
           <button v-for="tab in tabs" :key="tab.key"
             class="flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
             :class="activeTab === tab.key ? 'bg-white text-gray-900 shadow dark:bg-dark-700 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'"
-            @click="activeTab = tab.key">{{ tab.label }}</button>
+          @click="activeTab = tab.key">{{ tab.label }}</button>
+        </div>
+        <div
+          v-if="paymentPhase === 'select' && !selectedPlan"
+          class="flex flex-col gap-3 rounded-xl border border-primary-200 bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-900/20 sm:flex-row sm:items-center sm:justify-between"
+          data-testid="purchase-redeem-link"
+        >
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-primary-900 dark:text-primary-100">{{ t('purchase.fulfillmentTitle') }}</p>
+            <p class="mt-1 text-xs leading-relaxed text-primary-800/80 dark:text-primary-200/80">{{ t('purchase.fulfillmentDescription') }}</p>
+          </div>
+          <router-link to="/redeem" class="btn btn-secondary btn-sm shrink-0">
+            <Icon name="gift" size="sm" />
+            <span>{{ t('purchase.goToRedeem') }}</span>
+          </router-link>
         </div>
         <!-- Payment in progress (shared by recharge and subscription) -->
         <template v-if="paymentPhase === 'paying'">

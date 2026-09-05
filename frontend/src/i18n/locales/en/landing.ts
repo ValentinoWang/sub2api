@@ -29,8 +29,8 @@ export default {
     },
     sell: {
       kicker: 'AI API Relay',
-      latency: 'Low latency',
-      latencyDesc: 'Edge-close routing, measured live',
+      latency: 'Site access latency',
+      latencyDesc: 'Live browser-to-/health RTT; it is not upstream model time',
       stable: 'Never goes dark',
       stableDesc: 'Account pool auto-failover, online 24/7',
       relay: 'One base URL',
@@ -41,7 +41,7 @@ export default {
     station: {
       you: 'you · rest',
       core: '.lol relay',
-      latencyLive: 'live latency',
+      latencyLive: 'site RTT',
       probing: 'probing…',
       unavailable: 'n/a',
       stamp: 'NEVER GOES DARK'
@@ -595,17 +595,22 @@ export default {
   // Affiliate promo assets (user affiliate page)
   affiliateAssets: {
     title: 'Promo assets',
-    description: 'The QR code, copy and poster all carry your invite code; sign-ups via them are bound automatically.',
+    description: 'The invite QR and invite posters are for referrals; the separate marketplace cover contains no QR code.',
     qrTitle: 'Invite QR code',
     qrHint: 'Right-click or long-press to save',
     copyTitle: 'Copy-ready text',
     copy: 'Copy',
     copied: 'Copied',
     posterTitle: 'Poster',
-    posterHint: '.lol-styled share image with your invite QR in the corner',
+    posterHint: 'Invite posters include a QR code; the marketplace cover does not.',
     posterDownload: 'Download poster',
-    posterSquare: 'Square (marketplace cover)',
-    posterWide: 'Wide (chats / feeds)',
+    posterSquare: 'Square invite poster',
+    posterWide: 'Wide invite poster (chats / feeds)',
+    xianyuCover: 'Marketplace cover (no QR)',
+    xianyuHeadline: 'AI API access service',
+    xianyuSubline: 'Claude / GPT / Gemini from one endpoint',
+    xianyuNote: 'Independent third-party service, usage-based access, revocable keys',
+    xianyuMeta: 'Marketplace cover · no QR code',
     templates: [
       'You rest, AI builds. One base URL for Claude / GPT / Gemini, live-measured latency, per-user keys you can revoke anytime. Sign up with my link: {link}',
       'Using Codex CLI / Claude Code? {domain} is an independent multi-model relay with BYOK support that never touches your account. Invite link: {link}',
