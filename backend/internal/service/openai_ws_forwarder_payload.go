@@ -435,6 +435,15 @@ func alignStoreDisabledPreviousResponseID(
 	return updated, true, nil
 }
 
+func cloneOpenAIWSPayloadBytes(payload []byte) []byte {
+	if len(payload) == 0 {
+		return nil
+	}
+	cloned := make([]byte, len(payload))
+	copy(cloned, payload)
+	return cloned
+}
+
 func cloneOpenAIWSRawMessages(items []json.RawMessage) []json.RawMessage {
 	if items == nil {
 		return nil
