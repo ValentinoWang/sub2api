@@ -435,6 +435,17 @@ func alignStoreDisabledPreviousResponseID(
 	return updated, true, nil
 }
 
+func cloneOpenAIWSRawMessages(items []json.RawMessage) []json.RawMessage {
+	if items == nil {
+		return nil
+	}
+	cloned := make([]json.RawMessage, 0, len(items))
+	for idx := range items {
+		cloned = append(cloned, json.RawMessage(cloneOpenAIWSPayloadBytes(items[idx])))
+	}
+	return cloned
+}
+
 // Replay 状态所有权不变式：replay 序列中的 json.RawMessage 正文一经放入即视为
 // 不可变，所有持有者共享同一份字节，任何修改都必须整体替换元素或重建 payload。
 // 序列头数组在跨持有者保存时必须新建（combineOpenAIWSReplayItems），禁止通过
