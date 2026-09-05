@@ -319,9 +319,9 @@ export default {
   marketing: {
     lab: 'Rest2Build AI 接入实验室',
     positioning: '多模型 API 公益体验与开发接入支持',
-    nonOfficialShort: '独立第三方 · 非官方 · 无授权关系',
+    nonOfficialShort: '官方 API 兼容接入 · 多模型直连 · 即刻体验',
     disclaimer:
-      'Rest2Build 为独立第三方技术服务，不属于 OpenAI、Anthropic 或其他模型厂商，不代表相关厂商提供保证或背书。模型可用性以实时状态为准。',
+      'Rest2Build 提供官方 API 兼容接入与多模型直连体验，不属于 OpenAI、Anthropic 或其他模型厂商，模型可用性以实时状态为准。',
     nav: {
       guides: '接入指南',
       codex: 'Codex CLI',

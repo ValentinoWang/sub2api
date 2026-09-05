@@ -2676,6 +2676,15 @@ func setEnvReachableDefaults() {
 	viper.SetDefault("dingtalk_connect.client_id", "")
 	viper.SetDefault("dingtalk_connect.client_secret", "")
 	viper.SetDefault("dingtalk_connect.internal_corp_id", "")
+
+	// Liandong auto-restock settings are commonly injected through the
+	// deployment environment. Register zero-valued defaults so AutomaticEnv
+	// can reach them without changing the existing effective defaults.
+	viper.SetDefault("liandong_restock.base_url", "")
+	viper.SetDefault("liandong_restock.merchant_token", "")
+	viper.SetDefault("liandong_restock.code_secret", "")
+	viper.SetDefault("liandong_restock.products_json", "")
+	viper.SetDefault("liandong_restock.interval_seconds", 0)
 	viper.SetDefault("dingtalk_connect.redirect_url", "")
 	viper.SetDefault("dingtalk_connect.bypass_registration", false)
 	viper.SetDefault("dingtalk_connect.username_attribute_key", "")

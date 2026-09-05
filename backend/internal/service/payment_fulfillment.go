@@ -38,7 +38,10 @@ type paymentFulfillmentLease struct {
 // --- Payment Notification & Fulfillment ---
 
 func (s *PaymentService) HandlePaymentNotification(ctx context.Context, n *payment.PaymentNotification, pk string) error {
-	if n.Status != payment.NotificationStatusSuccess {
+	// Providers may normalize a settled asynchronous notification as either
+	// "success" or "paid". Both mean that payment is settled; fulfillment
+	// remains a separate state transition handled by confirmPayment.
+	if n.Status != payment.NotificationStatusSuccess && n.Status != payment.NotificationStatusPaid {
 		return nil
 	}
 	// Look up order by out_trade_no (the external order ID we sent to the provider)

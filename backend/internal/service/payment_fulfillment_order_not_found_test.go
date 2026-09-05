@@ -70,9 +70,9 @@ func TestHandlePaymentNotification_UnknownOrder_ReturnsSentinel(t *testing.T) {
 }
 
 // TestHandlePaymentNotification_NonSuccessStatus_Skips documents the
-// short-circuit that precedes the DB lookup: when the notification is not a
-// success event (e.g. Stripe non-payment events that reach us via the webhook
-// route), we return nil without touching the DB and the handler responds 200.
+// short-circuit that precedes the DB lookup: when the notification is neither
+// a settled "success" nor "paid" event (e.g. a Stripe non-payment event that
+// reaches us via the webhook route), we return nil without touching the DB.
 func TestHandlePaymentNotification_NonSuccessStatus_Skips(t *testing.T) {
 	ctx := context.Background()
 	client := newOrderNotFoundTestClient(t)
@@ -84,12 +84,34 @@ func TestHandlePaymentNotification_NonSuccessStatus_Skips(t *testing.T) {
 
 	notification := &payment.PaymentNotification{
 		OrderID: "sub2_does_not_exist_12345",
-		Status:  "failed", // any value other than NotificationStatusSuccess
+		Status:  "failed",
 	}
 
 	err := svc.HandlePaymentNotification(ctx, notification, payment.TypeStripe)
 	require.NoError(t, err,
-		"non-success notifications must short-circuit before the DB lookup")
+		"non-settled notifications must short-circuit before the DB lookup")
+}
+
+// TestHandlePaymentNotification_PaidStatusUsesSuccessPath keeps the provider
+// status vocabulary compatible with adapters that use "paid" instead of
+// "success" for a settled asynchronous notification.
+func TestHandlePaymentNotification_PaidStatusUsesSuccessPath(t *testing.T) {
+	ctx := context.Background()
+	client := newOrderNotFoundTestClient(t)
+
+	svc := &PaymentService{
+		entClient:       client,
+		providersLoaded: true,
+	}
+
+	notification := &payment.PaymentNotification{
+		OrderID: "sub2_does_not_exist_paid_status",
+		Status:  payment.NotificationStatusPaid,
+	}
+
+	err := svc.HandlePaymentNotification(ctx, notification, payment.TypeStripe)
+	require.Error(t, err, "paid notifications must enter the same order lookup path as success notifications")
+	require.ErrorIs(t, err, ErrOrderNotFound)
 }
 
 // TestErrOrderNotFound_DistinctFromOtherErrors guards against an accidental

@@ -172,7 +172,7 @@ type PaymentNotification struct {
 	TradeNo  string
 	OrderID  string
 	Amount   float64
-	Status   string // "success" or "failed"
+	Status   string // "success", "paid", or "failed"
 	RawData  string // Raw notification body for audit
 	Metadata map[string]string
 }
