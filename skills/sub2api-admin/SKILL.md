@@ -7,6 +7,8 @@ description: Manage Sub2API admin APIs for accounts, redeem codes, groups, proxi
 
 Use the bundled CLI instead of ad hoc `curl`. Run examples from this skill directory.
 
+For local/server consistency work, use [../sub2api-migration/SKILL.md](../sub2api-migration/SKILL.md) for the inventory, merge policy, ID mapping, and Redis boundaries. This skill supplies the authenticated account-data operations; it does not make a full relational database merge safe by itself.
+
 ```bash
 export SUB2API_BASE_URL='https://your-sub2api-host'
 export SUB2API_ADMIN_API_KEY='<admin api key>'
@@ -45,5 +47,6 @@ node scripts/sub2api-admin.js tls-profiles list
 - Authentication uses `x-api-key` from `SUB2API_ADMIN_API_KEY` first, then falls back to `Authorization: Bearer <jwt>` from `SUB2API_JWT`.
 - If the API returns `INVALID_ADMIN_KEY`, ask the user to regenerate the admin API key. If using JWT, log in as an admin user and copy the `access_token` from `POST /api/v1/auth/login`.
 - `accounts export` includes credentials and tokens. Prefer `--file` and avoid printing exports in chat.
+- For a merge, export only the required accounts, transfer the protected payload over the authenticated connection, import it on the target, run a credential test, and delete the temporary export. Never copy encrypted account rows directly or retain the plaintext payload as a release artifact.
 - Redeem code create/redeem commands should use `--idempotency-key` for payment or recharge workflows.
 - For uncertain or newly added backend APIs, use `api <METHOD> <admin-path>` after a read-only check.

@@ -41,14 +41,17 @@ Before building the candidate:
 
 Read [../sub2api-deployment/SKILL.md](../sub2api-deployment/SKILL.md) for the build, maintenance-notice, upload, cutover, and acceptance gates. Read [../sub2api-admin/SKILL.md](../sub2api-admin/SKILL.md) for authenticated model/account checks.
 
+When the release request also requires local and server business data to be consistent, read [../sub2api-migration/SKILL.md](../sub2api-migration/SKILL.md) and its merge reference. The default is a server-preserving merge: retain server records, add local-only records, map relational IDs explicitly, compare file-backed runtime manifests, and keep deployment infrastructure separate from application data. Do not overwrite the server database or claim data parity from matching row counts alone.
+
 At minimum, before remote cutover:
 
 - Run the relevant backend tests, frontend build, and `git diff --check`.
 - Build the candidate locally for `linux/amd64`; do not compile on the low-memory production host.
 - Verify the candidate image version and source SHA, and record its SHA256.
 - Inspect the current remote service before transfer. Upload/load the candidate without replacing the running container.
+- If data synchronization is in scope, complete the migration inventory, dry-run mapping, and approved merge before cutover; keep the data evidence separate from code and image evidence.
 - Publish the required maintenance notice before any restart or recreation, then cut over with `--no-build --no-deps`.
 - Verify application, PostgreSQL, Redis, admin access, `/health`, public routes, authenticated `/v1/models`, and recent logs.
 - After acceptance, remove only the temporary remote image archive and temporary release files requested by the user. Do not remove persistent database, Redis, proxy, TLS, or Compose configuration.
 
-The final report must state the GitHub ref, local `main` SHA, pushed ref and read-back SHA (if pushed), image/archive digest, remote container identity, checks performed, and any evidence that was not available, such as a real provider transaction or API credential.
+The final report must state the GitHub ref, local `main` SHA, pushed ref and read-back SHA (if pushed), image/archive digest, remote container identity, data merge policy and counts, checks performed, and any evidence that was not available, such as a real provider transaction, API credential, or non-migratable live session.

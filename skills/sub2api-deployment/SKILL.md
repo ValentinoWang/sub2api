@@ -7,6 +7,8 @@ description: Build, verify, troubleshoot, upload, notify users about maintenance
 
 Protect the running service before optimizing deployment speed. Never run `docker compose build`, `docker build`, `go build`, `pnpm build`, or BuildKit on a low-memory production host. Build `linux/amd64` on the Mac, verify it locally, upload an immutable image, and make cutover a separate decision.
 
+If the release also requests local/server data consistency, read [../sub2api-migration/SKILL.md](../sub2api-migration/SKILL.md) before changing PostgreSQL, Redis, or account data. Its default is a server-preserving merge with explicit ID mapping; an image cutover alone does not synchronize business data.
+
 For errors seen during local candidate builds, read [references/local-build-failures.md](references/local-build-failures.md) before changing scripts or retrying blindly.
 
 ## Hard Gates
@@ -22,6 +24,8 @@ For errors seen during local candidate builds, read [references/local-build-fail
 9. Cut over with `--no-build --no-deps`. Never use a mutable `latest` tag as the candidate identity.
 10. Verify health, admin login, API-key authentication, `/responses` SSE completion, PostgreSQL migrations, and recent logs before declaring success.
 11. Archive the maintenance announcement and publish a recovery popup after acceptance. If acceptance fails, update the original announcement to say maintenance is delayed; never silently leave users waiting.
+
+For a data merge, add these gates before cutover: complete a non-secret inventory and dry-run mapping, resolve all identity conflicts, verify the approved backup policy, and confirm that account credentials will be imported through the authenticated account-data API. Do not restore a full database dump for a merge or copy encrypted account rows across different keys.
 
 ## Build And Upload
 
@@ -96,6 +100,7 @@ Verify with fresh evidence:
 - A real API key completes a streamed `/responses` request without 502/503 or SSE idle timeout.
 - Recent application logs contain no panic, fatal migration, decryption, database, Redis, or continuity errors.
 - Proxy/tunnel services and existing sites remain available.
+- When data synchronization is in scope, target-only records remain, local-only records appear once, dependent foreign keys resolve through the mapping, and temporary exports/dumps are removed or explicitly retained.
 
 If any acceptance check fails, stop traffic changes, capture logs and image IDs, and restore the prior application image when schema compatibility permits. Never respond to a failed cutover by rebuilding on the production server.
 

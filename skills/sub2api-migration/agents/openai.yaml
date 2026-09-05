@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sub2API Data Migration"
+  short_description: "Merge local and server business data safely"
+  default_prompt: "Use $sub2api-migration to inventory and merge Sub2API users, accounts, keys, subscriptions, settings, and usage data while preserving server infrastructure."
