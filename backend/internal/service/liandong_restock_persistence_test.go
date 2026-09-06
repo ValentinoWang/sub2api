@@ -1,9 +1,11 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"io"
 	"regexp"
 	"testing"
 	"time"
@@ -68,6 +70,47 @@ func TestLiandongRestockPersistsBatchLifecycleAndReadsStatus(t *testing.T) {
 	require.Equal(t, 7, *statuses[0].RemoteStockAfter)
 	require.Equal(t, "uploaded", statuses[0].Status)
 	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestLiandongRestockExportJobReadsNumericBatchAmount(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer db.Close()
+	service := &LiandongRestockService{db: db, codeSecret: []byte("01234567890123456789012345678901")}
+	createdAt := time.Date(2026, 9, 6, 10, 0, 0, 0, time.UTC)
+	updatedAt := createdAt.Add(time.Minute)
+	completedAt := updatedAt.Add(time.Minute)
+	jobID := "job-20-cny"
+
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT job_id, status, selected_goods, summary, error, created_at, updated_at, completed_at FROM liandong_restock_jobs WHERE job_id = $1")).
+		WithArgs(jobID).
+		WillReturnRows(sqlmock.NewRows([]string{"job_id", "status", "selected_goods", "summary", "error", "created_at", "updated_at", "completed_at"}).
+			AddRow(jobID, LiandongRestockJobCompleted, []byte(`[42]`), []byte(`{"job_id":"job-20-cny","status":"completed","selected_goods":[42]}`), nil, createdAt, updatedAt, completedAt))
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT batch_id, job_id, goods_id, cny_amount::text, grant_value, grant_type, external_url, mapping_version, mapping_key, target_stock, code_count, created_at, remote_stock_before FROM liandong_restock_batches WHERE job_id = $1 ORDER BY created_at, batch_id")).
+		WithArgs(jobID).
+		WillReturnRows(sqlmock.NewRows([]string{"batch_id", "job_id", "goods_id", "cny_amount", "grant_value", "grant_type", "external_url", "mapping_version", "mapping_key", "target_stock", "code_count", "created_at", "remote_stock_before"}).
+			AddRow("batch-20-cny", jobID, int64(42), "20.00", 2.78, "balance", "", 1, "mapping-20", 50000, 2, createdAt, nil))
+
+	export, err := service.ExportJob(context.Background(), jobID)
+	require.NoError(t, err)
+	defer export.Reader.Close()
+	content, err := io.ReadAll(export.Reader)
+	require.NoError(t, err)
+	lines := bytesSplitNonEmpty(content)
+	require.Len(t, lines, 2)
+	require.Equal(t, 2, export.CodeCount)
+	require.NoError(t, validateLiandongCodeSet(lines))
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func bytesSplitNonEmpty(content []byte) []string {
+	lines := make([]string, 0)
+	for _, line := range bytes.Split(content, []byte("\n")) {
+		if len(line) > 0 {
+			lines = append(lines, string(line))
+		}
+	}
+	return lines
 }
 
 type errTestLiandongPersistence struct{}
