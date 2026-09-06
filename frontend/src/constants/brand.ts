@@ -20,6 +20,7 @@ export const PUBLIC_PAGES = {
   codex: '/codex-cli',
   claudeCode: '/claude-code',
   openaiCompat: '/openai-compatible-api',
+  errorExperience: '/error-experiences/gpt-6-astra-not-visible',
   publicBenefit: '/public-benefit',
   business: '/business-invoice',
   security: '/security',

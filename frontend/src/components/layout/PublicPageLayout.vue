@@ -36,16 +36,21 @@
       </div>
     </main>
 
-    <footer class="relative z-10 border-t border-gray-200/60 px-6 py-8 dark:border-white/5">
-      <div class="mx-auto flex max-w-5xl flex-col gap-4 text-center text-xs text-gray-500 dark:text-dark-400 sm:text-left">
-        <p>{{ t('marketing.disclaimer') }}</p>
-        <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
-          <router-link v-for="link in footerLinks" :key="link.to" :to="link.to" class="hover:text-gray-900 dark:hover:text-white">
-            {{ link.label }}
-          </router-link>
+    <footer
+      class="relative z-10"
+      :class="$slots.footer ? '' : 'border-t border-gray-200/60 px-6 py-8 dark:border-white/5'"
+    >
+      <slot name="footer">
+        <div class="mx-auto flex max-w-5xl flex-col gap-4 text-center text-xs text-gray-500 dark:text-dark-400 sm:text-left">
+          <p>{{ t('marketing.disclaimer') }}</p>
+          <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
+            <router-link v-for="link in footerLinks" :key="link.to" :to="link.to" class="hover:text-gray-900 dark:hover:text-white">
+              {{ link.label }}
+            </router-link>
+          </div>
+          <p>&copy; {{ currentYear }} <span class="font-mono">{{ BRAND_DOMAIN }}</span> · {{ t('marketing.nonOfficialShort') }}</p>
         </div>
-        <p>&copy; {{ currentYear }} <span class="font-mono">{{ BRAND_DOMAIN }}</span> · {{ t('marketing.nonOfficialShort') }}</p>
-      </div>
+      </slot>
     </footer>
   </div>
 </template>
