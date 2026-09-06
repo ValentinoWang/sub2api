@@ -16,6 +16,7 @@ import {
   getJob,
   getStatus,
   installOrRepair,
+  isLiandongTerminalJob,
   listGoods,
   previewJob,
   resumeJob,
@@ -77,5 +78,12 @@ describe('liandongToolkitAPI', () => {
     get.mockResolvedValueOnce({ data: blob })
     await exportJob('job/42')
     expect(get).toHaveBeenCalledWith('/admin/tools/ldxp/jobs/job%2F42/export', { responseType: 'blob' })
+  })
+
+  it('treats only an explicitly completed job as terminal', () => {
+    expect(isLiandongTerminalJob({ status: 'completed' })).toBe(true)
+    expect(isLiandongTerminalJob({ status: 'failed' })).toBe(false)
+    expect(isLiandongTerminalJob({ status: 'needs_reconciliation' })).toBe(false)
+    expect(isLiandongTerminalJob(undefined)).toBe(false)
   })
 })

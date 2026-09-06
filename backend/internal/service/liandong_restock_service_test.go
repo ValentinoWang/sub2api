@@ -55,8 +55,9 @@ func (r *liandongSettingRepoStub) GetAll(context.Context) (map[string]string, er
 func (r *liandongSettingRepoStub) Delete(context.Context, string) error                 { return nil }
 
 type liandongRedeemStoreStub struct {
-	mu    sync.Mutex
-	codes map[string]*RedeemCode
+	mu             sync.Mutex
+	codes          map[string]*RedeemCode
+	failCreateOnce bool
 }
 
 func (r *liandongRedeemStoreStub) GetByCode(_ context.Context, code string) (*RedeemCode, error) {
@@ -72,6 +73,10 @@ func (r *liandongRedeemStoreStub) GetByCode(_ context.Context, code string) (*Re
 func (r *liandongRedeemStoreStub) CreateCode(_ context.Context, code *RedeemCode) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.failCreateOnce {
+		r.failCreateOnce = false
+		return errors.New("simulated Liandong code persistence failure")
+	}
 	if _, ok := r.codes[code.Code]; ok {
 		return errors.New("duplicate code")
 	}
@@ -190,6 +195,21 @@ func TestLiandongRestockConfigurationValidatesExternalURL(t *testing.T) {
 	}
 }
 
+func TestLiandongRestockConfigurationRejectsCredentialBearingExternalURL(t *testing.T) {
+	for _, externalURL := range []string{
+		"https://user:password@example.invalid/goods/123",
+		"https://example.invalid/goods/123?token=secret",
+		"https://example.invalid/goods/123#token=secret",
+	} {
+		_, err := validateLiandongConfiguration("token", strings.Repeat("s", 32), []LiandongRestockProduct{{
+			CNYAmount: 20, USDCredit: 2.78, GoodsID: 12345, ExternalURL: externalURL, Threshold: 5, RestockCount: 10,
+		}})
+		if err == nil || !strings.Contains(err.Error(), "invalid external URL") {
+			t.Fatalf("URL %q produced %v, want public URL validation error", externalURL, err)
+		}
+	}
+}
+
 func TestLiandongRestockConfiguredRejectsUnsupportedStoredMapping(t *testing.T) {
 	svc, _, _ := newLiandongTestService("https://ldxp.cn")
 	svc.products[0].GrantType = "subscription"
@@ -212,7 +232,7 @@ func TestLiandongRestockPoliciesRejectDuplicateProducts(t *testing.T) {
 	}
 }
 
-func TestLiandongRestockRetryReusesPendingBatch(t *testing.T) {
+func TestLiandongRestockHTTP502NeedsReconciliation(t *testing.T) {
 	var mu sync.Mutex
 	var uploads []string
 	failFirstUpload := true
@@ -266,23 +286,23 @@ func TestLiandongRestockRetryReusesPendingBatch(t *testing.T) {
 		t.Fatalf("got %d codes, want 3", len(redeem.codes))
 	}
 
-	if err := svc.RunOnce(context.Background(), true); err != nil {
-		t.Fatal(err)
+	if err := svc.RunOnce(context.Background(), true); !errors.Is(err, ErrLiandongNeedsReconciliation) {
+		t.Fatalf("second run error = %v, want reconciliation gate", err)
 	}
 	status, err = svc.Status(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if status.PendingBatch {
-		t.Fatal("successful retry must clear the pending batch")
+	if !status.PendingBatch {
+		t.Fatal("unknown 502 outcome must preserve the pending batch")
 	}
 	if len(redeem.codes) != 3 {
-		t.Fatalf("retry created another batch: %d codes", len(redeem.codes))
+		t.Fatalf("unexpected local code count after reconciliation: %d", len(redeem.codes))
 	}
 	mu.Lock()
 	defer mu.Unlock()
-	if len(uploads) != 2 || uploads[0] != uploads[1] {
-		t.Fatal("retry did not upload the identical deterministic batch")
+	if len(uploads) != 1 {
+		t.Fatalf("blind retry uploaded %d times, want 1", len(uploads))
 	}
 	if _, ok := settings.values[liandongRestockStateKey]; !ok {
 		t.Fatal("state was not persisted")

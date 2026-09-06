@@ -7779,27 +7779,6 @@
               </h2>
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {{ t("admin.settings.payment.description") }}
-                <a
-                  :href="paymentGuideHref"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="ml-2 inline-flex items-center text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
-                >
-                  <svg
-                    class="mr-0.5 h-3.5 w-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                  {{ t("admin.settings.payment.configGuide") }}
-                </a>
               </p>
             </div>
             <div class="space-y-4 p-6">
@@ -8244,27 +8223,6 @@
                   </div>
                   <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">
                     {{ t("admin.settings.payment.enabledPaymentTypesHint") }}
-                    <a
-                      :href="paymentMethodsHref"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="ml-1 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300"
-                    >
-                      {{ t("admin.settings.payment.findProvider") }}
-                      <svg
-                        class="mb-0.5 ml-0.5 inline h-3 w-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                        />
-                      </svg>
-                    </a>
                   </p>
                 </div>
                 <!-- Row 5: Help image + text -->
@@ -8297,6 +8255,32 @@
                   </div>
                 </div>
               </template>
+            </div>
+          </div>
+
+          <div class="card" data-testid="ldxp-sales-channel-entry">
+            <div class="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex min-w-0 items-start gap-3">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600 dark:bg-primary-950/40 dark:text-primary-400">
+                  <Icon name="cube" size="md" />
+                </div>
+                <div class="min-w-0">
+                  <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+                    {{ t("admin.settings.payment.ldxpSalesChannel.title") }}
+                  </h2>
+                  <p class="mt-1 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                    {{ t("admin.settings.payment.ldxpSalesChannel.description") }}
+                  </p>
+                </div>
+              </div>
+              <router-link
+                to="/admin/tools/ldxp"
+                class="btn btn-primary shrink-0 self-start sm:self-center"
+                data-testid="open-ldxp-toolkit"
+              >
+                {{ t("admin.settings.payment.ldxpSalesChannel.openToolkit") }}
+                <Icon name="arrowRight" size="sm" />
+              </router-link>
             </div>
           </div>
 
@@ -8905,18 +8889,6 @@ const isZhLocale = computed(() => locale.value.startsWith("zh"));
 function localText(zh: string, en: string): string {
   return isZhLocale.value ? zh : en;
 }
-
-const paymentGuideHref = computed(() =>
-  locale.value.startsWith("zh")
-    ? "https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT_CN.md"
-    : "https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT.md",
-);
-
-const paymentMethodsHref = computed(() =>
-  locale.value.startsWith("zh")
-    ? "https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT_CN.md#支持的支付方式"
-    : "https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT.md#supported-payment-methods",
-);
 
 type SettingsTab =
   | "general"

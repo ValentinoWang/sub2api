@@ -137,6 +137,11 @@ func (s *PaymentService) cancelCore(ctx context.Context, o *dbent.PaymentOrder, 
 			auditAction = "ORDER_EXPIRED"
 		}
 		s.writeAuditLog(ctx, o.ID, auditAction, op, map[string]any{"detail": ad})
+		if o.OrderType == payment.OrderTypeMembership && s.membership != nil {
+			if err := s.membership.RecoverPaymentCreation(ctx, o.ID, false); err != nil {
+				return "", fmt.Errorf("recover membership payment reservation: %w", err)
+			}
+		}
 	}
 	return checkPaidResultCancelled, nil
 }
@@ -334,6 +339,56 @@ func (s *PaymentService) ReconcilePendingPaymentOrders(ctx context.Context) (int
 		if s.reconcilePaid(ctx, order) == checkPaidResultAlreadyPaid {
 			recovered++
 		}
+	}
+	return recovered, nil
+}
+
+// ReconcileMembershipPaymentRecoveries retries membership-side compensation
+// when the payment row changed but the synchronous callback could not commit
+// the corresponding reservation transition. Failed gateway creation is always
+// treated as uncertain because a provider may have accepted the request before
+// the local caller observed its error.
+func (s *PaymentService) ReconcileMembershipPaymentRecoveries(ctx context.Context) (int, error) {
+	if s == nil || s.membership == nil || s.membership.DB == nil {
+		return 0, nil
+	}
+	rows, err := s.membership.DB.QueryContext(ctx, `SELECT l.payment_order_id,po.status
+        FROM membership_payment_links l
+        JOIN membership_orders o ON o.id=l.order_id
+        JOIN payment_orders po ON po.id=l.payment_order_id
+        WHERE o.payment_state='pending' AND po.order_type='membership'
+          AND po.status IN ('FAILED','CANCELLED','EXPIRED')
+        ORDER BY po.updated_at,po.id
+        LIMIT $1`, pendingPaymentReconcileLimit)
+	if err != nil {
+		return 0, fmt.Errorf("query membership payment recoveries: %w", err)
+	}
+	defer rows.Close()
+
+	type candidate struct {
+		paymentID int64
+		status    string
+	}
+	var candidates []candidate
+	for rows.Next() {
+		var c candidate
+		if err := rows.Scan(&c.paymentID, &c.status); err != nil {
+			return 0, fmt.Errorf("scan membership payment recovery: %w", err)
+		}
+		candidates = append(candidates, c)
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("iterate membership payment recoveries: %w", err)
+	}
+
+	recovered := 0
+	for _, candidate := range candidates {
+		uncertain := candidate.status == OrderStatusFailed
+		if err := s.membership.RecoverPaymentCreation(ctx, candidate.paymentID, uncertain); err != nil {
+			slog.Warn("membership payment recovery retry failed", "orderID", candidate.paymentID, "status", candidate.status, "error", err)
+			continue
+		}
+		recovered++
 	}
 	return recovered, nil
 }

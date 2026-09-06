@@ -73,9 +73,15 @@ const meta = computed(() => {
 })
 
 let rendering = false
+let renderQueued = false
 async function render() {
-  if (!canvasRef.value || rendering) return
+  if (!canvasRef.value) return
+  if (rendering) {
+    renderQueued = true
+    return
+  }
   rendering = true
+  renderQueued = false
   try {
     await renderShareCard(canvasRef.value, {
       size: size.value,
@@ -91,6 +97,7 @@ async function render() {
     })
   } finally {
     rendering = false
+    if (renderQueued) void render()
   }
 }
 
@@ -113,11 +120,7 @@ async function copyImage() {
 }
 
 watch([size, note, meta, siteName], () => void render())
-onMounted(async () => {
-  await render()
-  await probeLatency()
-  await render()
-})
+onMounted(() => void render())
 </script>
 
 <style scoped>

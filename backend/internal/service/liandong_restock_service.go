@@ -23,8 +23,11 @@ import (
 )
 
 const (
-	liandongRestockStateKey  = "liandong_auto_restock_state_v1"
-	liandongRestockConfigKey = "liandong_auto_restock_config_v1"
+	liandongRestockStateKey     = "liandong_auto_restock_state_v1"
+	liandongRestockConfigKey    = "liandong_auto_restock_config_v1"
+	liandongRestockLeaseKey     = "liandong-restock-cycle"
+	liandongPersistenceTimeout  = 5 * time.Second
+	liandongRunningLeaseTimeout = 2 * time.Minute
 )
 
 type LiandongRestockProduct struct {
@@ -57,14 +60,17 @@ type liandongRestockPendingBatch struct {
 	Count             int     `json:"count"`
 	CreatedAt         string  `json:"created_at"`
 	RemoteStockBefore *int    `json:"remote_stock_before,omitempty"`
+	CodeSecretDigest  string  `json:"code_secret_digest,omitempty"`
+	Status            string  `json:"-"`
 }
 
 type LiandongRestockState struct {
-	Enabled      bool                         `json:"enabled"`
-	Products     []LiandongRestockProduct     `json:"products"`
-	LastRunAt    string                       `json:"last_run_at,omitempty"`
-	LastError    string                       `json:"last_error,omitempty"`
-	PendingBatch *liandongRestockPendingBatch `json:"pending_batch,omitempty"`
+	Enabled                bool                         `json:"enabled"`
+	Products               []LiandongRestockProduct     `json:"products"`
+	LastRunAt              string                       `json:"last_run_at,omitempty"`
+	LastError              string                       `json:"last_error,omitempty"`
+	PendingBatch           *liandongRestockPendingBatch `json:"pending_batch,omitempty"`
+	ReconciliationRequired bool                         `json:"reconciliation_required,omitempty"`
 }
 
 type LiandongRestockStatus struct {
@@ -143,21 +149,26 @@ type LiandongRestockService struct {
 	interval    time.Duration
 	httpClient  *http.Client
 
-	configMu      sync.RWMutex
-	mu            sync.Mutex
-	stateMu       sync.Mutex
-	memoryMu      sync.Mutex
-	manualJobMu   sync.Mutex
-	manualJobWG   sync.WaitGroup
-	running       bool
-	runCancel     context.CancelFunc
-	manualContext context.Context
-	manualCancel  context.CancelFunc
-	manualJobs    map[string]struct{}
-	stop          chan struct{}
-	stopOnce      sync.Once
-	memoryBatches map[string]*liandongMemoryBatch
-	memoryJobs    map[string]*LiandongRestockJobSummary
+	configMu       sync.RWMutex
+	mu             sync.Mutex
+	stateMu        sync.Mutex
+	memoryMu       sync.Mutex
+	admissionMu    sync.Mutex
+	manualJobMu    sync.Mutex
+	manualJobWG    sync.WaitGroup
+	automaticWG    sync.WaitGroup
+	running        bool
+	runCancel      context.CancelFunc
+	stopped        bool
+	shutdownCtx    context.Context
+	shutdownCancel context.CancelFunc
+	manualContext  context.Context
+	manualCancel   context.CancelFunc
+	manualJobs     map[string]struct{}
+	stop           chan struct{}
+	stopOnce       sync.Once
+	memoryBatches  map[string]*liandongMemoryBatch
+	memoryJobs     map[string]*LiandongRestockJobSummary
 }
 
 // ProvideLiandongRestockService starts the durable background worker. The
@@ -180,18 +191,21 @@ func NewLiandongRestockService(settingRepo SettingRepository, redeem *RedeemServ
 	if len(db) > 0 {
 		sqlDB = db[0]
 	}
-	manualContext, manualCancel := context.WithCancel(context.Background())
+	shutdownCtx, shutdownCancel := context.WithCancel(context.Background())
+	manualContext, manualCancel := context.WithCancel(shutdownCtx)
 	s := &LiandongRestockService{
-		settingRepo:   settingRepo,
-		redeem:        redeem,
-		encryptor:     encryptor,
-		db:            sqlDB,
-		interval:      interval,
-		httpClient:    &http.Client{Timeout: 20 * time.Second},
-		stop:          make(chan struct{}),
-		manualContext: manualContext,
-		manualCancel:  manualCancel,
-		manualJobs:    make(map[string]struct{}),
+		settingRepo:    settingRepo,
+		redeem:         redeem,
+		encryptor:      encryptor,
+		db:             sqlDB,
+		interval:       interval,
+		httpClient:     &http.Client{Timeout: 20 * time.Second},
+		stop:           make(chan struct{}),
+		shutdownCtx:    shutdownCtx,
+		shutdownCancel: shutdownCancel,
+		manualContext:  manualContext,
+		manualCancel:   manualCancel,
+		manualJobs:     make(map[string]struct{}),
 	}
 	if cfg != nil {
 		s.baseURL = strings.TrimRight(strings.TrimSpace(cfg.LiandongRestock.BaseURL), "/")
@@ -220,16 +234,16 @@ func NewLiandongRestockService(settingRepo SettingRepository, redeem *RedeemServ
 
 func (s *LiandongRestockService) StartWorker() {
 	go func() {
-		ticker := time.NewTicker(s.interval)
+		interval := s.interval
+		if interval <= 0 {
+			interval = 5 * time.Minute
+		}
+		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				ctx, cancel := context.WithTimeout(context.Background(), s.interval)
-				if err := s.RunOnce(ctx, false); err != nil && !errors.Is(err, context.Canceled) {
-					logger.LegacyPrintf("service.liandong_restock", "[LiandongRestock] cycle failed: %v", err)
-				}
-				cancel()
+				s.scheduleAutomaticCycle()
 			case <-s.stop:
 				return
 			}
@@ -238,7 +252,17 @@ func (s *LiandongRestockService) StartWorker() {
 }
 
 func (s *LiandongRestockService) StopWorker() {
-	s.stopOnce.Do(func() { close(s.stop) })
+	s.admissionMu.Lock()
+	s.stopped = true
+	if s.shutdownCancel != nil {
+		s.shutdownCancel()
+	}
+	s.stopOnce.Do(func() {
+		if s.stop == nil {
+			s.stop = make(chan struct{})
+		}
+		close(s.stop)
+	})
 	s.mu.Lock()
 	if s.runCancel != nil {
 		s.runCancel()
@@ -249,7 +273,37 @@ func (s *LiandongRestockService) StopWorker() {
 		s.manualCancel()
 	}
 	s.manualJobMu.Unlock()
+	s.admissionMu.Unlock()
+	s.automaticWG.Wait()
 	s.manualJobWG.Wait()
+}
+
+func (s *LiandongRestockService) scheduleAutomaticCycle() bool {
+	s.admissionMu.Lock()
+	if s.shutdownCtx == nil {
+		s.shutdownCtx, s.shutdownCancel = context.WithCancel(context.Background())
+	}
+	if s.stopped {
+		s.admissionMu.Unlock()
+		return false
+	}
+	shutdownCtx := s.shutdownCtx
+	s.automaticWG.Add(1)
+	s.admissionMu.Unlock()
+
+	go func() {
+		defer s.automaticWG.Done()
+		interval := s.interval
+		if interval <= 0 {
+			interval = 5 * time.Minute
+		}
+		ctx, cancel := context.WithTimeout(shutdownCtx, interval)
+		defer cancel()
+		if err := s.RunOnce(ctx, false); err != nil && !errors.Is(err, context.Canceled) {
+			logger.LegacyPrintf("service.liandong_restock", "[LiandongRestock] cycle failed: %s", liandongSafeErrorText(err))
+		}
+	}()
+	return true
 }
 
 func (s *LiandongRestockService) configured() bool {
@@ -278,8 +332,7 @@ func (s *LiandongRestockService) configuredLocked() bool {
 			return false
 		}
 		if product.ExternalURL != "" {
-			parsed, err := url.Parse(product.ExternalURL)
-			if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+			if !isLiandongPublicExternalURL(product.ExternalURL) {
 				return false
 			}
 		}
@@ -370,6 +423,14 @@ func (s *LiandongRestockService) loadState(ctx context.Context) (*LiandongRestoc
 	}
 	state.Products = s.mergePolicies(state.Products)
 	state.Products = visibleLiandongProducts(state.Products)
+	if state.LastError != "" {
+		state.LastError = "Liandong restock operation failed"
+	}
+	for i := range state.Products {
+		if state.Products[i].LastError != "" {
+			state.Products[i].LastError = "Liandong restock operation failed"
+		}
+	}
 	if state.PendingBatch != nil {
 		state.PendingBatch = hydrateLiandongPendingBatch(state.PendingBatch, state.Products)
 	}
@@ -485,6 +546,11 @@ func (s *LiandongRestockService) UpdateConfiguration(ctx context.Context, input 
 	if state.PendingBatch != nil {
 		return nil, errors.New("resolve the pending batch before changing configuration")
 	}
+	if open, err := s.hasOpenLiandongJob(ctx); err != nil {
+		return nil, err
+	} else if open {
+		return nil, errors.New("resolve the existing Liandong job before changing configuration")
+	}
 
 	s.configMu.RLock()
 	token := s.token
@@ -557,8 +623,7 @@ func validateLiandongConfiguration(token, secret string, products []LiandongRest
 			return nil, errors.New("only balance Liandong products are supported in the first release")
 		}
 		if product.ExternalURL != "" {
-			parsed, parseErr := url.Parse(product.ExternalURL)
-			if parseErr != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+			if !isLiandongPublicExternalURL(product.ExternalURL) {
 				return nil, fmt.Errorf("invalid external URL for CNY %d", product.CNYAmount)
 			}
 		}
@@ -578,6 +643,17 @@ func validateLiandongConfiguration(token, secret string, products []LiandongRest
 		seenGoods[product.GoodsID] = struct{}{}
 	}
 	return normalized, nil
+}
+
+// isLiandongPublicExternalURL accepts a public product reference only. Query
+// strings, URL userinfo, and fragments are excluded because this field is
+// persisted in mapping snapshots and returned by administrator read models.
+func isLiandongPublicExternalURL(value string) bool {
+	parsed, err := url.Parse(strings.TrimSpace(value))
+	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+		return false
+	}
+	return parsed.User == nil && parsed.RawQuery == "" && !parsed.ForceQuery && parsed.Fragment == ""
 }
 
 func (s *LiandongRestockService) statusWithState(state *LiandongRestockState) (*LiandongRestockStatus, error) {
@@ -629,6 +705,13 @@ func (s *LiandongRestockService) UpdatePolicies(ctx context.Context, updates []L
 		s.stateMu.Unlock()
 		return nil, errors.New("all configured Liandong products must be included exactly once")
 	}
+	if open, err := s.hasOpenLiandongJob(ctx); err != nil {
+		s.stateMu.Unlock()
+		return nil, err
+	} else if open {
+		s.stateMu.Unlock()
+		return nil, errors.New("resolve the existing Liandong job before changing policies")
+	}
 	for i := range state.Products {
 		update, ok := byCNY[state.Products[i].CNYAmount]
 		if !ok {
@@ -676,27 +759,24 @@ func (s *LiandongRestockService) SetEnabled(ctx context.Context, enabled bool) (
 	}
 	s.stateMu.Unlock()
 	if enabled {
-		go func() {
-			ctx, cancel := context.WithTimeout(context.Background(), s.interval)
-			defer cancel()
-			if err := s.RunOnce(ctx, false); err != nil && !errors.Is(err, context.Canceled) {
-				logger.LegacyPrintf("service.liandong_restock", "[LiandongRestock] initial cycle failed: %v", err)
-			}
-		}()
+		s.scheduleAutomaticCycle()
 	}
 	return s.Status(ctx)
 }
 
 func (s *LiandongRestockService) RunOnce(parent context.Context, force bool) error {
-	_, err := s.runLiandongCycle(parent, force, nil, "")
+	_, err := s.runLiandongCycle(parent, force, nil, "", nil)
 	return err
 }
 
 func (s *LiandongRestockService) recordRunError(ctx context.Context, state *LiandongRestockState, runErr error) error {
 	state.LastRunAt = time.Now().UTC().Format(time.RFC3339)
-	state.LastError = runErr.Error()
-	if ctx.Err() == nil {
-		_ = s.saveState(ctx, state)
+	state.LastError = liandongSafeErrorText(runErr)
+	persistCtx, cancelPersist := liandongRecoveryContext()
+	saveErr := s.saveState(persistCtx, state)
+	cancelPersist()
+	if saveErr != nil {
+		return fmt.Errorf("%w: recovery state persistence failed", runErr)
 	}
 	return runErr
 }
@@ -714,12 +794,23 @@ func (s *LiandongRestockService) fulfillPendingBatch(ctx context.Context, state 
 	if batch == nil {
 		return nil
 	}
+	if state.ReconciliationRequired {
+		return fmt.Errorf("%w: batch %s is latched", ErrLiandongNeedsReconciliation, batch.BatchID)
+	}
 	codes, err := s.deriveCodesChecked(batch)
 	if err != nil {
 		return err
 	}
 	if err := s.recordBatchPending(ctx, batch, codes); err != nil {
 		return err
+	}
+	batchStatus, err := s.loadLiandongBatchStatus(ctx, batch.BatchID)
+	if err != nil {
+		return err
+	}
+	if batchStatus == liandongBatchStatusNeedsReconciliation {
+		state.ReconciliationRequired = true
+		return fmt.Errorf("%w: batch %s is already marked", ErrLiandongNeedsReconciliation, batch.BatchID)
 	}
 	segments, err := s.loadLiandongSegmentStatuses(ctx, batch.BatchID)
 	if err != nil {
@@ -755,16 +846,29 @@ func (s *LiandongRestockService) fulfillPendingBatch(ctx context.Context, state 
 		}
 		if err := s.uploadCodes(ctx, batch.GoodsID, segmentCodes); err != nil {
 			if isLiandongOutcomeUnknown(err) {
-				_ = s.markLiandongSegmentNeedsReconciliation(ctx, batch.BatchID, segment.SegmentNo, err)
-				_ = s.markBatchNeedsReconciliation(ctx, batch.BatchID, err)
-				return fmt.Errorf("%w: batch %s segment %d: %v", ErrLiandongNeedsReconciliation, batch.BatchID, segment.SegmentNo, err)
+				state.ReconciliationRequired = true
+				persistErr := s.markLiandongBatchAndSegmentsNeedsReconciliation(batch.BatchID, []int{segment.SegmentNo}, err)
+				reconciliationErr := fmt.Errorf("%w: batch %s segment %d", ErrLiandongNeedsReconciliation, batch.BatchID, segment.SegmentNo)
+				if persistErr != nil {
+					return fmt.Errorf("%w: reconciliation persistence failed", reconciliationErr)
+				}
+				return reconciliationErr
 			}
-			_ = s.markLiandongSegmentFailed(ctx, batch.BatchID, segment.SegmentNo, err)
-			_ = s.markBatchFailed(ctx, batch.BatchID, err)
+			if markErr := s.markLiandongSegmentFailed(ctx, batch.BatchID, segment.SegmentNo, err); markErr != nil {
+				return markErr
+			}
+			if markErr := s.markBatchFailed(ctx, batch.BatchID, err); markErr != nil {
+				return markErr
+			}
 			return err
 		}
 		if err := s.markLiandongSegmentUploaded(ctx, batch.BatchID, segment.SegmentNo); err != nil {
-			return err
+			state.ReconciliationRequired = true
+			persistErr := s.markLiandongBatchAndSegmentsNeedsReconciliation(batch.BatchID, []int{segment.SegmentNo}, err)
+			if persistErr != nil {
+				return fmt.Errorf("%w: segment acknowledgement persistence failed", ErrLiandongNeedsReconciliation)
+			}
+			return fmt.Errorf("%w: segment acknowledgement persistence failed", ErrLiandongNeedsReconciliation)
 		}
 	}
 
@@ -773,7 +877,16 @@ func (s *LiandongRestockService) fulfillPendingBatch(ctx context.Context, state 
 		remoteStockAfter = &stock
 	}
 	if err := s.markBatchUploadedObserved(ctx, batch.BatchID, remoteStockAfter); err != nil {
-		return err
+		state.ReconciliationRequired = true
+		segmentNos := make([]int, 0, len(segments))
+		for _, segment := range segments {
+			segmentNos = append(segmentNos, segment.SegmentNo)
+		}
+		persistErr := s.markLiandongBatchAndSegmentsNeedsReconciliation(batch.BatchID, segmentNos, err)
+		if persistErr != nil {
+			return fmt.Errorf("%w: batch acknowledgement persistence failed", ErrLiandongNeedsReconciliation)
+		}
+		return fmt.Errorf("%w: batch acknowledgement persistence failed", ErrLiandongNeedsReconciliation)
 	}
 	if remoteStockAfter != nil {
 		for i := range state.Products {
@@ -786,7 +899,18 @@ func (s *LiandongRestockService) fulfillPendingBatch(ctx context.Context, state 
 		}
 	}
 	state.PendingBatch = nil
-	return s.saveState(ctx, state)
+	state.ReconciliationRequired = false
+	if err := s.saveState(ctx, state); err != nil {
+		state.PendingBatch = batch
+		state.ReconciliationRequired = true
+		segmentNos := make([]int, 0, len(segments))
+		for _, segment := range segments {
+			segmentNos = append(segmentNos, segment.SegmentNo)
+		}
+		_ = s.markLiandongBatchAndSegmentsNeedsReconciliation(batch.BatchID, segmentNos, err)
+		return fmt.Errorf("%w: batch state persistence failed", ErrLiandongNeedsReconciliation)
+	}
+	return nil
 }
 
 func (s *LiandongRestockService) persistProductMappings(ctx context.Context, products []LiandongRestockProduct) error {
@@ -844,6 +968,10 @@ func (s *LiandongRestockService) recordBatchPending(ctx context.Context, batch *
 	if batchCopy.TargetStock <= 0 {
 		batchCopy.TargetStock = effectiveLiandongTargetStock(LiandongRestockProduct{RestockCount: batchCopy.Count})
 	}
+	if batchCopy.CodeSecretDigest == "" {
+		batchCopy.CodeSecretDigest = s.currentLiandongCodeSecretDigest()
+	}
+	*batch = batchCopy
 	if s.db == nil {
 		s.memoryMu.Lock()
 		defer s.memoryMu.Unlock()
@@ -872,10 +1000,11 @@ func (s *LiandongRestockService) recordBatchPending(ctx context.Context, batch *
 		s.memoryBatches[batchCopy.BatchID] = memoryBatch
 		return nil
 	}
-	snapshotRaw, err := json.Marshal(LiandongRestockMappingSnapshot{
+	snapshotRaw, err := json.Marshal(liandongRestockDurableMappingSnapshot{
 		MappingKey: batchCopy.MappingKey, Version: batchCopy.Version, GoodsID: batchCopy.GoodsID,
 		CNYAmount: batchCopy.CNYAmount, GrantType: batchCopy.GrantType, USDCredit: batchCopy.USDCredit,
 		ExternalURL: batchCopy.ExternalURL, TargetStock: batchCopy.TargetStock,
+		CodeSecretDigest: batchCopy.CodeSecretDigest,
 	})
 	if err != nil {
 		return err
@@ -933,6 +1062,9 @@ func (s *LiandongRestockService) markBatchUploadedObserved(ctx context.Context, 
 		if !ok {
 			return nil
 		}
+		if batch.Status == liandongBatchStatusNeedsReconciliation {
+			return nil
+		}
 		batch.Status = liandongBatchStatusUploaded
 		batch.Error = ""
 		batch.RemoteAfter = nil
@@ -951,7 +1083,7 @@ func (s *LiandongRestockService) markBatchUploadedObserved(ctx context.Context, 
 	_, err := s.db.ExecContext(ctx, `
 		UPDATE liandong_restock_batches
 		SET status = 'uploaded', uploaded_at = NOW(), updated_at = NOW(), remote_stock_after = $2, error = NULL
-		WHERE batch_id = $1`, batchID, remoteAfter)
+		WHERE batch_id = $1 AND status <> 'needs_reconciliation'`, batchID, remoteAfter)
 	return err
 }
 
@@ -959,12 +1091,16 @@ func (s *LiandongRestockService) markBatchFailed(ctx context.Context, batchID st
 	if runErr == nil {
 		return errors.New("Liandong batch failure requires an error")
 	}
+	errorText := liandongSafeErrorText(runErr)
 	if s.db == nil {
 		s.memoryMu.Lock()
 		defer s.memoryMu.Unlock()
 		if batch, ok := s.memoryBatches[batchID]; ok {
+			if batch.Status == liandongBatchStatusNeedsReconciliation {
+				return nil
+			}
 			batch.Status = liandongBatchStatusFailed
-			batch.Error = runErr.Error()
+			batch.Error = errorText
 			batch.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
 		}
 		return nil
@@ -972,7 +1108,7 @@ func (s *LiandongRestockService) markBatchFailed(ctx context.Context, batchID st
 	_, err := s.db.ExecContext(ctx, `
 		UPDATE liandong_restock_batches
 		SET status = 'failed', error = $2, updated_at = NOW()
-		WHERE batch_id = $1`, batchID, runErr.Error())
+		WHERE batch_id = $1 AND status <> 'needs_reconciliation'`, batchID, errorText)
 	return err
 }
 
@@ -980,12 +1116,13 @@ func (s *LiandongRestockService) markBatchNeedsReconciliation(ctx context.Contex
 	if runErr == nil {
 		return errors.New("Liandong reconciliation state requires an error")
 	}
+	errorText := liandongSafeErrorText(runErr)
 	if s.db == nil {
 		s.memoryMu.Lock()
 		defer s.memoryMu.Unlock()
 		if batch, ok := s.memoryBatches[batchID]; ok {
 			batch.Status = liandongBatchStatusNeedsReconciliation
-			batch.Error = runErr.Error()
+			batch.Error = errorText
 			batch.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
 		}
 		return nil
@@ -993,8 +1130,67 @@ func (s *LiandongRestockService) markBatchNeedsReconciliation(ctx context.Contex
 	_, err := s.db.ExecContext(ctx, `
 		UPDATE liandong_restock_batches
 		SET status = 'needs_reconciliation', error = $2, updated_at = NOW()
-		WHERE batch_id = $1`, batchID, runErr.Error())
+		WHERE batch_id = $1`, batchID, errorText)
 	return err
+}
+
+func (s *LiandongRestockService) loadLiandongBatchStatus(ctx context.Context, batchID string) (string, error) {
+	if strings.TrimSpace(batchID) == "" {
+		return "", errors.New("Liandong batch ID is required")
+	}
+	if s.db == nil {
+		s.memoryMu.Lock()
+		defer s.memoryMu.Unlock()
+		batch, ok := s.memoryBatches[batchID]
+		if !ok {
+			return "", errors.New("Liandong batch not found")
+		}
+		return batch.Status, nil
+	}
+	var status string
+	if err := s.db.QueryRowContext(ctx, `
+		SELECT status FROM liandong_restock_batches WHERE batch_id = $1`, batchID).Scan(&status); err != nil {
+		return "", err
+	}
+	return status, nil
+}
+
+func (s *LiandongRestockService) markLiandongBatchAndSegmentsNeedsReconciliation(batchID string, segmentNos []int, runErr error) error {
+	if runErr == nil {
+		return errors.New("Liandong reconciliation state requires an error")
+	}
+	recoveryCtx, cancelRecovery := liandongRecoveryContext()
+	defer cancelRecovery()
+	var persistErr error
+	seen := make(map[int]struct{}, len(segmentNos))
+	for _, segmentNo := range segmentNos {
+		if _, ok := seen[segmentNo]; ok {
+			continue
+		}
+		seen[segmentNo] = struct{}{}
+		if err := s.markLiandongSegmentNeedsReconciliation(recoveryCtx, batchID, segmentNo, runErr); err != nil {
+			persistErr = errors.Join(persistErr, err)
+		}
+	}
+	if err := s.markBatchNeedsReconciliation(recoveryCtx, batchID, runErr); err != nil {
+		persistErr = errors.Join(persistErr, err)
+	}
+	return persistErr
+}
+
+func (s *LiandongRestockService) markBatchAndAllSegmentsNeedsReconciliation(batchID string, runErr error) error {
+	recoveryCtx, cancelRecovery := liandongRecoveryContext()
+	segments, loadErr := s.loadLiandongSegmentStatuses(recoveryCtx, batchID)
+	cancelRecovery()
+	if loadErr != nil {
+		markerErr := s.markLiandongBatchAndSegmentsNeedsReconciliation(batchID, nil, runErr)
+		return errors.Join(loadErr, markerErr)
+	}
+	segmentNos := make([]int, 0, len(segments))
+	for _, segment := range segments {
+		segmentNos = append(segmentNos, segment.SegmentNo)
+	}
+	return s.markLiandongBatchAndSegmentsNeedsReconciliation(batchID, segmentNos, runErr)
 }
 
 func (s *LiandongRestockService) loadBatchStatuses(ctx context.Context, limit int) ([]LiandongRestockBatchStatus, error) {
@@ -1069,7 +1265,7 @@ func (s *LiandongRestockService) loadBatchStatuses(ctx context.Context, limit in
 			batch.RemoteStockAfter = &value
 		}
 		if failure.Valid {
-			batch.Error = failure.String
+			batch.Error = "Liandong restock operation failed"
 		}
 		batch.CreatedAt = createdAt.UTC().Format(time.RFC3339)
 		if uploadedAt.Valid {
@@ -1117,12 +1313,16 @@ func (s *LiandongRestockService) post(ctx context.Context, path string, payload 
 		return nil, &LiandongRemoteOutcomeUnknownError{Err: err}
 	}
 	defer resp.Body.Close()
+	isUpload := path == "/merchantApi/GoodsCardStorage/add"
 	limited := io.LimitReader(resp.Body, 2<<20)
 	responseBody, err := io.ReadAll(limited)
 	if err != nil {
 		return nil, &LiandongRemoteOutcomeUnknownError{Err: err}
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		if isUpload {
+			return nil, &LiandongRemoteOutcomeUnknownError{Err: errors.New("remote upload returned an unconfirmed HTTP response")}
+		}
 		return nil, &LiandongRemoteFailureError{StatusCode: resp.StatusCode, Message: "HTTP response rejected the request"}
 	}
 	var result liandongAPIResponse
@@ -1130,6 +1330,9 @@ func (s *LiandongRestockService) post(ctx context.Context, path string, payload 
 		return nil, &LiandongRemoteOutcomeUnknownError{Err: errors.New("Liandong returned an invalid response")}
 	}
 	if result.Code != 1 {
+		if isUpload {
+			return nil, &LiandongRemoteOutcomeUnknownError{Err: errors.New("remote upload returned an unconfirmed application response")}
+		}
 		message := strings.TrimSpace(result.Msg)
 		if message == "" {
 			message = "request rejected"

@@ -43,6 +43,12 @@ func NewPaymentHandler(paymentService *service.PaymentService, configService *se
 	}
 }
 
+// ProvidePaymentHandler gives Wire a fixed-arity construction path. The public
+// constructor remains variadic so focused HTTP tests can pass a minimal stub.
+func ProvidePaymentHandler(paymentService *service.PaymentService, configService *service.PaymentConfigService, restock *service.LiandongRestockService) *PaymentHandler {
+	return NewPaymentHandler(paymentService, configService, restock)
+}
+
 // --- Dashboard ---
 
 // GetDashboard returns payment dashboard statistics.

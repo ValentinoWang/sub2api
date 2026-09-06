@@ -14,6 +14,7 @@ import (
 
 	dbent "github.com/Wei-Shaw/sub2api/ent"
 	"github.com/Wei-Shaw/sub2api/ent/paymentproviderinstance"
+	"github.com/Wei-Shaw/sub2api/internal/membership"
 	"github.com/Wei-Shaw/sub2api/internal/payment"
 	"github.com/Wei-Shaw/sub2api/internal/payment/provider"
 )
@@ -71,20 +72,21 @@ func generateRandomString(n int) string {
 }
 
 type CreateOrderRequest struct {
-	UserID          int64
-	Amount          float64
-	PaymentType     string
-	OpenID          string
-	ClientIP        string
-	IsMobile        bool
-	IsWeChatBrowser bool
-	SrcHost         string
-	SrcURL          string
-	ReturnURL       string
-	PaymentSource   string
-	OrderType       string
-	PlanID          int64
-	Locale          string
+	MembershipOrderID string
+	UserID            int64
+	Amount            float64
+	PaymentType       string
+	OpenID            string
+	ClientIP          string
+	IsMobile          bool
+	IsWeChatBrowser   bool
+	SrcHost           string
+	SrcURL            string
+	ReturnURL         string
+	PaymentSource     string
+	OrderType         string
+	PlanID            int64
+	Locale            string
 }
 
 type CreateOrderResponse struct {
@@ -185,6 +187,7 @@ type TopUsersByCurrency map[string][]TopUserStat
 // --- Service ---
 
 type PaymentService struct {
+	membership               *membership.Engine
 	providerMu               sync.Mutex
 	providersLoaded          bool
 	entClient                *dbent.Client
@@ -199,6 +202,15 @@ type PaymentService struct {
 	affiliateService         *AffiliateService
 	notificationEmailService *NotificationEmailService
 	settingService           *SettingService // optional: first top-up bonus tiers
+}
+
+func isSupportedPaymentOrderType(orderType string) bool {
+	switch orderType {
+	case payment.OrderTypeBalance, payment.OrderTypeSubscription, payment.OrderTypeMembership:
+		return true
+	default:
+		return false
+	}
 }
 
 func NewPaymentService(entClient *dbent.Client, registry *payment.Registry, loadBalancer payment.LoadBalancer, redeemService *RedeemService, subscriptionSvc *SubscriptionService, configService *PaymentConfigService, userRepo UserRepository, groupRepo GroupRepository, affiliateService *AffiliateService) *PaymentService {

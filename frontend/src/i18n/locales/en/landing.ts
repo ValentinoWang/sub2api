@@ -384,16 +384,8 @@ export default {
       title: 'Frequently asked',
       items: [
         {
-          q: 'Is this an official service?',
-          a: 'No. Rest2Build is an independent third-party service with no authorization, partnership or endorsement from OpenAI, Anthropic or any other vendor.'
-        },
-        {
           q: 'What key do I get?',
           a: 'A service key issued by us that only works against this gateway. Upstream vendor keys are never shared, and we do not sell or share upstream accounts.'
-        },
-        {
-          q: 'Can you top up GPT Pro / Claude Pro for me?',
-          a: 'People search for this a lot. We do not sell accounts, log in for you or collect passwords. We only guide you through the official subscription page on your own account and help configure the client.'
         },
         {
           q: 'How do I get the free allowance? Do I need to leave a review?',

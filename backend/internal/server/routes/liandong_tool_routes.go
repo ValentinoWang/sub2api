@@ -20,8 +20,10 @@ func RegisterLiandongToolRoutes(
 ) {
 	ldxp := v1.Group("/admin/tools/ldxp")
 	ldxp.Use(gin.HandlerFunc(adminAuth))
-	ldxp.Use(panelRateLimiter.Global())
-	ldxp.Use(gin.HandlerFunc(auditLog))
+	if auditLog != nil {
+		ldxp.Use(gin.HandlerFunc(auditLog))
+	}
+	ldxp.Use(panelRateLimiter.LDXP())
 	ldxp.Use(middleware.AdminComplianceGuard(settingService))
 	{
 		ldxp.GET("/installation", h.GetInstallation)

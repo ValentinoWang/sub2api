@@ -149,4 +149,4 @@ go test -v ./internal/service -run '^(TestOpenAIStreamingTimeout|TestOpenAIStrea
 
 ## Production guardrail
 
-When local build errors happen, do not compensate by building on `43.136.113.101` or any 4 GB production host. First prove the old service is healthy, then upload only an already verified candidate archive. If `/health`, `/admin/ops`, SSH banner exchange, PostgreSQL, or Redis are unhealthy, recover the existing service before uploading or loading any image.
+When local build errors happen, do not compensate by building on `43.156.50.78` or any low-memory production host. First prove the old service is healthy, then upload only an already verified candidate archive. If `/health`, `/admin/ops`, SSH banner exchange, PostgreSQL, or Redis are unhealthy, recover the existing service before uploading or loading any image.

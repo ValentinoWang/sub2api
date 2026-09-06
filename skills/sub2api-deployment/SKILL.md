@@ -1,11 +1,13 @@
 ---
 name: sub2api-deployment
-description: Build, verify, troubleshoot, upload, notify users about maintenance, and safely cut over this Sub2API project's Docker image without compiling on the production server. Use for Sub2API releases, server updates, Docker image transfers, local Docker build failures, Go cache or registry mirror errors, production cutovers, deployment recovery, health or admin-login regressions, and any request to rebuild or deploy the 43.136.113.101 instance or another low-memory Sub2API host.
+description: Build, verify, troubleshoot, upload, notify users about maintenance, and safely cut over this Sub2API project's Docker image without compiling on the production server. Use for Sub2API releases, server updates, Docker image transfers, local Docker build failures, Go cache or registry mirror errors, production cutovers, deployment recovery, health or admin-login regressions, and any request to rebuild or deploy the 43.156.50.78 instance or another low-memory Sub2API host.
 ---
 
 # Sub2API Deployment
 
 Protect the running service before optimizing deployment speed. Never run `docker compose build`, `docker build`, `go build`, `pnpm build`, or BuildKit on a low-memory production host. Build `linux/amd64` on the Mac, verify it locally, upload an immutable image, and make cutover a separate decision.
+
+The only production SSH target is `ubuntu@43.156.50.78`. Its only Compose working directory is `/home/ubuntu/sub2api/deploy`, and its only Compose file is `docker-compose.local.yml`. Privileged Docker deployment commands use `sudo -n docker compose`. The public application base URL is `https://ai.rest2build.lol`. Verify DNS and SSH identity on every release rather than falling back to an older recorded address.
 
 The production host is an image consumer, not a build worker. The release image MUST be built by the local Docker/BuildKit environment (or an explicitly approved dedicated builder), then transferred as an immutable archive or pulled by an immutable registry digest. Do not expose the local Docker socket to a remote container, make a remote build depend on the local API connection, or compile on the production host. The running service must remain untouched while the local build, archive transfer, and remote `docker load` complete.
 
@@ -92,24 +94,23 @@ Use the following deployment boundary for the final replacement workflow:
 
 1. Build and test the candidate on the local machine with `--platform linux/amd64`. The candidate tag, numeric application version, source commit, image ID, and archive digest are the local release manifest.
 2. Transfer the archive or push the immutable digest while the current remote container continues serving traffic. `docker load` or an immutable `docker pull` MUST NOT recreate, restart, or replace the current container.
-3. Start the candidate as a separate `green` slot on a private port or internal network. It MUST pass a real readiness check, database/Redis checks, authenticated admin/API-key checks, and a representative `/responses` SSE completion before it is added to the public upstream set. `/health` alone is liveness evidence, not readiness evidence.
-4. Keep the client `base_url` on the stable domain or local failover relay. Never point Codex at the candidate port. If the current client control connection is fragile, run the release coordinator as a detached, durable job and persist its phase and log under a release-specific state directory. A foreground SSH or Codex stream MUST NOT be the only copy of the cutover state.
-5. Before traffic changes, publish the required maintenance notice. Mark `blue` as draining so it rejects new requests but keeps existing HTTP/SSE work alive until completion or the configured grace deadline. WebSocket sessions need explicit tracking and a bounded close policy; Go HTTP shutdown cannot transparently move a hijacked WebSocket to another process.
-6. Immediately before activation, clear `update_check_cache`, verify `TTL = -2`, atomically reload the stable proxy to the green slot, and run the public authenticated smoke checks. Keep blue and its image available for the rollback window.
-7. If any post-switch gate fails, reload the proxy to blue, record the failure, and only then clean up the candidate. Do not rebuild on the remote host as a reaction to a failed cutover.
+3. Do not introduce a second Compose project, an undocumented override file, or a green/blue slot on this host. The candidate is activated only through the existing single Compose file after the maintenance-notice gate.
+4. Keep the client `base_url` on the stable public domain. If the current client control connection is fragile, run the release coordinator as a detached, durable job and persist its phase and log under a release-specific state directory. A foreground SSH or Codex stream MUST NOT be the only copy of cutover state.
+5. Immediately before activation, clear `update_check_cache`, verify `TTL = -2`, run the single-service cutover command below, and then run public authenticated smoke checks. Keep the prior image available for the rollback window.
+6. If any post-cutover gate fails, restore the prior image through the same single Compose file, record the failure, and only then clean up the failed candidate. Do not rebuild on the remote host as a reaction to a failed cutover.
 
-The coordinator SHOULD persist explicit states such as `preflight`, `building_local`, `candidate_uploaded`, `green_ready`, `draining_blue`, `switched`, `observing`, `completed`, and `rolled_back`. A lost API/SSH connection must allow the job to finish or roll back independently and allow a later operator to read the last durable state.
+The coordinator SHOULD persist explicit states such as `preflight`, `building_local`, `candidate_uploaded`, `notice_published`, `switched`, `observing`, `completed`, and `rolled_back`. A lost API/SSH connection must allow the job to finish or roll back independently and allow a later operator to read the last durable state.
 
 This workflow protects new requests and lets existing streams drain; it does not promise that a TCP, SSE, or WebSocket connection that already died will be resumed byte-for-byte. For that case, require a stable request ID, idempotent retry semantics, and durable response/event state. The current completed-turn continuity ledger can rebuild a later request context, but it is not an in-flight event log or a WebSocket session migration protocol.
 
 ## Cutover
 
-Read the candidate image tag from `candidate.env`. On the server, verify that `deploy/docker-compose.server.yml` has no `build:` section and that the candidate image exists. Preserve the current container image ID only for the duration of cutover; remove any temporary rollback tag after acceptance if the user does not want retained rollback images.
+Read the candidate image tag from `candidate.env`. On the server, verify that the exact candidate image exists before activation. Use only `/home/ubuntu/sub2api/deploy/docker-compose.local.yml`; do not use a retired checkout, a retired server-only Compose override, or a second Compose override. Preserve the current container image ID only for the duration of cutover; remove any temporary rollback tag after acceptance if the user does not want retained rollback images.
 
 Before cutover, publish the maintenance notice through the site's own notification module. Use an admin API key or admin JWT from the environment; never place it in arguments, source, state files, or logs.
 
 ```bash
-export SUB2API_BASE_URL='http://43.136.113.101:8080'
+export SUB2API_BASE_URL='https://ai.rest2build.lol'
 export SUB2API_ADMIN_API_KEY='<admin api key>'
 node skills/sub2api-deployment/scripts/notify-maintenance.js \
   --event start --release '<version-or-commit>' --eta-minutes 5
@@ -120,11 +121,9 @@ Do not continue unless the command returns `maintenance_announcement_id=<id>`. T
 Use the server's existing Compose files and environment:
 
 ```bash
-cd /srv/sub2api/current
-SUB2API_IMAGE='sub2api-local:<commit>' \
-  docker compose \
-  -f deploy/docker-compose.local.yml \
-  -f deploy/docker-compose.server.yml \
+cd /home/ubuntu/sub2api/deploy
+sudo -n docker compose \
+  -f docker-compose.local.yml \
   up -d --no-build --no-deps --force-recreate sub2api
 ```
 

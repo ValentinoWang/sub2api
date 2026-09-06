@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -151,7 +152,11 @@ func newPanelTestRouter(limiter gin.HandlerFunc, identity *panelTestIdentity) *g
 }
 
 func performPanelRequest(router *gin.Engine, remoteAddr string) *httptest.ResponseRecorder {
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	return performPanelRequestMethod(router, http.MethodGet, remoteAddr)
+}
+
+func performPanelRequestMethod(router *gin.Engine, method, remoteAddr string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(method, "/test", nil)
 	req.RemoteAddr = remoteAddr
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -219,6 +224,74 @@ func TestPanelRateLimiterAdminExemption(t *testing.T) {
 	admin2 := newPanelTestRouter(p2.Global(), &panelTestIdentity{userID: 9, role: service.RoleAdmin})
 	require.Equal(t, http.StatusOK, performPanelRequest(admin2, "127.0.0.1:1000").Code)
 	require.Equal(t, http.StatusTooManyRequests, performPanelRequest(admin2, "127.0.0.1:1000").Code)
+}
+
+func TestPanelRateLimiterLDXPUsesDedicatedBudgetDespiteAdminExemption(t *testing.T) {
+	allower := &fakePanelAllower{}
+	p := &PanelRateLimiter{
+		limiter:        allower,
+		settingService: newPanelRateLimitTestService(t, `{"enabled":true,"user_rpm":1,"heavy_rpm":1,"exempt_admin":true,"public_ip_rpm":0}`),
+	}
+	admin := newPanelTestRouter(p.LDXP(), &panelTestIdentity{userID: 9, role: service.RoleAdmin})
+
+	require.Equal(t, http.StatusOK, performPanelRequest(admin, "127.0.0.1:1000").Code)
+	require.Equal(t, http.StatusTooManyRequests, performPanelRequest(admin, "127.0.0.1:1000").Code)
+
+	allower.mu.Lock()
+	defer allower.mu.Unlock()
+	var ldxpKey string
+	for key := range allower.counts {
+		if strings.HasPrefix(key, "panel:ldxp:user:9:operation:") {
+			ldxpKey = key
+		}
+	}
+	require.NotEmpty(t, ldxpKey)
+}
+
+func TestPanelRateLimiterLDXPFailsClosedForSideEffectsWhenUnavailable(t *testing.T) {
+	p := &PanelRateLimiter{
+		limiter:        &fakePanelAllower{err: errors.New("redis down")},
+		settingService: newPanelRateLimitTestService(t, `{"enabled":true,"user_rpm":1,"heavy_rpm":1,"exempt_admin":true,"public_ip_rpm":0}`),
+	}
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set(string(ContextKeyUser), AuthSubject{UserID: 9})
+		c.Set(string(ContextKeyUserRole), service.RoleAdmin)
+		c.Next()
+	})
+	router.Use(p.LDXP())
+	router.POST("/test", func(c *gin.Context) { c.Status(http.StatusOK) })
+
+	require.Equal(t, http.StatusServiceUnavailable, performPanelRequestMethod(router, http.MethodPost, "127.0.0.1:1000").Code)
+}
+
+func TestPanelRateLimiterLDXPAllowsReadOnlyStateWhenUnavailable(t *testing.T) {
+	p := &PanelRateLimiter{
+		limiter:        &fakePanelAllower{err: errors.New("redis down")},
+		settingService: newPanelRateLimitTestService(t, `{"enabled":true,"user_rpm":1,"heavy_rpm":1,"exempt_admin":true,"public_ip_rpm":0}`),
+	}
+	admin := newPanelTestRouter(p.LDXP(), &panelTestIdentity{userID: 9, role: service.RoleAdmin})
+	require.Equal(t, http.StatusOK, performPanelRequest(admin, "127.0.0.1:1000").Code)
+}
+
+func TestPanelRateLimiterLDXPNilDependencyFailsClosedForExport(t *testing.T) {
+	var nilLimiter *PanelRateLimiter
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set(string(ContextKeyUser), AuthSubject{UserID: 9})
+		c.Set(string(ContextKeyUserRole), service.RoleAdmin)
+		c.Next()
+	})
+	router.Use(nilLimiter.LDXP())
+	router.GET("/api/v1/admin/tools/ldxp/jobs/:id/export", func(c *gin.Context) { c.Status(http.StatusOK) })
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/tools/ldxp/jobs/job-1/export", nil)
+	req.RemoteAddr = "127.0.0.1:1000"
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+	require.Equal(t, http.StatusServiceUnavailable, rec.Code)
 }
 
 func TestPanelRateLimiterDisabledOrMissingSubject(t *testing.T) {

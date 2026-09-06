@@ -106,6 +106,42 @@ func (s *PaymentOrderExpiryService) runOnce() {
 		slog.Info("[PaymentOrderExpiry] reconciled paid orders", "count", recovered)
 	}
 
+	membershipRecoveryCtx, cancel := context.WithTimeout(context.Background(), expiryCheckTimeout)
+	membershipRecovered, err := s.paymentSvc.ReconcileMembershipPaymentRecoveries(membershipRecoveryCtx)
+	cancel()
+	if err != nil {
+		slog.Warn("[PaymentOrderExpiry] failed to reconcile membership payment recoveries", "error", err)
+	} else if membershipRecovered > 0 {
+		slog.Info("[PaymentOrderExpiry] reconciled membership payment recoveries", "count", membershipRecovered)
+	}
+
+	membershipRefundAbortCtx, cancel := context.WithTimeout(context.Background(), expiryCheckTimeout)
+	membershipRefundAborted, err := s.paymentSvc.ReconcileMembershipRefundAborts(membershipRefundAbortCtx)
+	cancel()
+	if err != nil {
+		slog.Warn("[PaymentOrderExpiry] failed to reconcile membership refund aborts", "error", err)
+	} else if membershipRefundAborted > 0 {
+		slog.Info("[PaymentOrderExpiry] reconciled membership refund aborts", "count", membershipRefundAborted)
+	}
+
+	membershipRefundingCtx, cancel := context.WithTimeout(context.Background(), expiryCheckTimeout)
+	membershipRefundRecovered, err := s.paymentSvc.ReconcileMembershipRefunding(membershipRefundingCtx)
+	cancel()
+	if err != nil {
+		slog.Warn("[PaymentOrderExpiry] failed to reconcile interrupted membership refunds", "error", err)
+	} else if membershipRefundRecovered > 0 {
+		slog.Info("[PaymentOrderExpiry] reconciled interrupted membership refunds", "count", membershipRefundRecovered)
+	}
+
+	refundCtx, cancel := context.WithTimeout(context.Background(), expiryCheckTimeout)
+	finalized, err := s.paymentSvc.ReconcileMembershipRefundFinalizations(refundCtx)
+	cancel()
+	if err != nil {
+		slog.Warn("[PaymentOrderExpiry] failed to reconcile membership refunds", "error", err)
+	} else if finalized > 0 {
+		slog.Info("[PaymentOrderExpiry] reconciled membership refunds", "count", finalized)
+	}
+
 	expireCtx, cancel := context.WithTimeout(context.Background(), expiryCheckTimeout)
 	defer cancel()
 	expired, err := s.paymentSvc.ExpireTimedOutOrders(expireCtx)

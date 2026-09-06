@@ -2,16 +2,22 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"regexp"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	sqlmock "github.com/DATA-DOG/go-sqlmock"
 )
 
 func TestLiandongRestockTargetDefaultsAndLegacyCompatibility(t *testing.T) {
@@ -73,6 +79,9 @@ func TestLiandongRestockGeneratesUniqueTwentyCharacterCodes(t *testing.T) {
 		}) >= 0 {
 			t.Fatalf("invalid code %q", code)
 		}
+		if !strings.ContainsAny(code, liandongCodeDigits) || !strings.ContainsAny(code, liandongCodeLower) || !strings.ContainsAny(code, liandongCodeUpper) {
+			t.Fatalf("code %q does not contain every required character category", code)
+		}
 	}
 }
 
@@ -115,8 +124,8 @@ func TestLiandongRestockSegmentsAccountForEveryCode(t *testing.T) {
 	}
 }
 
-func TestLiandongRestockRemoteFailureIsRetryableButUnknownOutcomeIsNot(t *testing.T) {
-	t.Run("remote failure", func(t *testing.T) {
+func TestLiandongRestockUploadFailureNeedsReconciliation(t *testing.T) {
+	t.Run("application rejection", func(t *testing.T) {
 		var uploadCount atomic.Int32
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -135,21 +144,21 @@ func TestLiandongRestockRemoteFailureIsRetryableButUnknownOutcomeIsNot(t *testin
 		}))
 		defer server.Close()
 		svc, _, _ := newLiandongTestService(server.URL)
-		if err := svc.RunOnce(context.Background(), true); err == nil {
-			t.Fatal("expected definite remote rejection")
+		if err := svc.RunOnce(context.Background(), true); !errors.Is(err, ErrLiandongNeedsReconciliation) {
+			t.Fatalf("application rejection error = %v, want reconciliation", err)
 		}
 		batches, err := svc.loadBatchStatuses(context.Background(), 20)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(batches) != 1 || batches[0].Status != liandongBatchStatusFailed {
-			t.Fatalf("failure status = %+v, want failed", batches)
+		if len(batches) != 1 || batches[0].Status != liandongBatchStatusNeedsReconciliation {
+			t.Fatalf("failure status = %+v, want needs_reconciliation", batches)
 		}
-		if err := svc.RunOnce(context.Background(), true); err != nil {
-			t.Fatal(err)
+		if err := svc.RunOnce(context.Background(), true); !errors.Is(err, ErrLiandongNeedsReconciliation) {
+			t.Fatalf("retry error = %v, want reconciliation gate", err)
 		}
-		if uploadCount.Load() != 2 {
-			t.Fatalf("upload count = %d, want retry after definite failure", uploadCount.Load())
+		if uploadCount.Load() != 1 {
+			t.Fatalf("upload count = %d, want no blind retry", uploadCount.Load())
 		}
 	})
 
@@ -264,16 +273,23 @@ func TestLiandongRestockPreviewAndManualJobRemainOperationallySeparate(t *testin
 	if err := validateLiandongCodeSet(lines); err != nil {
 		t.Fatal(err)
 	}
+	svc.configMu.Lock()
+	svc.codeSecret = []byte(strings.Repeat("rotated", 8))
+	svc.configMu.Unlock()
+	if _, err := svc.ExportJob(context.Background(), readBack.JobID); err == nil {
+		t.Fatal("historical export must be refused after code-secret rotation")
+	}
 }
 
 func TestLiandongManualJobOutlivesRequestContext(t *testing.T) {
 	requestStarted := make(chan struct{})
+	var requestStartedOnce sync.Once
 	releaseRequest := make(chan struct{})
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/merchantApi/goodsCardStorage/list":
-			close(requestStarted)
+			requestStartedOnce.Do(func() { close(requestStarted) })
 			select {
 			case <-releaseRequest:
 				_, _ = io.WriteString(w, `{"code":1,"data":{"total":0}}`)
@@ -316,12 +332,13 @@ func TestLiandongManualJobOutlivesRequestContext(t *testing.T) {
 
 func TestLiandongManualJobRejectsResumeWhileRunning(t *testing.T) {
 	requestStarted := make(chan struct{})
+	var requestStartedOnce sync.Once
 	releaseRequest := make(chan struct{})
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/merchantApi/goodsCardStorage/list":
-			close(requestStarted)
+			requestStartedOnce.Do(func() { close(requestStarted) })
 			select {
 			case <-releaseRequest:
 				_, _ = io.WriteString(w, `{"code":1,"data":{"total":0}}`)
@@ -428,5 +445,317 @@ func TestLiandongRestockBatchSnapshotKeepsMappingVersionAndTarget(t *testing.T) 
 	}
 	if strings.Contains(string(raw), "merchant") || strings.Contains(string(raw), "secret") {
 		t.Fatal("batch snapshot unexpectedly contains credentials")
+	}
+}
+
+func TestLiandongCanceledUploadPersistsReconciliationBeforeReturning(t *testing.T) {
+	requestStarted := make(chan struct{})
+	releaseHandler := make(chan struct{})
+	var requestStartedOnce sync.Once
+	var uploadCount atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/merchantApi/GoodsCardStorage/add" {
+			http.NotFound(w, r)
+			return
+		}
+		uploadCount.Add(1)
+		requestStartedOnce.Do(func() { close(requestStarted) })
+		select {
+		case <-r.Context().Done():
+		case <-releaseHandler:
+		}
+	}))
+	defer server.Close()
+
+	svc, _, _ := newLiandongTestService(server.URL)
+	product := svc.products[0]
+	product.TargetStock = 1
+	batch := newLiandongPendingBatch(product, 0, 1, "", "2026-09-06T00:00:00Z")
+	batch.BatchID = "cancelled-upload"
+	batch.CodeSecretDigest = svc.currentLiandongCodeSecretDigest()
+	state := &LiandongRestockState{PendingBatch: batch}
+	requestContext, cancel := context.WithCancel(context.Background())
+	result := make(chan error, 1)
+	go func() { result <- svc.fulfillPendingBatch(requestContext, state) }()
+	select {
+	case <-requestStarted:
+	case <-time.After(time.Second):
+		t.Fatal("upload request did not start")
+	}
+	cancel()
+	select {
+	case err := <-result:
+		if !errors.Is(err, ErrLiandongNeedsReconciliation) {
+			t.Fatalf("cancelled upload error = %v, want reconciliation", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("cancelled upload did not return")
+	}
+	close(releaseHandler)
+	if !state.ReconciliationRequired {
+		t.Fatal("cancelled upload did not latch durable recovery state")
+	}
+	batches, err := svc.loadBatchStatuses(context.Background(), 20)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(batches) != 1 || batches[0].Status != liandongBatchStatusNeedsReconciliation {
+		t.Fatalf("batch status = %+v, want needs_reconciliation", batches)
+	}
+	segments, err := svc.loadLiandongSegmentStatuses(context.Background(), batch.BatchID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(segments) != 1 || segments[0].Status != liandongSegmentStatusNeedsReconciliation {
+		t.Fatalf("segment status = %+v, want needs_reconciliation", segments)
+	}
+	if err := svc.fulfillPendingBatch(context.Background(), state); !errors.Is(err, ErrLiandongNeedsReconciliation) {
+		t.Fatalf("latched retry error = %v, want reconciliation", err)
+	}
+	if uploadCount.Load() != 1 {
+		t.Fatalf("cancelled upload was replayed %d times", uploadCount.Load())
+	}
+}
+
+func TestLiandongSuccessfulUploadWithLocalAckFailureNeedsReconciliation(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	var uploadCount atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/merchantApi/GoodsCardStorage/add" {
+			http.NotFound(w, r)
+			return
+		}
+		uploadCount.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"code":1,"data":{}}`)
+	}))
+	defer server.Close()
+
+	svc, _, _ := newLiandongTestService(server.URL)
+	svc.db = db
+	product := svc.products[0]
+	product.TargetStock = 1
+	batch := newLiandongPendingBatch(product, 0, 1, "", "2026-09-06T00:00:00Z")
+	batch.BatchID = "ack-failure"
+	batch.CodeSecretDigest = svc.currentLiandongCodeSecretDigest()
+	codes, err := svc.deriveCodesChecked(batch)
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest := liandongCodesDigest(codes)
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO liandong_restock_batches")).
+		WithArgs(batch.BatchID, nil, batch.GoodsID, batch.CNYAmount, batch.USDCredit, len(codes), digest, sqlmock.AnyArg(), batch.CreatedAt, batch.MappingKey, batch.Version, batch.GrantType, batch.ExternalURL, batch.TargetStock, sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO liandong_restock_segments")).
+		WithArgs(batch.BatchID, 0, 0, len(codes), digest).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	codeDigest := sha256.Sum256([]byte(codes[0]))
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO liandong_restock_batch_codes")).
+		WithArgs(batch.BatchID, hex.EncodeToString(codeDigest[:]), codes[0][:11], 0).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectCommit()
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT status FROM liandong_restock_batches WHERE batch_id = $1")).
+		WithArgs(batch.BatchID).
+		WillReturnRows(sqlmock.NewRows([]string{"status"}).AddRow(liandongBatchStatusPending))
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT segment_no, ordinal_start, code_count, code_sha256, status, error, uploaded_at, updated_at FROM liandong_restock_segments WHERE batch_id = $1 ORDER BY segment_no")).
+		WithArgs(batch.BatchID).
+		WillReturnRows(sqlmock.NewRows([]string{"segment_no", "ordinal_start", "code_count", "code_sha256", "status", "error", "uploaded_at", "updated_at"}).
+			AddRow(0, 0, 1, digest, liandongSegmentStatusPending, nil, nil, time.Now()))
+	mock.ExpectExec(regexp.QuoteMeta("UPDATE liandong_restock_segments")).
+		WithArgs(batch.BatchID, 0, liandongSegmentStatusCodesCreated, nil, false).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec(regexp.QuoteMeta("UPDATE liandong_restock_segments")).
+		WithArgs(batch.BatchID, 0, liandongSegmentStatusUploaded, nil, true).
+		WillReturnError(errors.New("ack unavailable"))
+	mock.ExpectExec(regexp.QuoteMeta("UPDATE liandong_restock_segments")).
+		WithArgs(batch.BatchID, 0, liandongSegmentStatusNeedsReconciliation, "Liandong restock operation failed", false).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec(regexp.QuoteMeta("UPDATE liandong_restock_batches")).
+		WithArgs(batch.BatchID, "Liandong restock operation failed").
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	state := &LiandongRestockState{PendingBatch: batch}
+	err = svc.fulfillPendingBatch(context.Background(), state)
+	if !errors.Is(err, ErrLiandongNeedsReconciliation) {
+		t.Fatalf("ack failure error = %v, want reconciliation", err)
+	}
+	if uploadCount.Load() != 1 {
+		t.Fatalf("successful remote upload was attempted %d times", uploadCount.Load())
+	}
+	if !state.ReconciliationRequired {
+		t.Fatal("local acknowledgement failure did not latch recovery")
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestLiandongManualResumeContinuesSavedMultiProductPlan(t *testing.T) {
+	var uploadCount atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/merchantApi/goodsCardStorage/list":
+			_, _ = io.WriteString(w, `{"code":1,"data":{"total":0}}`)
+		case "/merchantApi/GoodsCardStorage/add":
+			var body struct {
+				GoodsID int64 `json:"goods_id"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				t.Error(err)
+			}
+			uploadCount.Add(1)
+			_, _ = io.WriteString(w, `{"code":1,"data":{}}`)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	svc, _, redeem := newLiandongTestService(server.URL)
+	redeem.failCreateOnce = true
+	svc.products[0].TargetStock = 1
+	svc.products = append(svc.products, LiandongRestockProduct{
+		CNYAmount: 30, USDCredit: 4.17, GoodsID: 43, RestockCount: 3, TargetStock: 1, Enabled: true,
+	})
+	job, err := svc.StartManualJob(context.Background(), []int64{42, 43})
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc.waitForLiandongManualJobs()
+	failed, err := svc.GetJob(context.Background(), job.JobID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if failed.Status != LiandongRestockJobFailed || len(failed.Products) != 2 {
+		t.Fatalf("first job state = %+v, want failed two-product plan", failed)
+	}
+	resumed, err := svc.ResumeJob(context.Background(), job.JobID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resumed.Status != LiandongRestockJobQueued {
+		t.Fatalf("resume state = %q, want queued", resumed.Status)
+	}
+	svc.waitForLiandongManualJobs()
+	completed, err := svc.GetJob(context.Background(), job.JobID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if completed.Status != LiandongRestockJobCompleted || len(completed.Products) != 2 || len(completed.Batches) != 2 || completed.TotalUploaded != 2 {
+		t.Fatalf("resumed job state = %+v, want both products completed", completed)
+	}
+	if uploadCount.Load() != 2 {
+		t.Fatalf("upload count = %d, want two confirmed uploads after the safe local retry", uploadCount.Load())
+	}
+}
+
+func TestLiandongStopWorkerWaitsForAutomaticCycleAndClosesAdmission(t *testing.T) {
+	requestStarted := make(chan struct{})
+	releaseHandler := make(chan struct{})
+	var requestStartedOnce sync.Once
+	var releaseHandlerOnce sync.Once
+	release := func() { releaseHandlerOnce.Do(func() { close(releaseHandler) }) }
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/merchantApi/goodsCardStorage/list" {
+			http.NotFound(w, r)
+			return
+		}
+		requestStartedOnce.Do(func() { close(requestStarted) })
+		select {
+		case <-r.Context().Done():
+		case <-releaseHandler:
+		}
+	}))
+	defer func() {
+		release()
+		server.Close()
+	}()
+
+	svc, _, _ := newLiandongTestService(server.URL)
+	if err := svc.saveState(context.Background(), &LiandongRestockState{Enabled: true, Products: cloneLiandongProducts(svc.products)}); err != nil {
+		t.Fatal(err)
+	}
+	if !svc.scheduleAutomaticCycle() {
+		t.Fatal("automatic cycle was not admitted")
+	}
+	select {
+	case <-requestStarted:
+	case <-time.After(time.Second):
+		t.Fatal("automatic cycle did not start")
+	}
+	stopDone := make(chan struct{})
+	go func() {
+		svc.StopWorker()
+		close(stopDone)
+	}()
+	select {
+	case <-stopDone:
+	case <-time.After(time.Second):
+		t.Fatal("StopWorker did not wait for and cancel the automatic cycle")
+	}
+	release()
+	if svc.scheduleAutomaticCycle() {
+		t.Fatal("automatic cycle was admitted after shutdown")
+	}
+}
+
+func TestLiandongStaleRunningJobCanBeResumed(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/merchantApi/goodsCardStorage/list":
+			_, _ = io.WriteString(w, `{"code":1,"data":{"total":0}}`)
+		case "/merchantApi/GoodsCardStorage/add":
+			_, _ = io.WriteString(w, `{"code":1,"data":{}}`)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	svc, _, _ := newLiandongTestService(server.URL)
+	svc.products[0].TargetStock = 1
+	plan := liandongPreviewItem(svc.products[0], nil, 0, "queued")
+	now := time.Now().UTC()
+	job := &LiandongRestockJobSummary{
+		JobID: "stale-running", Status: LiandongRestockJobRunning, SelectedGoods: []int64{42},
+		CodeSecretDigest: svc.currentLiandongCodeSecretDigest(), Products: []LiandongRestockPreviewItem{plan},
+		CreatedAt: now.Add(-5 * time.Minute).Format(time.RFC3339), UpdatedAt: now.Add(-5 * time.Minute).Format(time.RFC3339),
+	}
+	svc.memoryJobs = map[string]*LiandongRestockJobSummary{job.JobID: job}
+	queued, err := svc.ResumeJob(context.Background(), job.JobID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if queued.Status != LiandongRestockJobQueued {
+		t.Fatalf("stale resume state = %q, want queued", queued.Status)
+	}
+	svc.waitForLiandongManualJobs()
+	completed, err := svc.GetJob(context.Background(), job.JobID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if completed.Status != LiandongRestockJobCompleted {
+		t.Fatalf("stale running job state = %+v, want completed", completed)
+	}
+}
+
+func TestLiandongExportRejectsNonCompletedJobs(t *testing.T) {
+	svc, _, _ := newLiandongTestService("https://ldxp.cn")
+	for _, status := range []string{LiandongRestockJobQueued, LiandongRestockJobRunning, LiandongRestockJobFailed, LiandongRestockJobNeedsReconciliation} {
+		jobID := "export-" + status
+		svc.memoryJobs = map[string]*LiandongRestockJobSummary{
+			jobID: {JobID: jobID, Status: status, SelectedGoods: []int64{42}},
+		}
+		if _, err := svc.ExportJob(context.Background(), jobID); err == nil {
+			t.Fatalf("export for %s unexpectedly succeeded", status)
+		}
 	}
 }

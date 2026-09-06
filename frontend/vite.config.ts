@@ -160,6 +160,10 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       port: devPort,
       proxy: {
+        '/health': {
+          target: backendUrl,
+          changeOrigin: true
+        },
         '/api': {
           target: backendUrl,
           changeOrigin: true

@@ -584,6 +584,45 @@ func TestQueryAndFinalizeRefundUnsupportedProviderReturnsClearError(t *testing.T
 	require.Equal(t, "REFUND_QUERY_UNSUPPORTED", infraerrors.Reason(err))
 }
 
+func TestFinalizeRefundFailedDoesNotOverwriteConcurrentRefunded(t *testing.T) {
+	ctx := context.Background()
+	client := newPaymentConfigServiceTestClient(t)
+	order := createPendingRefundOrderForTest(t, ctx, client, "finalize-refund-failed-cas")
+	order, err := client.PaymentOrder.UpdateOneID(order.ID).SetStatus(OrderStatusRefunded).Save(ctx)
+	require.NoError(t, err)
+
+	result, err := (&PaymentService{entClient: client}).finalizeRefundFailed(ctx, &dbent.PaymentOrder{ID: order.ID}, errors.New("provider reported failed"))
+	require.NoError(t, err)
+	require.Equal(t, "refund status changed concurrently", result.Warning)
+
+	reloaded, err := client.PaymentOrder.Get(ctx, order.ID)
+	require.NoError(t, err)
+	require.Equal(t, OrderStatusRefunded, reloaded.Status)
+}
+
+func TestMarkRefundPendingDoesNotOverwriteConcurrentRefunded(t *testing.T) {
+	ctx := context.Background()
+	client := newPaymentConfigServiceTestClient(t)
+	order := createPendingRefundOrderForTest(t, ctx, client, "mark-refund-pending-cas")
+	order, err := client.PaymentOrder.UpdateOneID(order.ID).SetStatus(OrderStatusRefunded).Save(ctx)
+	require.NoError(t, err)
+
+	result, err := (&PaymentService{entClient: client}).markRefundPending(ctx, &RefundPlan{
+		OrderID:       order.ID,
+		Order:         order,
+		RefundAmount:  order.RefundAmount,
+		GatewayAmount: order.RefundAmount,
+		Reason:        "stale pending response",
+	}, &payment.RefundResponse{Status: payment.ProviderStatusPending})
+	require.Nil(t, result)
+	require.Error(t, err)
+	require.Equal(t, "CONFLICT", infraerrors.Reason(err))
+
+	reloaded, err := client.PaymentOrder.Get(ctx, order.ID)
+	require.NoError(t, err)
+	require.Equal(t, OrderStatusRefunded, reloaded.Status)
+}
+
 func createPendingRefundOrderForTest(t *testing.T, ctx context.Context, client *dbent.Client, suffix string) *dbent.PaymentOrder {
 	t.Helper()
 
@@ -671,8 +710,17 @@ func (refundProviderTestDouble) Refund(context.Context, payment.RefundRequest) (
 type refundQueryProviderTestDouble struct {
 	refundProviderTestDouble
 	refundResponse *payment.RefundResponse
+	queryErr       error
+	queryCalls     int
+	refundCalls    int
+}
+
+func (p *refundQueryProviderTestDouble) Refund(context.Context, payment.RefundRequest) (*payment.RefundResponse, error) {
+	p.refundCalls++
+	return nil, errors.New("refund must not be called by reconciliation")
 }
 
 func (p *refundQueryProviderTestDouble) QueryRefund(context.Context, payment.RefundQueryRequest) (*payment.RefundResponse, error) {
-	return p.refundResponse, nil
+	p.queryCalls++
+	return p.refundResponse, p.queryErr
 }

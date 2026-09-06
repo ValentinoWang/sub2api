@@ -119,8 +119,10 @@ function simulateGuard(
     const restrictedPaths = [
       '/admin/groups',
       '/admin/subscriptions',
+      '/admin/membership',
       '/admin/redeem',
       '/subscriptions',
+      '/memberships',
       '/redeem',
     ]
     if (restrictedPaths.some((path) => toPath.startsWith(path))) {
@@ -270,6 +272,18 @@ describe('路由守卫逻辑', () => {
       expect(redirect).toBe('/dashboard')
     })
 
+    it('普通用户简易模式访问 /memberships 重定向到 /dashboard', () => {
+      const authState: MockAuthState = {
+        isAuthenticated: true,
+        isAdmin: false,
+        isSimpleMode: true,
+        backendModeEnabled: false,
+        hasPendingAuthSession: false,
+      }
+      const redirect = simulateGuard('/memberships', {}, authState)
+      expect(redirect).toBe('/dashboard')
+    })
+
     it('普通用户简易模式访问 /redeem 重定向到 /dashboard', () => {
       const authState: MockAuthState = {
         isAuthenticated: true,
@@ -307,6 +321,18 @@ describe('路由守卫逻辑', () => {
         { requiresAdmin: true },
         authState
       )
+      expect(redirect).toBe('/admin/dashboard')
+    })
+
+    it('管理员简易模式访问 /admin/membership 重定向', () => {
+      const authState: MockAuthState = {
+        isAuthenticated: true,
+        isAdmin: true,
+        isSimpleMode: true,
+        backendModeEnabled: false,
+        hasPendingAuthSession: false,
+      }
+      const redirect = simulateGuard('/admin/membership', { requiresAdmin: true }, authState)
       expect(redirect).toBe('/admin/dashboard')
     })
 

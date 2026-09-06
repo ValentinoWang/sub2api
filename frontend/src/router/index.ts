@@ -353,6 +353,18 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/memberships',
+    name: 'Memberships',
+    component: () => import('@/views/membership/MembershipView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Membership Recharge',
+      titleKey: 'membership.title',
+      descriptionKey: 'membership.catalog'
+    }
+  },
+  {
     path: '/purchase',
     name: 'PurchaseSubscription',
     component: () => import('@/views/user/PaymentView.vue'),
@@ -487,6 +499,18 @@ const routes: RouteRecordRaw[] = [
       title: 'Liandong Store Toolkit',
       titleKey: 'ldxpToolkit.title',
       descriptionKey: 'ldxpToolkit.description'
+    }
+  },
+  {
+    path: '/admin/membership',
+    name: 'AdminMembership',
+    component: () => import('@/views/admin/MembershipView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Membership Fulfillment',
+      titleKey: 'adminMembership.title',
+      descriptionKey: 'adminMembership.safeData'
     }
   },
   {
@@ -1005,8 +1029,10 @@ router.beforeEach(async (to, _from, next) => {
     const restrictedPaths = [
       '/admin/groups',
       '/admin/subscriptions',
+      '/admin/membership',
       '/admin/redeem',
       '/subscriptions',
+      '/memberships',
       '/redeem'
     ]
 

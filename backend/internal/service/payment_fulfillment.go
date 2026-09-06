@@ -152,6 +152,15 @@ func expectedNotificationProviderKey(registry *payment.Registry, orderPaymentTyp
 }
 
 func (s *PaymentService) toPaid(ctx context.Context, o *dbent.PaymentOrder, tradeNo string, paid float64, pk string) error {
+	if !isSupportedPaymentOrderType(o.OrderType) {
+		return infraerrors.BadRequest("INVALID_ORDER_TYPE", "unsupported order type")
+	}
+	if o.OrderType == payment.OrderTypeMembership {
+		if s.membership == nil {
+			return infraerrors.Conflict("MEMBERSHIP_UNAVAILABLE", "membership payment awaiting reconciliation")
+		}
+		return s.membership.ConfirmPayment(ctx, o.ID, tradeNo)
+	}
 	previousStatus := o.Status
 	now := time.Now()
 	grace := now.Add(-paymentGraceMinutes * time.Minute)
@@ -222,16 +231,27 @@ func (s *PaymentService) executeFulfillment(ctx context.Context, oid int64) erro
 	if err != nil {
 		return fmt.Errorf("get order: %w", err)
 	}
-	if o.OrderType == payment.OrderTypeSubscription {
+	switch o.OrderType {
+	case payment.OrderTypeSubscription:
 		return s.ExecuteSubscriptionFulfillment(ctx, oid)
+	case payment.OrderTypeBalance:
+		return s.ExecuteBalanceFulfillment(ctx, oid)
+	case payment.OrderTypeMembership:
+		// Membership fulfillment is committed by membership.Engine.ConfirmPayment,
+		// which creates its task in the same transaction as the PAID transition.
+		return infraerrors.BadRequest("INVALID_ORDER_TYPE", "membership fulfillment must be confirmed by the payment callback")
+	default:
+		return infraerrors.BadRequest("INVALID_ORDER_TYPE", "unsupported order type")
 	}
-	return s.ExecuteBalanceFulfillment(ctx, oid)
 }
 
 func (s *PaymentService) ExecuteBalanceFulfillment(ctx context.Context, oid int64) error {
 	o, err := s.entClient.PaymentOrder.Get(ctx, oid)
 	if err != nil {
 		return infraerrors.NotFound("NOT_FOUND", "order not found")
+	}
+	if o.OrderType != payment.OrderTypeBalance {
+		return infraerrors.BadRequest("INVALID_ORDER_TYPE", "not a balance order")
 	}
 	if o.Status == OrderStatusCompleted {
 		return nil

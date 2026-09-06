@@ -76,3 +76,33 @@ func TestRegisterLiandongToolRoutesAppliesAuthAuditAndComplianceChain(t *testing
 	require.Equal(t, http.StatusOK, recorder.Code)
 	require.Equal(t, 1, auditCalls)
 }
+
+func TestRegisterLiandongToolRoutesAuditsBeforeDegradedSideEffectRejection(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	var auditCalls int
+	adminAuth := servermiddleware.AdminAuthMiddleware(func(c *gin.Context) {
+		c.Set(string(servermiddleware.ContextKeyUser), servermiddleware.AuthSubject{UserID: 17})
+		c.Set(string(servermiddleware.ContextKeyUserRole), "admin")
+		c.Next()
+	})
+	auditLog := servermiddleware.AuditLogMiddleware(func(c *gin.Context) {
+		auditCalls++
+		c.Next()
+	})
+	RegisterLiandongToolRoutes(
+		router.Group("/api/v1"),
+		adminhandler.NewLiandongToolkitHandler(nil, nil),
+		adminAuth,
+		auditLog,
+		nil,
+		nil,
+	)
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/api/v1/admin/tools/ldxp/installation", nil)
+	router.ServeHTTP(recorder, request)
+
+	require.Equal(t, http.StatusServiceUnavailable, recorder.Code)
+	require.Equal(t, 1, auditCalls)
+}

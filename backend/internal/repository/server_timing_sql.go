@@ -13,20 +13,28 @@ import (
 
 type serverTimingConnector struct {
 	base driver.Connector
+	now  func() time.Time
 }
 
 func newServerTimingConnector(base driver.Connector) driver.Connector {
-	return &serverTimingConnector{base: base}
+	return newServerTimingConnectorWithNow(base, time.Now)
+}
+
+func newServerTimingConnectorWithNow(base driver.Connector, now func() time.Time) driver.Connector {
+	if now == nil {
+		now = time.Now
+	}
+	return &serverTimingConnector{base: base, now: now}
 }
 
 func (c *serverTimingConnector) Connect(ctx context.Context) (driver.Conn, error) {
-	startedAt := time.Now()
+	startedAt := c.now()
 	conn, err := c.base.Connect(ctx)
-	servertiming.RecordInterval(ctx, servertiming.MetricDatabase, startedAt, time.Now())
+	servertiming.RecordInterval(ctx, servertiming.MetricDatabase, startedAt, c.now())
 	if err != nil {
 		return nil, err
 	}
-	return &serverTimingConn{Conn: conn}, nil
+	return &serverTimingConn{Conn: conn, now: c.now}, nil
 }
 
 func (c *serverTimingConnector) Driver() driver.Driver {
@@ -35,6 +43,7 @@ func (c *serverTimingConnector) Driver() driver.Driver {
 
 type serverTimingConn struct {
 	driver.Conn
+	now func() time.Time
 }
 
 func (c *serverTimingConn) Prepare(query string) (driver.Stmt, error) {
@@ -42,11 +51,11 @@ func (c *serverTimingConn) Prepare(query string) (driver.Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &serverTimingStmt{Stmt: stmt}, nil
+	return &serverTimingStmt{Stmt: stmt, now: c.now}, nil
 }
 
 func (c *serverTimingConn) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
-	startedAt := time.Now()
+	startedAt := c.now()
 	var (
 		stmt driver.Stmt
 		err  error
@@ -56,11 +65,11 @@ func (c *serverTimingConn) PrepareContext(ctx context.Context, query string) (dr
 	} else {
 		stmt, err = c.Conn.Prepare(query)
 	}
-	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, time.Now(), 1)
+	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, c.now(), 1)
 	if err != nil {
 		return nil, err
 	}
-	return &serverTimingStmt{Stmt: stmt}, nil
+	return &serverTimingStmt{Stmt: stmt, now: c.now}, nil
 }
 
 func (c *serverTimingConn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {
@@ -68,9 +77,9 @@ func (c *serverTimingConn) ExecContext(ctx context.Context, query string, args [
 	if !ok {
 		return nil, driver.ErrSkip
 	}
-	startedAt := time.Now()
+	startedAt := c.now()
 	result, err := execer.ExecContext(ctx, query, args)
-	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, time.Now(), 1)
+	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, c.now(), 1)
 	return result, err
 }
 
@@ -79,17 +88,17 @@ func (c *serverTimingConn) QueryContext(ctx context.Context, query string, args 
 	if !ok {
 		return nil, driver.ErrSkip
 	}
-	startedAt := time.Now()
+	startedAt := c.now()
 	rows, err := queryer.QueryContext(ctx, query, args)
-	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, time.Now(), 1)
+	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, c.now(), 1)
 	if err != nil || rows == nil {
 		return rows, err
 	}
-	return newServerTimingRows(ctx, rows), nil
+	return newServerTimingRows(ctx, rows, c.now), nil
 }
 
 func (c *serverTimingConn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
-	startedAt := time.Now()
+	startedAt := c.now()
 	var (
 		tx  driver.Tx
 		err error
@@ -107,18 +116,18 @@ func (c *serverTimingConn) BeginTx(ctx context.Context, opts driver.TxOptions) (
 		// legacy fallback for drivers that only implement Conn.Begin.
 		tx, err = c.Conn.Begin() //nolint:staticcheck // Required driver compatibility fallback.
 	}
-	servertiming.RecordInterval(ctx, servertiming.MetricDatabase, startedAt, time.Now())
+	servertiming.RecordInterval(ctx, servertiming.MetricDatabase, startedAt, c.now())
 	if err != nil || tx == nil {
 		return tx, err
 	}
-	return &serverTimingTx{Tx: tx, ctx: ctx}, nil
+	return &serverTimingTx{Tx: tx, ctx: ctx, now: c.now}, nil
 }
 
 func (c *serverTimingConn) Ping(ctx context.Context) error {
 	if pinger, ok := c.Conn.(driver.Pinger); ok {
-		startedAt := time.Now()
+		startedAt := c.now()
 		err := pinger.Ping(ctx)
-		servertiming.RecordInterval(ctx, servertiming.MetricDatabase, startedAt, time.Now())
+		servertiming.RecordInterval(ctx, servertiming.MetricDatabase, startedAt, c.now())
 		return err
 	}
 	return nil
@@ -126,9 +135,9 @@ func (c *serverTimingConn) Ping(ctx context.Context) error {
 
 func (c *serverTimingConn) ResetSession(ctx context.Context) error {
 	if resetter, ok := c.Conn.(driver.SessionResetter); ok {
-		startedAt := time.Now()
+		startedAt := c.now()
 		err := resetter.ResetSession(ctx)
-		servertiming.RecordInterval(ctx, servertiming.MetricDatabase, startedAt, time.Now())
+		servertiming.RecordInterval(ctx, servertiming.MetricDatabase, startedAt, c.now())
 		return err
 	}
 	return nil
@@ -150,10 +159,11 @@ func (c *serverTimingConn) CheckNamedValue(value *driver.NamedValue) error {
 
 type serverTimingStmt struct {
 	driver.Stmt
+	now func() time.Time
 }
 
 func (s *serverTimingStmt) ExecContext(ctx context.Context, args []driver.NamedValue) (driver.Result, error) {
-	startedAt := time.Now()
+	startedAt := s.now()
 	var (
 		result driver.Result
 		err    error
@@ -169,12 +179,12 @@ func (s *serverTimingStmt) ExecContext(ctx context.Context, args []driver.NamedV
 			result, err = s.Stmt.Exec(values) //nolint:staticcheck // Required driver compatibility fallback.
 		}
 	}
-	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, time.Now(), 1)
+	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, s.now(), 1)
 	return result, err
 }
 
 func (s *serverTimingStmt) QueryContext(ctx context.Context, args []driver.NamedValue) (driver.Rows, error) {
-	startedAt := time.Now()
+	startedAt := s.now()
 	var (
 		rows driver.Rows
 		err  error
@@ -190,11 +200,11 @@ func (s *serverTimingStmt) QueryContext(ctx context.Context, args []driver.Named
 			rows, err = s.Stmt.Query(values) //nolint:staticcheck // Required driver compatibility fallback.
 		}
 	}
-	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, time.Now(), 1)
+	servertiming.Record(ctx, servertiming.MetricDatabase, startedAt, s.now(), 1)
 	if err != nil || rows == nil {
 		return rows, err
 	}
-	return newServerTimingRows(ctx, rows), nil
+	return newServerTimingRows(ctx, rows, s.now), nil
 }
 
 func (s *serverTimingStmt) CheckNamedValue(value *driver.NamedValue) error {
@@ -218,23 +228,24 @@ func namedValues(args []driver.NamedValue) ([]driver.Value, error) {
 type serverTimingRows struct {
 	driver.Rows
 	ctx context.Context
+	now func() time.Time
 }
 
-func newServerTimingRows(ctx context.Context, rows driver.Rows) *serverTimingRows {
-	return &serverTimingRows{Rows: rows, ctx: ctx}
+func newServerTimingRows(ctx context.Context, rows driver.Rows, now func() time.Time) *serverTimingRows {
+	return &serverTimingRows{Rows: rows, ctx: ctx, now: now}
 }
 
 func (r *serverTimingRows) Close() error {
-	startedAt := time.Now()
+	startedAt := r.now()
 	err := r.Rows.Close()
-	servertiming.RecordInterval(r.ctx, servertiming.MetricDatabase, startedAt, time.Now())
+	servertiming.RecordInterval(r.ctx, servertiming.MetricDatabase, startedAt, r.now())
 	return err
 }
 
 func (r *serverTimingRows) Next(dest []driver.Value) error {
-	startedAt := time.Now()
+	startedAt := r.now()
 	err := r.Rows.Next(dest)
-	servertiming.RecordInterval(r.ctx, servertiming.MetricDatabase, startedAt, time.Now())
+	servertiming.RecordInterval(r.ctx, servertiming.MetricDatabase, startedAt, r.now())
 	return err
 }
 
@@ -250,9 +261,9 @@ func (r *serverTimingRows) NextResultSet() error {
 	if !ok {
 		return io.EOF
 	}
-	startedAt := time.Now()
+	startedAt := r.now()
 	err := rows.NextResultSet()
-	servertiming.RecordInterval(r.ctx, servertiming.MetricDatabase, startedAt, time.Now())
+	servertiming.RecordInterval(r.ctx, servertiming.MetricDatabase, startedAt, r.now())
 	return err
 }
 
@@ -294,18 +305,19 @@ func (r *serverTimingRows) ColumnTypePrecisionScale(index int) (int64, int64, bo
 type serverTimingTx struct {
 	driver.Tx
 	ctx context.Context
+	now func() time.Time
 }
 
 func (t *serverTimingTx) Commit() error {
-	startedAt := time.Now()
+	startedAt := t.now()
 	err := t.Tx.Commit()
-	servertiming.RecordInterval(t.ctx, servertiming.MetricDatabase, startedAt, time.Now())
+	servertiming.RecordInterval(t.ctx, servertiming.MetricDatabase, startedAt, t.now())
 	return err
 }
 
 func (t *serverTimingTx) Rollback() error {
-	startedAt := time.Now()
+	startedAt := t.now()
 	err := t.Tx.Rollback()
-	servertiming.RecordInterval(t.ctx, servertiming.MetricDatabase, startedAt, time.Now())
+	servertiming.RecordInterval(t.ctx, servertiming.MetricDatabase, startedAt, t.now())
 	return err
 }

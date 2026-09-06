@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -152,6 +153,73 @@ func TestPasskeyLoginAuditUsesCanonicalLoginActionAndOmitsCredentialBody(t *test
 	require.Contains(t, auditBodyOmittedRoutes, route)
 }
 
+func TestMembershipCredentialRoutesOmitAuditBodies(t *testing.T) {
+	for _, route := range []string{
+		"PUT /api/v1/membership/orders/:id/credential",
+		"POST /api/v1/admin/membership/cdks/import",
+	} {
+		require.Contains(t, auditBodyOmittedRoutes, route)
+	}
+}
+
+func TestMembershipAdminVerifyAndReviewOmitAuditBodies(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	cases := []struct {
+		method string
+		route  string
+		path   string
+		status int
+	}{
+		{method: http.MethodPost, route: "/api/v1/admin/membership/products/:sku/verify", path: "/api/v1/admin/membership/products/product-1/verify", status: http.StatusBadRequest},
+		{method: http.MethodPost, route: "/api/v1/admin/membership/orders/:id/review", path: "/api/v1/admin/membership/orders/order-1/review", status: http.StatusConflict},
+	}
+
+	repository := &auditCaptureRepository{}
+	auditService := service.NewAuditLogService(repository, nil)
+	auditService.Start()
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set(string(ContextKeyUser), AuthSubject{UserID: 77})
+		c.Set(string(ContextKeyUserRole), service.RoleAdmin)
+		c.Next()
+	})
+	router.Use(gin.HandlerFunc(NewAuditLogMiddleware(auditService)))
+	for _, tc := range cases {
+		status := tc.status
+		router.POST(tc.route, func(c *gin.Context) { c.Status(status) })
+	}
+
+	for _, tc := range cases {
+		request := httptest.NewRequest(tc.method, tc.path, bytes.NewBufferString(`{"evidence_ref":"https://example.invalid/evidence?token=url-secret","session":"session-secret","cdk":"CDK-ABCD-1234-EFGH-5678","token":"jwt-secret"}`))
+		request.Header.Set("Content-Type", "application/json")
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+		require.Equal(t, tc.status, recorder.Code)
+	}
+	auditService.Stop()
+
+	repository.mu.Lock()
+	logs := append([]*service.AuditLog(nil), repository.logs...)
+	repository.mu.Unlock()
+	require.Len(t, logs, len(cases))
+	byRoute := make(map[string]*service.AuditLog, len(logs))
+	for _, entry := range logs {
+		byRoute[entry.Path] = entry
+		require.Equal(t, "<credential-bearing body omitted>", entry.RequestBody)
+		require.NotNil(t, entry.ActorUserID)
+		require.EqualValues(t, 77, *entry.ActorUserID)
+		require.Equal(t, service.RoleAdmin, entry.ActorRole)
+		for _, secret := range []string{"session-secret", "CDK-ABCD-1234-EFGH-5678", "jwt-secret", "https://example.invalid", "url-secret"} {
+			require.NotContains(t, entry.RequestBody, secret)
+		}
+	}
+	for _, tc := range cases {
+		entry := byRoute[tc.route]
+		require.NotNil(t, entry)
+		require.Equal(t, tc.status, entry.StatusCode)
+	}
+}
+
 // Ollama 会话保存的请求体整体就是浏览器 Cookie 明文，键级脱敏清单曾漏掉裸键
 // "session"，必须走整体不入库路径，防止会话凭证长期留存在 audit_logs。
 func TestOllamaCloudUsageSessionRouteOmitsAuditBody(t *testing.T) {
@@ -187,4 +255,99 @@ func TestOllamaCloudUsageSessionRouteOmitsAuditBody(t *testing.T) {
 	require.Len(t, logs, 1)
 	require.Equal(t, "<credential-bearing body omitted>", logs[0].RequestBody)
 	require.NotContains(t, logs[0].RequestBody, "audit-canary")
+}
+
+func TestLiandongSensitiveReadsHaveStableActionsAndOmitQueryMetadata(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	paths := []struct {
+		route  string
+		path   string
+		action string
+	}{
+		{"/api/v1/admin/tools/ldxp/installation", "/api/v1/admin/tools/ldxp/installation", "admin.tools.ldxp.installation.read"},
+		{"/api/v1/admin/tools/ldxp/status", "/api/v1/admin/tools/ldxp/status", "admin.tools.ldxp.status.read"},
+		{"/api/v1/admin/tools/ldxp/goods", "/api/v1/admin/tools/ldxp/goods", "admin.tools.ldxp.goods.read"},
+		{"/api/v1/admin/tools/ldxp/jobs/:id", "/api/v1/admin/tools/ldxp/jobs/job-1", "admin.tools.ldxp.jobs.read"},
+	}
+	repository := &auditCaptureRepository{}
+	auditService := service.NewAuditLogService(repository, nil)
+	auditService.Start()
+
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set(string(ContextKeyUser), AuthSubject{UserID: 77})
+		c.Set(string(ContextKeyUserRole), service.RoleAdmin)
+		c.Next()
+	})
+	router.Use(gin.HandlerFunc(NewAuditLogMiddleware(auditService)))
+	for _, item := range paths {
+		route := item.route
+		router.GET(route, func(c *gin.Context) { c.JSON(http.StatusOK, gin.H{"ok": true}) })
+	}
+	for _, item := range paths {
+		request := httptest.NewRequest(http.MethodGet, item.path+"?url=https%3A%2F%2Fuser%3Apass%40example.invalid%2F%3Ftoken%3Dquery-secret", nil)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+		require.Equal(t, http.StatusOK, recorder.Code)
+	}
+	auditService.Stop()
+
+	repository.mu.Lock()
+	logs := append([]*service.AuditLog(nil), repository.logs...)
+	repository.mu.Unlock()
+	require.Len(t, logs, len(paths))
+	byAction := make(map[string]*service.AuditLog, len(logs))
+	for _, entry := range logs {
+		byAction[entry.Action] = entry
+		require.Empty(t, entry.RequestBody)
+		require.NotContains(t, entry.Path, "?")
+		require.NotContains(t, entry.Path, "query-secret")
+		require.NotContains(t, entry.Extra, "query")
+		require.NotContains(t, entry.Extra, "query-secret")
+	}
+	for _, item := range paths {
+		require.NotNil(t, byAction[item.action])
+	}
+}
+
+func TestLiandongLimiterRejectionIsAuditedWithoutSensitiveMetadata(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repository := &auditCaptureRepository{}
+	auditService := service.NewAuditLogService(repository, nil)
+	auditService.Start()
+	limiter := &PanelRateLimiter{
+		limiter:        &fakePanelAllower{err: errors.New("redis unavailable")},
+		settingService: nil,
+	}
+
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set(string(ContextKeyUser), AuthSubject{UserID: 77})
+		c.Set(string(ContextKeyUserRole), service.RoleAdmin)
+		c.Next()
+	})
+	router.Use(gin.HandlerFunc(NewAuditLogMiddleware(auditService)))
+	router.Use(limiter.LDXP())
+	router.PUT("/api/v1/admin/tools/ldxp/config", func(c *gin.Context) { c.Status(http.StatusOK) })
+
+	request := httptest.NewRequest(http.MethodPut, "/api/v1/admin/tools/ldxp/config",
+		bytes.NewBufferString(`{"merchant_token":"merchant-secret","code_secret":"code-secret","external_url":"https://user:pass@example.invalid/?token=url-secret"}`))
+	request.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+	require.Equal(t, http.StatusServiceUnavailable, recorder.Code)
+	auditService.Stop()
+
+	repository.mu.Lock()
+	logs := append([]*service.AuditLog(nil), repository.logs...)
+	repository.mu.Unlock()
+	require.Len(t, logs, 1)
+	require.Equal(t, "admin.tools.ldxp.config.update", logs[0].Action)
+	require.Equal(t, http.StatusServiceUnavailable, logs[0].StatusCode)
+	require.Equal(t, "<credential-bearing body omitted>", logs[0].RequestBody)
+	for _, secret := range []string{"merchant-secret", "code-secret", "url-secret", "user:pass"} {
+		require.NotContains(t, logs[0].RequestBody, secret)
+		require.NotContains(t, logs[0].Path, secret)
+		require.NotContains(t, logs[0].Extra, secret)
+	}
 }

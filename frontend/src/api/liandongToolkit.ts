@@ -37,7 +37,7 @@ export type LiandongInstallationResponse = LiandongInstallationStatus | Liandong
 
 export interface LiandongProductMapping {
   goods_id: number
-  cny_amount: number
+  cny_amount?: number | null
   usd_credit: number
   target_stock: number
   enabled: boolean
@@ -194,6 +194,33 @@ export interface LiandongJob {
 }
 
 export type LiandongJobResponse = LiandongJob | { job: LiandongJob }
+
+export type LiandongOperationContext =
+  | 'installation'
+  | 'status'
+  | 'configuration'
+  | 'connection'
+  | 'goods'
+  | 'preview'
+  | 'run'
+  | 'job_status'
+  | 'resume'
+  | 'export'
+
+export interface LiandongApplicationError {
+  status?: number
+  code?: string | number
+  reason?: string
+  message?: string
+  metadata?: Record<string, unknown>
+}
+
+export const LIANDONG_TERMINAL_JOB_STATES = ['completed'] as const
+export const LIANDONG_UNSAFE_JOB_STATES = ['pending', 'queued', 'running', 'needs_reconciliation'] as const
+
+export function isLiandongTerminalJob(job: Pick<LiandongJob, 'status'> | null | undefined): boolean {
+  return job?.status === LIANDONG_TERMINAL_JOB_STATES[0]
+}
 
 export async function getInstallation(): Promise<LiandongInstallationStatus> {
   const { data } = await apiClient.get<LiandongInstallationStatus>(`${LIANDONG_TOOLKIT_BASE_PATH}/installation`)

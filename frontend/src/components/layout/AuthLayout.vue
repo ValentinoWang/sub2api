@@ -166,11 +166,10 @@ const apiBaseUrl = computed(() => {
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
   return origin && !/^https?:\/\/(localhost|127\.0\.0\.1)/.test(origin) ? origin : `https://${BRAND_DOMAIN}`
 })
-const { latencyMs, state: latencyState, probe: probeLatency } = useLatencyProbe()
+const { latencyMs, state: latencyState } = useLatencyProbe()
 
 onMounted(() => {
   appStore.fetchPublicSettings()
-  void probeLatency()
 })
 </script>
 

@@ -1,8 +1,8 @@
-# LDXP 销售渠道接入开发文档
+# LDXP 销售渠道与管理员工具开发文档
 
 ## 1. 文档目的
 
-本文定义链动小铺（LDXP）接入 Sub2API 的首期开发边界、数据契约、运行流程、管理接口和生产门禁。
+本文定义链动小铺（LDXP）接入 Sub2API 的首期开发边界、数据契约、运行流程、管理员工具、独立 CLI 和生产门禁。
 
 首期把 LDXP 定义为“外部销售渠道 + 卡密交付平台”，不把它注册为 Sub2API 原生支付 provider。Sub2API 继续维护唯一的余额和订阅权益账本；LDXP 负责商品展示、付款、发码和外部结算。
 
@@ -47,17 +47,23 @@ flowchart LR
 | --- | --- | --- |
 | 固定金额支付订单、权益履约 | `backend/internal/service/payment_order.go`、`payment_fulfillment.go` | 已有，继续服务原生收银台 |
 | Provider 实例和订单 snapshot | `backend/ent/schema/payment_order.go`、`backend/internal/payment` | 已有，不用于 LDXP 销售渠道订单 |
-| 生成确定性 LDXP 兑换码、查询未售库存、上传卡密 | `backend/internal/service/liandong_restock_service.go` | 已有服务和单测 |
-| LDXP 配置加密存储 | `LiandongRestockService.UpdateConfiguration` | 已有，Merchant Token 不明文保存 |
+| 生成确定性 LDXP 兑换码、查询未售库存、分段上传卡密 | `backend/internal/service/liandong_restock_core.go`、`liandong_restock_service.go` | 已实现；每批最多 1,000 条，20 位码同时含数字、小写和大写英文 |
+| LDXP 配置加密存储和商品映射版本 | `LiandongRestockService.UpdateConfiguration` | 已实现；Merchant Token 不明文返回，未映射或非余额商品不可补货 |
 | LDXP 兑换与 x-ui 履约边界 | `services/xui-sales/README.md` | 已有文档和独立服务 |
-| LDXP 服务的 Wire 注入、管理路由、运行时清理 | `backend/internal/service/wire.go`、`backend/internal/handler`、`backend/internal/server/routes` | 已接入；通过管理员 API 控制 |
+| LDXP 服务的 Wire 注入、管理路由、运行时清理 | `backend/cmd/server/wire.go`、`backend/internal/handler`、`backend/internal/server/routes` | 已接入；服务关闭时停止补货 worker |
+| 管理员工具页面 | `frontend/src/views/admin/LiandongToolkitView.vue` | 已实现，路径为 `/admin/tools/ldxp` |
+| 支付设置中的销售渠道入口 | `frontend/src/views/admin/SettingsView.vue` | 已实现；明确链动小铺不属于支付服务商，支付总开关关闭时仍可进入 `/admin/tools/ldxp`，支付页不再显示 GitHub 支付文档跳转 |
+| 独立 CLI | `tools/ldxp-toolkit` | 已实现，运行时不依赖 Node、Python 或浏览器 |
+| 固定工具安装包校验 | `backend/internal/service/liandong_tool_runtime.go` | 已实现；本地固定资产必须匹配服务端配置的 SHA-256 才可安装 |
 | LDXP 商品到订阅计划的完整映射 | `RedeemCode` 支持 `group_id/validity_days`，但首期补货服务只接受余额商品 | 原生订阅映射待后续版本 |
+
+支付设置页的桌面、移动布局和链动销售渠道入口维护在 [Sub2api 可编辑 Figma 设计](https://www.figma.com/design/bG5roZJVC4F4IQwaL8oeOk)。前端源码仍是运行行为的唯一权威；Figma 文件用于界面评审和响应式对照。
 
 ## 4. 第一阶段实现计划：销售渠道库存服务
 
 ### 4.1 商品映射模型
 
-建议把现有 `LiandongRestockProduct` 扩展为固定映射记录：
+当前 `LiandongRestockProduct` 是按 `goods_id` 固定的版本化映射；商品名称只用于管理员识别，绝不用于推断余额额度或权益类型：
 
 ```json
 {
@@ -66,13 +72,12 @@ flowchart LR
   "cny_amount": 20,
   "grant_type": "balance",
   "usd_credit": 2.78,
-  "group_id": null,
-  "validity_days": null,
-  "threshold": 20,
-  "restock_count": 50,
+  "target_stock": 50000,
   "enabled": true
 }
 ```
+
+可选的 `external_url` 仅作为公开商品参考地址。它必须是无用户信息、无查询字符串、无片段的公共 HTTP(S) URL，不能作为凭证或接口地址。
 
 当前实现使用字段 `grant_type`；首期只允许：
 
@@ -80,39 +85,51 @@ flowchart LR
 
 `subscription` 字段保留在持久化模型中用于后续扩展，但首期配置会拒绝该类型，不能把它当作已上线能力。
 
-补货批次必须固化映射快照，至少保存 `batch_id`、`goods_id`、`mapping_version`、权益类型、权益值、生成数量和创建时间。重试同一批次时必须生成完全相同的兑换码集合。
+补货批次在创建兑换码和上传前固化映射快照，至少保存 `batch_id`、`goods_id`、`mapping_version`、权益类型、权益值、目标库存、库存基线、生成数量和创建时间。一个批次所派生的卡密集合是确定的：安全随机配置密钥只在创建配置时生成，同一批次重试始终复用相同卡密集合，不能另建一组替代卡密。
+
+映射修改只影响之后创建的批次。存在未完成任务、失败任务或待核对结果时，系统拒绝用新映射覆盖该任务的输入。订阅映射仍不在首期补货范围内。
 
 ### 4.2 补货状态机
 
+下图是一次任务的处理阶段；持久化任务状态为 `queued`、`running`、`completed`、`failed` 或 `needs_reconciliation`，批次和分段状态单独记录：
+
 ```text
 CHECKING
-  -> STOCK_OK
-  -> BATCH_RESERVED
+  -> PLANNED: max(0, target_stock - current_unsold_stock)
+  -> PENDING_BATCH
   -> CODES_CREATED
+  -> SEGMENTS_UPLOADED
   -> UPLOADED
-  -> RECONCILED
 
-BATCH_RESERVED/CODES_CREATED/UPLOADED 失败
-  -> PENDING_RETRY
-  -> 使用同一 batch_id 重试
+可确认未写入远端的失败
+  -> FAILED
+  -> 以原 batch_id 和原卡密集合恢复
+
+远端写入结果不明
+  -> NEEDS_RECONCILIATION
+  -> 只能人工技术核对，禁止自动恢复或重传
 ```
 
 具体规则：
 
-1. 查询 LDXP 未售库存低于阈值后，先持久化 pending batch，再生成兑换码。
-2. 本地兑换码已存在时，必须逐字段核对权益类型、金额、分组和有效期；不一致立即失败。
-3. 上传失败保留 pending batch，不创建第二批码。
-4. 上传成功后再清除 pending batch，并保存本地库存快照。
-5. LDXP 返回异常、结构不完整或 HTTP 非 2xx 时，状态进入错误并保留可重试证据。
+1. 任务固定读取 `is_proxy=0` 商品的未售库存，并按 `新增量 = max(0, target_stock - current_unsold_stock)` 计算缺口。默认目标是 50,000；库存为 12,000 时计划新增 38,000。任务只使用其库存基线，不会在销售发生时持续追补。
+2. 提交前先持久化批次、映射快照和分段计划，再创建兑换码；每段最多 1,000 条。`preview` 是只读操作，既不生成兑换码，也不修改远端库存。
+3. 本地兑换码已存在时，必须逐字段核对权益类型、余额额度和批次关联；不一致立即失败。已确认上传的分段绝不再次提交。
+4. 可确认未发生远端写入的本地失败可恢复，恢复仍使用同一批次和同一组卡密，不能创建第二批卡密。
+5. 连接中断、超时、响应结构异常、HTTP 非 2xx、应用层拒绝，以及本地无法持久化远端确认，均按远端写入结果不明处理，进入 `needs_reconciliation`。库存变化只能作为辅助证据，不能单独证明一个分段内的全部卡密已上传。
+6. `needs_reconciliation` 是锁存停止状态，管理员页面、CLI 和自动任务都不能盲目重试或恢复；必须先完成受控的技术核对并更新可追溯证据。
 
 ### 4.3 运行时接入
 
-需要完成：
+当前运行时已完成以下接入：
 
-- 将 `ProvideLiandongRestockService` 加入 `backend/internal/service/wire.go` 的 ProviderSet。
-- 在服务生命周期结束时调用 `StopWorker()`（当前 worker 由 Wire 创建并随进程退出停止）。
-- 为未配置、配置不完整和 API 不可达分别返回可读状态，不自动启用销售渠道。
-- 后台状态中明确返回：
+- `backend/cmd/server/wire.go` 创建服务，并在进程关闭时停止补货 worker。
+- 管理员页面为 `/admin/tools/ldxp`；它显示工具安装状态、脱敏配置、映射、商品、预览和持久化任务进度。
+- 支付设置页单独显示“链动小铺销售渠道”入口，并明确它不是支付服务商；该入口不受原生支付总开关控制，只导航到固定的管理员工具页面。
+- 固定工具资产只能从服务端配置的本地文件安装。运行时校验操作系统、架构、文件完整性、执行权限、数据目录可写性和 SHA-256；安装与修复不下载 URL、不运行网页提交的命令。
+- 配置、凭证缺失或商户接口不可达分别提供可读状态，且不会自动启用销售渠道。
+
+后台状态包含：
 
 ```json
 {
@@ -126,24 +143,48 @@ BATCH_RESERVED/CODES_CREATED/UPLOADED 失败
 
 `payment_readiness=NOT_READY` 是原生支付聚合门禁，不代表已配置的库存补货任务不能在测试环境运行。
 
+### 4.4 独立 CLI
+
+`tools/ldxp-toolkit` 可独立运行，不依赖 Node、Python 或浏览器。它必须显式传入受保护的配置文件，所有任务请求仍经管理员工具 API 执行；CLI 不把链动商户凭证复制到作业请求中。
+
+```text
+ldxp-toolkit --config /secure/path/ldxp.json doctor
+ldxp-toolkit --config /secure/path/ldxp.json goods list
+ldxp-toolkit --config /secure/path/ldxp.json config validate
+ldxp-toolkit --config /secure/path/ldxp.json restock preview
+ldxp-toolkit --config /secure/path/ldxp.json restock run
+ldxp-toolkit --config /secure/path/ldxp.json jobs status --id JOB_ID
+ldxp-toolkit --config /secure/path/ldxp.json jobs resume --id JOB_ID
+ldxp-toolkit --config /secure/path/ldxp.json export --id JOB_ID
+```
+
+`doctor` 检查配置和私有数据目录权限；`preview` 仅计算和核验计划；`run` 创建持久化后台任务；`export` 仅导出所有分段均已确认上传的完成任务。CLI 输出会脱敏凭证和卡密内容，导出文件写入受保护的数据目录。
+
 ## 5. 管理 API 设计
 
-当前已实现接口统一挂在管理员认证、审计和合规门禁之后：
+当前已实现接口以 `/api/v1/admin/tools/ldxp` 为根路径，统一经过管理员认证、审计、专用 LDXP 限流和合规门禁：
 
 | 方法 | 路径 | 用途 |
 | --- | --- | --- |
-| `GET` | `/api/v1/admin/liandong/restock/status` | 查看脱敏配置、运行、库存、pending batch 和最近批次 |
-| `PUT` | `/api/v1/admin/liandong/restock/config` | 更新加密凭证和固定商品映射 |
-| `PUT` | `/api/v1/admin/liandong/restock/policies` | 更新阈值、补货数量和商品启用状态 |
-| `POST` | `/api/v1/admin/liandong/restock/run` | 手动执行一次补货检查，遵守 pending batch 幂等 |
-| `POST` | `/api/v1/admin/liandong/restock/enable` | 启用或停用自动补货，body 为 `{\"enabled\":true/false}` |
+| `GET` | `/installation` | 读取操作系统、架构、安装路径、权限和校验状态；不执行工具 |
+| `POST` | `/installation` | 从已配置的固定本地资产原子安装或修复工具 |
+| `GET` | `/status` | 读取脱敏配置、作业、批次和运行状态 |
+| `PUT` | `/config` | 更新加密商户配置和固定商品映射 |
+| `POST` | `/config/test` | 使用已持久化配置执行只读商户连通性测试 |
+| `GET` | `/goods` | 固定读取非代理商品，即 `is_proxy=0` |
+| `POST` | `/jobs/preview` | 计算只读补货计划 |
+| `POST` | `/jobs/run` | 创建持久化手动任务，返回 `202 Accepted` |
+| `GET` | `/jobs/:id` | 读取不含卡密的安全任务摘要 |
+| `POST` | `/jobs/:id/resume` | 仅恢复可确认安全失败的任务 |
+| `GET` | `/jobs/:id/export` | 流式导出符合导出条件的完成任务附件 |
 
 安全要求：
 
-- 响应只返回 `merchant_token_configured`、`code_secret_configured`，不返回凭证。
-- 配置变更前必须停止任务，且不能存在 pending batch。
-- 所有写操作使用现有管理审计和幂等机制。
-- `enable` 只能启用库存服务，不得改变原生支付 provider 的可用性。
+- 响应和普通审计记录只返回 `merchant_token_configured`、`code_secret_configured` 等配置状态，不返回商户凭证、完整卡密、卡密派生密钥摘要、带凭证 URL 或商户响应正文。
+- 映射变更不能改变开放任务、失败任务或待核对任务的执行输入。
+- 专用 LDXP 限流不接受普通管理员豁免。安装、配置、运行、恢复和导出操作在限流后端不可用时失败关闭；只读状态和预览才允许降级读取。
+- 后端只调用固定安装位置的工具及白名单子命令，通过受保护通道传递短期任务凭证；网页请求不能传入任意 Shell 命令、文件路径、URL 或归档包。
+- 自动补货仍是手动真实链路验收之后的独立运营决策，默认不作为本期生产能力启用；它不会改变原生支付 provider 的可用性。
 
 ## 6. 兑换和履约
 
@@ -203,13 +244,17 @@ Sub2API PaymentOrder(PENDING)
 - 商品映射重复的 `cny_amount` 或 `goods_id` 被拒绝。
 - 余额商品缺少正数 `usd_credit` 被拒绝。
 - 显式提交 `subscription` 商品被拒绝（首期只允许余额商品）。
-- 同一 pending batch 重试不会生成重复兑换码。
-- LDXP 上传失败会保留 pending batch，并在重试时上传相同内容。
+- 默认目标库存 50,000 时，库存为 0、12,000、50,000、超过目标的计划数量分别正确；跨页重复商品按 `goods_id` 去重，映射缺失和非法库存响应可见并阻止写入。
+- 50,000 条卡密均唯一、长度为 20、只包含数字/大小写英文，且每条同时含三类字符；同一批次派生的卡密集合完全一致。
+- 分段创建和上传不超过 1,000 条；已确认上传的分段不会重复提交。
+- 可确认安全失败可用原批次恢复，远端结果不明必须进入 `needs_reconciliation`，不能通过页面、CLI 或自动任务盲目恢复。
 - 本地兑换码权益字段不一致时拒绝继续上传。
 - 重复兑换不能重复入账或延长订阅。
 - 未配置、凭证缺失或库存 API 不可达时状态可见且不会自动启用销售渠道。
+- 固定工具资产的 SHA-256 不匹配、不可执行或数据目录不可写时，运行时不会就绪或安装。
+- 管理员页面、CLI 与后续自动任务共用同一个 LDXP 库存周期执行租约，不能并行启动相互竞争的补货任务。
 - `payment_readiness` 始终为 `NOT_READY`，不会出现在原生支付宝/微信支付方式列表。
-- `make test-xui-sales` 和相关 Go 单测通过。
+- 已完成的本地验证记录在 `.artifacts/ldxp-toolkit-implementation/ledger/wave-3.md`，包括后端完整测试与静态检查、服务层竞态测试、前端测试与生产构建、CLI 测试及 macOS/Linux 交叉构建。
 
 ### 第二阶段才验收
 
@@ -233,3 +278,7 @@ Sub2API PaymentOrder(PENDING)
 - 若声称已完成支付聚合，还必须附官方 API、签名回调和结算对账证据。
 
 在官方服务端契约缺失时，发布状态只能写为“LDXP 卡密销售渠道可选，原生支付聚合 NOT_READY”，不能写成“LDXP 支付 provider 已完成”。
+
+### 当前验证边界
+
+本地代码、构建和自动化测试已经完成，但尚未执行真实链动小铺商户协议核验、重复卡密语义核验、工具安装、数据库迁移应用、真实卡密创建，或单商品真实创建/上传/兑换闭环。生产补货前必须先在明确批准的测试商品上完成小批量受控验收，再逐步验证单商品 50,000 张规模；未知上传结果不计为成功。

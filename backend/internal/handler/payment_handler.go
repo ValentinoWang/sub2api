@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -228,6 +229,7 @@ func (h *PaymentHandler) GetLimits(c *gin.Context) {
 
 // CreateOrderRequest is the request body for creating a payment order.
 type CreateOrderRequest struct {
+	MembershipOrderID string  `json:"membership_order_id"`
 	Amount            float64 `json:"amount"`
 	PaymentType       string  `json:"payment_type" binding:"required"`
 	OpenID            string  `json:"openid"`
@@ -255,6 +257,10 @@ func (h *PaymentHandler) CreateOrder(c *gin.Context) {
 		response.BadRequest(c, "Invalid request: "+err.Error())
 		return
 	}
+	if strings.EqualFold(strings.TrimSpace(req.OrderType), payment.OrderTypeMembership) || strings.TrimSpace(req.MembershipOrderID) != "" {
+		response.ErrorWithDetails(c, http.StatusBadRequest, "Membership payments must be created through membership orders", "MEMBERSHIP_PAYMENT_ROUTE_REQUIRED", nil)
+		return
+	}
 	if strings.TrimSpace(req.WechatResumeToken) != "" {
 		claims, err := h.paymentService.ParseWeChatPaymentResumeToken(req.WechatResumeToken)
 		if err != nil {
@@ -272,20 +278,21 @@ func (h *PaymentHandler) CreateOrder(c *gin.Context) {
 		mobile = *req.IsMobile
 	}
 	result, err := h.paymentService.CreateOrder(c.Request.Context(), service.CreateOrderRequest{
-		UserID:          subject.UserID,
-		Amount:          req.Amount,
-		PaymentType:     req.PaymentType,
-		OpenID:          req.OpenID,
-		ClientIP:        c.ClientIP(),
-		IsMobile:        mobile,
-		IsWeChatBrowser: isWeChatBrowser(c),
-		SrcHost:         c.Request.Host,
-		SrcURL:          c.Request.Referer(),
-		ReturnURL:       req.ReturnURL,
-		PaymentSource:   req.PaymentSource,
-		OrderType:       req.OrderType,
-		PlanID:          req.PlanID,
-		Locale:          c.GetHeader("Accept-Language"),
+		MembershipOrderID: req.MembershipOrderID,
+		UserID:            subject.UserID,
+		Amount:            req.Amount,
+		PaymentType:       req.PaymentType,
+		OpenID:            req.OpenID,
+		ClientIP:          c.ClientIP(),
+		IsMobile:          mobile,
+		IsWeChatBrowser:   isWeChatBrowser(c),
+		SrcHost:           c.Request.Host,
+		SrcURL:            c.Request.Referer(),
+		ReturnURL:         req.ReturnURL,
+		PaymentSource:     req.PaymentSource,
+		OrderType:         req.OrderType,
+		PlanID:            req.PlanID,
+		Locale:            c.GetHeader("Accept-Language"),
 	})
 	if err != nil {
 		response.ErrorFrom(c, err)

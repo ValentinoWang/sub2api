@@ -699,12 +699,15 @@ export default {
       payment: {
         title: 'Payment Settings',
         description: 'Configure payment system options',
-        configGuide: 'Configuration Guide',
         enabled: 'Enable Payment',
         enabledHint: 'Enable or disable the payment system',
         enabledPaymentTypes: 'Enabled Providers',
         enabledPaymentTypesHint: 'Disabling a provider will also disable its instances.',
-        findProvider: 'Looking for a suitable EasyPay provider?',
+        ldxpSalesChannel: {
+          title: 'Liandong Store Sales Channel',
+          description: 'Manage fixed product mappings, redemption-code inventory, and restock jobs. This is an independent sales channel, not a payment provider, and remains available when payments are disabled.',
+          openToolkit: 'Open Liandong Store tools',
+        },
         minAmount: 'Minimum Amount',
         maxAmount: 'Maximum Amount',
         dailyLimit: 'Daily Limit',

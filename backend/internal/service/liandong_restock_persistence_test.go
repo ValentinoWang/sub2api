@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"io"
 	"regexp"
 	"testing"
@@ -53,7 +54,7 @@ func TestLiandongRestockPersistsBatchLifecycleAndReadsStatus(t *testing.T) {
 	require.NoError(t, svc.recordBatchPending(context.Background(), batch, codes))
 	mock.ExpectExec(regexp.QuoteMeta("UPDATE liandong_restock_batches")).WithArgs(batch.BatchID, 7).WillReturnResult(sqlmock.NewResult(0, 1))
 	require.NoError(t, svc.markBatchUploaded(context.Background(), batch.BatchID, 7))
-	mock.ExpectExec(regexp.QuoteMeta("UPDATE liandong_restock_batches")).WithArgs(batch.BatchID, "failed for test").WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec(regexp.QuoteMeta("UPDATE liandong_restock_batches")).WithArgs(batch.BatchID, "Liandong restock operation failed").WillReturnResult(sqlmock.NewResult(0, 1))
 	require.NoError(t, svc.markBatchFailed(context.Background(), batch.BatchID, errTestLiandongPersistence{}))
 
 	createdAt := time.Date(2026, 9, 6, 10, 0, 0, 0, time.UTC)
@@ -81,15 +82,37 @@ func TestLiandongRestockExportJobReadsNumericBatchAmount(t *testing.T) {
 	updatedAt := createdAt.Add(time.Minute)
 	completedAt := updatedAt.Add(time.Minute)
 	jobID := "job-20-cny"
+	codeSecretDigest := liandongCodeSecretDigest(service.codeSecret)
+	batchForDigest := &liandongRestockPendingBatch{BatchID: "batch-20-cny", Count: 2, CodeSecretDigest: codeSecretDigest}
+	codes, err := service.deriveCodesChecked(batchForDigest)
+	require.NoError(t, err)
+	snapshotRaw, err := json.Marshal(liandongRestockDurableMappingSnapshot{
+		MappingKey: "mapping-20", Version: 1, GoodsID: 42, CNYAmount: 20,
+		GrantType: "balance", USDCredit: 2.78, TargetStock: 50000, CodeSecretDigest: codeSecretDigest,
+	})
+	require.NoError(t, err)
+	summaryRaw, err := json.Marshal(LiandongRestockJobSummary{
+		JobID: jobID, Status: LiandongRestockJobCompleted, SelectedGoods: []int64{42},
+		CodeSecretDigest: codeSecretDigest,
+		Products: []LiandongRestockPreviewItem{{
+			Mapping:     LiandongRestockMappingSnapshot{MappingKey: "mapping-20", Version: 1, GoodsID: 42, CNYAmount: 20, GrantType: "balance", USDCredit: 2.78, TargetStock: 50000},
+			TargetStock: 50000, Enabled: true, Reason: "at_target",
+		}},
+	})
+	require.NoError(t, err)
 
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT job_id, status, selected_goods, summary, error, created_at, updated_at, completed_at FROM liandong_restock_jobs WHERE job_id = $1")).
 		WithArgs(jobID).
 		WillReturnRows(sqlmock.NewRows([]string{"job_id", "status", "selected_goods", "summary", "error", "created_at", "updated_at", "completed_at"}).
-			AddRow(jobID, LiandongRestockJobCompleted, []byte(`[42]`), []byte(`{"job_id":"job-20-cny","status":"completed","selected_goods":[42]}`), nil, createdAt, updatedAt, completedAt))
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT batch_id, job_id, goods_id, cny_amount::text, grant_value, grant_type, external_url, mapping_version, mapping_key, target_stock, code_count, created_at, remote_stock_before FROM liandong_restock_batches WHERE job_id = $1 ORDER BY created_at, batch_id")).
+			AddRow(jobID, LiandongRestockJobCompleted, []byte(`[42]`), summaryRaw, nil, createdAt, updatedAt, completedAt))
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT batch_id, job_id, goods_id, cny_amount::text, grant_value, grant_type, external_url, mapping_version, mapping_key, target_stock, code_count, status, mapping_snapshot, created_at, remote_stock_before FROM liandong_restock_batches WHERE job_id = $1 ORDER BY created_at, batch_id")).
 		WithArgs(jobID).
-		WillReturnRows(sqlmock.NewRows([]string{"batch_id", "job_id", "goods_id", "cny_amount", "grant_value", "grant_type", "external_url", "mapping_version", "mapping_key", "target_stock", "code_count", "created_at", "remote_stock_before"}).
-			AddRow("batch-20-cny", jobID, int64(42), "20.00", 2.78, "balance", "", 1, "mapping-20", 50000, 2, createdAt, nil))
+		WillReturnRows(sqlmock.NewRows([]string{"batch_id", "job_id", "goods_id", "cny_amount", "grant_value", "grant_type", "external_url", "mapping_version", "mapping_key", "target_stock", "code_count", "status", "mapping_snapshot", "created_at", "remote_stock_before"}).
+			AddRow("batch-20-cny", jobID, int64(42), "20.00", 2.78, "balance", "", 1, "mapping-20", 50000, 2, "uploaded", snapshotRaw, createdAt, nil))
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT segment_no, ordinal_start, code_count, code_sha256, status, error, uploaded_at, updated_at FROM liandong_restock_segments WHERE batch_id = $1 ORDER BY segment_no")).
+		WithArgs("batch-20-cny").
+		WillReturnRows(sqlmock.NewRows([]string{"segment_no", "ordinal_start", "code_count", "code_sha256", "status", "error", "uploaded_at", "updated_at"}).
+			AddRow(0, 0, 2, liandongCodesDigest(codes), "uploaded", nil, createdAt.Add(30*time.Second), updatedAt))
 
 	export, err := service.ExportJob(context.Background(), jobID)
 	require.NoError(t, err)
@@ -100,6 +123,27 @@ func TestLiandongRestockExportJobReadsNumericBatchAmount(t *testing.T) {
 	require.Len(t, lines, 2)
 	require.Equal(t, 2, export.CodeCount)
 	require.NoError(t, validateLiandongCodeSet(lines))
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestLiandongTerminalJobPersistenceFallsBackToRecoverableState(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer db.Close()
+	service := &LiandongRestockService{db: db}
+	job := &LiandongRestockJobSummary{
+		JobID: "terminal-failure", Status: LiandongRestockJobCompleted,
+		SelectedGoods: []int64{42}, CreatedAt: "2026-09-06T10:00:00Z", UpdatedAt: "2026-09-06T10:01:00Z",
+	}
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO liandong_restock_jobs")).
+		WillReturnError(errTestLiandongPersistence{})
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO liandong_restock_jobs")).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	err = service.persistTerminalLiandongJob(job, nil)
+	require.Error(t, err)
+	require.Equal(t, LiandongRestockJobNeedsReconciliation, job.Status)
+	require.Contains(t, job.Error, "terminal job state persistence failed")
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 

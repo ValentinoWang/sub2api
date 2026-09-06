@@ -112,6 +112,10 @@ var auditSensitiveReads = map[string]string{
 	"GET /api/v1/admin/accounts/data":              "admin.accounts.export",
 	"GET /api/v1/admin/proxies/data":               "admin.proxies.export",
 	"GET /api/v1/admin/redeem-codes/export":        "admin.redeem_codes.export",
+	"GET /api/v1/admin/tools/ldxp/installation":    "admin.tools.ldxp.installation.read",
+	"GET /api/v1/admin/tools/ldxp/status":          "admin.tools.ldxp.status.read",
+	"GET /api/v1/admin/tools/ldxp/goods":           "admin.tools.ldxp.goods.read",
+	"GET /api/v1/admin/tools/ldxp/jobs/:id":        "admin.tools.ldxp.jobs.read",
 	"GET /api/v1/admin/tools/ldxp/jobs/:id/export": "admin.tools.ldxp.jobs.export",
 	"GET /api/v1/admin/backups/:id/download-url":   "admin.backups.download",
 	"GET /api/v1/admin/settings/admin-api-key":     "admin.admin_api_key.read",
@@ -130,6 +134,12 @@ var auditActionOverrides = map[string]string{
 	"POST /api/v1/auth/refresh":                               service.AuditActionTokenRefresh,
 	"POST /api/v1/user/totp/step-up":                          service.AuditActionStepUpVerify,
 	"POST /api/v1/admin/audit-logs/clear":                     service.AuditActionAuditLogClear,
+	"POST /api/v1/admin/tools/ldxp/installation":              "admin.tools.ldxp.installation.install",
+	"PUT /api/v1/admin/tools/ldxp/config":                     "admin.tools.ldxp.config.update",
+	"POST /api/v1/admin/tools/ldxp/config/test":               "admin.tools.ldxp.config.test",
+	"POST /api/v1/admin/tools/ldxp/jobs/preview":              "admin.tools.ldxp.jobs.preview",
+	"POST /api/v1/admin/tools/ldxp/jobs/run":                  "admin.tools.ldxp.jobs.run",
+	"POST /api/v1/admin/tools/ldxp/jobs/:id/resume":           "admin.tools.ldxp.jobs.resume",
 	"POST /api/v1/admin/accounts/data":                        "admin.accounts.import",
 	"POST /api/v1/admin/backups":                              "admin.backups.create",
 	"POST /api/v1/admin/backups/:id/restore":                  "admin.backups.restore",
@@ -152,12 +162,22 @@ var auditBodyOmittedRoutes = map[string]struct{}{
 	"POST /api/v1/user/passkeys/register/finish":                {},
 	"POST /api/v1/admin/accounts/import/codex-session":          {},
 	"PUT /api/v1/admin/accounts/:id/ollama-cloud-usage/session": {},
+	"POST /api/v1/admin/tools/ldxp/installation":                {},
+	"PUT /api/v1/admin/tools/ldxp/config":                       {},
+	"POST /api/v1/admin/tools/ldxp/config/test":                 {},
+	"POST /api/v1/admin/tools/ldxp/jobs/preview":                {},
+	"POST /api/v1/admin/tools/ldxp/jobs/run":                    {},
+	"POST /api/v1/admin/tools/ldxp/jobs/:id/resume":             {},
 	"PUT /api/v1/admin/prompt-audit/config":                     {},
 	"POST /api/v1/admin/prompt-audit/endpoints/probe":           {},
 	"DELETE /api/v1/admin/prompt-audit/events/:id":              {},
 	"POST /api/v1/admin/prompt-audit/events/batch-delete":       {},
 	"POST /api/v1/admin/prompt-audit/events/delete-preview":     {},
 	"POST /api/v1/admin/prompt-audit/events/delete-by-filter":   {},
+	"PUT /api/v1/membership/orders/:id/credential":              {},
+	"POST /api/v1/admin/membership/cdks/import":                 {},
+	"POST /api/v1/admin/membership/products/:sku/verify":        {},
+	"POST /api/v1/admin/membership/orders/:id/review":           {},
 }
 
 // NewAuditLogMiddleware 创建审计中间件。
@@ -286,8 +306,10 @@ func NewAuditLogMiddleware(auditService *service.AuditLogService) AuditLogMiddle
 			}
 			extra["params"] = params
 		}
-		if q := service.RedactAuditQuery(c.Request.URL.RawQuery); q != "" {
-			extra["query"] = q
+		if !strings.HasPrefix(entry.Path, "/api/v1/admin/tools/ldxp") {
+			if q := service.RedactAuditQuery(c.Request.URL.RawQuery); q != "" {
+				extra["query"] = q
+			}
 		}
 		if len(extra) > 0 {
 			entry.Extra = extra

@@ -17,104 +17,124 @@ const fakeDriverDelay = 2 * time.Millisecond
 
 type timingFakeDriver struct{}
 
-func (timingFakeDriver) Open(string) (driver.Conn, error) { return newTimingFakeConn(), nil }
+func (timingFakeDriver) Open(string) (driver.Conn, error) {
+	return newTimingFakeConn(&timingFakeClock{current: time.Now()}), nil
+}
+
+type timingFakeClock struct {
+	current time.Time
+}
+
+func (c *timingFakeClock) Now() time.Time {
+	return c.current
+}
+
+func (c *timingFakeClock) Advance(duration time.Duration) {
+	c.current = c.current.Add(duration)
+}
 
 type timingFakeConnector struct {
-	conn driver.Conn
+	conn  driver.Conn
+	clock *timingFakeClock
 }
 
 func (c timingFakeConnector) Connect(context.Context) (driver.Conn, error) {
-	time.Sleep(fakeDriverDelay)
+	c.clock.Advance(fakeDriverDelay)
 	return c.conn, nil
 }
 
 func (timingFakeConnector) Driver() driver.Driver { return timingFakeDriver{} }
 
-type timingFakeConn struct{}
+type timingFakeConn struct {
+	clock *timingFakeClock
+}
 
-func newTimingFakeConn() *timingFakeConn { return &timingFakeConn{} }
+func newTimingFakeConn(clock *timingFakeClock) *timingFakeConn { return &timingFakeConn{clock: clock} }
 
 func (c *timingFakeConn) Prepare(string) (driver.Stmt, error) {
-	time.Sleep(fakeDriverDelay)
-	return &timingFakeStmt{}, nil
+	c.clock.Advance(fakeDriverDelay)
+	return &timingFakeStmt{clock: c.clock}, nil
 }
 
 func (c *timingFakeConn) PrepareContext(context.Context, string) (driver.Stmt, error) {
-	time.Sleep(fakeDriverDelay)
-	return &timingFakeStmt{}, nil
+	c.clock.Advance(fakeDriverDelay)
+	return &timingFakeStmt{clock: c.clock}, nil
 }
 
 func (c *timingFakeConn) Close() error { return nil }
 
 func (c *timingFakeConn) Begin() (driver.Tx, error) {
-	time.Sleep(fakeDriverDelay)
-	return &timingFakeTx{}, nil
+	c.clock.Advance(fakeDriverDelay)
+	return &timingFakeTx{clock: c.clock}, nil
 }
 
 func (c *timingFakeConn) BeginTx(context.Context, driver.TxOptions) (driver.Tx, error) {
-	time.Sleep(fakeDriverDelay)
-	return &timingFakeTx{}, nil
+	c.clock.Advance(fakeDriverDelay)
+	return &timingFakeTx{clock: c.clock}, nil
 }
 
 func (c *timingFakeConn) ExecContext(context.Context, string, []driver.NamedValue) (driver.Result, error) {
-	time.Sleep(fakeDriverDelay)
+	c.clock.Advance(fakeDriverDelay)
 	return driver.RowsAffected(1), nil
 }
 
 func (c *timingFakeConn) QueryContext(context.Context, string, []driver.NamedValue) (driver.Rows, error) {
-	time.Sleep(fakeDriverDelay)
-	return &timingFakeRows{values: [][]driver.Value{{"value"}}}, nil
+	c.clock.Advance(fakeDriverDelay)
+	return &timingFakeRows{values: [][]driver.Value{{"value"}}, clock: c.clock}, nil
 }
 
 func (c *timingFakeConn) Ping(context.Context) error {
-	time.Sleep(fakeDriverDelay)
+	c.clock.Advance(fakeDriverDelay)
 	return nil
 }
 
 func (c *timingFakeConn) ResetSession(context.Context) error {
-	time.Sleep(fakeDriverDelay)
+	c.clock.Advance(fakeDriverDelay)
 	return nil
 }
 
-type timingFakeStmt struct{}
+type timingFakeStmt struct {
+	clock *timingFakeClock
+}
 
 func (s *timingFakeStmt) Close() error  { return nil }
 func (s *timingFakeStmt) NumInput() int { return -1 }
 
 func (s *timingFakeStmt) Exec([]driver.Value) (driver.Result, error) {
-	time.Sleep(fakeDriverDelay)
+	s.clock.Advance(fakeDriverDelay)
 	return driver.RowsAffected(1), nil
 }
 
 func (s *timingFakeStmt) Query([]driver.Value) (driver.Rows, error) {
-	time.Sleep(fakeDriverDelay)
-	return &timingFakeRows{values: [][]driver.Value{{"value"}}}, nil
+	s.clock.Advance(fakeDriverDelay)
+	return &timingFakeRows{values: [][]driver.Value{{"value"}}, clock: s.clock}, nil
 }
 
 func (s *timingFakeStmt) ExecContext(context.Context, []driver.NamedValue) (driver.Result, error) {
-	time.Sleep(fakeDriverDelay)
+	s.clock.Advance(fakeDriverDelay)
 	return driver.RowsAffected(1), nil
 }
 
 func (s *timingFakeStmt) QueryContext(context.Context, []driver.NamedValue) (driver.Rows, error) {
-	time.Sleep(fakeDriverDelay)
-	return &timingFakeRows{values: [][]driver.Value{{"value"}}}, nil
+	s.clock.Advance(fakeDriverDelay)
+	return &timingFakeRows{values: [][]driver.Value{{"value"}}, clock: s.clock}, nil
 }
 
 type timingFakeRows struct {
 	values [][]driver.Value
 	index  int
+	clock  *timingFakeClock
 }
 
 func (r *timingFakeRows) Columns() []string { return []string{"value"} }
 
 func (r *timingFakeRows) Close() error {
-	time.Sleep(fakeDriverDelay)
+	r.clock.Advance(fakeDriverDelay)
 	return nil
 }
 
 func (r *timingFakeRows) Next(dest []driver.Value) error {
-	time.Sleep(fakeDriverDelay)
+	r.clock.Advance(fakeDriverDelay)
 	if r.index >= len(r.values) {
 		return io.EOF
 	}
@@ -123,15 +143,17 @@ func (r *timingFakeRows) Next(dest []driver.Value) error {
 	return nil
 }
 
-type timingFakeTx struct{}
+type timingFakeTx struct {
+	clock *timingFakeClock
+}
 
 func (t *timingFakeTx) Commit() error {
-	time.Sleep(fakeDriverDelay)
+	t.clock.Advance(fakeDriverDelay)
 	return nil
 }
 
 func (t *timingFakeTx) Rollback() error {
-	time.Sleep(fakeDriverDelay)
+	t.clock.Advance(fakeDriverDelay)
 	return nil
 }
 
@@ -150,11 +172,12 @@ func metricDuration(t *testing.T, header, metric string) float64 {
 }
 
 func TestServerTimingConnectorRecordsDriverCallsWithoutRowLifetime(t *testing.T) {
-	startedAt := time.Now()
+	clock := &timingFakeClock{current: time.Unix(100, 0)}
+	startedAt := clock.Now()
 	collector := servertiming.New(startedAt)
 	ctx := servertiming.WithCollector(context.Background(), collector)
 
-	wrapped := newServerTimingConnector(timingFakeConnector{conn: newTimingFakeConn()})
+	wrapped := newServerTimingConnectorWithNow(timingFakeConnector{conn: newTimingFakeConn(clock), clock: clock}, clock.Now)
 	rawConn, err := wrapped.Connect(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -177,7 +200,7 @@ func TestServerTimingConnectorRecordsDriverCallsWithoutRowLifetime(t *testing.T)
 	}
 
 	// Application work between row reads must remain app time.
-	time.Sleep(30 * time.Millisecond)
+	clock.Advance(30 * time.Millisecond)
 	if err := rows.Next(values); err != io.EOF {
 		t.Fatalf("rows.Next() = %v, want EOF", err)
 	}
@@ -185,22 +208,26 @@ func TestServerTimingConnectorRecordsDriverCallsWithoutRowLifetime(t *testing.T)
 		t.Fatal(err)
 	}
 
-	header := collector.HeaderValue(time.Now(), "bypass")
+	header := collector.HeaderValue(clock.Now(), "bypass")
 	if !strings.Contains(header, `queries=2`) {
 		t.Fatalf("header %q does not report two SQL operations", header)
 	}
 	if strings.Contains(header, "sensitive") {
 		t.Fatalf("SQL text leaked into header: %q", header)
 	}
-	if app, db := metricDuration(t, header, "app"), metricDuration(t, header, "db"); app <= db {
-		t.Fatalf("row processing gap was counted as DB time: app=%.1fms db=%.1fms header=%q", app, db, header)
+	if app, want := metricDuration(t, header, "app"), 30.0; app != want {
+		t.Fatalf("app duration = %.1fms, want %.1fms; row processing gap must remain app time: header=%q", app, want, header)
+	}
+	if db, want := metricDuration(t, header, "db"), 12.0; db != want {
+		t.Fatalf("DB duration = %.1fms, want %.1fms; row processing gap was counted as DB time: header=%q", db, want, header)
 	}
 }
 
 func TestServerTimingPreparedStatementsAndTransactions(t *testing.T) {
-	collector := servertiming.New(time.Now())
+	clock := &timingFakeClock{current: time.Unix(200, 0)}
+	collector := servertiming.New(clock.Now())
 	ctx := servertiming.WithCollector(context.Background(), collector)
-	conn := &serverTimingConn{Conn: newTimingFakeConn()}
+	conn := &serverTimingConn{Conn: newTimingFakeConn(clock), now: clock.Now}
 
 	stmt, err := conn.PrepareContext(ctx, "prepare sensitive statement")
 	if err != nil {
@@ -235,7 +262,7 @@ func TestServerTimingPreparedStatementsAndTransactions(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	header := collector.HeaderValue(time.Now(), "bypass")
+	header := collector.HeaderValue(clock.Now(), "bypass")
 	if !strings.Contains(header, `queries=3`) {
 		t.Fatalf("header %q does not report prepare, exec, and query operations", header)
 	}

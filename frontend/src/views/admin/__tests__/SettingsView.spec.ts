@@ -194,8 +194,10 @@ vi.mock("vue-i18n", async () => {
     "admin.settings.paymentVisibleMethods.sourceLabel": "支付来源",
     "admin.settings.paymentVisibleMethods.sourceHint": "启用后必须明确选择一个来源；未配置状态不会对外展示该支付方式。",
     "admin.settings.paymentVisibleMethods.sourceRequiredError": "{title} 已启用，请先选择支付来源。",
-    "admin.settings.payment.configGuide": "查看支付配置说明",
-    "admin.settings.payment.findProvider": "查看支持的支付方式",
+    "admin.settings.payment.ldxpSalesChannel.title": "链动小铺销售渠道",
+    "admin.settings.payment.ldxpSalesChannel.description":
+      "管理固定商品映射、兑换码库存与补货任务。它是独立销售渠道，不属于支付服务商，关闭支付总开关后仍可使用。",
+    "admin.settings.payment.ldxpSalesChannel.openToolkit": "打开链动小铺工具",
     "admin.settings.openaiExperimentalScheduler.title": "OpenAI 实验调度策略",
     "admin.settings.openaiExperimentalScheduler.description": "默认关闭。开启后仅影响本网关在 OpenAI 账号间的实验性调度选择逻辑，不代表上游 OpenAI 官方能力。",
     "admin.settings.openaiExperimentalScheduler.lowRatePriorityTitle": "低倍率优先",
@@ -260,6 +262,18 @@ vi.mock("vue-i18n", async () => {
 });
 
 const AppLayoutStub = { template: "<div><slot /></div>" };
+const RouterLinkStub = defineComponent({
+  props: {
+    to: {
+      type: String,
+      required: true,
+    },
+  },
+  inheritAttrs: false,
+  setup(props, { attrs, slots }) {
+    return () => h("a", { ...attrs, href: props.to }, slots.default?.());
+  },
+});
 const ToggleStub = defineComponent({
   props: {
     modelValue: {
@@ -548,6 +562,7 @@ function mountView() {
     global: {
       stubs: {
         AppLayout: AppLayoutStub,
+        RouterLink: RouterLinkStub,
         Select: SelectStub,
         Toggle: ToggleStub,
         Icon: true,
@@ -1035,28 +1050,27 @@ describe("admin SettingsView payment visible method controls", () => {
     );
   });
 
-  it("links payment guidance to README sections instead of removed payment docs", async () => {
+  it("shows the Liandong sales channel entry without payment GitHub links", async () => {
+    getSettings.mockResolvedValueOnce({
+      ...baseSettingsResponse,
+      payment_enabled: false,
+    });
     const wrapper = mountView();
 
     await flushPromises();
     await openPaymentTab(wrapper);
 
-    const paymentLinks = wrapper
-      .findAll("a")
-      .filter((node) =>
-        ["查看支付配置说明", "查看支持的支付方式"].includes(node.text()),
-      );
+    const entry = wrapper.get('[data-testid="ldxp-sales-channel-entry"]');
+    expect(entry.text()).toContain("链动小铺销售渠道");
+    expect(entry.text()).toContain("不属于支付服务商");
+    expect(entry.get('[data-testid="open-ldxp-toolkit"]').attributes("href")).toBe(
+      "/admin/tools/ldxp",
+    );
 
-    expect(paymentLinks).toHaveLength(2);
-    expect(paymentLinks[0]?.attributes("href")).toBe(
-      "https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT_CN.md",
-    );
-    expect(paymentLinks[1]?.attributes("href")).toBe(
-      "https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT_CN.md#支持的支付方式",
-    );
-    for (const link of paymentLinks) {
-      expect(link.attributes("href")).toContain("docs/PAYMENT");
-    }
+    const paymentLinks = wrapper.findAll('a[href*="github.com/Wei-Shaw/sub2api"][href*="PAYMENT"]');
+    expect(paymentLinks).toHaveLength(0);
+    expect(zhSettings.settings.payment.ldxpSalesChannel.description).toContain("不属于支付服务商");
+    expect(enSettings.settings.payment.ldxpSalesChannel.description).toContain("not a payment provider");
   });
 
   it("does not submit legacy visible payment method settings", async () => {
@@ -1231,6 +1245,7 @@ describe("admin SettingsView payment visible method controls", () => {
       global: {
         stubs: {
           AppLayout: AppLayoutStub,
+          RouterLink: RouterLinkStub,
           Select: SelectStub,
           Toggle: ToggleStub,
           Icon: true,
@@ -1529,6 +1544,7 @@ describe("admin SettingsView payment visible method controls", () => {
       global: {
         stubs: {
           AppLayout: AppLayoutStub,
+          RouterLink: RouterLinkStub,
           Select: SelectStub,
           Toggle: ToggleStub,
           Icon: true,

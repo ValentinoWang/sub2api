@@ -108,6 +108,26 @@ type Config struct {
 	ProxySubscription       ProxySubscriptionConfig       `mapstructure:"proxy_subscription"`
 	LiandongRestock         LiandongRestockConfig         `mapstructure:"liandong_restock"`
 	LiandongToolkit         LiandongToolkitConfig         `mapstructure:"liandong_toolkit"`
+	Membership              MembershipConfig              `mapstructure:"membership"`
+}
+
+// MembershipConfig contains only server-owned fulfillment settings. These
+// values must never be returned by public settings APIs.
+type MembershipConfig struct {
+	Enabled              bool   `mapstructure:"enabled"`
+	PaymentsEnabled      bool   `mapstructure:"payments_enabled"`
+	CredentialRedisURL   string `mapstructure:"credential_redis_url"`
+	KeyringJSON          string `mapstructure:"keyring_json"`
+	ActiveKeyID          string `mapstructure:"active_key_id"`
+	IdentityKey          string `mapstructure:"identity_key"`
+	BrowserURL           string `mapstructure:"browser_url"`
+	BrowserToken         string `mapstructure:"browser_token"`
+	AuditBucket          string `mapstructure:"audit_bucket"`
+	AuditRegion          string `mapstructure:"audit_region"`
+	AuditEndpoint        string `mapstructure:"audit_endpoint"`
+	AuditAccessKeyID     string `mapstructure:"audit_access_key_id"`
+	AuditSecretAccessKey string `mapstructure:"audit_secret_access_key"`
+	AuditUsePathStyle    bool   `mapstructure:"audit_use_path_style"`
 }
 
 type LiandongRestockConfig struct {
@@ -118,13 +138,15 @@ type LiandongRestockConfig struct {
 	IntervalSecs  int    `mapstructure:"interval_seconds"`
 }
 
-// LiandongToolkitConfig identifies the server-owned persistent location for
-// the packaged LDXP executable. These paths are configuration, never HTTP
-// request inputs, so the administrator tool cannot execute arbitrary files.
+// LiandongToolkitConfig identifies the server-owned persistent location and
+// release digest for the packaged LDXP executable. These values are
+// configuration, never HTTP request inputs, so the administrator tool cannot
+// execute arbitrary files or install an unverified asset.
 type LiandongToolkitConfig struct {
-	DataDir   string `mapstructure:"data_dir"`
-	AssetPath string `mapstructure:"asset_path"`
-	Version   string `mapstructure:"version"`
+	DataDir     string `mapstructure:"data_dir"`
+	AssetPath   string `mapstructure:"asset_path"`
+	AssetSHA256 string `mapstructure:"asset_sha256"`
+	Version     string `mapstructure:"version"`
 }
 
 // PluginConfig 控制管理员手动上传的本地进程插件。
@@ -2034,6 +2056,20 @@ func configureConfigSource(setConfigFile, addConfigPath func(string)) {
 
 func setDefaults() {
 	viper.SetDefault("run_mode", RunModeStandard)
+	viper.SetDefault("membership.enabled", false)
+	viper.SetDefault("membership.payments_enabled", false)
+	viper.SetDefault("membership.credential_redis_url", "")
+	viper.SetDefault("membership.keyring_json", "")
+	viper.SetDefault("membership.active_key_id", "")
+	viper.SetDefault("membership.identity_key", "")
+	viper.SetDefault("membership.browser_url", "")
+	viper.SetDefault("membership.browser_token", "")
+	viper.SetDefault("membership.audit_bucket", "")
+	viper.SetDefault("membership.audit_region", "")
+	viper.SetDefault("membership.audit_endpoint", "")
+	viper.SetDefault("membership.audit_access_key_id", "")
+	viper.SetDefault("membership.audit_secret_access_key", "")
+	viper.SetDefault("membership.audit_use_path_style", false)
 
 	// Server
 	viper.SetDefault("server.host", "0.0.0.0")
@@ -2347,10 +2383,12 @@ func setDefaults() {
 	viper.SetDefault("pricing.hash_check_interval_minutes", 10)
 
 	// LDXP toolkit assets and installed executable live below a dedicated
-	// server data directory. A release can override asset_path and version;
-	// absent assets remain an explicit not-ready state in the administrator UI.
+	// server data directory. A release must provide asset_sha256; absent assets
+	// or a missing digest remain an explicit not-ready state in the administrator
+	// UI.
 	viper.SetDefault("liandong_toolkit.data_dir", "./data")
 	viper.SetDefault("liandong_toolkit.asset_path", "")
+	viper.SetDefault("liandong_toolkit.asset_sha256", "")
 	viper.SetDefault("liandong_toolkit.version", "")
 
 	// 本地进程插件。插件必须由管理员手动上传，项目默认不携带任何插件能力。

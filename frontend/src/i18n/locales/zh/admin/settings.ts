@@ -694,12 +694,15 @@ export default {
       payment: {
         title: '支付设置',
         description: '配置支付系统选项',
-        configGuide: '支付配置指南',
         enabled: '启用支付',
         enabledHint: '启用或禁用支付系统',
         enabledPaymentTypes: '启用的服务商',
         enabledPaymentTypesHint: '禁用服务商将同时禁用对应的实例。',
-        findProvider: '正在寻找合适的易支付服务商？',
+        ldxpSalesChannel: {
+          title: '链动小铺销售渠道',
+          description: '管理固定商品映射、兑换码库存与补货任务。它是独立销售渠道，不属于支付服务商，关闭支付总开关后仍可使用。',
+          openToolkit: '打开链动小铺工具',
+        },
         minAmount: '最低金额',
         maxAmount: '最高金额',
         dailyLimit: '每日限额',

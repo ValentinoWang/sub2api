@@ -20,11 +20,34 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type providerCreateAttemptError struct{ err error }
+
+func (e *providerCreateAttemptError) Error() string { return e.err.Error() }
+func (e *providerCreateAttemptError) Unwrap() error { return e.err }
+
+func providerCreateMayHaveSucceeded(err error) bool {
+	var attempted *providerCreateAttemptError
+	return errors.As(err, &attempted)
+}
+
 // --- Order Creation ---
 
 func (s *PaymentService) CreateOrder(ctx context.Context, req CreateOrderRequest) (*CreateOrderResponse, error) {
 	if req.OrderType == "" {
 		req.OrderType = payment.OrderTypeBalance
+	}
+	if !isSupportedPaymentOrderType(req.OrderType) {
+		return nil, infraerrors.BadRequest("INVALID_ORDER_TYPE", "unsupported order type")
+	}
+	if req.OrderType == payment.OrderTypeMembership {
+		if s.membership == nil {
+			return nil, infraerrors.Forbidden("MEMBERSHIP_UNAVAILABLE", "membership checkout unavailable")
+		}
+		amount, err := s.membership.PaymentQuote(ctx, req.UserID, req.MembershipOrderID)
+		if err != nil {
+			return nil, infraerrors.Conflict("MEMBERSHIP_UNAVAILABLE", "membership order is not payable")
+		}
+		req.Amount = float64(amount) / 100
 	}
 	if normalized := NormalizeVisibleMethod(req.PaymentType); normalized != "" {
 		req.PaymentType = normalized
@@ -90,6 +113,9 @@ func (s *PaymentService) CreateOrder(ctx context.Context, req CreateOrderRequest
 			return nil, err
 		}
 	}
+	if req.OrderType == payment.OrderTypeMembership && selectedCurrency != "CNY" {
+		return nil, infraerrors.BadRequest("UNSUPPORTED_CURRENCY", "membership checkout requires CNY")
+	}
 	if err := validateSelectedCreateOrderAmountCurrency(payAmountStr, sel); err != nil {
 		return nil, err
 	}
@@ -106,9 +132,22 @@ func (s *PaymentService) CreateOrder(ctx context.Context, req CreateOrderRequest
 	}
 	resp, err := s.invokeProvider(ctx, order, req, cfg, limitAmount, payAmountStr, payAmount, plan, sel)
 	if err != nil {
-		_, _ = s.entClient.PaymentOrder.UpdateOneID(order.ID).
+		// A payment notification can arrive while the provider create request is
+		// unwinding. Only the still-pending creator may record this failure.
+		// Otherwise a settled payment could be overwritten by a stale transport
+		// error and become unrecoverable.
+		failed, updateErr := s.entClient.PaymentOrder.Update().
+			Where(paymentorder.IDEQ(order.ID), paymentorder.StatusEQ(OrderStatusPending)).
 			SetStatus(OrderStatusFailed).
 			Save(ctx)
+		if updateErr != nil {
+			return nil, fmt.Errorf("mark provider create failure: %w", updateErr)
+		}
+		if failed == 1 && req.OrderType == payment.OrderTypeMembership && s.membership != nil {
+			if recoverErr := s.membership.RecoverPaymentCreation(ctx, order.ID, providerCreateMayHaveSucceeded(err)); recoverErr != nil {
+				slog.Error("recover membership payment creation failed", "orderID", order.ID, "error", recoverErr)
+			}
+		}
 		return nil, err
 	}
 	return resp, nil
@@ -212,6 +251,14 @@ func (s *PaymentService) createOrderInTx(ctx context.Context, req CreateOrderReq
 	order, err := b.Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("create order: %w", err)
+	}
+	if req.OrderType == payment.OrderTypeMembership {
+		if s.membership == nil {
+			return nil, infraerrors.Forbidden("MEMBERSHIP_UNAVAILABLE", "membership checkout unavailable")
+		}
+		if err := s.membership.AttachPayment(ctx, tx.Client(), req.UserID, order.ID, req.MembershipOrderID, orderAmount); err != nil {
+			return nil, infraerrors.Conflict("MEMBERSHIP_CONFLICT", "membership order already has a payment or is unavailable")
+		}
 	}
 	code := fmt.Sprintf("PAY-%d-%d", order.ID, time.Now().UnixNano()%100000)
 	order, err = tx.PaymentOrder.UpdateOneID(order.ID).SetRechargeCode(code).Save(ctx)
@@ -453,9 +500,9 @@ func (s *PaymentService) invokeProvider(ctx context.Context, order *dbent.Paymen
 	if err != nil {
 		slog.Error("[PaymentService] CreatePayment failed", "provider", sel.ProviderKey, "instance", sel.InstanceID, "error", err)
 		if appErr := new(infraerrors.ApplicationError); errors.As(err, &appErr) {
-			return nil, appErr
+			return nil, &providerCreateAttemptError{err: appErr}
 		}
-		return nil, classifyCreatePaymentError(req, sel.ProviderKey, err)
+		return nil, &providerCreateAttemptError{err: classifyCreatePaymentError(req, sel.ProviderKey, err)}
 	}
 	sanitizeCreatePaymentResponseDetails(pr)
 	_, err = s.entClient.PaymentOrder.UpdateOneID(order.ID).
@@ -466,7 +513,7 @@ func (s *PaymentService) invokeProvider(ctx context.Context, order *dbent.Paymen
 		SetNillableProviderKey(psNilIfEmpty(sel.ProviderKey)).
 		Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("update order with payment details: %w", err)
+		return nil, &providerCreateAttemptError{err: fmt.Errorf("update order with payment details: %w", err)}
 	}
 	s.writeAuditLog(ctx, order.ID, "ORDER_CREATED", fmt.Sprintf("user:%d", req.UserID), map[string]any{
 		"paymentAmount":  req.Amount,

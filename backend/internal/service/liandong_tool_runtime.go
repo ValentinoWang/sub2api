@@ -12,14 +12,15 @@ import (
 	"strings"
 
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 const (
-	liandongToolkitDirectoryName = "ldxp"
-	liandongToolkitTargetDirName = "toolkit"
-	liandongToolkitProgramName   = "ldxp-toolkit"
-	liandongToolkitDefaultVer    = "unpackaged"
-	liandongToolkitChecksumLimit = 4096
+	liandongToolkitDirectoryName  = "ldxp"
+	liandongToolkitTargetDirName  = "toolkit"
+	liandongToolkitProgramName    = "ldxp-toolkit"
+	liandongToolkitDefaultVer     = "unpackaged"
+	liandongToolkitAssetSHA256Env = "LIANDONG_TOOLKIT_ASSET_SHA256"
 )
 
 var liandongToolkitArchiveSuffixes = []string{
@@ -36,10 +37,11 @@ var liandongToolkitArchiveSuffixes = []string{
 // LiandongToolkitRuntime manages only the fixed local toolkit executable. It
 // deliberately does not embed, download, unpack, or execute an asset.
 type LiandongToolkitRuntime struct {
-	dataDir     string
-	assetPath   string
-	programPath string
-	version     string
+	dataDir        string
+	assetPath      string
+	programPath    string
+	version        string
+	expectedSHA256 string
 }
 
 // DefaultLiandongToolkitAssetPath derives the package handoff location from
@@ -57,6 +59,17 @@ func DefaultLiandongToolkitProgramPath(dataDir string) string {
 // NewLiandongToolkitRuntime validates the application-provided local paths
 // and keeps the install destination independent from request data.
 func NewLiandongToolkitRuntime(cfg LiandongToolkitRuntimeConfig) (*LiandongToolkitRuntime, error) {
+	return newLiandongToolkitRuntime(cfg, configuredLiandongToolkitSHA256())
+}
+
+// NewLiandongToolkitRuntimeWithExpectedSHA256 is the explicit release-bound
+// constructor used by integrations and isolated tests. The regular
+// constructor reads the same value from the loaded application configuration.
+func NewLiandongToolkitRuntimeWithExpectedSHA256(cfg LiandongToolkitRuntimeConfig, expectedSHA256 string) (*LiandongToolkitRuntime, error) {
+	return newLiandongToolkitRuntime(cfg, expectedSHA256)
+}
+
+func newLiandongToolkitRuntime(cfg LiandongToolkitRuntimeConfig, expectedSHA256 string) (*LiandongToolkitRuntime, error) {
 	dataDir, err := normalizeLiandongToolkitLocalPath(cfg.DataDir, true)
 	if err != nil {
 		return nil, err
@@ -80,11 +93,19 @@ func NewLiandongToolkitRuntime(cfg LiandongToolkitRuntimeConfig) (*LiandongToolk
 	}
 
 	return &LiandongToolkitRuntime{
-		dataDir:     dataDir,
-		assetPath:   assetPath,
-		programPath: DefaultLiandongToolkitProgramPath(dataDir),
-		version:     version,
+		dataDir:        dataDir,
+		assetPath:      assetPath,
+		programPath:    DefaultLiandongToolkitProgramPath(dataDir),
+		version:        version,
+		expectedSHA256: strings.TrimSpace(expectedSHA256),
 	}, nil
+}
+
+func configuredLiandongToolkitSHA256() string {
+	if value, ok := os.LookupEnv(liandongToolkitAssetSHA256Env); ok {
+		return strings.TrimSpace(value)
+	}
+	return strings.TrimSpace(viper.GetString("liandong_toolkit.asset_sha256"))
 }
 
 func normalizeLiandongToolkitLocalPath(value string, dataPath bool) (string, error) {
@@ -146,16 +167,36 @@ func (r *LiandongToolkitRuntime) Status() LiandongToolkitInstallationStatus {
 		Version:             r.version,
 		Diagnostics:         make([]string, 0, 4),
 	}
+	expectedChecksum, expectedErr := liandongToolkitTrustedSHA256(r.expectedSHA256)
+	if expectedErr != nil {
+		if strings.TrimSpace(r.expectedSHA256) == "" {
+			status.Diagnostics = append(status.Diagnostics, "trusted toolkit SHA-256 is not configured")
+		} else {
+			status.Diagnostics = append(status.Diagnostics, "configured toolkit SHA-256 is invalid")
+		}
+	}
 
 	status.DataDirectoryWritable = liandongToolkitDirectoryWritable(r.dataDir)
 	if !status.DataDirectoryWritable {
 		status.Diagnostics = append(status.Diagnostics, "server data directory is not writable")
 	}
 
+	assetVerified := false
 	assetInfo, assetErr := os.Lstat(r.assetPath)
 	switch {
 	case assetErr == nil && assetInfo.Mode().IsRegular():
 		status.AssetAvailable = true
+		if expectedErr == nil {
+			assetChecksum, err := liandongToolkitSHA256(r.assetPath)
+			switch {
+			case err != nil:
+				status.Diagnostics = append(status.Diagnostics, "bundled toolkit asset SHA-256 is unavailable")
+			case !strings.EqualFold(assetChecksum, expectedChecksum):
+				status.Diagnostics = append(status.Diagnostics, "bundled toolkit asset SHA-256 does not match the configured release digest")
+			default:
+				assetVerified = true
+			}
+		}
 	case assetErr == nil:
 		status.Diagnostics = append(status.Diagnostics, "bundled toolkit asset is not a regular local file")
 	case errors.Is(assetErr, os.ErrNotExist):
@@ -175,6 +216,9 @@ func (r *LiandongToolkitRuntime) Status() LiandongToolkitInstallationStatus {
 			}
 			if digest, err := liandongToolkitSHA256(r.programPath); err == nil {
 				status.SHA256 = digest
+				if expectedErr == nil && !strings.EqualFold(digest, expectedChecksum) {
+					status.Diagnostics = append(status.Diagnostics, "installed toolkit SHA-256 does not match the configured release digest")
+				}
 			} else {
 				status.Diagnostics = append(status.Diagnostics, "installed toolkit SHA-256 is unavailable")
 			}
@@ -189,7 +233,11 @@ func (r *LiandongToolkitRuntime) Status() LiandongToolkitInstallationStatus {
 		status.Diagnostics = append(status.Diagnostics, "installed toolkit cannot be inspected")
 	}
 
-	status.Ready = status.Exists && status.Executable && status.DataDirectoryWritable
+	installedVerified := false
+	if expectedErr == nil && status.Exists && status.Executable && status.SHA256 != "" {
+		installedVerified = strings.EqualFold(status.SHA256, expectedChecksum)
+	}
+	status.Ready = expectedErr == nil && assetVerified && installedVerified && status.DataDirectoryWritable
 	return status
 }
 
@@ -217,6 +265,16 @@ func (r *LiandongToolkitRuntime) Install() (*LiandongToolkitInstallationResult, 
 	if filepath.Clean(r.assetPath) == filepath.Clean(r.programPath) {
 		return nil, infraerrors.BadRequest("LDXP_TOOLKIT_ASSET_REJECTED", "LDXP toolkit asset and destination must be different")
 	}
+	expectedChecksum, err := liandongToolkitTrustedSHA256(r.expectedSHA256)
+	if err != nil {
+		reason := "LDXP_TOOLKIT_CHECKSUM_INVALID"
+		message := "configured LDXP toolkit release SHA-256 is invalid"
+		if strings.TrimSpace(r.expectedSHA256) == "" {
+			reason = "LDXP_TOOLKIT_CHECKSUM_REQUIRED"
+			message = "configured LDXP toolkit release SHA-256 is required"
+		}
+		return nil, infraerrors.ServiceUnavailable(reason, message)
+	}
 
 	assetInfo, err := os.Lstat(r.assetPath)
 	if errors.Is(err, os.ErrNotExist) {
@@ -227,18 +285,6 @@ func (r *LiandongToolkitRuntime) Install() (*LiandongToolkitInstallationResult, 
 	}
 	if assetInfo.Mode()&os.ModeSymlink != 0 || !assetInfo.Mode().IsRegular() {
 		return nil, infraerrors.BadRequest("LDXP_TOOLKIT_ASSET_REJECTED", "LDXP toolkit asset must be a regular local file")
-	}
-
-	expectedChecksum, err := liandongToolkitAdjacentChecksum(r.assetPath)
-	if err != nil {
-		return nil, err
-	}
-	actualChecksum, err := liandongToolkitSHA256(r.assetPath)
-	if err != nil {
-		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_ASSET_UNREADABLE", "LDXP toolkit asset cannot be hashed")
-	}
-	if expectedChecksum != "" && !strings.EqualFold(expectedChecksum, actualChecksum) {
-		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_CHECKSUM_MISMATCH", "LDXP toolkit asset checksum verification failed")
 	}
 
 	targetDir := filepath.Dir(r.programPath)
@@ -274,11 +320,23 @@ func (r *LiandongToolkitRuntime) Install() (*LiandongToolkitInstallationResult, 
 		_ = temporary.Close()
 		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_ASSET_UNREADABLE", "LDXP toolkit asset cannot be opened")
 	}
-	_, copyErr := io.Copy(temporary, asset)
+	openedAssetInfo, statErr := asset.Stat()
+	if statErr != nil || !openedAssetInfo.Mode().IsRegular() {
+		_ = asset.Close()
+		_ = temporary.Close()
+		return nil, infraerrors.BadRequest("LDXP_TOOLKIT_ASSET_REJECTED", "LDXP toolkit asset must be a regular local file")
+	}
+	assetHash := sha256.New()
+	_, copyErr := io.Copy(io.MultiWriter(temporary, assetHash), asset)
 	closeAssetErr := asset.Close()
 	if copyErr != nil || closeAssetErr != nil {
 		_ = temporary.Close()
 		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_INSTALL_FAILED", "LDXP toolkit asset could not be copied")
+	}
+	actualChecksum := hex.EncodeToString(assetHash.Sum(nil))
+	if !strings.EqualFold(expectedChecksum, actualChecksum) {
+		_ = temporary.Close()
+		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_CHECKSUM_MISMATCH", "LDXP toolkit asset checksum verification failed")
 	}
 	if err := temporary.Chmod(0o700); err != nil {
 		_ = temporary.Close()
@@ -291,45 +349,48 @@ func (r *LiandongToolkitRuntime) Install() (*LiandongToolkitInstallationResult, 
 	if err := temporary.Close(); err != nil {
 		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_INSTALL_FAILED", "LDXP toolkit asset could not be closed")
 	}
+	stagedChecksum, err := liandongToolkitSHA256(temporaryPath)
+	if err != nil || !strings.EqualFold(stagedChecksum, expectedChecksum) {
+		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_INSTALL_FAILED", "staged LDXP toolkit checksum verification failed")
+	}
 	if err := os.Rename(temporaryPath, r.programPath); err != nil {
 		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_INSTALL_FAILED", "LDXP toolkit could not be atomically installed")
 	}
 	committed = true
 	if err := os.Chmod(r.programPath, 0o700); err != nil {
+		_ = os.Remove(r.programPath)
 		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_INSTALL_FAILED", "LDXP toolkit permissions could not be finalized")
+	}
+	installedInfo, err := os.Lstat(r.programPath)
+	if err != nil || installedInfo.Mode()&os.ModeSymlink != 0 || !installedInfo.Mode().IsRegular() {
+		_ = os.Remove(r.programPath)
+		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_INSTALL_FAILED", "installed LDXP toolkit is not a regular file")
+	}
+	installedChecksum, err := liandongToolkitSHA256(r.programPath)
+	if err != nil || !strings.EqualFold(installedChecksum, expectedChecksum) {
+		_ = os.Remove(r.programPath)
+		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_INSTALL_FAILED", "installed LDXP toolkit checksum verification failed")
 	}
 	if err := syncLiandongToolkitDirectory(targetDir); err != nil {
 		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_INSTALL_FAILED", "LDXP toolkit installation could not be finalized")
 	}
 
 	status := r.Status()
-	if !status.Exists || !status.Executable {
+	if !status.Ready {
 		return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_INSTALL_FAILED", "LDXP toolkit installation did not produce an executable file")
 	}
 	return &LiandongToolkitInstallationResult{Installed: true, Status: status}, nil
 }
 
-func liandongToolkitAdjacentChecksum(assetPath string) (string, error) {
-	checksumPath := assetPath + ".sha256"
-	info, err := os.Lstat(checksumPath)
-	if errors.Is(err, os.ErrNotExist) {
-		return "", nil
+func liandongToolkitTrustedSHA256(value string) (string, error) {
+	value = strings.TrimSpace(value)
+	if len(value) != sha256.Size*2 {
+		return "", errors.New("trusted LDXP toolkit SHA-256 is missing or malformed")
 	}
-	if err != nil || info.Mode()&os.ModeSymlink != 0 || !info.Mode().IsRegular() {
-		return "", infraerrors.ServiceUnavailable("LDXP_TOOLKIT_CHECKSUM_INVALID", "adjacent LDXP toolkit checksum is unavailable")
+	if _, err := hex.DecodeString(value); err != nil {
+		return "", errors.New("trusted LDXP toolkit SHA-256 is missing or malformed")
 	}
-	raw, err := os.ReadFile(checksumPath)
-	if err != nil || len(raw) > liandongToolkitChecksumLimit {
-		return "", infraerrors.ServiceUnavailable("LDXP_TOOLKIT_CHECKSUM_INVALID", "adjacent LDXP toolkit checksum is invalid")
-	}
-	fields := strings.Fields(string(raw))
-	if len(fields) == 0 || len(fields[0]) != sha256.Size*2 {
-		return "", infraerrors.ServiceUnavailable("LDXP_TOOLKIT_CHECKSUM_INVALID", "adjacent LDXP toolkit checksum is invalid")
-	}
-	if _, err := hex.DecodeString(fields[0]); err != nil {
-		return "", infraerrors.ServiceUnavailable("LDXP_TOOLKIT_CHECKSUM_INVALID", "adjacent LDXP toolkit checksum is invalid")
-	}
-	return strings.ToLower(fields[0]), nil
+	return strings.ToLower(value), nil
 }
 
 func liandongToolkitSHA256(path string) (string, error) {

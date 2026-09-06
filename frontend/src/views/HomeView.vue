@@ -834,7 +834,7 @@ async function copyBaseUrl() {
 }
 
 // Live latency probe against this deployment's /health
-const { latencyMs, state: latencyState, probe: probeLatency } = useLatencyProbe()
+const { latencyMs, state: latencyState } = useLatencyProbe()
 
 // Current year for footer
 const currentYear = computed(() => new Date().getFullYear())
@@ -928,7 +928,6 @@ onMounted(() => {
   }
 
   initReveal()
-  void probeLatency()
 })
 
 onBeforeUnmount(() => {

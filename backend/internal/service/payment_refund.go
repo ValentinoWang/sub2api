@@ -16,6 +16,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
 	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
 	"github.com/Wei-Shaw/sub2api/ent/paymentproviderinstance"
+	"github.com/Wei-Shaw/sub2api/ent/predicate"
 	"github.com/Wei-Shaw/sub2api/internal/payment"
 	"github.com/Wei-Shaw/sub2api/internal/payment/provider"
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
@@ -210,9 +211,24 @@ func (s *PaymentService) PrepareRefund(ctx context.Context, oid int64, amt float
 	if err != nil {
 		return nil, nil, infraerrors.NotFound("NOT_FOUND", "order not found")
 	}
+	if !isSupportedPaymentOrderType(o.OrderType) {
+		return nil, nil, infraerrors.BadRequest("INVALID_ORDER_TYPE", "unsupported order type")
+	}
 	ok := []string{OrderStatusCompleted, OrderStatusRefundRequested, OrderStatusRefundPending, OrderStatusRefundFailed}
+	if o.OrderType == payment.OrderTypeMembership {
+		if o.Status == OrderStatusRefundPending || o.Status == OrderStatusRefunding {
+			return nil, nil, infraerrors.Conflict("REFUND_QUERY_REQUIRED", "membership refund is already in progress; query or review the existing refund")
+		}
+		ok = []string{OrderStatusPaid, OrderStatusRefundFailed}
+		if s.membership == nil || force || deduct || (amt > 0 && math.Abs(amt-o.Amount) > paymentAmountToleranceForCurrency(PaymentOrderCurrency(o))) {
+			return nil, nil, infraerrors.BadRequest("MEMBERSHIP_REFUND_REVIEW", "membership refunds require confirmed non-delivery and a full refund")
+		}
+	}
 	if !psSliceContains(ok, o.Status) {
 		return nil, nil, infraerrors.BadRequest("INVALID_STATUS", "order status does not allow refund")
+	}
+	if o.OrderType == payment.OrderTypeMembership && s.hasAuditLog(ctx, o.ID, "REFUND_MANUAL_REVIEW") {
+		return nil, nil, infraerrors.Conflict("MEMBERSHIP_REFUND_REVIEW", "refund outcome requires manual review before another refund can be submitted")
 	}
 	// Check provider instance allows admin refund
 	inst, instErr := s.getRefundOrderProviderInstance(ctx, o)
@@ -246,6 +262,14 @@ func (s *PaymentService) PrepareRefund(ctx context.Context, oid int64, amt float
 		rr = fmt.Sprintf("refund order:%d", o.ID)
 	}
 	p := &RefundPlan{OrderID: oid, Order: o, RefundAmount: amt, GatewayAmount: ga, Reason: rr, Force: force, DeductBalance: deduct, DeductionType: payment.DeductionTypeNone}
+	if o.OrderType == payment.OrderTypeMembership {
+		if err := s.validateMembershipRefundPlan(p); err != nil {
+			return nil, nil, err
+		}
+		if err := s.membership.PrepareRefund(ctx, oid); err != nil {
+			return nil, nil, infraerrors.Conflict("MEMBERSHIP_REFUND_REVIEW", "resolve fulfillment before refunding")
+		}
+	}
 	if deduct {
 		if er := s.prepDeduct(ctx, o, p, force); er != nil {
 			return nil, er, nil
@@ -296,13 +320,42 @@ func (s *PaymentService) deductAvailableBalance(ctx context.Context, userID int6
 }
 
 func (s *PaymentService) ExecuteRefund(ctx context.Context, p *RefundPlan) (*RefundResult, error) {
-	c, err := s.entClient.PaymentOrder.Update().Where(paymentorder.IDEQ(p.OrderID), paymentorder.StatusIn(OrderStatusCompleted, OrderStatusRefundRequested, OrderStatusRefundPending, OrderStatusRefundFailed)).SetStatus(OrderStatusRefunding).Save(ctx)
+	if err := s.validateMembershipRefundPlan(p); err != nil {
+		return nil, err
+	}
+	where := []predicate.PaymentOrder{paymentorder.IDEQ(p.OrderID)}
+	if p.Order.OrderType == payment.OrderTypeMembership {
+		// A pending or in-flight membership refund may already have reached the
+		// gateway. It is recoverable only by querying its status, never by a
+		// second Refund submission.
+		where = append(where,
+			paymentorder.OrderTypeEQ(payment.OrderTypeMembership),
+			paymentorder.StatusIn(OrderStatusPaid, OrderStatusRefundFailed),
+		)
+	} else {
+		where = append(where, paymentorder.StatusIn(OrderStatusCompleted, OrderStatusRefundRequested, OrderStatusRefundPending, OrderStatusRefundFailed))
+	}
+	c, err := s.entClient.PaymentOrder.Update().Where(where...).
+		SetStatus(OrderStatusRefunding).
+		SetRefundAmount(p.RefundAmount).
+		SetRefundReason(p.Reason).
+		SetForceRefund(p.Force).
+		ClearFailedAt().
+		ClearFailedReason().
+		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("lock: %w", err)
 	}
 	if c == 0 {
 		return nil, infraerrors.Conflict("CONFLICT", "order status changed")
 	}
+	// Persist the intent before the provider call so a post-CAS crash can be
+	// reconciled by a status query without issuing another refund.
+	s.writeAuditLog(ctx, p.OrderID, "REFUND_INTENT", "admin", map[string]any{
+		"refundAmount": p.RefundAmount,
+		"reason":       p.Reason,
+		"force":        p.Force,
+	})
 	if p.DeductionType == payment.DeductionTypeBalance && p.BalanceToDeduct > 0 {
 		// Skip balance deduction on retry if previous attempt already deducted
 		// but failed to roll back (REFUND_ROLLBACK_FAILED in audit log).
@@ -423,6 +476,12 @@ func (s *PaymentService) QueryAndFinalizeRefund(ctx context.Context, oid int64) 
 	if err != nil {
 		return nil, infraerrors.NotFound("NOT_FOUND", "order not found")
 	}
+	if o.OrderType == payment.OrderTypeMembership && o.Status == OrderStatusRefunded {
+		if err := s.finalizeMembershipRefund(ctx, s.refundFinalizePlan(o)); err != nil {
+			return nil, err
+		}
+		return &RefundResult{Success: true}, nil
+	}
 	if o.Status != OrderStatusRefundPending {
 		return nil, infraerrors.BadRequest("INVALID_STATUS", "only refund pending orders can be finalized")
 	}
@@ -473,6 +532,9 @@ func (s *PaymentService) QueryAndFinalizeRefund(ctx context.Context, oid int64) 
 }
 
 func (s *PaymentService) finalizePendingRefundSuccess(ctx context.Context, p *RefundPlan) (_ *RefundResult, err error) {
+	if err := s.validateMembershipRefundPlan(p); err != nil {
+		return nil, err
+	}
 	tx, err := s.entClient.Tx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("begin refund finalization: %w", err)
@@ -505,6 +567,9 @@ func (s *PaymentService) finalizePendingRefundSuccess(ctx context.Context, p *Re
 	if err = tx.Commit(); err != nil {
 		return nil, fmt.Errorf("commit refund finalization: %w", err)
 	}
+	if err := s.finalizeMembershipRefund(ctx, p); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 
@@ -514,7 +579,7 @@ func (s *PaymentService) refundFinalizePlan(o *dbent.PaymentOrder) *RefundPlan {
 	if reason == "" {
 		reason = fmt.Sprintf("refund order:%d", o.ID)
 	}
-	return &RefundPlan{
+	plan := &RefundPlan{
 		OrderID:       o.ID,
 		Order:         o,
 		RefundAmount:  refundAmount,
@@ -530,6 +595,11 @@ func (s *PaymentService) refundFinalizePlan(o *dbent.PaymentOrder) *RefundPlan {
 			return 0
 		}(),
 	}
+	if o.OrderType == payment.OrderTypeMembership {
+		plan.DeductBalance = false
+		plan.DeductionType = payment.DeductionTypeNone
+	}
+	return plan
 }
 
 func (s *PaymentService) applyRefundFinalDeduction(ctx context.Context, p *RefundPlan) error {
@@ -556,7 +626,21 @@ func (s *PaymentService) applyRefundFinalDeduction(ctx context.Context, p *Refun
 
 func (s *PaymentService) finalizeRefundFailed(ctx context.Context, o *dbent.PaymentOrder, gErr error) (*RefundResult, error) {
 	now := time.Now()
-	_, _ = s.entClient.PaymentOrder.UpdateOneID(o.ID).SetStatus(OrderStatusRefundFailed).SetFailedAt(now).SetFailedReason(psErrMsg(gErr)).Save(ctx)
+	updated, err := s.entClient.PaymentOrder.Update().Where(
+		paymentorder.IDEQ(o.ID),
+		paymentorder.StatusEQ(OrderStatusRefundPending),
+	).SetStatus(OrderStatusRefundFailed).SetFailedAt(now).SetFailedReason(psErrMsg(gErr)).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("mark refund failed: %w", err)
+	}
+	if updated == 0 {
+		return &RefundResult{Success: false, Warning: "refund status changed concurrently"}, nil
+	}
+	if o.OrderType == payment.OrderTypeMembership && s.membership != nil {
+		if err := s.membership.AbortRefund(ctx, o.ID); err != nil {
+			slog.Error("restore membership refund state failed", "orderID", o.ID, "error", err)
+		}
+	}
 	s.writeAuditLog(ctx, o.ID, "REFUND_FAILED", "admin", map[string]any{"detail": psErrMsg(gErr)})
 	return &RefundResult{Success: false, Warning: "gateway refund failed: " + psErrMsg(gErr)}, nil
 }
@@ -595,31 +679,282 @@ func (s *PaymentService) getRefundProvider(ctx context.Context, o *dbent.Payment
 
 func (s *PaymentService) handleGwFail(ctx context.Context, p *RefundPlan, gErr error) (*RefundResult, error) {
 	if s.RollbackRefund(ctx, p, gErr) {
-		s.restoreStatus(ctx, p)
+		if s.restoreStatus(ctx, p) {
+			s.abortMembershipRefund(ctx, p)
+		}
 		s.writeAuditLog(ctx, p.OrderID, "REFUND_GATEWAY_FAILED", "admin", map[string]any{"detail": psErrMsg(gErr)})
 		return &RefundResult{Success: false, Warning: "gateway failed: " + psErrMsg(gErr) + ", rolled back"}, nil
 	}
 	now := time.Now()
-	_, _ = s.entClient.PaymentOrder.UpdateOneID(p.OrderID).SetStatus(OrderStatusRefundFailed).SetFailedAt(now).SetFailedReason(psErrMsg(gErr)).Save(ctx)
+	updated, updateErr := s.entClient.PaymentOrder.Update().Where(
+		paymentorder.IDEQ(p.OrderID),
+		paymentorder.StatusEQ(OrderStatusRefunding),
+	).SetStatus(OrderStatusRefundFailed).SetFailedAt(now).SetFailedReason(psErrMsg(gErr)).Save(ctx)
+	if updateErr != nil {
+		return nil, fmt.Errorf("mark refund failed: %w", updateErr)
+	}
+	if updated == 1 {
+		s.abortMembershipRefund(ctx, p)
+	}
 	s.writeAuditLog(ctx, p.OrderID, "REFUND_FAILED", "admin", map[string]any{"detail": psErrMsg(gErr)})
 	return nil, infraerrors.InternalServer("REFUND_FAILED", psErrMsg(gErr))
 }
 
+func (s *PaymentService) abortMembershipRefund(ctx context.Context, p *RefundPlan) {
+	if p == nil || p.Order == nil || p.Order.OrderType != payment.OrderTypeMembership || s.membership == nil {
+		return
+	}
+	if err := s.membership.AbortRefund(ctx, p.OrderID); err != nil {
+		slog.Error("restore membership refund state failed", "orderID", p.OrderID, "error", err)
+	}
+}
+
+// ReconcileMembershipRefundFinalizations retries the local membership commit
+// after a gateway refund was durably recorded. FinalizeRefund is idempotent,
+// so completed rows are harmless and rows left in refund_pending converge.
+func (s *PaymentService) ReconcileMembershipRefundFinalizations(ctx context.Context) (int, error) {
+	if s == nil || s.membership == nil || s.membership.DB == nil {
+		return 0, nil
+	}
+	rows, err := s.membership.DB.QueryContext(ctx, `SELECT l.payment_order_id
+        FROM membership_payment_links l
+        JOIN membership_orders o ON o.id=l.order_id
+        JOIN payment_orders po ON po.id=l.payment_order_id
+        WHERE po.order_type='membership' AND po.status='REFUNDED'
+          AND o.payment_state<>'refunded'
+        ORDER BY po.updated_at,po.id
+        LIMIT $1`, pendingPaymentReconcileLimit)
+	if err != nil {
+		return 0, fmt.Errorf("query refunded membership orders: %w", err)
+	}
+	defer rows.Close()
+	var paymentIDs []int64
+	for rows.Next() {
+		var paymentID int64
+		if err := rows.Scan(&paymentID); err != nil {
+			return 0, fmt.Errorf("scan refunded membership order: %w", err)
+		}
+		paymentIDs = append(paymentIDs, paymentID)
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("iterate refunded membership orders: %w", err)
+	}
+	completed := 0
+	for _, paymentID := range paymentIDs {
+		if err := s.membership.FinalizeRefund(ctx, paymentID); err != nil {
+			slog.Warn("membership refund finalization retry failed", "orderID", paymentID, "error", err)
+			continue
+		}
+		completed++
+	}
+	return completed, nil
+}
+
+// ReconcileMembershipRefundAborts retries the local refund abort after a
+// provider refund failed but the membership transaction was unavailable.
+func (s *PaymentService) ReconcileMembershipRefundAborts(ctx context.Context) (int, error) {
+	if s == nil || s.membership == nil || s.membership.DB == nil {
+		return 0, nil
+	}
+	rows, err := s.membership.DB.QueryContext(ctx, `SELECT l.payment_order_id
+        FROM membership_payment_links l
+        JOIN membership_orders o ON o.id=l.order_id
+        JOIN payment_orders po ON po.id=l.payment_order_id
+        WHERE o.payment_state='refund_pending' AND po.order_type='membership'
+	          AND po.status IN ('PAID','REFUND_FAILED')
+        ORDER BY po.updated_at,po.id
+        LIMIT $1`, pendingPaymentReconcileLimit)
+	if err != nil {
+		return 0, fmt.Errorf("query membership refund aborts: %w", err)
+	}
+	defer rows.Close()
+	var paymentIDs []int64
+	for rows.Next() {
+		var paymentID int64
+		if err := rows.Scan(&paymentID); err != nil {
+			return 0, fmt.Errorf("scan membership refund abort: %w", err)
+		}
+		paymentIDs = append(paymentIDs, paymentID)
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("iterate membership refund aborts: %w", err)
+	}
+	recovered := 0
+	for _, paymentID := range paymentIDs {
+		if err := s.membership.AbortRefund(ctx, paymentID); err != nil {
+			slog.Warn("membership refund abort retry failed", "orderID", paymentID, "error", err)
+			continue
+		}
+		recovered++
+	}
+	return recovered, nil
+}
+
+// ReconcileMembershipRefunding recovers the crash window after a membership
+// refund was claimed locally but before its provider result was recorded. It
+// only queries the provider; it must never submit another refund.
+func (s *PaymentService) ReconcileMembershipRefunding(ctx context.Context) (int, error) {
+	if s == nil || s.entClient == nil || s.membership == nil || s.membership.DB == nil {
+		return 0, nil
+	}
+	rows, err := s.membership.DB.QueryContext(ctx, `SELECT l.payment_order_id
+        FROM membership_payment_links l
+        JOIN membership_orders o ON o.id=l.order_id
+        JOIN payment_orders po ON po.id=l.payment_order_id
+        WHERE o.payment_state IN ('refund_pending','manual_review') AND po.order_type='membership'
+	          AND po.status='REFUNDING'
+        ORDER BY po.updated_at,po.id
+        LIMIT $1`, pendingPaymentReconcileLimit)
+	if err != nil {
+		return 0, fmt.Errorf("query interrupted membership refunds: %w", err)
+	}
+	defer rows.Close()
+	var paymentIDs []int64
+	for rows.Next() {
+		var paymentID int64
+		if err := rows.Scan(&paymentID); err != nil {
+			return 0, fmt.Errorf("scan interrupted membership refund: %w", err)
+		}
+		paymentIDs = append(paymentIDs, paymentID)
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("iterate interrupted membership refunds: %w", err)
+	}
+
+	recovered := 0
+	for _, paymentID := range paymentIDs {
+		if err := s.reconcileMembershipRefundingOrder(ctx, paymentID); err != nil {
+			slog.Warn("membership interrupted refund reconciliation failed", "orderID", paymentID, "error", err)
+			continue
+		}
+		recovered++
+	}
+	return recovered, nil
+}
+
+func (s *PaymentService) reconcileMembershipRefundingOrder(ctx context.Context, paymentID int64) error {
+	o, err := s.entClient.PaymentOrder.Get(ctx, paymentID)
+	if err != nil {
+		return fmt.Errorf("load interrupted refund order: %w", err)
+	}
+	if o.OrderType != payment.OrderTypeMembership || o.Status != OrderStatusRefunding {
+		return nil
+	}
+	p := s.refundFinalizePlan(o)
+	if strings.TrimSpace(o.PaymentTradeNo) == "" {
+		_, err := s.markRefundOk(ctx, p)
+		return err
+	}
+
+	prov, err := s.getRefundProvider(ctx, o)
+	if err != nil {
+		return s.markMembershipRefundManualReview(ctx, o, "refund provider unavailable: "+psErrMsg(err))
+	}
+	queryProvider, ok := prov.(payment.RefundQueryProvider)
+	if !ok {
+		return s.markMembershipRefundManualReview(ctx, o, "refund provider does not support status query")
+	}
+	detail := s.latestRefundPendingDetail(ctx, paymentID)
+	finishProviderCall := servertiming.ObserveDependency(ctx, "payment")
+	resp, err := queryProvider.QueryRefund(ctx, payment.RefundQueryRequest{
+		TradeNo:  o.PaymentTradeNo,
+		OrderID:  o.OutTradeNo,
+		RefundID: detail.RefundID,
+		Amount:   formatGatewayRefundAmount(o.RefundAmount, o),
+	})
+	finishProviderCall()
+	if err != nil {
+		return s.markMembershipRefundManualReview(ctx, o, "refund status query failed: "+psErrMsg(err))
+	}
+	if resp == nil {
+		return s.markMembershipRefundManualReview(ctx, o, "refund status query returned no result")
+	}
+
+	switch strings.TrimSpace(resp.Status) {
+	case payment.ProviderStatusSuccess, payment.ProviderStatusRefunded:
+		_, err := s.markRefundOk(ctx, p)
+		return err
+	case payment.ProviderStatusPending:
+		_, err := s.markRefundPending(ctx, p, resp)
+		return err
+	case payment.ProviderStatusFailed:
+		_, err := s.finalizeRefundingFailed(ctx, o, fmt.Errorf("payment refund failed: provider status %s", resp.Status))
+		return err
+	default:
+		return s.markMembershipRefundManualReview(ctx, o, "refund status query returned unknown status: "+strings.TrimSpace(resp.Status))
+	}
+}
+
+func (s *PaymentService) finalizeRefundingFailed(ctx context.Context, o *dbent.PaymentOrder, gErr error) (*RefundResult, error) {
+	updated, err := s.entClient.PaymentOrder.Update().Where(
+		paymentorder.IDEQ(o.ID),
+		paymentorder.StatusEQ(OrderStatusRefunding),
+	).SetStatus(OrderStatusRefundFailed).SetFailedAt(time.Now()).SetFailedReason(psErrMsg(gErr)).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("mark interrupted refund failed: %w", err)
+	}
+	if updated == 0 {
+		return &RefundResult{Success: false, Warning: "refund status changed concurrently"}, nil
+	}
+	s.abortMembershipRefund(ctx, s.refundFinalizePlan(o))
+	s.writeAuditLog(ctx, o.ID, "REFUND_FAILED", "reconciler", map[string]any{"detail": psErrMsg(gErr)})
+	return &RefundResult{Success: false, Warning: "gateway refund failed: " + psErrMsg(gErr)}, nil
+}
+
+// markMembershipRefundManualReview preserves the unsettled payment fact while
+// moving the membership order to its visible review state. The membership side
+// is committed first: a crash before the payment-order CAS remains selectable
+// as manual_review + REFUNDING on the next periodic run. Keeping the payment
+// order REFUND_PENDING prevents a later automatic retry from submitting a new
+// upstream refund; PrepareRefund also checks the durable audit marker.
+func (s *PaymentService) markMembershipRefundManualReview(ctx context.Context, o *dbent.PaymentOrder, detail string) error {
+	if err := s.membership.MarkRefundManualReview(ctx, o.ID, detail); err != nil {
+		return fmt.Errorf("mark membership refund for manual review: %w", err)
+	}
+	updated, err := s.entClient.PaymentOrder.Update().Where(
+		paymentorder.IDEQ(o.ID),
+		paymentorder.StatusEQ(OrderStatusRefunding),
+	).SetStatus(OrderStatusRefundPending).SetFailedReason(detail).Save(ctx)
+	if err != nil {
+		return fmt.Errorf("mark interrupted refund for manual review: %w", err)
+	}
+	if updated == 0 {
+		return nil
+	}
+	s.writeAuditLog(ctx, o.ID, "REFUND_MANUAL_REVIEW", "reconciler", map[string]any{"detail": detail})
+	return nil
+}
+
 func (s *PaymentService) markRefundOk(ctx context.Context, p *RefundPlan) (*RefundResult, error) {
+	if err := s.validateMembershipRefundPlan(p); err != nil {
+		return nil, err
+	}
 	fs := OrderStatusRefunded
 	if p.RefundAmount < p.Order.Amount {
 		fs = OrderStatusPartiallyRefunded
 	}
 	now := time.Now()
-	_, err := s.entClient.PaymentOrder.UpdateOneID(p.OrderID).SetStatus(fs).SetRefundAmount(p.RefundAmount).SetRefundReason(p.Reason).SetRefundAt(now).SetForceRefund(p.Force).Save(ctx)
+	updated, err := s.entClient.PaymentOrder.Update().Where(
+		paymentorder.IDEQ(p.OrderID),
+		paymentorder.StatusEQ(OrderStatusRefunding),
+	).SetStatus(fs).SetRefundAmount(p.RefundAmount).SetRefundReason(p.Reason).SetRefundAt(now).SetForceRefund(p.Force).Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("mark refund: %w", err)
 	}
+	if updated == 0 {
+		return nil, infraerrors.Conflict("CONFLICT", "order status changed")
+	}
 	s.writeAuditLog(ctx, p.OrderID, "REFUND_SUCCESS", "admin", map[string]any{"refundAmount": p.RefundAmount, "reason": p.Reason, "balanceDeducted": p.BalanceToDeduct, "force": p.Force})
+	if err := s.finalizeMembershipRefund(ctx, p); err != nil {
+		return nil, err
+	}
 	return &RefundResult{Success: true, BalanceDeducted: p.BalanceToDeduct, SubDaysDeducted: p.SubDaysToDeduct}, nil
 }
 
 func (s *PaymentService) markRefundOkTx(ctx context.Context, client *dbent.Client, p *RefundPlan) (*RefundResult, error) {
+	if err := s.validateMembershipRefundPlan(p); err != nil {
+		return nil, err
+	}
 	fs := OrderStatusRefunded
 	if p.RefundAmount < p.Order.Amount {
 		fs = OrderStatusPartiallyRefunded
@@ -644,6 +979,35 @@ func (s *PaymentService) markRefundOkTx(ctx context.Context, client *dbent.Clien
 	return &RefundResult{Success: true, BalanceDeducted: p.BalanceToDeduct, SubDaysDeducted: p.SubDaysToDeduct}, nil
 }
 
+func (s *PaymentService) validateMembershipRefundPlan(p *RefundPlan) error {
+	if p == nil || p.Order == nil {
+		return infraerrors.BadRequest("INVALID_REFUND_PLAN", "refund plan is required")
+	}
+	if p.Order.OrderType != payment.OrderTypeMembership {
+		return nil
+	}
+	if s.membership == nil {
+		return infraerrors.Conflict("MEMBERSHIP_UNAVAILABLE", "membership refund awaiting reconciliation")
+	}
+	if p.Force || p.DeductBalance || p.DeductionType != payment.DeductionTypeNone || p.BalanceToDeduct != 0 || p.SubDaysToDeduct != 0 || p.SubscriptionID != 0 || math.Abs(p.RefundAmount-p.Order.Amount) > paymentAmountToleranceForCurrency(PaymentOrderCurrency(p.Order)) {
+		return infraerrors.BadRequest("MEMBERSHIP_REFUND_REVIEW", "membership refunds require confirmed non-delivery and a full refund")
+	}
+	return nil
+}
+
+func (s *PaymentService) finalizeMembershipRefund(ctx context.Context, p *RefundPlan) error {
+	if p == nil || p.Order == nil || p.Order.OrderType != payment.OrderTypeMembership {
+		return nil
+	}
+	if s.membership == nil {
+		return infraerrors.Conflict("MEMBERSHIP_UNAVAILABLE", "membership refund awaiting reconciliation")
+	}
+	if err := s.membership.FinalizeRefund(ctx, p.OrderID); err != nil {
+		return fmt.Errorf("finalize membership refund: %w", err)
+	}
+	return nil
+}
+
 func (s *PaymentService) markRefundPending(ctx context.Context, p *RefundPlan, resp *payment.RefundResponse) (*RefundResult, error) {
 	balanceDeducted := p.BalanceToDeduct
 	subDaysDeducted := p.SubDaysToDeduct
@@ -653,7 +1017,10 @@ func (s *PaymentService) markRefundPending(ctx context.Context, p *RefundPlan, r
 		p.SubDaysToDeduct = 0
 	}
 
-	_, err := s.entClient.PaymentOrder.UpdateOneID(p.OrderID).
+	updated, err := s.entClient.PaymentOrder.Update().Where(
+		paymentorder.IDEQ(p.OrderID),
+		paymentorder.StatusEQ(OrderStatusRefunding),
+	).
 		SetStatus(OrderStatusRefundPending).
 		SetRefundAmount(p.RefundAmount).
 		SetRefundReason(p.Reason).
@@ -664,6 +1031,9 @@ func (s *PaymentService) markRefundPending(ctx context.Context, p *RefundPlan, r
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("mark refund pending: %w", err)
+	}
+	if updated == 0 {
+		return nil, infraerrors.Conflict("CONFLICT", "order status changed")
 	}
 
 	detail := map[string]any{
@@ -711,10 +1081,20 @@ func (s *PaymentService) RollbackRefund(ctx context.Context, p *RefundPlan, gErr
 	return true
 }
 
-func (s *PaymentService) restoreStatus(ctx context.Context, p *RefundPlan) {
+func (s *PaymentService) restoreStatus(ctx context.Context, p *RefundPlan) bool {
 	rs := OrderStatusCompleted
-	if p.Order.Status == OrderStatusRefundRequested {
+	if p.Order.OrderType == payment.OrderTypeMembership {
+		rs = OrderStatusPaid
+	} else if p.Order.Status == OrderStatusRefundRequested {
 		rs = OrderStatusRefundRequested
 	}
-	_, _ = s.entClient.PaymentOrder.UpdateOneID(p.OrderID).SetStatus(rs).Save(ctx)
+	updated, err := s.entClient.PaymentOrder.Update().Where(
+		paymentorder.IDEQ(p.OrderID),
+		paymentorder.StatusEQ(OrderStatusRefunding),
+	).SetStatus(rs).Save(ctx)
+	if err != nil {
+		slog.Error("restore refund status failed", "orderID", p.OrderID, "error", err)
+		return false
+	}
+	return updated == 1
 }

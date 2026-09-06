@@ -1,0 +1,76 @@
+# Optional overlay for the existing deploy/docker-compose.local.yml stack.
+# It is not loaded by the normal deployment. Validate it first with:
+# docker compose --env-file deploy/.env --env-file deploy/membership-fulfillment.env \
+#   -f deploy/docker-compose.local.yml \
+#   -f deploy/membership-fulfillment.compose.example.yml config
+#
+# The browser image must implement services/membership-browser. It binds only
+# to the application network namespace's loopback listener. No sidecar port is
+# published to the host. Replace the image only through an approved, pinned
+# release process.
+
+services:
+  sub2api:
+    environment:
+      - MEMBERSHIP_ENABLED=${MEMBERSHIP_ENABLED:-false}
+      - MEMBERSHIP_PAYMENTS_ENABLED=${MEMBERSHIP_PAYMENTS_ENABLED:-false}
+      - MEMBERSHIP_CREDENTIAL_REDIS_URL=${MEMBERSHIP_CREDENTIAL_REDIS_URL:?MEMBERSHIP_CREDENTIAL_REDIS_URL is required}
+      - MEMBERSHIP_KEYRING_JSON=${MEMBERSHIP_KEYRING_JSON:-}
+      - MEMBERSHIP_ACTIVE_KEY_ID=${MEMBERSHIP_ACTIVE_KEY_ID:-}
+      - MEMBERSHIP_IDENTITY_KEY=${MEMBERSHIP_IDENTITY_KEY:-}
+      - MEMBERSHIP_BROWSER_URL=${MEMBERSHIP_BROWSER_URL:-http://127.0.0.1:18081}
+      - MEMBERSHIP_BROWSER_TOKEN=${MEMBERSHIP_BROWSER_BEARER_TOKEN:-}
+      - MEMBERSHIP_AUDIT_BUCKET=${MEMBERSHIP_AUDIT_BUCKET:-}
+      - MEMBERSHIP_AUDIT_REGION=${MEMBERSHIP_AUDIT_REGION:-}
+      - MEMBERSHIP_AUDIT_ENDPOINT=${MEMBERSHIP_AUDIT_ENDPOINT:-}
+      - MEMBERSHIP_AUDIT_ACCESS_KEY_ID=${MEMBERSHIP_AUDIT_ACCESS_KEY_ID:-}
+      - MEMBERSHIP_AUDIT_SECRET_ACCESS_KEY=${MEMBERSHIP_AUDIT_SECRET_ACCESS_KEY:-}
+      - MEMBERSHIP_AUDIT_USE_PATH_STYLE=${MEMBERSHIP_AUDIT_USE_PATH_STYLE:-false}
+    depends_on:
+      membership-credential-redis:
+        condition: service_healthy
+
+  # Isolated credential cache only. No port, named volume, RDB snapshot, or AOF.
+  membership-credential-redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--protected-mode", "yes"]
+    read_only: true
+    tmpfs:
+      - /data:mode=0700
+      - /tmp:mode=0700
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - sub2api-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  membership-browser:
+    image: ${MEMBERSHIP_BROWSER_IMAGE:?MEMBERSHIP_BROWSER_IMAGE is required}
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:mode=0700
+    environment:
+      - MEMBERSHIP_BROWSER_LISTEN_HOST=127.0.0.1
+      - MEMBERSHIP_BROWSER_LISTEN_PORT=${MEMBERSHIP_BROWSER_LISTEN_PORT:-18081}
+      - MEMBERSHIP_BROWSER_BEARER_TOKEN=${MEMBERSHIP_BROWSER_BEARER_TOKEN:?MEMBERSHIP_BROWSER_BEARER_TOKEN is required}
+      - MEMBERSHIP_BROWSER_ALLOWED_HOSTS=${MEMBERSHIP_BROWSER_ALLOWED_HOSTS:?MEMBERSHIP_BROWSER_ALLOWED_HOSTS is required}
+      - MEMBERSHIP_BROWSER_GPT_BASE_URL=${MEMBERSHIP_BROWSER_GPT_BASE_URL:?MEMBERSHIP_BROWSER_GPT_BASE_URL is required}
+      - MEMBERSHIP_BROWSER_GPTPRO_BASE_URL=${MEMBERSHIP_BROWSER_GPTPRO_BASE_URL:?MEMBERSHIP_BROWSER_GPTPRO_BASE_URL is required}
+      - MEMBERSHIP_BROWSER_PRODUCTION_SUBMIT_ENABLED=${MEMBERSHIP_BROWSER_PRODUCTION_SUBMIT_ENABLED:-false}
+      - MEMBERSHIP_BROWSER_CONFIRM_SUPPLIER_HOST=${MEMBERSHIP_BROWSER_CONFIRM_SUPPLIER_HOST:-}
+    security_opt:
+      - no-new-privileges:true
+    network_mode: "service:sub2api"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:' + process.env.MEMBERSHIP_BROWSER_LISTEN_PORT + '/execute', { method: 'POST' }).then(r => process.exit(r.status === 401 ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s

@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/middleware"
@@ -17,6 +18,11 @@ import (
 
 // panelRateLimitWindow 面板限流固定窗口时长（所有档位均按每分钟计数）。
 const panelRateLimitWindow = time.Minute
+
+// LDXP uses a separate, deliberately conservative budget. It is independent
+// of the normal panel exemption and remains active when the general panel
+// limiter is disabled or configured with an unlimited value.
+const ldxpPanelRateLimitRPM = 30
 
 // panelRateLimitAllower 抽象底层限流原语，便于单测注入。
 type panelRateLimitAllower interface {
@@ -39,8 +45,12 @@ type PanelRateLimiter struct {
 
 // NewPanelRateLimiter 创建面板限流器。
 func NewPanelRateLimiter(redisClient *redis.Client, settingService *service.SettingService) *PanelRateLimiter {
+	var limiter panelRateLimitAllower
+	if redisClient != nil {
+		limiter = middleware.NewRateLimiter(redisClient)
+	}
 	return &PanelRateLimiter{
-		limiter:        middleware.NewRateLimiter(redisClient),
+		limiter:        limiter,
 		settingService: settingService,
 	}
 }
@@ -54,6 +64,103 @@ func (p *PanelRateLimiter) Global() gin.HandlerFunc {
 // 与 Global 叠加计数：一次重查询同时消耗两档额度。
 func (p *PanelRateLimiter) Heavy() gin.HandlerFunc {
 	return p.userScoped("heavy", func(s service.PanelRateLimitSettings) int { return s.HeavyRPM })
+}
+
+// LDXP applies a dedicated authenticated budget to the administrator toolkit.
+// The regular ExemptAdmin setting is intentionally ignored here. Read-only
+// state endpoints may degrade open when the limiter backend is unavailable;
+// operations that can install, mutate, execute, resume, or export fail closed.
+func (p *PanelRateLimiter) LDXP() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		requiresBudget := liandongActionRequiresAvailableBudget(c)
+		if p == nil || p.limiter == nil {
+			if requiresBudget {
+				SetAuditExtra(c, map[string]any{"result": "rate_limit_unavailable"})
+				abortPanelRateLimitUnavailable(c)
+				return
+			}
+			c.Next()
+			return
+		}
+
+		subject, ok := GetAuthSubjectFromContext(c)
+		if !ok || subject.UserID <= 0 {
+			if requiresBudget {
+				SetAuditExtra(c, map[string]any{"result": "rate_limit_subject_unavailable"})
+				abortPanelRateLimitUnavailable(c)
+				return
+			}
+			c.Next()
+			return
+		}
+
+		settings := *service.DefaultPanelRateLimitSettings()
+		if p.settingService != nil {
+			settings = p.settingService.GetPanelRateLimitSettingsCached(c.Request.Context())
+		}
+		limit := settings.UserRPM
+		if limit <= 0 || limit > ldxpPanelRateLimitRPM {
+			limit = ldxpPanelRateLimitRPM
+		}
+		operation := liandongPanelOperation(c)
+		key := "panel:ldxp:user:" + strconv.FormatInt(subject.UserID, 10) + ":operation:" + operation
+		result, err := p.limiter.Allow(c.Request.Context(), key, limit, panelRateLimitWindow)
+		if err != nil {
+			if requiresBudget {
+				SetAuditExtra(c, map[string]any{"result": "rate_limit_unavailable"})
+				abortPanelRateLimitUnavailable(c)
+				return
+			}
+			slog.Warn("LDXP rate limit check failed, allowing read-only request", "operation", operation, "error", err)
+			c.Next()
+			return
+		}
+		if !result.Allowed {
+			SetAuditExtra(c, map[string]any{"result": "rate_limited"})
+			abortPanelRateLimited(c, result.RetryAfter)
+			return
+		}
+		c.Next()
+	}
+}
+
+func liandongActionRequiresAvailableBudget(c *gin.Context) bool {
+	if c == nil || c.Request == nil {
+		return true
+	}
+	path := c.FullPath()
+	if path == "" {
+		path = c.Request.URL.Path
+	}
+	if strings.HasSuffix(path, "/jobs/:id/export") ||
+		(strings.HasSuffix(path, "/export") && strings.Contains(path, "/admin/tools/ldxp/jobs/")) {
+		return true
+	}
+	switch c.Request.Method {
+	case http.MethodPut, http.MethodPatch, http.MethodDelete:
+		return true
+	case http.MethodPost:
+		return path != "/api/v1/admin/tools/ldxp/config/test" && path != "/api/v1/admin/tools/ldxp/jobs/preview"
+	default:
+		return false
+	}
+}
+
+func liandongPanelOperation(c *gin.Context) string {
+	path := c.FullPath()
+	if path == "" && c.Request != nil && c.Request.URL != nil {
+		path = c.Request.URL.Path
+	}
+	path = strings.Trim(path, "/")
+	path = strings.ReplaceAll(path, "/", "_")
+	path = strings.ReplaceAll(path, ":", "")
+	if path == "" {
+		return "unknown"
+	}
+	if len(path) > 128 {
+		return path[:128]
+	}
+	return path
 }
 
 func (p *PanelRateLimiter) userScoped(scope string, limitOf func(service.PanelRateLimitSettings) int) gin.HandlerFunc {
@@ -160,4 +267,8 @@ func abortPanelRateLimited(c *gin.Context, retryAfter time.Duration) {
 	}
 	c.Header("Retry-After", strconv.FormatInt(seconds, 10))
 	AbortWithError(c, http.StatusTooManyRequests, "RATE_LIMITED", "Too many requests, please slow down and try again later")
+}
+
+func abortPanelRateLimitUnavailable(c *gin.Context) {
+	AbortWithError(c, http.StatusServiceUnavailable, "RATE_LIMIT_UNAVAILABLE", "LDXP operation budget is temporarily unavailable")
 }

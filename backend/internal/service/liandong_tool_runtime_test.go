@@ -44,13 +44,12 @@ func TestLiandongToolkitRuntimeInstallVerifiesChecksumAndUsesPrivateMode(t *test
 	asset := []byte("local packaged LDXP toolkit")
 	require.NoError(t, os.WriteFile(assetPath, asset, 0o600))
 	digest := sha256.Sum256(asset)
-	require.NoError(t, os.WriteFile(assetPath+".sha256", []byte(hex.EncodeToString(digest[:])+"  ldxp-toolkit\n"), 0o600))
 
-	runtimeService, err := NewLiandongToolkitRuntime(LiandongToolkitRuntimeConfig{
+	runtimeService, err := NewLiandongToolkitRuntimeWithExpectedSHA256(LiandongToolkitRuntimeConfig{
 		DataDir:   dataDir,
 		AssetPath: assetPath,
 		Version:   "1.2.3",
-	})
+	}, hex.EncodeToString(digest[:]))
 	require.NoError(t, err)
 	result, err := runtimeService.Install()
 	require.NoError(t, err)
@@ -71,13 +70,16 @@ func TestLiandongToolkitRuntimeChecksumMismatchPreservesExistingProgram(t *testi
 	dataDir := t.TempDir()
 	assetDir := t.TempDir()
 	assetPath := filepath.Join(assetDir, "ldxp-toolkit")
-	require.NoError(t, os.WriteFile(assetPath, []byte("new asset"), 0o600))
-	require.NoError(t, os.WriteFile(assetPath+".sha256", []byte(strings.Repeat("0", sha256.Size*2)), 0o600))
+	asset := []byte("new asset")
+	require.NoError(t, os.WriteFile(assetPath, asset, 0o600))
 	programPath := DefaultLiandongToolkitProgramPath(dataDir)
 	require.NoError(t, os.MkdirAll(filepath.Dir(programPath), 0o700))
 	require.NoError(t, os.WriteFile(programPath, []byte("old installed program"), 0o700))
 
-	runtimeService, err := NewLiandongToolkitRuntime(LiandongToolkitRuntimeConfig{DataDir: dataDir, AssetPath: assetPath})
+	runtimeService, err := NewLiandongToolkitRuntimeWithExpectedSHA256(
+		LiandongToolkitRuntimeConfig{DataDir: dataDir, AssetPath: assetPath},
+		strings.Repeat("0", sha256.Size*2),
+	)
 	require.NoError(t, err)
 	_, err = runtimeService.Install()
 	require.Error(t, err)
@@ -86,6 +88,69 @@ func TestLiandongToolkitRuntimeChecksumMismatchPreservesExistingProgram(t *testi
 	installed, readErr := os.ReadFile(programPath)
 	require.NoError(t, readErr)
 	require.Equal(t, []byte("old installed program"), installed)
+}
+
+func TestLiandongToolkitRuntimeRequiresTrustedDigestForStatusAndInstall(t *testing.T) {
+	dataDir := t.TempDir()
+	assetPath := filepath.Join(t.TempDir(), "ldxp-toolkit")
+	asset := []byte("release asset")
+	require.NoError(t, os.WriteFile(assetPath, asset, 0o600))
+	programPath := DefaultLiandongToolkitProgramPath(dataDir)
+	require.NoError(t, os.MkdirAll(filepath.Dir(programPath), 0o700))
+	require.NoError(t, os.WriteFile(programPath, asset, 0o700))
+
+	runtimeService, err := NewLiandongToolkitRuntimeWithExpectedSHA256(
+		LiandongToolkitRuntimeConfig{DataDir: dataDir, AssetPath: assetPath}, "",
+	)
+	require.NoError(t, err)
+	status := runtimeService.Status()
+	require.False(t, status.Ready)
+	require.Contains(t, status.Diagnostics, "trusted toolkit SHA-256 is not configured")
+
+	_, err = runtimeService.Install()
+	require.Error(t, err)
+	require.Equal(t, "LDXP_TOOLKIT_CHECKSUM_REQUIRED", infraerrors.Reason(err))
+}
+
+func TestLiandongToolkitRuntimeStatusRejectsStaleInstalledBytesAndAssetChanges(t *testing.T) {
+	dataDir := t.TempDir()
+	assetPath := filepath.Join(t.TempDir(), "ldxp-toolkit")
+	asset := []byte("trusted release asset")
+	digest := sha256.Sum256(asset)
+	require.NoError(t, os.WriteFile(assetPath, asset, 0o600))
+
+	runtimeService, err := NewLiandongToolkitRuntimeWithExpectedSHA256(
+		LiandongToolkitRuntimeConfig{DataDir: dataDir, AssetPath: assetPath},
+		hex.EncodeToString(digest[:]),
+	)
+	require.NoError(t, err)
+	_, err = runtimeService.Install()
+	require.NoError(t, err)
+
+	programPath := DefaultLiandongToolkitProgramPath(dataDir)
+	require.NoError(t, os.WriteFile(programPath, []byte("tampered installed bytes"), 0o700))
+	status := runtimeService.Status()
+	require.False(t, status.Ready)
+	require.Contains(t, status.Diagnostics, "installed toolkit SHA-256 does not match the configured release digest")
+
+	require.NoError(t, os.WriteFile(programPath, asset, 0o700))
+	require.NoError(t, os.Remove(assetPath))
+	status = runtimeService.Status()
+	require.False(t, status.Ready)
+	require.Contains(t, status.Diagnostics, "bundled toolkit asset is unavailable")
+}
+
+func TestLiandongToolkitRuntimeRejectsMalformedTrustedDigest(t *testing.T) {
+	runtimeService, err := NewLiandongToolkitRuntimeWithExpectedSHA256(
+		LiandongToolkitRuntimeConfig{DataDir: t.TempDir(), AssetPath: filepath.Join(t.TempDir(), "asset")},
+		"not-a-sha256",
+	)
+	require.NoError(t, err)
+	require.False(t, runtimeService.Status().Ready)
+	require.Contains(t, runtimeService.Status().Diagnostics, "configured toolkit SHA-256 is invalid")
+	_, err = runtimeService.Install()
+	require.Error(t, err)
+	require.Equal(t, "LDXP_TOOLKIT_CHECKSUM_INVALID", infraerrors.Reason(err))
 }
 
 func TestLiandongToolkitRuntimeRejectsURLAndArchiveAssets(t *testing.T) {
