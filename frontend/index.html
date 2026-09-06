@@ -18,37 +18,26 @@
     <meta property="og:image" content="https://ai.rest2build.lol/logo.svg" />
     <meta name="twitter:card" content="summary" />
     <meta name="robots" content="index,follow" />
+    <script nonce="__SUB2API_CSP_NONCE__">
+      ;(() => {
+        try {
+          document.documentElement.classList.toggle('dark', localStorage.getItem('theme') !== 'light')
+          const savedLocale = localStorage.getItem('sub2api_locale')
+          const locale = savedLocale === 'zh' || savedLocale === 'en'
+            ? savedLocale
+            : (navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en'
+          document.documentElement.setAttribute('data-home-locale', locale)
+          document.documentElement.setAttribute('lang', locale)
+        } catch {
+          document.documentElement.classList.add('dark')
+          document.documentElement.setAttribute('data-home-locale', 'en')
+          document.documentElement.setAttribute('lang', 'en')
+        }
+      })()
+    </script>
   </head>
   <body>
-    <div id="app">
-      <!-- Static seed for crawlers that do not execute JavaScript. Replaced by the Vue app on mount. -->
-      <main style="max-width: 720px; margin: 48px auto; padding: 0 20px; font-family: system-ui, sans-serif; line-height: 1.6">
-        <h1>rest2build — 人去 rest，AI 去 build</h1>
-        <p>Rest2Build AI 接入实验室：官方 API 兼容接入，多模型直连与开发接入支持，立即开始体验。</p>
-        <p>
-          Rest2Build 为独立第三方技术服务，不属于 OpenAI、Anthropic 或其他模型厂商，不代表相关厂商提供保证或背书。模型可用性以实时状态为准。
-        </p>
-        <ul>
-          <li><a href="/codex-cli">Codex CLI 接入、配置与常见错误排查</a></li>
-          <li><a href="/claude-code">Claude Code 自有账号与 API Key 接入指南</a></li>
-          <li><a href="/error-experiences/gpt-6-astra-not-visible">GPT-6 已接入，为什么 Codex 仍然看不见？</a></li>
-          <li><a href="/openai-compatible-api">OpenAI 兼容接口与迁移测试</a></li>
-          <li><a href="/public-benefit">公益额度规则</a></li>
-          <li><a href="/business-invoice">企业技术服务与发票说明</a></li>
-          <li><a href="/security">安全与数据策略</a></li>
-          <li><a href="/benchmarks">延迟实测工具</a></li>
-          <li><a href="/verify/xianyu">闲鱼店铺验证</a></li>
-          <li><a href="/model-plaza">模型列表</a></li>
-          <li><a href="/login">登录</a></li>
-        </ul>
-        <h2>常见问题</h2>
-        <p><strong>这是官方服务吗？</strong> 不是。Rest2Build 与 OpenAI、Anthropic 或其他模型厂商没有授权、合作或背书关系。</p>
-        <p><strong>我拿到的是什么密钥？</strong> 本站签发的服务密钥，只能访问本站网关；上游厂商密钥永远不会发给用户。</p>
-        <p><strong>能代充 GPT Pro / Claude Pro 吗？</strong> 不出售账号、不代登、不获取密码，只提供自有账号的官方订阅开通和客户端配置指导。</p>
-        <p><strong>公益额度要好评吗？</strong> 不要求好评、收藏、转发或拉新，也不承诺长期续期。</p>
-        <p><strong>企业可以开发票吗？</strong> 只针对真实发生并收费的技术服务，按实际业务开具；公益额度不开票。</p>
-      </main>
-    </div>
+    <div id="app"><!-- Production builds emit the complete static home templates under /home/. --></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
