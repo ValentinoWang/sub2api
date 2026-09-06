@@ -141,7 +141,14 @@ docs/*
 !docs/COMPOSITE_GROUPS.md
 !docs/PLUGIN_DEVELOPMENT.md
 !docs/channel-monitor-v2-safe-defaults.md
+!docs/LDXP_SALES_CHANNEL_DEVELOPMENT.md
+!docs/LDXP_SALES_CHANNEL_HUMAN_ACCEPTANCE.md
 !docs/rest2build-handbook.html
+!docs/error-experiences/
+docs/error-experiences/*
+!docs/error-experiences/README.md
+!docs/error-experiences/index.html
+!docs/error-experiences/2026-09-06-codex-astra-visibility.md
 !docs/legal/
 !docs/legal/*.md
 !docs/screenshots/

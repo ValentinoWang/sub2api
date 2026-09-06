@@ -26,6 +26,25 @@ func ProvideGrokOAuthService(proxyRepo ProxyRepository, oauthClient GrokOAuthCli
 	return svc
 }
 
+// ProvideLiandongToolkitRuntime creates the fixed-path installer runtime. A
+// bad server configuration makes only this optional tool unavailable; it must
+// not prevent the rest of Sub2API from starting.
+func ProvideLiandongToolkitRuntime(cfg *config.Config) *LiandongToolkitRuntime {
+	if cfg == nil {
+		return nil
+	}
+	runtime, err := NewLiandongToolkitRuntime(LiandongToolkitRuntimeConfig{
+		DataDir:   cfg.LiandongToolkit.DataDir,
+		AssetPath: cfg.LiandongToolkit.AssetPath,
+		Version:   cfg.LiandongToolkit.Version,
+	})
+	if err != nil {
+		logger.LegacyPrintf("service.liandong_toolkit", "[LiandongToolkit] runtime unavailable: %v", err)
+		return nil
+	}
+	return runtime
+}
+
 // BuildInfo contains build information
 type BuildInfo struct {
 	Version   string
@@ -989,6 +1008,9 @@ var ProviderSet = wire.NewSet(
 	NewAffiliateService,
 	ProvidePaymentConfigService,
 	ProvidePaymentService,
+	ProvideLiandongRestockService,
+	ProvideLiandongToolkitRuntime,
+	wire.Bind(new(LiandongToolkitService), new(*LiandongRestockService)),
 	ProvidePaymentOrderExpiryService,
 	ProvideBalanceNotifyService,
 	ProvideChannelMonitorService,

@@ -480,6 +480,10 @@ const PluginIcon = {
   render: () => h(Icon, { name: 'cube' })
 }
 
+const ToolkitIcon = {
+  render: () => h(Icon, { name: 'beaker' })
+}
+
 const BellIcon = {
   render: () =>
     h(
@@ -763,6 +767,15 @@ const adminNavItems = computed((): NavItem[] => {
   const baseItems: NavItem[] = [
     { path: '/admin/dashboard', label: t('nav.dashboard'), icon: DashboardIcon },
     { path: '/admin/ops', label: t('nav.ops'), icon: ChartIcon, featureFlag: flagOpsMonitoring },
+    {
+      path: '/admin/tools',
+      label: t('ldxpToolkit.tools'),
+      icon: ToolkitIcon,
+      expandOnly: true,
+      children: [
+        { path: '/admin/tools/ldxp', label: t('ldxpToolkit.navLabel'), icon: ToolkitIcon },
+      ],
+    },
     { path: '/admin/users', label: t('nav.users'), icon: UsersIcon, hideInSimpleMode: true },
     { path: '/admin/groups', label: t('nav.groups'), icon: FolderIcon, hideInSimpleMode: true },
     {

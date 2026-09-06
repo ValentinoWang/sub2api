@@ -125,6 +125,9 @@ func TestLiandongRestockConfigurationGeneratesAndEncryptsSecret(t *testing.T) {
 	if !status.Configured || !status.MerchantTokenConfigured || !status.CodeSecretConfigured {
 		t.Fatalf("unexpected status: %+v", status)
 	}
+	if status.IntegrationMode != "sales_channel" || status.PaymentReadiness != "NOT_READY" {
+		t.Fatalf("unexpected payment readiness: %+v", status)
+	}
 	raw := settings.values[liandongRestockConfigKey]
 	if strings.Contains(raw, "merchant-token-from-liandong") {
 		t.Fatal("stored configuration exposed the merchant token")
@@ -154,6 +157,58 @@ func TestLiandongRestockConfigurationRequiresRealNumericGoodsID(t *testing.T) {
 	}})
 	if err == nil || !strings.Contains(err.Error(), "numeric goods ID") {
 		t.Fatalf("got %v, want numeric goods ID validation error", err)
+	}
+}
+
+func TestLiandongRestockConfigurationDefaultsToBalanceMapping(t *testing.T) {
+	products, err := validateLiandongConfiguration("token", strings.Repeat("s", 32), []LiandongRestockProduct{{
+		CNYAmount: 20, USDCredit: 2.78, GoodsID: 12345, Threshold: 5, RestockCount: 10,
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if products[0].GrantType != "balance" || products[0].Version != 1 {
+		t.Fatalf("normalized mapping = %+v, want balance version 1", products[0])
+	}
+}
+
+func TestLiandongRestockConfigurationRejectsUnsupportedGrantType(t *testing.T) {
+	_, err := validateLiandongConfiguration("token", strings.Repeat("s", 32), []LiandongRestockProduct{{
+		CNYAmount: 20, USDCredit: 2.78, GoodsID: 12345, GrantType: "subscription", Threshold: 5, RestockCount: 10,
+	}})
+	if err == nil || !strings.Contains(err.Error(), "only balance") {
+		t.Fatalf("got %v, want unsupported grant type error", err)
+	}
+}
+
+func TestLiandongRestockConfigurationValidatesExternalURL(t *testing.T) {
+	_, err := validateLiandongConfiguration("token", strings.Repeat("s", 32), []LiandongRestockProduct{{
+		CNYAmount: 20, USDCredit: 2.78, GoodsID: 12345, ExternalURL: "javascript:alert(1)", Threshold: 5, RestockCount: 10,
+	}})
+	if err == nil || !strings.Contains(err.Error(), "invalid external URL") {
+		t.Fatalf("got %v, want external URL validation error", err)
+	}
+}
+
+func TestLiandongRestockConfiguredRejectsUnsupportedStoredMapping(t *testing.T) {
+	svc, _, _ := newLiandongTestService("https://ldxp.cn")
+	svc.products[0].GrantType = "subscription"
+	if svc.Configured() {
+		t.Fatal("subscription mapping must not make the balance-only worker configured")
+	}
+}
+
+func TestLiandongRestockPoliciesRejectDuplicateProducts(t *testing.T) {
+	svc, _, _ := newLiandongTestService("https://ldxp.cn")
+	svc.products = append(svc.products, LiandongRestockProduct{
+		CNYAmount: 30, USDCredit: 4.17, GoodsID: 43, Threshold: 5, RestockCount: 3, Enabled: true,
+	})
+	_, err := svc.UpdatePolicies(context.Background(), []LiandongRestockPolicyUpdate{
+		{CNYAmount: 20, Threshold: 1, RestockCount: 1, Enabled: true},
+		{CNYAmount: 20, Threshold: 2, RestockCount: 2, Enabled: true},
+	})
+	if err == nil || !strings.Contains(err.Error(), "exactly once") {
+		t.Fatalf("got %v, want duplicate policy rejection", err)
 	}
 }
 

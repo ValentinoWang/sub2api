@@ -74,6 +74,116 @@ export default {
     goToRedeem: 'Open redeem page'
   },
 
+  ldxpToolkit: {
+    tools: 'Tools',
+    navLabel: 'Liandong Store',
+    title: 'Liandong Store Toolkit',
+    description: 'Manage fixed product mappings, remote inventory previews, and controlled restock jobs.',
+    runtime: {
+      title: 'Runtime',
+      description: 'Check the LDXP toolkit installation and fixed server data directory.',
+      refresh: 'Refresh detection',
+      installRepair: 'Install / repair toolkit',
+      endpointUnavailable: 'The server did not provide the LDXP toolkit runtime endpoint; installation cannot be claimed.',
+      installed: 'Installed and executable',
+      notInstalled: 'Not installed or not executable',
+      fixedCommand: 'Fixed install/repair endpoint',
+      platform: 'Platform',
+      path: 'Program path',
+      version: 'Version',
+      dataDirectory: 'Data directory',
+      installSuccess: 'The LDXP toolkit install/repair request completed',
+      loadFailed: 'Runtime detection failed',
+      installFailed: 'Install/repair failed'
+    },
+    connection: {
+      title: 'Connection and mappings',
+      description: 'The merchant credential is submitted only when saving configuration and is never read back into the page.',
+      tokenConfigured: 'Merchant credential configured',
+      tokenNotConfigured: 'Merchant credential not configured',
+      merchantToken: 'Liandong merchant token',
+      tokenPlaceholder: 'Enter it to save the configuration',
+      tokenHint: 'The input is cleared after a successful save; connection tests use the credential already stored on the server.',
+      testConnection: 'Test connection',
+      testSuccess: 'Liandong merchant connection succeeded',
+      testFailed: 'Liandong merchant connection failed',
+      saveSuccess: 'Product mappings saved',
+      saveFailed: 'Failed to save product mappings',
+      loadFailed: 'Failed to load Liandong configuration'
+    },
+    mapping: {
+      goodsId: 'Liandong goods ID',
+      sellingPrice: 'Selling price',
+      creditedBalance: 'Sub2API credited balance',
+      targetStock: 'Target unsold stock',
+      enabled: 'Enabled',
+      empty: 'No product mappings configured',
+      priceHint: 'Selling price is the amount collected by Liandong; credited balance is the USD balance granted by Sub2API redemption. They are separate fields. Target stock defaults to 50,000.'
+    },
+    goods: {
+      title: 'Remote goods',
+      description: 'Read-only sync of card goods from Liandong, with proxy goods excluded.',
+      sync: 'Sync remote goods',
+      name: 'Goods name',
+      unsoldStock: 'Current unsold stock',
+      mapping: 'Mapping',
+      mapped: 'Mapped',
+      unmapped: 'Unmapped',
+      empty: 'Remote goods have not been synced',
+      syncFailed: 'Failed to sync remote goods'
+    },
+    preview: {
+      title: 'Preview and run',
+      description: 'Read the inventory gap first, then confirm and create a restock job; free-form commands are not accepted.',
+      selection: 'Execution scope',
+      allConfigured: 'All configured products',
+      selectedProducts: 'Selected products only',
+      refreshJob: 'Refresh job',
+      previewAction: 'Preview restock',
+      runAction: 'Confirm and run',
+      resumeAction: 'Resume job',
+      currentStock: 'Current unsold stock',
+      plannedAddition: 'Planned addition',
+      mappingError: 'Mapping error',
+      empty: 'Select products and click “Preview restock” to inspect the inventory gap.',
+      pendingNotice: 'The current job is pending or needs reconciliation. Only refresh or resume is allowed.',
+      confirmTitle: 'Confirm restock run',
+      confirmMessage: 'This creates and executes a remote card restock job. Confirm that the target goods and quantities in the preview are correct.',
+      confirmRun: 'Confirm run',
+      previewFailed: 'Restock preview failed',
+      runFailed: 'Failed to create restock job',
+      refreshFailed: 'Failed to refresh job',
+      resumeFailed: 'Failed to resume job'
+    },
+    history: {
+      title: 'Job history',
+      description: 'Show batch and job status, counts, and a safe export entry without displaying complete card codes.',
+      id: 'Batch / job ID',
+      type: 'Type',
+      job: 'Job',
+      batch: 'Batch',
+      count: 'Count',
+      status: 'Status',
+      updatedAt: 'Updated',
+      actions: 'Actions',
+      export: 'Export result',
+      empty: 'No restock history',
+      exportFailed: 'Export failed'
+    },
+    status: {
+      job: 'Job',
+      pending: 'Pending',
+      running: 'Running',
+      completed: 'Completed',
+      failed: 'Failed',
+      needs_reconciliation: 'Needs reconciliation',
+      cancelled: 'Cancelled'
+    },
+    errors: {
+      endpointUnavailable: 'This endpoint is unavailable on the server. Try again later or contact an administrator.'
+    }
+  },
+
   // Custom Page (iframe embed)
   customPage: {
     title: 'Custom Page',

@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"context"
 	"strconv"
 	"time"
 
@@ -11,17 +12,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// liandongRestockOperator is the narrow contract used by the admin HTTP
+// handlers. Keeping the dependency injectable lets the HTTP boundary be
+// tested without constructing a database-backed redeem service.
+type liandongRestockOperator interface {
+	Status(context.Context) (*service.LiandongRestockStatus, error)
+	UpdateConfiguration(context.Context, service.LiandongRestockConfigurationUpdate) (*service.LiandongRestockStatus, error)
+	UpdatePolicies(context.Context, []service.LiandongRestockPolicyUpdate) (*service.LiandongRestockStatus, error)
+	RunOnce(context.Context, bool) error
+	SetEnabled(context.Context, bool) (*service.LiandongRestockStatus, error)
+}
+
 // PaymentHandler handles admin payment management.
 type PaymentHandler struct {
 	paymentService *service.PaymentService
 	configService  *service.PaymentConfigService
+	liandong       liandongRestockOperator
 }
 
 // NewPaymentHandler creates a new admin PaymentHandler.
-func NewPaymentHandler(paymentService *service.PaymentService, configService *service.PaymentConfigService) *PaymentHandler {
+func NewPaymentHandler(paymentService *service.PaymentService, configService *service.PaymentConfigService, liandong ...liandongRestockOperator) *PaymentHandler {
+	var restock liandongRestockOperator
+	if len(liandong) > 0 {
+		restock = liandong[0]
+	}
 	return &PaymentHandler{
 		paymentService: paymentService,
 		configService:  configService,
+		liandong:       restock,
 	}
 }
 

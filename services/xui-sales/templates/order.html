@@ -21,7 +21,7 @@
           <p class="eyebrow">订单 {{ order.id }}</p>
           <h1>{{ order.plan_name }}</h1>
         </div>
-        {% if order.source == 'alipay' %}<p class="order-price">¥{{ order.amount }}</p>{% else %}<span class="source-badge">联动小铺卡密</span>{% endif %}
+        {% if order.source == 'alipay' %}<p class="order-price">¥{{ order.amount }}</p>{% else %}<span class="source-badge">链动小铺卡密</span>{% endif %}
       </div>
       <div class="order-status" data-order-status="{{ order.status }}">
         <i data-lucide="loader-circle"></i>

@@ -107,6 +107,7 @@ type Config struct {
 	Plugins                 PluginConfig                  `mapstructure:"plugins"`
 	ProxySubscription       ProxySubscriptionConfig       `mapstructure:"proxy_subscription"`
 	LiandongRestock         LiandongRestockConfig         `mapstructure:"liandong_restock"`
+	LiandongToolkit         LiandongToolkitConfig         `mapstructure:"liandong_toolkit"`
 }
 
 type LiandongRestockConfig struct {
@@ -115,6 +116,15 @@ type LiandongRestockConfig struct {
 	CodeSecret    string `mapstructure:"code_secret"`
 	ProductsJSON  string `mapstructure:"products_json"`
 	IntervalSecs  int    `mapstructure:"interval_seconds"`
+}
+
+// LiandongToolkitConfig identifies the server-owned persistent location for
+// the packaged LDXP executable. These paths are configuration, never HTTP
+// request inputs, so the administrator tool cannot execute arbitrary files.
+type LiandongToolkitConfig struct {
+	DataDir   string `mapstructure:"data_dir"`
+	AssetPath string `mapstructure:"asset_path"`
+	Version   string `mapstructure:"version"`
 }
 
 // PluginConfig 控制管理员手动上传的本地进程插件。
@@ -2335,6 +2345,13 @@ func setDefaults() {
 	viper.SetDefault("pricing.override_file", "")
 	viper.SetDefault("pricing.update_interval_hours", 24)
 	viper.SetDefault("pricing.hash_check_interval_minutes", 10)
+
+	// LDXP toolkit assets and installed executable live below a dedicated
+	// server data directory. A release can override asset_path and version;
+	// absent assets remain an explicit not-ready state in the administrator UI.
+	viper.SetDefault("liandong_toolkit.data_dir", "./data")
+	viper.SetDefault("liandong_toolkit.asset_path", "")
+	viper.SetDefault("liandong_toolkit.version", "")
 
 	// 本地进程插件。插件必须由管理员手动上传，项目默认不携带任何插件能力。
 	viper.SetDefault("plugins.data_dir", "")
