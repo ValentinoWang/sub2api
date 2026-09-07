@@ -34,9 +34,11 @@ func ProvideLiandongToolkitRuntime(cfg *config.Config) *LiandongToolkitRuntime {
 		return nil
 	}
 	runtime, err := NewLiandongToolkitRuntime(LiandongToolkitRuntimeConfig{
-		DataDir:   cfg.LiandongToolkit.DataDir,
-		AssetPath: cfg.LiandongToolkit.AssetPath,
-		Version:   cfg.LiandongToolkit.Version,
+		DataDir:           cfg.LiandongToolkit.DataDir,
+		AssetPath:         cfg.LiandongToolkit.AssetPath,
+		AssetSHA256:       cfg.LiandongToolkit.AssetSHA256,
+		AssetManifestPath: cfg.LiandongToolkit.AssetManifestPath,
+		Version:           cfg.LiandongToolkit.Version,
 	})
 	if err != nil {
 		logger.LegacyPrintf("service.liandong_toolkit", "[LiandongToolkit] runtime unavailable: %v", err)

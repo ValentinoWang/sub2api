@@ -132,6 +132,9 @@
         </div>
       </div>
     </div>
+    <div v-if="$slots.afterContent" class="relative z-10 mx-auto w-full max-w-4xl px-4 pb-10 sm:px-6">
+      <slot name="afterContent" />
+    </div>
   </div>
 </template>
 

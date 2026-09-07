@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>错误经验 · rest2build</title>
+  <title>经验分享 · ERR-001 · rest2build</title>
   <style>
     :root{--bg:#f6f8f8;--paper:#fff;--ink:#202624;--muted:#5e6c68;--line:#dce3e0;--green:#126653;--blue:#335db3;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
     *{box-sizing:border-box;letter-spacing:0}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.8 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
@@ -29,9 +29,9 @@
   </style>
 </head>
 <body>
-  <header><div class="wrap topbar"><a class="brand" href="index.html"><img src="../../frontend/public/logo.svg" alt="rest2build"><span>rest2build</span><small>使用帮助</small></a><nav class="toplinks" aria-label="栏目导航"><a href="#case">错误经验</a><a href="#codex-help">Codex 帮你处理</a></nav></div></header>
+  <header><div class="wrap topbar"><a class="brand" href="../ui-preview/experiences.html"><img src="../../frontend/public/logo.svg" alt="rest2build"><span>rest2build</span><small>经验分享</small></a><nav class="toplinks" aria-label="文章导航"><a href="../ui-preview/experiences.html">经验分享索引</a><a href="#case">ERR-001</a><a href="#codex-help">Codex 帮你处理</a></nav></div></header>
   <main class="wrap">
-    <section class="intro" aria-labelledby="title"><p class="eyebrow">TROUBLESHOOTING / 001</p><h1 id="title">错误经验</h1><p class="subtitle">解决你使用codex或者claudecode的最后一公里</p><div class="intro-meta"><span><i class="dot"></i>客户端接入与排障</span><time datetime="2026-09-06">更新于 2026.09.06</time></div></section>
+    <section class="intro" aria-labelledby="title"><p class="eyebrow"><a href="../ui-preview/experiences.html">经验分享</a> <span aria-hidden="true">/</span> 接入与排障 <span aria-hidden="true">/</span> Codex 使用错误说明 <span aria-hidden="true">/</span> 001</p><h1 id="title">经验分享</h1><p class="subtitle">解决你使用 Codex 或 Claude Code 的最后一公里</p><div class="intro-meta"><span><i class="dot"></i>ERR-001 · 接入与排障 · Codex 使用错误说明</span><time datetime="2026-09-06">更新于 2026.09.06</time></div></section>
     <article class="incident" id="case" data-case-id="ERR-001" aria-labelledby="case-title">
       <div class="incident-copy"><div class="badges"><span class="case-id">ERR-001</span><span class="tag">模型不可见</span><span class="tag neutral">Codex 桌面</span><span class="tag neutral">历史案例：macOS</span></div><h2 id="case-title">GPT-6 已接入，为什么 Codex 仍然看不见？</h2><h3 class="step-label" id="situation-title">情况说明</h3><div class="guide situation"><p>你已经按照本站接入说明配置了 Codex，站点也已提供 GPT-6-Astra，但打开桌面应用后，模型选择器里仍然只有旧模型。也可能已经出现 GPT-6，重新打开原来的任务时却还是 5.6；或者终端里的 Codex 已经更新，桌面应用的模型列表却没有变化。</p>
 <p>这几种表现很像“中转站还没同步新模型”，但并不一定是站点故障。中转站能否调用模型、桌面应用是否展示模型、当前任务实际选择哪个模型，是不同的环节。修复其中一个，不代表另外两个会自动更新。</p>

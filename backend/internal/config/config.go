@@ -143,10 +143,11 @@ type LiandongRestockConfig struct {
 // configuration, never HTTP request inputs, so the administrator tool cannot
 // execute arbitrary files or install an unverified asset.
 type LiandongToolkitConfig struct {
-	DataDir     string `mapstructure:"data_dir"`
-	AssetPath   string `mapstructure:"asset_path"`
-	AssetSHA256 string `mapstructure:"asset_sha256"`
-	Version     string `mapstructure:"version"`
+	DataDir           string `mapstructure:"data_dir"`
+	AssetPath         string `mapstructure:"asset_path"`
+	AssetSHA256       string `mapstructure:"asset_sha256"`
+	AssetManifestPath string `mapstructure:"asset_manifest_path"`
+	Version           string `mapstructure:"version"`
 }
 
 // PluginConfig 控制管理员手动上传的本地进程插件。
@@ -2388,6 +2389,7 @@ func setDefaults() {
 	// UI.
 	viper.SetDefault("liandong_toolkit.data_dir", "./data")
 	viper.SetDefault("liandong_toolkit.asset_path", "")
+	viper.SetDefault("liandong_toolkit.asset_manifest_path", "")
 	viper.SetDefault("liandong_toolkit.asset_sha256", "")
 	viper.SetDefault("liandong_toolkit.version", "")
 

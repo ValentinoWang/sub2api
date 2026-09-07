@@ -208,6 +208,10 @@
         </router-link>
       </p>
     </template>
+    <template #afterContent>
+      <ExperienceCollection compact />
+      <Rest2BuildBrandFooter class="mt-8 overflow-hidden rounded-lg" />
+    </template>
   </AuthLayout>
 
   <!-- 2FA Modal -->
@@ -235,6 +239,8 @@ import LoginAgreementPrompt from '@/components/auth/LoginAgreementPrompt.vue'
 import TotpLoginModal from '@/components/auth/TotpLoginModal.vue'
 import Icon from '@/components/icons/Icon.vue'
 import TurnstileWidget from '@/components/CaptchaChallenge.vue'
+import ExperienceCollection from '@/components/experiences/ExperienceCollection.vue'
+import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
 import { useAuthStore, useAppStore } from '@/stores'
 import {
   buildOAuthLoginStartURL,

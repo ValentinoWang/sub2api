@@ -44,7 +44,43 @@ COPY docs/legal/ /app/docs/legal/
 RUN pnpm run build
 
 # -----------------------------------------------------------------------------
-# Stage 2: Backend Builder
+# Stage 2: LDXP Toolkit Builder
+# -----------------------------------------------------------------------------
+# The LDXP administration runtime accepts only a local Linux/amd64 executable.
+# Build it from repository source and emit its release assertion in the same
+# stage; no downloaded or unchecked release artifact is used.
+FROM --platform=${BUILDPLATFORM} ${GOLANG_IMAGE} AS ldxp-toolkit-builder
+
+ARG VERSION=
+ARG TARGETOS
+ARG TARGETARCH
+
+WORKDIR /src/tools/ldxp-toolkit
+
+COPY tools/ldxp-toolkit/go.mod ./
+COPY tools/ldxp-toolkit/*.go ./
+COPY backend/cmd/server/VERSION /tmp/sub2api-version
+
+RUN set -eu; \
+	TARGET_OS="${TARGETOS:-linux}"; \
+	TARGET_ARCH="${TARGETARCH:-amd64}"; \
+	if [ "${TARGET_OS}" != "linux" ] || [ "${TARGET_ARCH}" != "amd64" ]; then \
+		echo "LDXP toolkit release asset is available only for linux/amd64 (requested ${TARGET_OS}/${TARGET_ARCH})" >&2; \
+		exit 1; \
+	fi; \
+	TOOLKIT_VERSION="${VERSION:-$(tr -d '\\r\\n' < /tmp/sub2api-version)}"; \
+	case "${TOOLKIT_VERSION}" in \
+		""|dev|unpackaged|[!0-9A-Za-z]*|*[!0-9A-Za-z._+-]*) echo "LDXP toolkit release version is missing or invalid" >&2; exit 1;; \
+	esac; \
+	if [ "${#TOOLKIT_VERSION}" -gt 128 ]; then echo "LDXP toolkit release version is too long" >&2; exit 1; fi; \
+	mkdir -p /out; \
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.toolkitVersion=${TOOLKIT_VERSION}" -o /out/ldxp-toolkit .; \
+	test -f /out/ldxp-toolkit && test -x /out/ldxp-toolkit; \
+	TOOLKIT_SHA256="$(sha256sum /out/ldxp-toolkit | awk '{print $1}')"; \
+	printf '{"schema_version":1,"program":"ldxp-toolkit","version":"%s","os":"linux","arch":"amd64","sha256":"%s"}\\n' "${TOOLKIT_VERSION}" "${TOOLKIT_SHA256}" > /out/ldxp-toolkit-release.json
+
+# -----------------------------------------------------------------------------
+# Stage 3: Backend Builder
 # -----------------------------------------------------------------------------
 # --platform=$BUILDPLATFORM: run the Go toolchain on the native host arch and
 # cross-compile to the target arch below. The binary is CGO_ENABLED=0, so this
@@ -98,12 +134,12 @@ RUN --mount=type=cache,id=sub2api-gomod,target=/go/pkg/mod \
     ./cmd/server
 
 # -----------------------------------------------------------------------------
-# Stage 3: PostgreSQL Client (version-matched with docker-compose)
+# Stage 4: PostgreSQL Client (version-matched with docker-compose)
 # -----------------------------------------------------------------------------
 FROM ${POSTGRES_IMAGE} AS pg-client
 
 # -----------------------------------------------------------------------------
-# Stage 4: Final Runtime Image
+# Stage 5: Final Runtime Image
 # -----------------------------------------------------------------------------
 FROM ${ALPINE_IMAGE}
 
@@ -141,6 +177,17 @@ WORKDIR /app
 # Copy binary/resources with ownership to avoid extra full-layer chown copy
 COPY --from=backend-builder --chown=sub2api:sub2api /app/sub2api /app/sub2api
 COPY --from=backend-builder --chown=sub2api:sub2api /app/backend/resources /app/resources
+# The release manifest is a required assertion consumed by the Go runtime.
+# Keep the asset outside the writable data directory; administrators may only
+# copy it to the fixed private target after checksum verification.
+COPY --from=ldxp-toolkit-builder --chown=root:root /out/ldxp-toolkit /app/ldxp-toolkit-assets/ldxp-toolkit
+COPY --from=ldxp-toolkit-builder --chown=root:root /out/ldxp-toolkit-release.json /app/ldxp-toolkit-assets/ldxp-toolkit-release.json
+RUN chmod 0555 /app/ldxp-toolkit-assets/ldxp-toolkit && \
+	chmod 0444 /app/ldxp-toolkit-assets/ldxp-toolkit-release.json
+
+ENV LIANDONG_TOOLKIT_DATA_DIR=/app/data \
+	LIANDONG_TOOLKIT_ASSET_PATH=/app/ldxp-toolkit-assets/ldxp-toolkit \
+	LIANDONG_TOOLKIT_ASSET_MANIFEST_PATH=/app/ldxp-toolkit-assets/ldxp-toolkit-release.json
 
 # Create data directory
 RUN mkdir -p /app/data && chown sub2api:sub2api /app/data

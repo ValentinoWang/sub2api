@@ -19,6 +19,25 @@ export default {
     summaryAria: 'Selected range summary',
     loadFailed: 'Failed to load channel monitor',
     detailLoadFailed: 'Failed to load channel monitor details',
+    states: {
+      'feature-disabled': {
+        title: 'Channel monitor is unavailable',
+        description: 'Channel monitoring is not enabled for this service, so no monitor request was made.',
+      },
+      initializing: {
+        title: 'Loading channel monitor',
+        description: 'Reading passive monitoring aggregates for the selected range.',
+      },
+      'no-request-data': {
+        title: 'No request data in this range',
+        description: 'No requests have been recorded, or none match the current filters.',
+        reset: 'Reset filters',
+      },
+      'request-failed': {
+        title: 'Unable to load channel monitor',
+        description: 'The monitor request failed. Refresh to try again.',
+      },
+    },
     otherModels: 'Other models',
     ignored: 'Ignored',
     currentUser: 'Current user',

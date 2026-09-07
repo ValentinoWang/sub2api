@@ -1,4 +1,28 @@
 export default {
+  experiences: {
+    nav: '经验分享',
+    kicker: '经验分享',
+    featuredTitle: '把可复用的排障经验留在这里',
+    featuredDescription: '从真实问题中整理出明确边界、检查顺序与恢复方法，帮助下一次更快定位。',
+    browseAll: '查看全部经验',
+    indexTitle: 'AI 使用经验分享',
+    indexDescription: '收录面向真实使用场景的排障与实践经验。每篇内容都会注明适用范围和历史观察时间。',
+    allCategories: '全部',
+    filterLabel: '按分类筛选经验',
+    categories: {
+      toolUse: '工具使用',
+      integrationTroubleshooting: '接入与排障',
+      publicBenefitSkills: '公益 Skills',
+      harnessEngineering: 'Harness 工程',
+    },
+    updated: '更新：{date}',
+    appliesTo: '适用',
+    readExperience: '查看经验',
+    empty: '这个分类暂时还没有公开经验。',
+    breadcrumbHome: '首页',
+    breadcrumbList: '经验分享',
+    gpt6Title: 'GPT-6 已接入，为什么 Codex 仍然看不见？',
+  },
 
   // Subscription Progress (Header component)
   subscriptionProgress: {

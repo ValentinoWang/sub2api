@@ -4,7 +4,6 @@
       <header class="flex flex-wrap items-end justify-between gap-3 border-b border-gray-200 pb-4 dark:border-dark-700">
         <div class="min-w-0">
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('adminMembership.title') }}</h1>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('adminMembership.safeData') }}</p>
         </div>
         <button class="btn btn-secondary btn-sm" :disabled="loading" data-test="refresh-overview" @click="load"><Icon name="refresh" size="sm" :class="loading ? 'animate-spin' : ''" />{{ t('common.refresh') }}</button>
       </header>

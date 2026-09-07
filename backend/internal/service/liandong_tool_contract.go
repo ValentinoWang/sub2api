@@ -46,9 +46,11 @@ type LiandongToolkitInstallationResult struct {
 // LiandongToolkitRuntimeConfig is supplied by the application integration
 // layer. AssetPath is local-only and defaults below DataDir when omitted.
 type LiandongToolkitRuntimeConfig struct {
-	DataDir   string
-	AssetPath string
-	Version   string
+	DataDir           string
+	AssetPath         string
+	AssetSHA256       string
+	AssetManifestPath string
+	Version           string
 }
 
 // LiandongToolkitConnectivityResult reports a read-only merchant probe.

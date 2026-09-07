@@ -168,3 +168,70 @@ func TestLiandongToolkitRuntimeRejectsURLAndArchiveAssets(t *testing.T) {
 	require.Error(t, err)
 	require.True(t, infraerrors.IsBadRequest(err))
 }
+
+func TestLiandongToolkitRuntimeUsesExplicitReleaseManifest(t *testing.T) {
+	dataDir := t.TempDir()
+	assetPath := filepath.Join(t.TempDir(), "ldxp-toolkit")
+	asset := []byte("linux-amd64 release asset")
+	require.NoError(t, os.WriteFile(assetPath, asset, 0o555))
+	digest := sha256.Sum256(asset)
+	manifestPath := writeLiandongToolkitReleaseManifest(t, filepath.Join(t.TempDir(), "ldxp-toolkit-release.json"), "2.4.6", hex.EncodeToString(digest[:]))
+
+	runtimeService, err := NewLiandongToolkitRuntime(LiandongToolkitRuntimeConfig{
+		DataDir:           dataDir,
+		AssetPath:         assetPath,
+		AssetManifestPath: manifestPath,
+	})
+	require.NoError(t, err)
+	status := runtimeService.Status()
+	require.Equal(t, "2.4.6", status.Version)
+	require.True(t, status.AssetAvailable)
+	if runtime.GOOS == "linux" && runtime.GOARCH == "amd64" {
+		result, installErr := runtimeService.Install()
+		require.NoError(t, installErr)
+		require.True(t, result.Status.Ready)
+	} else {
+		require.False(t, status.Ready)
+		require.Contains(t, status.Diagnostics, "LDXP toolkit release asset is available only for linux/amd64")
+		_, installErr := runtimeService.Install()
+		require.Equal(t, "LDXP_TOOLKIT_PLATFORM_UNSUPPORTED", infraerrors.Reason(installErr))
+	}
+}
+
+func TestLiandongToolkitRuntimeRejectsManifestDigestOrVersionMismatch(t *testing.T) {
+	assetPath := filepath.Join(t.TempDir(), "ldxp-toolkit")
+	asset := []byte("release asset")
+	require.NoError(t, os.WriteFile(assetPath, asset, 0o555))
+	digest := sha256.Sum256(asset)
+	manifestPath := writeLiandongToolkitReleaseManifest(t, filepath.Join(t.TempDir(), "ldxp-toolkit-release.json"), "2.4.6", hex.EncodeToString(digest[:]))
+
+	runtimeService, err := NewLiandongToolkitRuntime(LiandongToolkitRuntimeConfig{
+		DataDir:           t.TempDir(),
+		AssetPath:         assetPath,
+		AssetManifestPath: manifestPath,
+		AssetSHA256:       strings.Repeat("0", sha256.Size*2),
+		Version:           "2.4.6",
+	})
+	require.NoError(t, err)
+	require.False(t, runtimeService.Status().Ready)
+	_, err = runtimeService.Install()
+	require.Equal(t, "LDXP_TOOLKIT_RELEASE_MANIFEST_INVALID", infraerrors.Reason(err))
+
+	runtimeService, err = NewLiandongToolkitRuntime(LiandongToolkitRuntimeConfig{
+		DataDir:           t.TempDir(),
+		AssetPath:         assetPath,
+		AssetManifestPath: manifestPath,
+		Version:           "2.4.7",
+	})
+	require.NoError(t, err)
+	require.False(t, runtimeService.Status().Ready)
+	_, err = runtimeService.Install()
+	require.Equal(t, "LDXP_TOOLKIT_RELEASE_MANIFEST_INVALID", infraerrors.Reason(err))
+}
+
+func writeLiandongToolkitReleaseManifest(t *testing.T, path, version, digest string) string {
+	t.Helper()
+	content := []byte(`{"schema_version":1,"program":"ldxp-toolkit","version":"` + version + `","os":"linux","arch":"amd64","sha256":"` + digest + `"}`)
+	require.NoError(t, os.WriteFile(path, content, 0o444))
+	return path
+}

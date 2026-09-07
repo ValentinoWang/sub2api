@@ -19,6 +19,25 @@ export default {
     summaryAria: '筛选范围整体汇总',
     loadFailed: '渠道监控加载失败',
     detailLoadFailed: '渠道监控明细加载失败',
+    states: {
+      'feature-disabled': {
+        title: '渠道监控未启用',
+        description: '当前服务未开放渠道监控，因此不会加载监控请求。',
+      },
+      initializing: {
+        title: '正在加载渠道监控',
+        description: '正在读取所选时间范围的被动监控汇总。',
+      },
+      'no-request-data': {
+        title: '所选范围内没有请求数据',
+        description: '尚未记录请求，或当前筛选条件没有匹配的请求数据。',
+        reset: '重置筛选',
+      },
+      'request-failed': {
+        title: '无法加载渠道监控',
+        description: '监控请求失败，请刷新后重试。',
+      },
+    },
     otherModels: '其他模型',
     ignored: '忽略',
     currentUser: '当前用户',

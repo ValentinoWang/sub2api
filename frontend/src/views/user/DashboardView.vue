@@ -10,6 +10,7 @@
           <div class="lg:col-span-1"><UserDashboardQuickActions /></div>
         </div>
       </template>
+      <ExperienceCollection data-testid="dashboard-experience-sharing" compact />
     </div>
   </AppLayout>
 </template>
@@ -19,6 +20,7 @@ import { ref, computed, onMounted } from 'vue'; import { useAuthStore } from '@/
 import AppLayout from '@/components/layout/AppLayout.vue'; import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import UserDashboardStats from '@/components/user/dashboard/UserDashboardStats.vue'; import UserDashboardCharts from '@/components/user/dashboard/UserDashboardCharts.vue'
 import UserDashboardRecentUsage from '@/components/user/dashboard/UserDashboardRecentUsage.vue'; import UserDashboardQuickActions from '@/components/user/dashboard/UserDashboardQuickActions.vue'
+import ExperienceCollection from '@/components/experiences/ExperienceCollection.vue'
 import type { UsageLog, TrendDataPoint, ModelStat, PlatformQuotaItem } from '@/types'
 import { getMyPlatformQuotas } from '@/api/user'
 import { formatDateLocalInput } from '@/utils/format'

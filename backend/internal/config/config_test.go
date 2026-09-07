@@ -79,6 +79,22 @@ func TestLoadServerTimingConfig(t *testing.T) {
 	})
 }
 
+func TestLoadLiandongToolkitReleaseAssertionFromEnvironment(t *testing.T) {
+	resetViperWithJWTSecret(t)
+	digest := strings.Repeat("a", 64)
+	t.Setenv("LIANDONG_TOOLKIT_ASSET_PATH", "/app/ldxp-toolkit-assets/ldxp-toolkit")
+	t.Setenv("LIANDONG_TOOLKIT_ASSET_MANIFEST_PATH", "/app/ldxp-toolkit-assets/ldxp-toolkit-release.json")
+	t.Setenv("LIANDONG_TOOLKIT_ASSET_SHA256", digest)
+	t.Setenv("LIANDONG_TOOLKIT_VERSION", "2.4.6")
+
+	cfg, err := Load()
+	require.NoError(t, err)
+	require.Equal(t, "/app/ldxp-toolkit-assets/ldxp-toolkit", cfg.LiandongToolkit.AssetPath)
+	require.Equal(t, "/app/ldxp-toolkit-assets/ldxp-toolkit-release.json", cfg.LiandongToolkit.AssetManifestPath)
+	require.Equal(t, digest, cfg.LiandongToolkit.AssetSHA256)
+	require.Equal(t, "2.4.6", cfg.LiandongToolkit.Version)
+}
+
 func TestLoadRedisUsernameFromEnvironment(t *testing.T) {
 	resetViperWithJWTSecret(t)
 	t.Setenv("REDIS_USERNAME", "app-user")

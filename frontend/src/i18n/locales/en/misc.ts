@@ -1,4 +1,28 @@
 export default {
+  experiences: {
+    nav: 'Experience Sharing',
+    kicker: 'Experience Sharing',
+    featuredTitle: 'Keep reusable troubleshooting experience close',
+    featuredDescription: 'Clear boundaries, checks, and recovery paths from real incidents, ready for the next similar issue.',
+    browseAll: 'Browse all experiences',
+    indexTitle: 'AI Experience Sharing',
+    indexDescription: 'Troubleshooting and practical experience for real usage. Each entry records its scope and observation date.',
+    allCategories: 'All',
+    filterLabel: 'Filter experiences by category',
+    categories: {
+      toolUse: 'Tool Use',
+      integrationTroubleshooting: 'Integration & Troubleshooting',
+      publicBenefitSkills: 'Public-benefit Skills',
+      harnessEngineering: 'Harness Engineering',
+    },
+    updated: 'Updated: {date}',
+    appliesTo: 'Applies to',
+    readExperience: 'Read experience',
+    empty: 'There are no published experiences in this category yet.',
+    breadcrumbHome: 'Home',
+    breadcrumbList: 'Experience Sharing',
+    gpt6Title: 'GPT-6 is connected. Why can Codex still not see it?',
+  },
 
   // Subscription Progress (Header component)
   subscriptionProgress: {

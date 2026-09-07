@@ -41,7 +41,7 @@ export default {
     },
   },
   adminMembership: {
-    title: 'Membership fulfillment',
+    title: 'AI Recharge Workspace',
     runtime: 'Runtime',
     products: 'Products and channels',
     orders: 'Orders and attempts',
@@ -50,6 +50,5 @@ export default {
     coupon: 'Coupon',
     availability: 'Check availability',
     review: 'Review',
-    safeData: 'This workspace shows customer-safe status and codes only.',
   },
 }

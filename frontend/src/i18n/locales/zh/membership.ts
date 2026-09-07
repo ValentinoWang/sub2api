@@ -41,7 +41,7 @@ export default {
     },
   },
   adminMembership: {
-    title: '会员履约工作台',
+    title: 'AI 充值工作台',
     runtime: '运行状态',
     products: '商品与通道',
     orders: '订单与尝试摘要',
@@ -50,6 +50,5 @@ export default {
     coupon: '优惠券',
     availability: '刷新可用性',
     review: '复核',
-    safeData: '此工作台仅展示面向客户的安全状态和状态码。',
   },
 }

@@ -11,11 +11,22 @@ import (
 	"strings"
 )
 
+// toolkitVersion is set by the release build. Keeping it in the executable
+// lets the package manifest and the binary be tied to the same declared build.
+var toolkitVersion = "dev"
+
 func main() {
 	os.Exit(runCLI(os.Args[1:], os.Stdout, os.Stderr))
 }
 
 func runCLI(args []string, stdout, stderr io.Writer) int {
+	if len(args) > 0 && args[0] == "version" {
+		if err := commandVersion(args[1:], stdout); err != nil {
+			fmt.Fprintf(stderr, "error: %s\n", err)
+			return 1
+		}
+		return 0
+	}
 	configPath, commandArgs, err := extractConfigFlag(args)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: %s\n", err)
@@ -35,6 +46,8 @@ func runCLI(args []string, stdout, stderr io.Writer) int {
 	commandArgs = commandArgs[1:]
 	var commandErr error
 	switch command {
+	case "version":
+		commandErr = commandVersion(commandArgs, stdout)
 	case "doctor":
 		commandErr = commandDoctor(cfg, configPath, commandArgs, stdout, stderr)
 	case "goods":
@@ -96,6 +109,7 @@ func hasHelpFlag(args []string) bool {
 func printUsage(w io.Writer) {
 	_, _ = fmt.Fprintln(w, "Usage: ldxp-toolkit --config PATH <command>")
 	_, _ = fmt.Fprintln(w, "Commands:")
+	_, _ = fmt.Fprintln(w, "  version")
 	_, _ = fmt.Fprintln(w, "  doctor")
 	_, _ = fmt.Fprintln(w, "  goods list")
 	_, _ = fmt.Fprintln(w, "  config validate")
@@ -104,6 +118,13 @@ func printUsage(w io.Writer) {
 	_, _ = fmt.Fprintln(w, "  jobs status --id ID")
 	_, _ = fmt.Fprintln(w, "  jobs resume --id ID")
 	_, _ = fmt.Fprintln(w, "  export --id ID")
+}
+
+func commandVersion(args []string, stdout io.Writer) error {
+	if len(args) != 0 {
+		return errors.New("version does not accept positional arguments")
+	}
+	return writeJSON(stdout, map[string]any{"version": toolkitVersion})
 }
 
 func commandDoctor(cfg *Config, configPath string, args []string, stdout, stderr io.Writer) error {

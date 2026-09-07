@@ -47,7 +47,7 @@
             class="btn btn-secondary btn-icon flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-400 dark:hover:bg-dark-600"
             type="button"
             :title="t('common.refresh')"
-            :disabled="loading"
+            :disabled="loading || featureDisabled"
             @click="reload(false)"
           >
             <Icon name="refresh" size="sm" :class="loading ? 'animate-spin' : ''" />
@@ -193,6 +193,57 @@
         </div>
       </section>
 
+      <section
+        v-if="viewState !== 'ready'"
+        class="card flex min-h-[320px] flex-col items-center justify-center gap-4 px-6 py-10 text-center !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700"
+        :data-testid="'channel-monitor-v2-state'"
+        :data-state="viewState"
+        :role="viewState === 'request-failed' ? 'alert' : 'status'"
+        :aria-live="viewState === 'request-failed' ? 'assertive' : 'polite'"
+      >
+        <LoadingSpinner v-if="viewState === 'initializing'" size="lg" />
+        <Icon
+          v-else
+          :name="viewState === 'request-failed' ? 'exclamationCircle' : viewState === 'feature-disabled' ? 'lock' : 'inbox'"
+          size="lg"
+          class="text-gray-400 dark:text-gray-500"
+        />
+        <div class="max-w-md space-y-1">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t(`channelMonitorV2.states.${viewState}.title`) }}
+          </h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {{
+              viewState === 'request-failed'
+                ? requestFailureMessage
+                : t(`channelMonitorV2.states.${viewState}.description`)
+            }}
+          </p>
+        </div>
+        <button
+          v-if="viewState === 'request-failed' || viewState === 'no-request-data'"
+          type="button"
+          class="btn btn-secondary"
+          @click="viewState === 'no-request-data' && hasDimensionFilter ? clearDimensions() : reload(false)"
+        >
+          {{
+            viewState === 'no-request-data' && hasDimensionFilter
+              ? t('channelMonitorV2.states.no-request-data.reset')
+              : t('common.refresh')
+          }}
+        </button>
+      </section>
+
+      <div
+        v-if="viewState === 'ready' && lastLoadError"
+        class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100"
+        role="alert"
+        data-testid="channel-monitor-v2-stale-error"
+      >
+        {{ requestFailureMessage }}
+      </div>
+
+      <template v-if="viewState === 'ready'">
       <!-- Overview KPI: success · TTFT · tokens/s(optional) · cache · (+ RPM when throughput visible) -->
       <section
         v-if="snapshot"
@@ -453,6 +504,7 @@
           </div>
         </div>
       </section>
+      </template>
     </div>
   </AppLayout>
 </template>
@@ -472,7 +524,7 @@ import MonitorTrendChart from '@/features/channel-monitor-v2/MonitorTrendChart.v
 import RelayPulseMatrix from '@/features/channel-monitor-v2/RelayPulseMatrix.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
-import { extractApiErrorMessage } from '@/utils/apiError'
+import { extractApiErrorCode, extractApiErrorMessage } from '@/utils/apiError'
 import { isChannelMonitorThroughputHidden } from '@/utils/featureFlags'
 import * as api from '@/api/channelMonitorV2'
 import type {
@@ -558,6 +610,8 @@ const userRows = ref<MonitorUserRow[]>([])
 const loading = ref(false)
 const tabLoading = ref(false)
 const refreshing = ref(false)
+const initialized = ref(false)
+const lastLoadError = ref<unknown>(null)
 const expandedErrors = ref(new Set<string>())
 let controller: AbortController | null = null
 let sequence = 0
@@ -639,6 +693,24 @@ const activeRowsEmpty = computed(() =>
       ? errorRows.value.length === 0
       : userRows.value.length === 0
 )
+const responseFeatureDisabled = computed(() => {
+  const code = extractApiErrorCode(lastLoadError.value)
+  return code === 'CHANNEL_MONITOR_DISABLED' || code === 'CHANNEL_MONITOR_MODE_MISMATCH'
+})
+const featureDisabled = computed(
+  () => appStore.cachedPublicSettings?.channel_monitor_enabled === false || responseFeatureDisabled.value,
+)
+type MonitorViewState = 'feature-disabled' | 'initializing' | 'request-failed' | 'no-request-data' | 'ready'
+const viewState = computed<MonitorViewState>(() => {
+  if (featureDisabled.value) return 'feature-disabled'
+  if (!snapshot.value && lastLoadError.value) return 'request-failed'
+  if (!initialized.value || (loading.value && !snapshot.value)) return 'initializing'
+  if (!snapshot.value || snapshot.value.metrics.request_count <= 0) return 'no-request-data'
+  return 'ready'
+})
+const requestFailureMessage = computed(() =>
+  extractApiErrorMessage(lastLoadError.value, t('channelMonitorV2.loadFailed')),
+)
 /** First-upgrade backfill toward 90m/24h/7d/30d; banner hides when backend omits bootstrap. */
 const bootstrapActive = computed(() => Boolean(snapshot.value?.coverage?.bootstrap?.active))
 const bootstrapPercent = computed(() => {
@@ -719,12 +791,14 @@ async function loadMetrics(signal?: AbortSignal, id = sequence) {
 }
 
 async function reload(silent = true) {
+  if (featureDisabled.value) return
   controller?.abort()
   const request = new AbortController()
   controller = request
   const id = ++sequence
   refreshing.value = true
   if (!silent) loading.value = true
+  lastLoadError.value = null
   try {
     // Catalog + metrics in parallel; catalog ignores dimension filters so options never shrink.
     await Promise.all([
@@ -733,6 +807,7 @@ async function reload(silent = true) {
     ])
   } catch (error) {
     if ((error as { name?: string }).name !== 'CanceledError') {
+      lastLoadError.value = error
       appStore.showError(extractApiErrorMessage(error, t('channelMonitorV2.loadFailed')))
     }
   } finally {
@@ -746,16 +821,19 @@ async function reload(silent = true) {
 
 /** When only range changes, still refresh dimensions; dimension filters only re-load metrics. */
 async function reloadMetricsOnly(silent = true) {
+  if (featureDisabled.value) return
   controller?.abort()
   const request = new AbortController()
   controller = request
   const id = ++sequence
   refreshing.value = true
   if (!silent) loading.value = true
+  lastLoadError.value = null
   try {
     await loadMetrics(request.signal, id)
   } catch (error) {
     if ((error as { name?: string }).name !== 'CanceledError') {
+      lastLoadError.value = error
       appStore.showError(extractApiErrorMessage(error, t('channelMonitorV2.loadFailed')))
     }
   } finally {
@@ -904,7 +982,26 @@ watch(activeTab, () => {
   syncQuery()
   void loadTab()
 })
-onMounted(() => void reload(false))
+watch(
+  () => appStore.cachedPublicSettings?.channel_monitor_enabled,
+  (enabled) => {
+    if (enabled === false) {
+      controller?.abort()
+      if (autoRefreshTimer) {
+        window.clearInterval(autoRefreshTimer)
+        autoRefreshTimer = null
+      }
+      return
+    }
+    if (enabled === true && initialized.value && !snapshot.value && !loading.value) {
+      void reload(false)
+    }
+  },
+)
+onMounted(() => {
+  initialized.value = true
+  if (!featureDisabled.value) void reload(false)
+})
 onBeforeUnmount(() => {
   controller?.abort()
   if (autoRefreshTimer) window.clearInterval(autoRefreshTimer)

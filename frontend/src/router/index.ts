@@ -62,12 +62,23 @@ const routes: RouteRecordRaw[] = [
     }
   })),
   {
+    path: '/experiences',
+    name: 'Experiences',
+    component: () => import('@/views/public/ExperiencesView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Experience Sharing',
+      titleKey: 'experiences.indexTitle'
+    }
+  },
+  {
     path: '/error-experiences/gpt-6-astra-not-visible',
     name: 'ErrorExperienceGpt6AstraNotVisible',
     component: () => import('@/views/public/ErrorExperienceView.vue'),
     meta: {
       requiresAuth: false,
-      title: 'GPT-6 已接入，为什么 Codex 仍然看不见？'
+      title: 'GPT-6 已接入，为什么 Codex 仍然看不见？',
+      titleKey: 'experiences.gpt6Title'
     }
   },
 
@@ -508,9 +519,8 @@ const routes: RouteRecordRaw[] = [
     meta: {
       requiresAuth: true,
       requiresAdmin: true,
-      title: 'Membership Fulfillment',
+      title: 'AI Recharge Workspace',
       titleKey: 'adminMembership.title',
-      descriptionKey: 'adminMembership.safeData'
     }
   },
   {
@@ -838,7 +848,7 @@ let authInitialized = false
 const navigationLoading = useNavigationLoadingState()
 // 延迟初始化预加载，传入 router 实例
 let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
-const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/error-experiences/gpt-6-astra-not-visible']
+const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/experiences', '/error-experiences/gpt-6-astra-not-visible']
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
   '/auth/linuxdo/callback',

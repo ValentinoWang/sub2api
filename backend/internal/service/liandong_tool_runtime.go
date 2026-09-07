@@ -3,7 +3,9 @@ package service
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -12,15 +14,14 @@ import (
 	"strings"
 
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
-	"github.com/spf13/viper"
 )
 
 const (
-	liandongToolkitDirectoryName  = "ldxp"
-	liandongToolkitTargetDirName  = "toolkit"
-	liandongToolkitProgramName    = "ldxp-toolkit"
-	liandongToolkitDefaultVer     = "unpackaged"
-	liandongToolkitAssetSHA256Env = "LIANDONG_TOOLKIT_ASSET_SHA256"
+	liandongToolkitDirectoryName   = "ldxp"
+	liandongToolkitTargetDirName   = "toolkit"
+	liandongToolkitProgramName     = "ldxp-toolkit"
+	liandongToolkitDefaultVer      = "unpackaged"
+	liandongToolkitManifestMaxSize = 16 << 10
 )
 
 var liandongToolkitArchiveSuffixes = []string{
@@ -42,6 +43,19 @@ type LiandongToolkitRuntime struct {
 	programPath    string
 	version        string
 	expectedSHA256 string
+	manifestPath   string
+}
+
+// liandongToolkitReleaseManifest is generated beside the executable in the
+// Linux/amd64 image build. It is a release assertion, not a user-supplied
+// checksum file or an installer input.
+type liandongToolkitReleaseManifest struct {
+	SchemaVersion int    `json:"schema_version"`
+	Program       string `json:"program"`
+	Version       string `json:"version"`
+	OS            string `json:"os"`
+	Arch          string `json:"arch"`
+	SHA256        string `json:"sha256"`
 }
 
 // DefaultLiandongToolkitAssetPath derives the package handoff location from
@@ -59,7 +73,7 @@ func DefaultLiandongToolkitProgramPath(dataDir string) string {
 // NewLiandongToolkitRuntime validates the application-provided local paths
 // and keeps the install destination independent from request data.
 func NewLiandongToolkitRuntime(cfg LiandongToolkitRuntimeConfig) (*LiandongToolkitRuntime, error) {
-	return newLiandongToolkitRuntime(cfg, configuredLiandongToolkitSHA256())
+	return newLiandongToolkitRuntime(cfg, cfg.AssetSHA256)
 }
 
 // NewLiandongToolkitRuntimeWithExpectedSHA256 is the explicit release-bound
@@ -86,6 +100,13 @@ func newLiandongToolkitRuntime(cfg LiandongToolkitRuntimeConfig, expectedSHA256 
 	if isLiandongToolkitArchive(assetPath) {
 		return nil, infraerrors.BadRequest("LDXP_TOOLKIT_ASSET_REJECTED", "LDXP toolkit asset must be a local executable file")
 	}
+	manifestPath := strings.TrimSpace(cfg.AssetManifestPath)
+	if manifestPath != "" {
+		manifestPath, err = normalizeLiandongToolkitLocalPath(manifestPath, false)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	version := strings.TrimSpace(cfg.Version)
 	if version == "" {
@@ -98,14 +119,8 @@ func newLiandongToolkitRuntime(cfg LiandongToolkitRuntimeConfig, expectedSHA256 
 		programPath:    DefaultLiandongToolkitProgramPath(dataDir),
 		version:        version,
 		expectedSHA256: strings.TrimSpace(expectedSHA256),
+		manifestPath:   manifestPath,
 	}, nil
-}
-
-func configuredLiandongToolkitSHA256() string {
-	if value, ok := os.LookupEnv(liandongToolkitAssetSHA256Env); ok {
-		return strings.TrimSpace(value)
-	}
-	return strings.TrimSpace(viper.GetString("liandong_toolkit.asset_sha256"))
 }
 
 func normalizeLiandongToolkitLocalPath(value string, dataPath bool) (string, error) {
@@ -143,6 +158,74 @@ func isLiandongToolkitArchive(path string) bool {
 	return false
 }
 
+func (r *LiandongToolkitRuntime) releaseAssertion() (liandongToolkitReleaseManifest, error) {
+	assertion := liandongToolkitReleaseManifest{Version: r.version, SHA256: r.expectedSHA256}
+	if r.manifestPath == "" {
+		if _, err := liandongToolkitTrustedSHA256(assertion.SHA256); err != nil {
+			return assertion, err
+		}
+		return assertion, nil
+	}
+
+	info, err := os.Lstat(r.manifestPath)
+	if err != nil {
+		return assertion, fmt.Errorf("inspect release manifest: %w", err)
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.Mode().IsRegular() || info.Size() > liandongToolkitManifestMaxSize {
+		return assertion, errors.New("release manifest must be a small regular local file")
+	}
+	file, err := os.Open(r.manifestPath)
+	if err != nil {
+		return assertion, fmt.Errorf("open release manifest: %w", err)
+	}
+	defer func() { _ = file.Close() }()
+	decoder := json.NewDecoder(io.LimitReader(file, liandongToolkitManifestMaxSize+1))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&assertion); err != nil {
+		return assertion, fmt.Errorf("decode release manifest: %w", err)
+	}
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		if err == nil {
+			return assertion, errors.New("release manifest contains more than one JSON value")
+		}
+		return assertion, fmt.Errorf("decode release manifest trailer: %w", err)
+	}
+	if assertion.SchemaVersion != 1 || assertion.Program != liandongToolkitProgramName ||
+		assertion.OS != "linux" || assertion.Arch != "amd64" || !liandongToolkitValidVersion(assertion.Version) {
+		return assertion, errors.New("release manifest has an unsupported toolkit identity")
+	}
+	if _, err := liandongToolkitTrustedSHA256(assertion.SHA256); err != nil {
+		return assertion, err
+	}
+	if configured := strings.TrimSpace(r.expectedSHA256); configured != "" && !strings.EqualFold(configured, assertion.SHA256) {
+		return assertion, errors.New("configured toolkit SHA-256 does not match the release manifest")
+	}
+	if configuredVersion := strings.TrimSpace(r.version); configuredVersion != "" && configuredVersion != liandongToolkitDefaultVer && configuredVersion != assertion.Version {
+		return assertion, errors.New("configured toolkit version does not match the release manifest")
+	}
+	if runtime.GOOS != assertion.OS || runtime.GOARCH != assertion.Arch {
+		return assertion, fmt.Errorf("release manifest targets %s/%s but this runtime is %s/%s", assertion.OS, assertion.Arch, runtime.GOOS, runtime.GOARCH)
+	}
+	return assertion, nil
+}
+
+func liandongToolkitValidVersion(value string) bool {
+	if len(value) == 0 || len(value) > 128 {
+		return false
+	}
+	for index, character := range value {
+		if (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') ||
+			(character >= '0' && character <= '9') || character == '.' || character == '_' || character == '+' || character == '-' {
+			if index == 0 && !(character >= 'a' && character <= 'z') && !(character >= 'A' && character <= 'Z') && !(character >= '0' && character <= '9') {
+				return false
+			}
+			continue
+		}
+		return false
+	}
+	return true
+}
+
 // LiandongToolkitUnavailableInstallationStatus describes a missing injected
 // runtime without making the HTTP layer fabricate an installed state.
 func LiandongToolkitUnavailableInstallationStatus() LiandongToolkitInstallationStatus {
@@ -167,9 +250,19 @@ func (r *LiandongToolkitRuntime) Status() LiandongToolkitInstallationStatus {
 		Version:             r.version,
 		Diagnostics:         make([]string, 0, 4),
 	}
-	expectedChecksum, expectedErr := liandongToolkitTrustedSHA256(r.expectedSHA256)
+	assertion, expectedErr := r.releaseAssertion()
+	expectedChecksum := assertion.SHA256
+	if assertion.Version != "" {
+		status.Version = assertion.Version
+	}
 	if expectedErr != nil {
-		if strings.TrimSpace(r.expectedSHA256) == "" {
+		if r.manifestPath != "" {
+			if assertion.OS == "linux" && assertion.Arch == "amd64" && (runtime.GOOS != assertion.OS || runtime.GOARCH != assertion.Arch) {
+				status.Diagnostics = append(status.Diagnostics, "LDXP toolkit release asset is available only for linux/amd64")
+			} else {
+				status.Diagnostics = append(status.Diagnostics, "configured toolkit release manifest is invalid or unavailable")
+			}
+		} else if strings.TrimSpace(r.expectedSHA256) == "" {
 			status.Diagnostics = append(status.Diagnostics, "trusted toolkit SHA-256 is not configured")
 		} else {
 			status.Diagnostics = append(status.Diagnostics, "configured toolkit SHA-256 is invalid")
@@ -265,8 +358,14 @@ func (r *LiandongToolkitRuntime) Install() (*LiandongToolkitInstallationResult, 
 	if filepath.Clean(r.assetPath) == filepath.Clean(r.programPath) {
 		return nil, infraerrors.BadRequest("LDXP_TOOLKIT_ASSET_REJECTED", "LDXP toolkit asset and destination must be different")
 	}
-	expectedChecksum, err := liandongToolkitTrustedSHA256(r.expectedSHA256)
+	assertion, err := r.releaseAssertion()
 	if err != nil {
+		if r.manifestPath != "" {
+			if assertion.OS == "linux" && assertion.Arch == "amd64" && (runtime.GOOS != assertion.OS || runtime.GOARCH != assertion.Arch) {
+				return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_PLATFORM_UNSUPPORTED", "LDXP toolkit release asset is available only for linux/amd64")
+			}
+			return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_RELEASE_MANIFEST_INVALID", "configured LDXP toolkit release manifest is invalid or unavailable")
+		}
 		reason := "LDXP_TOOLKIT_CHECKSUM_INVALID"
 		message := "configured LDXP toolkit release SHA-256 is invalid"
 		if strings.TrimSpace(r.expectedSHA256) == "" {
@@ -275,6 +374,7 @@ func (r *LiandongToolkitRuntime) Install() (*LiandongToolkitInstallationResult, 
 		}
 		return nil, infraerrors.ServiceUnavailable(reason, message)
 	}
+	expectedChecksum := assertion.SHA256
 
 	assetInfo, err := os.Lstat(r.assetPath)
 	if errors.Is(err, os.ErrNotExist) {

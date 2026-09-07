@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -28,5 +30,23 @@ func TestLoadConfigAcceptsFlatNamesAndAppliesDefaults(t *testing.T) {
 	}
 	if err := validateConfig(cfg, true, true); err != nil {
 		t.Fatalf("loaded config should validate: %v", err)
+	}
+}
+
+func TestVersionCommandReportsBuildVersionWithoutConfiguration(t *testing.T) {
+	var stdout strings.Builder
+	var stderr strings.Builder
+	code := runCLI([]string{"version"}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("version command failed: exit=%d stderr=%s", code, stderr.String())
+	}
+	var result struct {
+		Version string `json:"version"`
+	}
+	if err := json.Unmarshal([]byte(stdout.String()), &result); err != nil {
+		t.Fatalf("decode version output: %v", err)
+	}
+	if result.Version != toolkitVersion {
+		t.Fatalf("version output = %q, want %q", result.Version, toolkitVersion)
 	}
 }

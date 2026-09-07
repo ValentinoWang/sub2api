@@ -1,11 +1,22 @@
 <template>
   <PublicPageLayout>
     <article class="experience" aria-labelledby="page-title">
+      <nav class="experience-breadcrumb" :aria-label="t('experiences.breadcrumbList')">
+        <router-link to="/home">{{ t('experiences.breadcrumbHome') }}</router-link>
+        <span aria-hidden="true">/</span>
+        <router-link to="/experiences">{{ t('experiences.breadcrumbList') }}</router-link>
+        <span aria-hidden="true">/</span>
+        <router-link :to="{ path: '/experiences', query: { category: experience.category } }">{{ t(`experiences.categories.${experience.category}`) }}</router-link>
+        <span aria-hidden="true">/</span>
+        <span>{{ experience.series }}</span>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{{ experience.title }}</span>
+      </nav>
       <header class="experience-intro">
-        <p class="experience-kicker">错误经验 / ERR-001</p>
-        <h1 id="page-title">GPT-6 已接入，为什么 Codex 仍然看不见？</h1>
-        <p class="experience-subtitle">解决你使用codex或者claudecode的最后一公里</p>
-        <p class="experience-meta">适用：Codex 桌面使用者 · 历史案例环境：macOS · 更新：2026-09-06</p>
+        <p class="experience-kicker">{{ t(`experiences.categories.${experience.category}`) }} / ERR-001</p>
+        <h1 id="page-title">{{ experience.title }}</h1>
+        <p class="experience-subtitle">{{ experience.subtitle }}</p>
+        <p class="experience-meta">{{ t('experiences.appliesTo') }}：{{ experience.applicableTo }} · {{ t('experiences.updated', { date: experience.updatedAt }) }}</p>
       </header>
 
       <section class="experience-section" aria-labelledby="situation-title">
@@ -127,54 +138,24 @@
     </article>
 
     <template #footer>
-      <section class="brand-statement" aria-label="rest2build 公司标语与传播口号">
-        <div class="brand-statement-inner">
-          <a class="brand-wordmark" href="https://ai.rest2build.lol/" aria-label="访问 rest2build 网站">
-            <img src="/logo.svg" alt="" />
-            <span>rest2build</span>
-          </a>
-          <p class="brand-tagline"><span>歇一会儿，</span><span>让 AI 接着干。</span></p>
-          <p class="brand-subline">rest 是你的，build 交给 AI。</p>
-          <p class="brand-service">rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p>
-          <a class="brand-domain" href="https://ai.rest2build.lol/">ai.rest2build.lol</a>
-        </div>
-      </section>
+      <Rest2BuildBrandFooter />
     </template>
   </PublicPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
+import { getExperienceById } from '@/content/experiences'
 import PublicPageLayout from '@/components/layout/PublicPageLayout.vue'
 
+const { t } = useI18n()
+const experience = getExperienceById('gpt-6-astra-not-visible')!
 const promptField = ref<HTMLTextAreaElement | null>(null)
 const copyStatus = ref('')
 
-const prompt = `我使用 Sub2API 中转站接入 Codex，目标模型是 gpt-6-astra。现在可能遇到以下情况之一：桌面模型列表没有它；终端更新后桌面仍没变化；或者已经可选，但原任务还在使用旧模型。请先确认我实际遇到哪一种，再定位并处理，不要直接假定是客户端旧版本、缓存或站点故障。
-
-我的身份是普通中转站使用者，只有自己的客户端、本站提供的接入地址和个人 API Key，没有站点服务器管理权限。请使用当前机器已有的授权配置；缺少必要信息时问我，不让我把完整 API Key、认证文件或私人对话贴到回复里。
-
-第一步：检查实际使用环境。
-确认系统、桌面应用来源与安装路径、实际运行的 Codex 引擎，以及终端 codex 的版本。区分桌面内置引擎与全局 CLI，不把终端升级等同于桌面升级。若当前环境无法访问我的桌面机器，只报告你能确认的内容，并给出需要在那台机器检查的最小项目。
-
-第二步：核对实际连接和模型选择。
-只读取必要的配置字段，说明 provider、Base URL、默认 model、命名配置及启动覆盖的关系，并检查当前任务或新任务实际选择的模型。Base URL 要与本站接入说明核对，不能自行猜测域名、补删 /v1 或改成 localhost。如果现有配置看起来走了本地代理，先确认是否为我有意设置。保留现有 provider、features、memories、profiles、MCP、项目 trust、认证和任务历史。
-
-第三步：分开验证服务和客户端。
-用我已有的认证访问实际配置入口的模型目录，判断 gpt-6-astra 是否对我可用；按该入口的协议与路径发请求，不重复拼接 /v1。若有必要，允许针对我正在使用的入口做一次极短的 Responses 生成请求，可能产生少量费用，不循环重试、不探测无关入口。记录状态、脱敏错误、请求标识和返回模型字段；目录中有模型不等于生成成功，返回模型名也不是独立的上游身份认证。
-再检查当前版本可用的客户端模型目录或 model/list，区分“服务可调用”“客户端可见”“任务选中”。2026-09-06 的历史案例中，桌面内置 0.153.3 将 Astra 标记为 hide，0.153.4 恢复 list；这只是排查线索，需对照我的实际版本和当前官方说明，不能强行降级到历史版本。
-
-第四步：只修复已定位的问题。
-可以备份后修改与本问题直接相关、可恢复的本机客户端配置；连接目标有歧义时先问我。需要桌面升级时，优先使用官方更新入口或完整安装包，核对来源与签名，并在活跃任务和工具调用结束后安装、重启。不要在运行中替换 App，不要把全局 CLI 手工塞进签名应用。
-缓存不是默认清理项：先确认该版本实际读取什么、缓存是否相关及如何恢复，只有明确相关的可再生对象才定点清理。不要删除整个 Codex 目录、memories、任务历史、认证或 Docker 数据。不要登录、重建、重启本站服务器，不更改站点账号、密钥或上游路由。遇到权限或安全策略阻塞时说明边界，不换命令绕过。
-
-最后，请用普通使用者能看懂的语言分别报告：
-1. 我的客户端实际版本与连接入口是否正确；
-2. gpt-6-astra 是否在桌面可见；
-3. 新任务或当前任务是否真的选中目标模型；
-4. 最小请求是否成功，哪些检查没有执行；
-5. 若未恢复，是我本机可继续处理，还是需要联系站点管理员。
-不要把配置文件写好、安装包下载完成或模型目录有名字当作修复完成。如果必须由我结束当前任务或重启应用，先给出准备情况、恢复方式和重启后的检查项。`
+const prompt = experience.prompt
 
 const copyLabel = computed(() => (copyStatus.value === '提示词已复制' ? '已复制' : '复制提示词'))
 
@@ -194,6 +175,7 @@ async function copyPrompt() {
 .experience { overflow: hidden; border: 1px solid rgba(15, 23, 42, 0.09); border-radius: 8px; background: rgba(255, 255, 255, 0.84); box-shadow: 0 20px 40px -38px rgba(15, 23, 42, 0.45); }
 .dark .experience { border-color: rgba(255, 255, 255, 0.12); background: rgba(10, 18, 32, 0.74); }
 .experience-intro, .experience-section { padding: 32px 36px; }
+.experience-breadcrumb { display: flex; flex-wrap: wrap; gap: 7px; padding: 16px 36px 0; color: #64748b; font-size: 12px; }.experience-breadcrumb a { color: #0f766e; text-decoration: none; }.experience-breadcrumb a:hover { text-decoration: underline; text-underline-offset: 3px; }.dark .experience-breadcrumb { color: #94a3b8; }.dark .experience-breadcrumb a { color: #5eead4; }
 .experience-intro { border-bottom: 1px solid rgba(15, 23, 42, 0.09); background: rgba(248, 251, 250, 0.86); }
 .dark .experience-intro { border-color: rgba(255, 255, 255, 0.1); background: rgba(13, 25, 31, 0.72); }
 .experience-kicker, .experience-step { margin: 0 0 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #0f766e; }
@@ -210,6 +192,5 @@ async function copyPrompt() {
 .prompt-field { display: block; width: 100%; min-height: 340px; margin-top: 18px; resize: vertical; border: 1px solid #bfcec6; border-radius: 5px; background: #fff; padding: 16px; color: #1f2937; font: 13px/1.9 ui-monospace, SFMono-Regular, Menlo, monospace; }.dark .prompt-field { border-color: #466159; background: #0f1f1b; color: #e5e7eb; }.copy-status { min-height: 22px; margin-bottom: 0 !important; font-size: 12px; color: #0f766e !important; }
 .explanation { padding-top: 2px; }.explanation + .explanation { margin-top: 30px; border-top: 1px solid rgba(15, 23, 42, 0.09); }.dark .explanation + .explanation { border-color: rgba(255, 255, 255, 0.1); }.explanation h3 { padding-top: 28px; }
 .table-scroll { overflow-x: auto; margin: 18px 0; border: 1px solid #d9e2dd; }.dark .table-scroll { border-color: #3a514a; }.table-scroll table { width: 100%; min-width: 660px; border-collapse: collapse; font-size: 13px; }.table-scroll th { padding: 12px; text-align: left; font-weight: 650; color: #53625c; background: #edf3f0; }.dark .table-scroll th { color: #d1d5db; background: #183029; }.table-scroll td { padding: 12px; vertical-align: top; border-top: 1px solid #d9e2dd; color: #45534e; }.dark .table-scroll td { border-color: #3a514a; color: #d1d5db; }.table-scroll td:first-child { font-weight: 650; }
-.brand-statement { background: #191f1c; padding: 72px 24px 28px; color: #c4d0c9; text-align: center; }.brand-statement-inner { width: min(880px, 100%); margin: 0 auto; }.brand-wordmark { display: inline-flex; align-items: center; gap: 14px; color: #f7faf8; font-size: 36px; font-weight: 750; line-height: 1.3; text-decoration: none; }.brand-wordmark img { width: 48px; height: 48px; }.brand-tagline { margin: 32px 0 14px; font-size: 52px; font-weight: 750; line-height: 1.4; color: #f7faf8; }.brand-tagline span { display: inline-block; }.brand-tagline span:last-child { color: #d4ed9b; }.brand-subline { margin: 0 0 26px; font-size: 20px; color: #d6dfda; }.brand-service { max-width: 760px; margin: 0 auto 28px; font-size: 16px; line-height: 1.9; }.brand-domain { display: inline-block; color: #d4ed9b; font: 700 18px ui-monospace, SFMono-Regular, Menlo, monospace; text-underline-offset: 7px; }.brand-wordmark:focus-visible, .brand-domain:focus-visible { outline: 3px solid #d4ed9b; outline-offset: 5px; }
-@media (max-width: 640px) { .experience-intro, .experience-section { padding: 24px 20px; }.experience h1 { font-size: 27px; }.experience-subtitle { font-size: 15px; }.experience-heading-row { align-items: flex-start; }.prompt-field { min-height: 420px; padding: 12px; font-size: 12px; }.brand-statement { padding: 48px 16px 24px; }.brand-wordmark { font-size: 30px; gap: 12px; }.brand-wordmark img { width: 42px; height: 42px; }.brand-tagline { margin-top: 24px; font-size: 30px; line-height: 1.5; }.brand-subline { font-size: 16px; }.brand-service { text-align: left; font-size: 14px; }.table-scroll { margin-right: -20px; margin-left: -20px; border-right: 0; border-left: 0; } }
+@media (max-width: 640px) { .experience-intro, .experience-section { padding: 24px 20px; }.experience-breadcrumb { padding: 14px 20px 0; }.experience h1 { font-size: 27px; }.experience-subtitle { font-size: 15px; }.experience-heading-row { align-items: flex-start; }.prompt-field { min-height: 420px; padding: 12px; font-size: 12px; }.table-scroll { margin-right: -20px; margin-left: -20px; border-right: 0; border-left: 0; } }
 </style>

@@ -628,6 +628,8 @@
           </p>
         </section>
 
+        <ExperienceCollection class="mb-20" />
+
         <!-- FAQ (static, crawlable) -->
         <section class="mb-20">
           <div class="mb-8 text-center" data-reveal>
@@ -719,6 +721,7 @@
         </div>
       </div>
     </footer>
+    <Rest2BuildBrandFooter />
   </div>
 </template>
 
@@ -730,6 +733,8 @@ import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
 import BrandWordmark from '@/components/common/BrandWordmark.vue'
 import RelayStationVisual from '@/components/common/RelayStationVisual.vue'
+import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
+import ExperienceCollection from '@/components/experiences/ExperienceCollection.vue'
 import { useLatencyProbe } from '@/composables/useLatencyProbe'
 import { BRAND_DOMAIN, PUBLIC_PAGES, resolveBrandName, resolveStoreName } from '@/constants/brand'
 import { sanitizeUrl } from '@/utils/url'
@@ -767,6 +772,7 @@ const publicLinks = computed(() => [
   { to: PUBLIC_PAGES.security, label: t('marketing.nav.security') },
   { to: PUBLIC_PAGES.benchmarks, label: t('marketing.nav.benchmarks') },
   { to: PUBLIC_PAGES.share, label: t('marketing.nav.share') },
+  { to: PUBLIC_PAGES.experiences, label: t('experiences.nav') },
   { to: PUBLIC_PAGES.status, label: t('marketing.nav.status') },
   { to: PUBLIC_PAGES.models, label: t('marketing.nav.models') },
   { to: PUBLIC_PAGES.keyUsage, label: t('marketing.nav.keyUsage') }
