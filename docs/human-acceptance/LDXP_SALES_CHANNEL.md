@@ -16,7 +16,7 @@
 
 验收负责人不需要查代码、运行命令、查看凭证或阅读技术日志。开始本清单前，需要拿到一个可购买的测试商品、一个 Sub2API 测试账号，以及本次商品在 `/admin/tools/ldxp` 中已经保存的映射记录。映射记录至少包含链动商品 ID、销售价和 Sub2API 入账余额。
 
-自动化验证的范围、通过条件和执行证据维护在 [LDXP 销售渠道与管理员工具开发文档](LDXP_SALES_CHANNEL_DEVELOPMENT.md) 的验收矩阵及 `.artifacts/ldxp-toolkit-implementation/ledger/wave-3.md`。如自动化记录显示 `needs_reconciliation` 或未通过，本人工清单不开始。
+技术负责人没有确认系统准备完成时，本人工清单不开始。
 
 ## 首期卡密渠道验收步骤
 

@@ -263,7 +263,7 @@ Sub2API PaymentOrder(PENDING)
 
 ## 10. 人工验收文档
 
-人工执行步骤、证据格式、首期卡密渠道验收、LDXP 原生支付沙箱测试和放行签字要求，单独维护在 [LDXP_SALES_CHANNEL_HUMAN_ACCEPTANCE.md](LDXP_SALES_CHANNEL_HUMAN_ACCEPTANCE.md)。
+人工执行步骤、证据格式、首期卡密渠道验收、LDXP 原生支付沙箱测试和放行签字要求，单独维护在 [人类验收目录](human-acceptance/LDXP_SALES_CHANNEL.md)。
 
 开发文档只定义实现边界和自动化验收条件；没有人工验收记录时，不得把渠道标记为生产已验收。
 

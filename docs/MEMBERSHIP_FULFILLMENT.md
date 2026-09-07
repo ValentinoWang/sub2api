@@ -12,10 +12,10 @@ CDKs, browser-agent requests, or storage credentials in tickets, chat, shell
 history, or ordinary logs.
 
 The operator and acceptance owner must also use the
-[`MEMBERSHIP_FULFILLMENT_HUMAN_ACCEPTANCE.md`](MEMBERSHIP_FULFILLMENT_HUMAN_ACCEPTANCE.md)
-checklist. Its current release record distinguishes the completed machine
-deployment checks from the still-pending human, supplier, and entitlement
-verification. Do not infer human acceptance from this operations guide.
+[`human-acceptance/MEMBERSHIP_FULFILLMENT.md`](human-acceptance/MEMBERSHIP_FULFILLMENT.md)
+checklist. That document contains only observable human checks and the signed
+acceptance record. Keep build, deployment, migration, and automated test
+evidence in this operations guide or the restricted release record.
 
 ## Evidence Levels and Product Boundary
 
