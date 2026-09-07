@@ -35,6 +35,8 @@ var liandongToolkitArchiveSuffixes = []string{
 	".zip",
 }
 
+var errLiandongToolkitPlatformUnsupported = errors.New("LDXP toolkit release asset is unavailable on this platform")
+
 // LiandongToolkitRuntime manages only the fixed local toolkit executable. It
 // deliberately does not embed, download, unpack, or execute an asset.
 type LiandongToolkitRuntime struct {
@@ -204,7 +206,7 @@ func (r *LiandongToolkitRuntime) releaseAssertion() (liandongToolkitReleaseManif
 		return assertion, errors.New("configured toolkit version does not match the release manifest")
 	}
 	if runtime.GOOS != assertion.OS || runtime.GOARCH != assertion.Arch {
-		return assertion, fmt.Errorf("release manifest targets %s/%s but this runtime is %s/%s", assertion.OS, assertion.Arch, runtime.GOOS, runtime.GOARCH)
+		return assertion, fmt.Errorf("%w: release manifest targets %s/%s but this runtime is %s/%s", errLiandongToolkitPlatformUnsupported, assertion.OS, assertion.Arch, runtime.GOOS, runtime.GOARCH)
 	}
 	return assertion, nil
 }
@@ -257,7 +259,7 @@ func (r *LiandongToolkitRuntime) Status() LiandongToolkitInstallationStatus {
 	}
 	if expectedErr != nil {
 		if r.manifestPath != "" {
-			if assertion.OS == "linux" && assertion.Arch == "amd64" && (runtime.GOOS != assertion.OS || runtime.GOARCH != assertion.Arch) {
+			if errors.Is(expectedErr, errLiandongToolkitPlatformUnsupported) {
 				status.Diagnostics = append(status.Diagnostics, "LDXP toolkit release asset is available only for linux/amd64")
 			} else {
 				status.Diagnostics = append(status.Diagnostics, "configured toolkit release manifest is invalid or unavailable")
@@ -361,7 +363,7 @@ func (r *LiandongToolkitRuntime) Install() (*LiandongToolkitInstallationResult, 
 	assertion, err := r.releaseAssertion()
 	if err != nil {
 		if r.manifestPath != "" {
-			if assertion.OS == "linux" && assertion.Arch == "amd64" && (runtime.GOOS != assertion.OS || runtime.GOARCH != assertion.Arch) {
+			if errors.Is(err, errLiandongToolkitPlatformUnsupported) {
 				return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_PLATFORM_UNSUPPORTED", "LDXP toolkit release asset is available only for linux/amd64")
 			}
 			return nil, infraerrors.ServiceUnavailable("LDXP_TOOLKIT_RELEASE_MANIFEST_INVALID", "configured LDXP toolkit release manifest is invalid or unavailable")

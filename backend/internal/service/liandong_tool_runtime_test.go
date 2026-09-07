@@ -213,7 +213,9 @@ func TestLiandongToolkitRuntimeRejectsManifestDigestOrVersionMismatch(t *testing
 		Version:           "2.4.6",
 	})
 	require.NoError(t, err)
-	require.False(t, runtimeService.Status().Ready)
+	status := runtimeService.Status()
+	require.False(t, status.Ready)
+	require.Contains(t, status.Diagnostics, "configured toolkit release manifest is invalid or unavailable")
 	_, err = runtimeService.Install()
 	require.Equal(t, "LDXP_TOOLKIT_RELEASE_MANIFEST_INVALID", infraerrors.Reason(err))
 
