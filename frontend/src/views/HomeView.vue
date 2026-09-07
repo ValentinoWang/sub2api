@@ -103,6 +103,7 @@
   <!-- Default Home Page -->
   <div
     v-else
+    data-home-layout-revision="experience-before-access-modes-v1"
     class="home-root relative flex min-h-screen flex-col overflow-hidden text-gray-900 dark:text-white"
   >
     <!-- Background Layers -->

@@ -113,8 +113,10 @@ describe('HomeView compact mode', () => {
   })
 
   it('places experience sharing before the two access modes on the default home', () => {
-    const html = mountHome().html()
+    const wrapper = mountHome()
+    const html = wrapper.html()
 
+    expect(wrapper.get('[data-home-layout-revision="experience-before-access-modes-v1"]')).toBeTruthy()
     expect(html.indexOf('data-testid="experience-sharing"')).toBeGreaterThan(-1)
     expect(html.indexOf('marketing.modes.title')).toBeGreaterThan(html.indexOf('data-testid="experience-sharing"'))
   })
