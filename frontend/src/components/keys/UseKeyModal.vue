@@ -332,7 +332,10 @@ const showCodexModelCatalog = computed(() =>
 const showCodexMigrationHelp = computed(() =>
   props.show && (activeClientTab.value === 'codex' || activeClientTab.value === 'codex-ws')
 )
-const codexMigrationRoute = CODEX_SESSION_MIGRATION.route
+const codexMigrationRoute = {
+  path: CODEX_SESSION_MIGRATION.route,
+  query: { from: 'p1', topic: 'conversationContinuity' }
+}
 
 const codexModelCatalogPath = computed(() => {
   const isWindows = activeTab.value === 'windows'

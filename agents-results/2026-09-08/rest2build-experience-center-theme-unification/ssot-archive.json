@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "artifact_class": "ssot-development",
+  "artifact_date": "2026-09-08",
+  "project_name": "Sub2api",
+  "ssot_name": "rest2build-experience-center-theme-unification",
+  "main_document": "ssot-development-paths.md",
+  "problem_documents": []
+}

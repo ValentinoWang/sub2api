@@ -1,0 +1,89 @@
+{
+  "node_id": "N3",
+  "semantic_key": "requirement.n3",
+  "stage": "R1",
+  "work_kind": "implementation",
+  "domain_lane": "r1",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1",
+    "N1"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "rest2build.experience-center.local-hmr-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n3"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "N5",
+    "QR1"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N3.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "frontend/src/views/HomeView.vue",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/i18n/locales/zh/landing.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/i18n/locales/en/landing.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/views/__tests__/HomeView.compact.spec.ts",
+      "operation": "modify"
+    }
+  ],
+  "required_lanes": [
+    "machine/unit",
+    "machine/integration-contract",
+    "machine/local-runtime"
+  ],
+  "goal": "以首页 P3 的成熟风格统一公共页面和首页经验模块，并将中文首页定位改为经验分享导向。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N3/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    },
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

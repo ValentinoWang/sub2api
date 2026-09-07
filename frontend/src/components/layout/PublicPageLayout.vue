@@ -1,13 +1,7 @@
 <template>
-  <div class="pub-root relative flex min-h-screen flex-col overflow-hidden text-gray-900 dark:text-white">
-    <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div class="pub-aurora pub-aurora-1"></div>
-      <div class="pub-aurora pub-aurora-2"></div>
-      <div class="pub-grid"></div>
-    </div>
-
-    <header class="sticky top-0 z-30 px-4 pt-4 sm:px-6">
-      <nav class="pub-nav mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-2xl px-3 py-2 sm:px-4">
+  <div class="pub-root relative flex min-h-screen flex-col text-gray-900 dark:text-white">
+    <header class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-700 dark:bg-slate-950/90 sm:px-6">
+      <nav class="pub-nav mx-auto flex max-w-7xl items-center justify-between gap-3 px-0">
         <router-link to="/home" class="flex min-w-0 items-center gap-3">
           <img :src="siteLogo || '/logo.svg'" alt="Logo" class="h-8 w-8 shrink-0 rounded-lg object-contain" />
           <span class="hidden truncate text-sm font-semibold sm:inline"><BrandWordmark :name="siteName" /></span>
@@ -30,8 +24,8 @@
       </nav>
     </header>
 
-    <main class="relative z-10 flex-1 px-4 pb-16 pt-10 sm:px-6">
-      <div class="mx-auto max-w-3xl">
+    <main class="relative z-10 flex-1 px-4 pb-16 pt-10 sm:px-6" :class="{ 'public-main-wide': route.path === '/experiences' }">
+      <div class="public-content mx-auto">
         <slot />
       </div>
     </main>
@@ -98,56 +92,16 @@ const footerLinks = computed(() => [
 
 <style scoped>
 .pub-root {
-  --pub-line: rgba(15, 23, 42, 0.06);
-  --pub-glass: rgba(255, 255, 255, 0.72);
-  --pub-glass-border: rgba(15, 23, 42, 0.08);
-  background:
-    radial-gradient(1000px 500px at 50% -10%, rgba(20, 184, 166, 0.12), transparent 60%),
-    #f6f9fc;
+  background: #f8fafc;
 }
 .dark .pub-root {
-  --pub-line: rgba(148, 163, 184, 0.08);
-  --pub-glass: rgba(10, 18, 32, 0.6);
-  --pub-glass-border: rgba(148, 163, 184, 0.12);
-  background:
-    radial-gradient(1000px 500px at 50% -10%, rgba(20, 184, 166, 0.16), transparent 60%),
-    #050b14;
-}
-.pub-aurora {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(90px);
-  opacity: 0.45;
-}
-.pub-aurora-1 {
-  top: -220px;
-  right: -160px;
-  width: 540px;
-  height: 540px;
-  background: radial-gradient(circle at 30% 30%, rgba(20, 184, 166, 0.5), rgba(34, 211, 238, 0.2) 45%, transparent 70%);
-}
-.pub-aurora-2 {
-  bottom: -240px;
-  left: -200px;
-  width: 560px;
-  height: 560px;
-  background: radial-gradient(circle at 60% 40%, rgba(99, 102, 241, 0.35), transparent 70%);
-}
-.pub-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--pub-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pub-line) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 10%, #000 30%, transparent 100%);
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 10%, #000 30%, transparent 100%);
+  background: #0b1220;
 }
 .pub-nav {
-  background: var(--pub-glass);
-  border: 1px solid var(--pub-glass-border);
-  backdrop-filter: blur(18px) saturate(160%);
+  width: 100%;
 }
+.public-content { max-width: 48rem; }
+.public-main-wide .public-content { max-width: 80rem; }
 .pub-nav-link {
   white-space: nowrap;
   border-radius: 8px;
@@ -175,4 +129,5 @@ const footerLinks = computed(() => [
   background: linear-gradient(135deg, #14b8a6 0%, #0891b2 60%, #4f46e5 140%);
   box-shadow: 0 8px 20px -10px rgba(20, 184, 166, 0.6);
 }
+@media (max-width: 640px) { .public-main-wide { padding-inline: 20px; } }
 </style>

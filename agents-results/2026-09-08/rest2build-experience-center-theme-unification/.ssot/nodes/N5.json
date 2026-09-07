@@ -1,0 +1,91 @@
+{
+  "node_id": "N5",
+  "semantic_key": "requirement.n5",
+  "stage": "R1",
+  "work_kind": "implementation",
+  "domain_lane": "r1",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1",
+    "N2",
+    "N3",
+    "N4"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "rest2build.experience-center.local-hmr-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n5"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "QR1"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N5.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "frontend/src/views/public/__tests__/ExperiencesView.spec.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/views/__tests__/HomeView.compact.spec.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/components/keys/__tests__/UseKeyModal.spec.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/package.json",
+      "operation": "modify"
+    }
+  ],
+  "required_lanes": [
+    "machine/unit",
+    "machine/e2e",
+    "machine/local-runtime",
+    "machine/non-functional"
+  ],
+  "goal": "建立主题、文案和视觉的自动回归检查，并完成只读本地 HMR 的桌面与移动验收记录。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N5/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    },
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "node_id": "N4",
+  "semantic_key": "requirement.n4",
+  "stage": "R1",
+  "work_kind": "implementation",
+  "domain_lane": "r1",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1",
+    "N1"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "rest2build.experience-center.local-hmr-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n4"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "N5",
+    "QR1"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N4.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "frontend/src/components/layout/PublicPageLayout.vue",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/components/keys/UseKeyModal.vue",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/components/keys/__tests__/UseKeyModal.spec.ts",
+      "operation": "modify"
+    }
+  ],
+  "required_lanes": [
+    "machine/unit",
+    "machine/e2e",
+    "machine/local-runtime"
+  ],
+  "goal": "修复公共导航与 P3 顶部标签在深浅主题和不同宽度下的全宽布局、对齐与对比度。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N4/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    },
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

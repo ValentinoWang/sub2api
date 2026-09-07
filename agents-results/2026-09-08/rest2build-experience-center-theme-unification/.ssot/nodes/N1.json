@@ -1,0 +1,86 @@
+{
+  "node_id": "N1",
+  "semantic_key": "requirement.n1",
+  "stage": "R1",
+  "work_kind": "implementation",
+  "domain_lane": "r1",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "rest2build.experience-center.local-hmr-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n1"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "N2",
+    "N3",
+    "N4",
+    "QR1"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N1.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "frontend/src/content/experiences.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/components/keys/UseKeyModal.vue",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/views/public/__tests__/ExperiencesView.spec.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/components/keys/__tests__/UseKeyModal.spec.ts",
+      "operation": "modify"
+    }
+  ],
+  "required_lanes": [
+    "machine/unit",
+    "machine/integration-contract"
+  ],
+  "goal": "定义经验中心的主题目录、P1 到主题的上下文入口以及主题到具体经验的双向导航合同。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N1/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

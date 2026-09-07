@@ -1,0 +1,29 @@
+{
+  "release_id": "R1",
+  "release_gate_node": "QR1",
+  "title": "本地经验中心与统一主题候选",
+  "user_value": "使用者在本地体验经验中心的主题目录和卡片内容，能够从 P1 接入帮助进入相应经验，并在统一的中文界面中完成浏览。",
+  "independent_failure": "任一页面仍为单列低密度经验列表、P1 内容没有主题入口、中文页保留未经允许的英文标题、深色导航出现割裂或横向溢出，都使本地候选不通过；不会触发远端写入或生产发布。",
+  "release_authority": {
+    "mode": "external",
+    "provider": "repository",
+    "authorities": [
+      {
+        "role_id": "release-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "node_ids": [
+    "F",
+    "D1",
+    "N1",
+    "N2",
+    "N3",
+    "N4",
+    "N5",
+    "QR1"
+  ]
+}

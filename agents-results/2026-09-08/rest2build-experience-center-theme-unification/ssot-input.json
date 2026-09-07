@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "plan_version": 1,
+  "dag_version": 1,
+  "interface_freeze_version": 1,
+  "depth": "L2",
+  "task_slug": "rest2build-experience-center-theme-unification",
+  "governance_reason": "用户明确要求开发 SSOT。经验中心、P1 接入帮助、首页定位和公共深色导航需要在后续实现中一起收束，并以本地 HMR 的桌面和移动视觉行为独立验收；本轮只交付开发路径，不修改产品源码、不部署或同步生产。",
+  "selection_authority": "user",
+  "target_evidence_level": "local-runtime",
+  "world_verification": true,
+  "strict_acceptance_profile_version": 2,
+  "authority_binding_version": 1,
+  "structured_result_version": 1,
+  "node_state_model": 2,
+  "acceptance_contract_policy_version": 2,
+  "view_model": 2,
+  "shared_acceptance_policies": [
+    {
+      "id": "SAP-EXPERIENCE-CENTER-LOCAL",
+      "version": 1,
+      "path": "agents-results/2026-09-08/rest2build-experience-center-theme-unification/shared-acceptance-policy.md",
+      "allowed_sections": ["Risks and open decisions"]
+    }
+  ],
+  "principal_registry": {
+    "schema_version": 1,
+    "principals": [
+      {
+        "principal_ref": "implementation-owner",
+        "provider": "repository",
+        "subject": "rest2build-experience-center-implementation",
+        "status": "active",
+        "trust": "repository-bound",
+        "roles": ["implementation-owner"]
+      },
+      {
+        "principal_ref": "product-owner",
+        "provider": "repository",
+        "subject": "vsiyo",
+        "status": "active",
+        "trust": "repository-bound",
+        "roles": ["acceptance-owner", "release-owner"]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-EXPERIENCE-LIST",
+      "path": "frontend/src/views/public/ExperiencesView.vue",
+      "role": "current-implementation",
+      "authority_by_dimension": {
+        "information_architecture": "informative",
+        "visual_tokens": "informative",
+        "layout": "informative",
+        "interaction_behavior": "informative",
+        "seed_data": "not-applicable",
+        "runtime_side_effects": "not-applicable"
+      }
+    },
+    {
+      "id": "SRC-EXPERIENCE-CARD",
+      "path": "frontend/src/components/experiences/ExperienceCard.vue",
+      "role": "current-implementation",
+      "authority_by_dimension": {
+        "information_architecture": "not-applicable",
+        "visual_tokens": "informative",
+        "layout": "informative",
+        "interaction_behavior": "informative",
+        "seed_data": "not-applicable",
+        "runtime_side_effects": "not-applicable"
+      }
+    },
+    {
+      "id": "SRC-EXPERIENCE-CONTENT",
+      "path": "frontend/src/content/experiences.ts",
+      "role": "current-implementation",
+      "authority_by_dimension": {
+        "information_architecture": "informative",
+        "visual_tokens": "not-applicable",
+        "layout": "not-applicable",
+        "interaction_behavior": "informative",
+        "seed_data": "informative",
+        "runtime_side_effects": "not-applicable"
+      }
+    },
+    {
+      "id": "SRC-HOME",
+      "path": "frontend/src/views/HomeView.vue",
+      "role": "current-implementation",
+      "authority_by_dimension": {
+        "information_architecture": "informative",
+        "visual_tokens": "informative",
+        "layout": "informative",
+        "interaction_behavior": "informative",
+        "seed_data": "not-applicable",
+        "runtime_side_effects": "not-applicable"
+      }
+    },
+    {
+      "id": "SRC-PUBLIC-LAYOUT",
+      "path": "frontend/src/components/layout/PublicPageLayout.vue",
+      "role": "current-implementation",
+      "authority_by_dimension": {
+        "information_architecture": "informative",
+        "visual_tokens": "informative",
+        "layout": "informative",
+        "interaction_behavior": "informative",
+        "seed_data": "not-applicable",
+        "runtime_side_effects": "not-applicable"
+      }
+    },
+    {
+      "id": "SRC-P1",
+      "path": "frontend/src/components/keys/UseKeyModal.vue",
+      "role": "current-implementation",
+      "authority_by_dimension": {
+        "information_architecture": "informative",
+        "visual_tokens": "informative",
+        "layout": "informative",
+        "interaction_behavior": "informative",
+        "seed_data": "not-applicable",
+        "runtime_side_effects": "not-applicable"
+      }
+    },
+    {
+      "id": "SRC-ZH-COPY",
+      "path": "frontend/src/i18n/locales/zh/landing.ts",
+      "role": "current-implementation",
+      "authority_by_dimension": {
+        "information_architecture": "informative",
+        "visual_tokens": "not-applicable",
+        "layout": "not-applicable",
+        "interaction_behavior": "not-applicable",
+        "seed_data": "informative",
+        "runtime_side_effects": "not-applicable"
+      }
+    },
+    {
+      "id": "SRC-EN-COPY",
+      "path": "frontend/src/i18n/locales/en/landing.ts",
+      "role": "current-implementation",
+      "authority_by_dimension": {
+        "information_architecture": "informative",
+        "visual_tokens": "not-applicable",
+        "layout": "not-applicable",
+        "interaction_behavior": "not-applicable",
+        "seed_data": "informative",
+        "runtime_side_effects": "not-applicable"
+      }
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D1",
+      "key": "rest2build.experience-center.local-hmr-scope",
+      "version": 1,
+      "record": "agents-results/2026-09-08/rest2build-experience-center-theme-unification/scope-decision.md",
+      "summary": "用户确认针对经验中心、主题统一、中文文案和深色导航编制 SSOT，并限定本轮只做本地 HMR，不同步生产端。"
+    }
+  ],
+  "releases": [
+    {
+      "id": "R1",
+      "gate_node": "QR1",
+      "title": "本地经验中心与统一主题候选",
+      "source_completion_refs": ["RQ-LOCAL-HMR"],
+      "user_value": "使用者在本地体验经验中心的主题目录和卡片内容，能够从 P1 接入帮助进入相应经验，并在统一的中文界面中完成浏览。",
+      "independent_acceptance": "在本地 Vite HMR 中，/experiences、/home 和 P1 接入弹窗于桌面和 390px 宽度下展示同一视觉语言，卡片、导航、深色对比和中文文案满足合同；不需要生产站点读回。",
+      "independent_failure": "任一页面仍为单列低密度经验列表、P1 内容没有主题入口、中文页保留未经允许的英文标题、深色导航出现割裂或横向溢出，都使本地候选不通过；不会触发远端写入或生产发布。",
+      "release_authority": {
+        "mode": "external",
+        "provider": "repository",
+        "authorities": [{"role_id": "release-owner", "principal_ref": "product-owner"}],
+        "quorum": 1,
+        "minimum_trust": "repository-bound"
+      },
+      "acceptance_seeds": [
+        "使用 frontend/package.json 所定义的 Vite HMR，并以 VITE_DEV_PROXY_TARGET=https://ai.rest2build.lol 和 VITE_DEV_PORT=4174 启动；在 /experiences、/home 和登录后 P1 截取桌面及 390px 宽度的深浅主题证据，不执行任何会改变远端业务状态的动作。",
+        "frontend/src/views/public/__tests__/ExperiencesView.spec.ts、frontend/src/views/__tests__/HomeView.compact.spec.ts 与 frontend/src/components/keys/__tests__/UseKeyModal.spec.ts 覆盖主题分类、卡片链接、中文本地化和导航可访问状态；视觉检查断言无水平滚动、无文字遮挡、无控制台错误，且所有流程只访问 http://127.0.0.1:4174。"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "N1",
+      "release": "R1",
+      "goal": "定义经验中心的主题目录、P1 到主题的上下文入口以及主题到具体经验的双向导航合同。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/integration-contract"],
+      "write_targets": [
+        {"path": "frontend/src/content/experiences.ts", "operation": "modify"},
+        {"path": "frontend/src/components/keys/UseKeyModal.vue", "operation": "modify"},
+        {"path": "frontend/src/views/public/__tests__/ExperiencesView.spec.ts", "operation": "modify"},
+        {"path": "frontend/src/components/keys/__tests__/UseKeyModal.spec.ts", "operation": "modify"}
+      ],
+      "acceptance_seeds": [
+        "frontend/src/content/experiences.ts 以稳定主题标识组织经验；至少区分接入配置、对话接续、模型与用量、故障排查四类。筛选状态可由 URL 查询参数恢复，主题内卡片仍链接到现有详情路由，不能因重排而产生死链。",
+        "frontend/src/components/keys/UseKeyModal.vue 的每个接入环境或问题说明都只链接到相关经验主题或详情，并传入不含服务密钥、账号、Base URL 或其他敏感值的上下文。详情路由可返回原 P1 场景或回到 /experiences，缺少上下文时安全回退。"
+      ]
+    },
+    {
+      "id": "N2",
+      "release": "R1",
+      "depends_on": ["N1"],
+      "goal": "将经验列表实现为高信息密度的响应式卡片网格，使主题、摘要、适用对象和行动入口可扫描。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/e2e", "machine/local-runtime"],
+      "write_targets": [
+        {"path": "frontend/src/views/public/ExperiencesView.vue", "operation": "modify"},
+        {"path": "frontend/src/components/experiences/ExperienceCard.vue", "operation": "modify"},
+        {"path": "frontend/src/components/experiences/ExperienceCollection.vue", "operation": "modify"},
+        {"path": "frontend/src/views/public/__tests__/ExperiencesView.spec.ts", "operation": "modify"}
+      ],
+      "acceptance_seeds": [
+        "frontend/src/views/public/ExperiencesView.vue 在桌面宽度下使用至少两列的稳定网格，frontend/src/components/experiences/ExperienceCard.vue 的卡片等高或用明确的栅格轨道约束；依次呈现主题、标题、摘要、适用对象和可见行动。卡片、筛选和空状态不嵌套成多层装饰卡，圆角不超过 8px。",
+        "frontend/src/views/public/__tests__/ExperiencesView.spec.ts 在 390px 宽度下断言网格降为一列，筛选控件可换行且触达面积不小于 36px；最长中文标题、主题和行动文字不溢出、不覆盖相邻内容，键盘焦点和当前筛选状态可见。frontend/src/components/experiences/ExperienceCollection.vue 使用同一信息层级和卡片 token。"
+      ]
+    },
+    {
+      "id": "N3",
+      "release": "R1",
+      "depends_on": ["N1"],
+      "goal": "以首页 P3 的成熟风格统一公共页面和首页经验模块，并将中文首页定位改为经验分享导向。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/integration-contract", "machine/local-runtime"],
+      "write_targets": [
+        {"path": "frontend/src/views/HomeView.vue", "operation": "modify"},
+        {"path": "frontend/src/i18n/locales/zh/landing.ts", "operation": "modify"},
+        {"path": "frontend/src/i18n/locales/en/landing.ts", "operation": "modify"},
+        {"path": "frontend/src/views/__tests__/HomeView.compact.spec.ts", "operation": "modify"}
+      ],
+      "acceptance_seeds": [
+        "frontend/src/i18n/locales/zh/landing.ts 的中文首页定位不再使用“多模型 API 公益体验与开发接入支持”，改为以经验分享和开发接入为中心的准确文案；frontend/src/views/HomeView.vue 保留已批准的 rest2build 名称、口号和对 Codex、Claude Code 接入服务的描述，不扩大未证实服务能力。",
+        "frontend/src/i18n/locales/zh/landing.ts 的接入模式标题以中文表达，例如“本站托管接入”或等义已确认术语；禁止剩余的 Managed Gateway、BYOK 等孤立英文标题。frontend/src/i18n/locales/en/landing.ts 保持完整英文表达，不以中文资源替代；新增本地化键必须在两种 locale 中存在。"
+      ]
+    },
+    {
+      "id": "N4",
+      "release": "R1",
+      "depends_on": ["N1"],
+      "goal": "修复公共导航与 P3 顶部标签在深浅主题和不同宽度下的全宽布局、对齐与对比度。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/e2e", "machine/local-runtime"],
+      "write_targets": [
+        {"path": "frontend/src/components/layout/PublicPageLayout.vue", "operation": "modify"},
+        {"path": "frontend/src/components/keys/UseKeyModal.vue", "operation": "modify"},
+        {"path": "frontend/src/components/keys/__tests__/UseKeyModal.spec.ts", "operation": "modify"}
+      ],
+      "acceptance_seeds": [
+        "frontend/src/components/layout/PublicPageLayout.vue 的公共页内容容器根据页面职责使用可扫描的全宽约束；经验中心不被 max-w-3xl 限成狭长单列。导航主要区域在可用宽度内两侧对齐，必要时采用明确的溢出策略或折叠菜单，不能只把标签堆在左侧或产生页面水平滚动。",
+        "frontend/src/components/layout/PublicPageLayout.vue 的深色底层、导航表面、活动标签、卡片边界与正文有可辨别的明度层级；焦点、悬停和当前状态不依赖单一颜色。frontend/src/components/keys/UseKeyModal.vue 的横向标签在 390px 和桌面宽度下可阅读、可点击且不会遮挡操作区。"
+      ]
+    },
+    {
+      "id": "N5",
+      "release": "R1",
+      "depends_on": ["N2", "N3", "N4"],
+      "goal": "建立主题、文案和视觉的自动回归检查，并完成只读本地 HMR 的桌面与移动验收记录。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/e2e", "machine/local-runtime", "machine/non-functional"],
+      "write_targets": [
+        {"path": "frontend/src/views/public/__tests__/ExperiencesView.spec.ts", "operation": "modify"},
+        {"path": "frontend/src/views/__tests__/HomeView.compact.spec.ts", "operation": "modify"},
+        {"path": "frontend/src/components/keys/__tests__/UseKeyModal.spec.ts", "operation": "modify"},
+        {"path": "frontend/package.json", "operation": "modify"}
+      ],
+      "acceptance_seeds": [
+        "frontend/src/views/public/__tests__/ExperiencesView.spec.ts、frontend/src/views/__tests__/HomeView.compact.spec.ts 和 frontend/src/components/keys/__tests__/UseKeyModal.spec.ts 验证全部经验主题都有可达卡片、P1 经验入口不传递敏感值、中文资源不含被禁止的 Managed Gateway 标题、首页定位改为经验分享、公共导航和当前筛选的 aria 状态成立；在既有 Vitest 结构中运行，不复制实现细节为无意义快照。",
+        "frontend/package.json 的指定 Vite HMR 命令在 /experiences、/home 及授权后的 P1 以桌面和 390px 宽度检查深浅主题。记录访问地址、视口、主题、可见结果和控制台状态；验证过程中不登录远端、不创建或修改业务数据，未获得后续授权前不运行生产构建、Go、Docker 或部署。"
+      ]
+    }
+  ]
+}

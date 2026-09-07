@@ -343,11 +343,13 @@ export default {
       kicker: 'Two ways in',
       title: 'Managed gateway, or bring your own key',
       managed: {
+        badge: 'MANAGED',
         title: 'Managed Gateway',
         desc: 'Use a service key we issue: one endpoint, model switching, failover, quotas. Upstream credentials live only in our server-side key store and are never handed to users.',
         points: ['Per-user key, revocable anytime', 'OpenAI / Anthropic wire compatible', 'Usage and quota visible in real time']
       },
       byok: {
+        badge: 'BYOK',
         title: 'BYOK Support',
         desc: 'Use your own official account or API key. We only help configure and debug Codex CLI, Claude Code, Cursor, Cline and friends. Credentials stay on your machine.',
         points: ['We never touch passwords', 'No cookies / OAuth tokens stored', 'No relaying through other people’s subscriptions']

@@ -1,0 +1,270 @@
+{
+  "planning_compiler_schema_version": 1,
+  "classification": {
+    "applicability": "ssot",
+    "ssot_depth": "L2",
+    "artifact_policy": "create-ssot",
+    "selection_authority": "user",
+    "rationale": "用户明确要求开发 SSOT。经验中心、P1 接入帮助、首页定位和公共深色导航需要在后续实现中一起收束，并以本地 HMR 的桌面和移动视觉行为独立验收；本轮只交付开发路径，不修改产品源码、不部署或同步生产。"
+  },
+  "source_inputs": [
+    {
+      "external_dependency_id": "EXT-EXPERIENCE-LIST",
+      "path": "frontend/src/views/public/ExperiencesView.vue",
+      "commit": "16a8ffaf31545e8726bad43ffa231563ef9a3c3d",
+      "blob": "175caa9e06b2d2a2c40f9ecd4095456df592c10b",
+      "sha256": "9b65d660061209728b6d14c659b0f751c869403433508acc2fb938e78d2e5f1b"
+    },
+    {
+      "external_dependency_id": "EXT-EXPERIENCE-CARD",
+      "path": "frontend/src/components/experiences/ExperienceCard.vue",
+      "commit": "16a8ffaf31545e8726bad43ffa231563ef9a3c3d",
+      "blob": "f2c5895971604d947d6cdeed2af9ea7ea8121d01",
+      "sha256": "ed75f09c2a03c0b2784cd731de356a7834e5eac36a3ca9f728f2deb345de0be5"
+    },
+    {
+      "external_dependency_id": "EXT-EXPERIENCE-CONTENT",
+      "path": "frontend/src/content/experiences.ts",
+      "commit": "16a8ffaf31545e8726bad43ffa231563ef9a3c3d",
+      "blob": "32e321dcedf14ab0b810f231565ca2bfb18a0e37",
+      "sha256": "c8d06538967451e4f8d6c60b989452c93e3085d54a95964e2a3e0a9e6022fc6f"
+    },
+    {
+      "external_dependency_id": "EXT-HOME",
+      "path": "frontend/src/views/HomeView.vue",
+      "commit": "16a8ffaf31545e8726bad43ffa231563ef9a3c3d",
+      "blob": "61d4cc730465edb4d7ade0ec9de44c5f67f00a86",
+      "sha256": "5cea93c0c2f8a36f87d69e23bd16c8df103396c209be53fc76de595e675ad9cf"
+    },
+    {
+      "external_dependency_id": "EXT-PUBLIC-LAYOUT",
+      "path": "frontend/src/components/layout/PublicPageLayout.vue",
+      "commit": "16a8ffaf31545e8726bad43ffa231563ef9a3c3d",
+      "blob": "f580ca6dda6ea78cd30a3c56609a1342b3adbe1c",
+      "sha256": "af4cb5e676b1160c52b296e9edba7d8948c5a0ee2c42f04120995ce0a48485fa"
+    },
+    {
+      "external_dependency_id": "EXT-P1",
+      "path": "frontend/src/components/keys/UseKeyModal.vue",
+      "commit": "16a8ffaf31545e8726bad43ffa231563ef9a3c3d",
+      "blob": "da1410e27303f020f95d2fe2a5dc571976186c1c",
+      "sha256": "e43fdd3a40f085e3675959c30e8bd3940f7ed5643e683399c819d01e99843230"
+    },
+    {
+      "external_dependency_id": "EXT-ZH-COPY",
+      "path": "frontend/src/i18n/locales/zh/landing.ts",
+      "commit": "16a8ffaf31545e8726bad43ffa231563ef9a3c3d",
+      "blob": "37b5d79f985b9609c1363c95211e31966dec8cfd",
+      "sha256": "35e11df8b8fffbde2ec768e1ab9b388adaa220ec4adabdd6fde95a9cf0c4e51c"
+    },
+    {
+      "external_dependency_id": "EXT-EN-COPY",
+      "path": "frontend/src/i18n/locales/en/landing.ts",
+      "commit": "16a8ffaf31545e8726bad43ffa231563ef9a3c3d",
+      "blob": "8d03d86fde17b6e4ae7c4b2ef4493152d4b3e4e4",
+      "sha256": "d58ff1b460e4a70847675ae15bd1fb818f7d8d9850db2b2784b65062eb3cbdb5"
+    }
+  ],
+  "external_systems": [],
+  "acceptance_layers": [
+    "machine/e2e",
+    "machine/integration-contract",
+    "machine/local-runtime",
+    "machine/non-functional",
+    "machine/unit"
+  ],
+  "release_boundary_compiler": {
+    "boundary_required": false,
+    "decision_authority": "source",
+    "rationale": "Each release slice carries its own user value and failure boundary."
+  },
+  "macro_phases": [
+    {
+      "id": "P1",
+      "title": "Delivery",
+      "release_ids": [
+        "R1"
+      ]
+    }
+  ],
+  "release_slices": [
+    {
+      "id": "R1",
+      "macro_phase_id": "P1",
+      "title": "本地经验中心与统一主题候选",
+      "user_value": "使用者在本地体验经验中心的主题目录和卡片内容，能够从 P1 接入帮助进入相应经验，并在统一的中文界面中完成浏览。",
+      "independent_acceptance": "在本地 Vite HMR 中，/experiences、/home 和 P1 接入弹窗于桌面和 390px 宽度下展示同一视觉语言，卡片、导航、深色对比和中文文案满足合同；不需要生产站点读回。",
+      "independent_failure": "任一页面仍为单列低密度经验列表、P1 内容没有主题入口、中文页保留未经允许的英文标题、深色导航出现割裂或横向溢出，都使本地候选不通过；不会触发远端写入或生产发布。",
+      "future_phase_required_for_success": false,
+      "node_ids": [
+        "F",
+        "D1",
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "QR1"
+      ],
+      "source_completion_requirement_refs": [
+        "RQ-LOCAL-HMR"
+      ],
+      "development_baseline": "16a8ffaf31545e8726bad43ffa231563ef9a3c3d",
+      "promotion_baseline": "8175b0995b33e072ac57cf31fb5117121a6f385e",
+      "release_candidate": "74f6e4ce3dc2943825607ab541b997437d66f52cb221d8e8a39e3d0a3051637a"
+    }
+  ],
+  "waves": [
+    {
+      "id": "W-R1",
+      "release_id": "R1",
+      "node_ids": [
+        "F",
+        "D1",
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "QR1"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "D1",
+      "kind": "decision",
+      "goal": "用户确认针对经验中心、主题统一、中文文案和深色导航编制 SSOT，并限定本轮只做本地 HMR，不同步生产端。",
+      "dependencies": [
+        "F"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "决策负责人"
+    },
+    {
+      "id": "F",
+      "kind": "deterministic-generation",
+      "goal": "建立来源身份基线",
+      "dependencies": [],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "编排器"
+    },
+    {
+      "id": "N1",
+      "kind": "implementation",
+      "goal": "定义经验中心的主题目录、P1 到主题的上下文入口以及主题到具体经验的双向导航合同。",
+      "dependencies": [
+        "F",
+        "D1"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "N2",
+      "kind": "implementation",
+      "goal": "将经验列表实现为高信息密度的响应式卡片网格，使主题、摘要、适用对象和行动入口可扫描。",
+      "dependencies": [
+        "F",
+        "D1",
+        "N1"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "N3",
+      "kind": "implementation",
+      "goal": "以首页 P3 的成熟风格统一公共页面和首页经验模块，并将中文首页定位改为经验分享导向。",
+      "dependencies": [
+        "F",
+        "D1",
+        "N1"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "N4",
+      "kind": "implementation",
+      "goal": "修复公共导航与 P3 顶部标签在深浅主题和不同宽度下的全宽布局、对齐与对比度。",
+      "dependencies": [
+        "F",
+        "D1",
+        "N1"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "N5",
+      "kind": "implementation",
+      "goal": "建立主题、文案和视觉的自动回归检查，并完成只读本地 HMR 的桌面与移动验收记录。",
+      "dependencies": [
+        "F",
+        "D1",
+        "N2",
+        "N3",
+        "N4"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "QR1",
+      "kind": "convergence",
+      "goal": "按来源完成标准接受 R1 候选版本",
+      "dependencies": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "发布决策负责人"
+    }
+  ],
+  "artifacts": {
+    "ssot_bundle": true,
+    "generated_views": [
+      "main",
+      "topology",
+      "nodes-r1"
+    ],
+    "worker_ledger": false,
+    "evidence_identity_registry": false,
+    "resource_matrix": false,
+    "runner_registry": false
+  },
+  "artifacts_inventory": {
+    "total_nodes": 8,
+    "implementation_nodes": 5,
+    "worker_nodes": 0,
+    "generated_views": 3
+  },
+  "complexity_budget": {
+    "authority": "user",
+    "rationale": "One node per declared item plus decision and release gates.",
+    "limits": {
+      "total_nodes": 8,
+      "implementation_nodes_per_release": 5,
+      "codex_worker_nodes": 0,
+      "generated_views": 3
+    },
+    "exception": null
+  },
+  "goal_size_detector": {
+    "implementation_or_migration_nodes": 5,
+    "external_systems": 0,
+    "release_slices": 1,
+    "production_migrations": 0,
+    "acceptance_layers": 5,
+    "split_required": false,
+    "split_strategy": "release"
+  },
+  "strict_acceptance_profile_version": 2,
+  "authority_binding_version": 1,
+  "structured_result_version": 1,
+  "node_state_model": 2
+}

@@ -1,10 +1,10 @@
 import { CODEX_SESSION_MIGRATION } from '../constants/codexMigration'
 
 export type ExperienceCategory =
-  | 'toolUse'
-  | 'integrationTroubleshooting'
-  | 'publicBenefitSkills'
-  | 'harnessEngineering'
+  | 'connectionConfiguration'
+  | 'conversationContinuity'
+  | 'modelsUsage'
+  | 'troubleshooting'
 
 export interface ExperienceCategoryDefinition {
   id: ExperienceCategory
@@ -25,10 +25,10 @@ export interface ExperienceContent {
 }
 
 export const experienceCategories: ExperienceCategoryDefinition[] = [
-  { id: 'toolUse', labelKey: 'experiences.categories.toolUse' },
-  { id: 'integrationTroubleshooting', labelKey: 'experiences.categories.integrationTroubleshooting' },
-  { id: 'publicBenefitSkills', labelKey: 'experiences.categories.publicBenefitSkills' },
-  { id: 'harnessEngineering', labelKey: 'experiences.categories.harnessEngineering' },
+  { id: 'connectionConfiguration', labelKey: 'experiences.categories.connectionConfiguration' },
+  { id: 'conversationContinuity', labelKey: 'experiences.categories.conversationContinuity' },
+  { id: 'modelsUsage', labelKey: 'experiences.categories.modelsUsage' },
+  { id: 'troubleshooting', labelKey: 'experiences.categories.troubleshooting' },
 ]
 
 const gpt6AstraNotVisiblePrompt = `我使用 Sub2API 中转站接入 Codex，目标模型是 gpt-6-astra。现在可能遇到以下情况之一：桌面模型列表没有它；终端更新后桌面仍没变化；或者已经可选，但原任务还在使用旧模型。请先确认我实际遇到哪一种，再定位并处理，不要直接假定是客户端旧版本、缓存或站点故障。
@@ -60,7 +60,7 @@ const gpt6AstraNotVisiblePrompt = `我使用 Sub2API 中转站接入 Codex，目
 export const experiences: ExperienceContent[] = [
   {
     id: 'codex-session-migration',
-    category: 'integrationTroubleshooting',
+    category: 'conversationContinuity',
     route: CODEX_SESSION_MIGRATION.route,
     title: CODEX_SESSION_MIGRATION.title,
     summary: '先只读定位旧任务的 provider 关联，再用经验证备份、计划摘要和恢复日志完成可审阅的本机历史迁移。',
@@ -72,7 +72,7 @@ export const experiences: ExperienceContent[] = [
   },
   {
     id: 'gpt-6-astra-not-visible',
-    category: 'integrationTroubleshooting',
+    category: 'modelsUsage',
     route: '/error-experiences/gpt-6-astra-not-visible',
     title: 'GPT-6 已接入，为什么 Codex 仍然看不见？',
     summary: '把服务可调用、客户端可见和任务选中分开检查，避免把模型目录、桌面版本或旧任务状态误判为同一个问题。',

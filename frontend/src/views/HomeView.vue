@@ -341,7 +341,7 @@
           <div class="grid gap-5 md:grid-cols-2">
             <div class="home-mode" data-reveal>
               <div class="home-mode-head">
-                <span class="home-mode-badge">MANAGED</span>
+                <span class="home-mode-badge">{{ t('marketing.modes.managed.badge') }}</span>
                 <h3 class="text-lg font-bold">{{ t('marketing.modes.managed.title') }}</h3>
               </div>
               <p class="home-mode-desc">{{ t('marketing.modes.managed.desc') }}</p>
@@ -351,7 +351,7 @@
             </div>
             <div class="home-mode home-mode-byok" data-reveal data-reveal-delay="1">
               <div class="home-mode-head">
-                <span class="home-mode-badge home-mode-badge-byok">BYOK</span>
+                <span class="home-mode-badge home-mode-badge-byok">{{ t('marketing.modes.byok.badge') }}</span>
                 <h3 class="text-lg font-bold">{{ t('marketing.modes.byok.title') }}</h3>
               </div>
               <p class="home-mode-desc">{{ t('marketing.modes.byok.desc') }}</p>

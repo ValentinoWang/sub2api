@@ -1,4 +1,4 @@
-import { mount, RouterLinkStub } from '@vue/test-utils'
+import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import ExperiencesView from '../ExperiencesView.vue'
@@ -13,7 +13,7 @@ vi.mock('vue-i18n', async (importOriginal) => ({
 }))
 
 describe('ExperiencesView', () => {
-  it('renders the initial experience and filters it by category', async () => {
+  it('renders the initial experiences and persists a topic filter in the route', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [{ path: '/experiences', component: ExperiencesView }]
@@ -32,6 +32,8 @@ describe('ExperiencesView', () => {
     expect(wrapper.findAll('.experience-filter')).toHaveLength(5)
 
     await wrapper.findAll('.experience-filter')[2].trigger('click')
+    await flushPromises()
     expect(wrapper.findAll('.experience-card')).toHaveLength(1)
+    expect(router.currentRoute.value.query.category).toBe('conversationContinuity')
   })
 })

@@ -1,0 +1,53 @@
+{
+  "ssot_schema_version": 2,
+  "artifact_class": "ssot-development",
+  "machine_validation_profile": "release",
+  "target_evidence_level": "local-runtime",
+  "plan_version": 1,
+  "dag_version": 1,
+  "interface_freeze_version": 1,
+  "node_contract_version": 2,
+  "generated_main": "../ssot-development-paths.md",
+  "generated_views": [
+    {
+      "view_id": "main",
+      "source": "view-sources/00-main.md",
+      "source_sha256": "fb20397c548f41074505ff5fc262d37dd4d975bd1df7999f8bcd454f1d02fd98",
+      "output": "../ssot-development-paths.md"
+    },
+    {
+      "view_id": "topology",
+      "generator": "topology",
+      "output": "../generated-views/topology.md"
+    },
+    {
+      "view_id": "nodes-r1",
+      "generator": "nodes",
+      "release": "R1",
+      "output": "../generated-views/nodes-r1.md"
+    }
+  ],
+  "nodes_dir": "nodes",
+  "edges_dir": "edges",
+  "releases_dir": "releases",
+  "assumptions_dir": "assumptions",
+  "conflicts_dir": "conflicts",
+  "world_verification_version": 1,
+  "node_state_model_version": 2,
+  "strict_acceptance_profile_version": 2,
+  "authority_binding_version": 1,
+  "structured_result_version": 1,
+  "acceptance_contract_policy_version": 2,
+  "shared_acceptance_policies": [
+    {
+      "id": "SAP-EXPERIENCE-CENTER-LOCAL",
+      "version": 1,
+      "path": "agents-results/2026-09-08/rest2build-experience-center-theme-unification/shared-acceptance-policy.md",
+      "allowed_sections": [
+        "Risks and open decisions"
+      ],
+      "summary_sha256": "7c9044bfb2d096da53f6153fa33f0e03e6756adf831aa352d20eb6604e3d9c85"
+    }
+  ],
+  "view_model_version": 2
+}

@@ -318,7 +318,7 @@ export default {
   // Marketing / positioning (public pages, home sections, footer)
   marketing: {
     lab: 'Rest2Build AI 接入实验室',
-    positioning: '多模型 API 公益体验与开发接入支持',
+    positioning: 'AI 使用经验分享与开发接入支持',
     nonOfficialShort: '官方 API 兼容接入 · 多模型直连 · 即刻体验',
     disclaimer:
       'Rest2Build 提供官方 API 兼容接入与多模型直连体验，不属于 OpenAI、Anthropic 或其他模型厂商，模型可用性以实时状态为准。',
@@ -343,12 +343,14 @@ export default {
       kicker: '两种接入方式',
       title: '托管网关，或者用你自己的 Key',
       managed: {
-        title: 'Managed Gateway',
+        badge: '本站托管',
+        title: '本站托管接入',
         desc: '使用我们签发的服务密钥：统一接口、模型切换、失败回退、用量额度。上游密钥只存在服务端密钥管理系统，不会发给任何用户。',
         points: ['独立密钥，可随时撤销', 'OpenAI / Anthropic 格式兼容', '用量与额度实时可查']
       },
       byok: {
-        title: 'BYOK 接入支持',
+        badge: '自有密钥',
+        title: '自有密钥接入支持',
         desc: '使用你自己的官方账号或 API Key。我们只提供 Codex CLI、Claude Code、Cursor、Cline 等工具的配置与排障，凭证保存在你本机，不经过我们的服务器。',
         points: ['不接触账号密码', '不保存 Cookie / OAuth Token', '不用他人订阅凭证替你转发']
       }

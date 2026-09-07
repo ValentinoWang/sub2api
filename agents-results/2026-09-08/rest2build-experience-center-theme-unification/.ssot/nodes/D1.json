@@ -1,0 +1,38 @@
+{
+  "node_id": "D1",
+  "semantic_key": "rest2build.experience-center.local-hmr-scope",
+  "stage": "R1",
+  "work_kind": "decision-acceptance",
+  "domain_lane": "decision",
+  "execution_state": "ACCEPTED",
+  "decision_state": "ACCEPTED",
+  "decision_version": 1,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [],
+  "invalidation_keys": [
+    "rest2build.experience-center.local-hmr-scope.v1"
+  ],
+  "write_authority": "isolated-record",
+  "unlocks": [
+    "N1",
+    "N2",
+    "N3",
+    "N4",
+    "N5"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "human",
+  "execution_contract_ref": "nodes/D1.json",
+  "side_effect_class": "none",
+  "candidate_identity_policy": "none",
+  "goal": "用户确认针对经验中心、主题统一、中文文案和深色导航编制 SSOT，并限定本轮只做本地 HMR，不同步生产端。",
+  "owner": "决策负责人",
+  "decision_record_ref": "agents-results/2026-09-08/rest2build-experience-center-theme-unification/scope-decision.md",
+  "blocking_reasons": [],
+  "readiness_gaps": []
+}

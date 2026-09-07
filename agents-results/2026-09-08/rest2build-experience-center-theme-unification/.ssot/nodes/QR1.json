@@ -1,0 +1,63 @@
+{
+  "node_id": "QR1",
+  "semantic_key": "acceptance.release.r1",
+  "stage": "R1",
+  "work_kind": "release-decision",
+  "domain_lane": "r1",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "N1",
+    "N2",
+    "N3",
+    "N4",
+    "N5"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "rest2build.experience-center.local-hmr-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "release.r1"
+  ],
+  "write_authority": "shared-generated",
+  "unlocks": [],
+  "node_role": "acceptance-gate",
+  "execution_actor": "human",
+  "execution_contract_ref": "nodes/QR1.json",
+  "side_effect_class": "none",
+  "candidate_identity_policy": "must-match",
+  "goal": "按来源完成标准接受 R1 候选版本",
+  "owner": "发布决策负责人",
+  "acceptance_contract_ref": "acceptance-fragments/QR1/acceptance-contract.md",
+  "source_requirement_refs": [
+    "RQ-LOCAL-HMR"
+  ],
+  "release_authority": {
+    "mode": "external",
+    "provider": "repository",
+    "authorities": [
+      {
+        "role_id": "release-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "source_completion_requirement_refs": [
+    "RQ-LOCAL-HMR"
+  ],
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    }
+  ]
+}

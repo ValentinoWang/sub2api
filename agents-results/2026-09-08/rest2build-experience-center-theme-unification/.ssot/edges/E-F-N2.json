@@ -1,0 +1,15 @@
+{
+  "edge_id": "E-F-N2",
+  "from": "F",
+  "to": "N2",
+  "dependency_type": "hard",
+  "dependency_scope": "specific-output",
+  "reason_code": "data-dependency",
+  "required_state": "ACCEPTED",
+  "assumption_ids": [],
+  "invalidation_keys": [
+    "source.identity"
+  ],
+  "transferred_input": "建立来源身份基线",
+  "gate_evidence": "acceptance contract evidence"
+}

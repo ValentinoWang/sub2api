@@ -1,0 +1,36 @@
+{
+  "node_id": "F",
+  "semantic_key": "source.identity-baseline",
+  "stage": "R1",
+  "work_kind": "contract-foundation",
+  "domain_lane": "foundation",
+  "execution_state": "ACCEPTED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [],
+  "invalidation_keys": [
+    "source.identity"
+  ],
+  "write_authority": "evidence-only",
+  "unlocks": [
+    "D1",
+    "N1",
+    "N2",
+    "N3",
+    "N4",
+    "N5"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/F.json",
+  "side_effect_class": "none",
+  "candidate_identity_policy": "freezes",
+  "goal": "建立来源身份基线",
+  "owner": "编排器",
+  "blocking_reasons": [],
+  "readiness_gaps": []
+}

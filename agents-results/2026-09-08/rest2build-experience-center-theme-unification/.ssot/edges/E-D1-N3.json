@@ -1,0 +1,15 @@
+{
+  "edge_id": "E-D1-N3",
+  "from": "D1",
+  "to": "N3",
+  "dependency_type": "hard",
+  "dependency_scope": "specific-output",
+  "reason_code": "contract-dependency",
+  "required_state": "ACCEPTED",
+  "assumption_ids": [],
+  "invalidation_keys": [
+    "rest2build.experience-center.local-hmr-scope.v1"
+  ],
+  "transferred_input": "用户确认针对经验中心、主题统一、中文文案和深色导航编制 SSOT，并限定本轮只做本地 HMR，不同步生产端。",
+  "gate_evidence": "acceptance contract evidence"
+}

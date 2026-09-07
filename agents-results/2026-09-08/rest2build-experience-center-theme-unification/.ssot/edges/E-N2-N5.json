@@ -1,0 +1,15 @@
+{
+  "edge_id": "E-N2-N5",
+  "from": "N2",
+  "to": "N5",
+  "dependency_type": "hard",
+  "dependency_scope": "specific-output",
+  "reason_code": "acceptance-dependency",
+  "required_state": "ACCEPTED",
+  "assumption_ids": [],
+  "invalidation_keys": [
+    "requirement.n2"
+  ],
+  "transferred_input": "将经验列表实现为高信息密度的响应式卡片网格，使主题、摘要、适用对象和行动入口可扫描。",
+  "gate_evidence": "acceptance contract evidence"
+}

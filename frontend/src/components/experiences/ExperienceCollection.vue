@@ -40,8 +40,7 @@ const items = computed(() => experiences.slice(0, props.limit))
 </script>
 
 <style scoped>
-.experience-collection { padding: 32px; border: 1px solid rgba(15, 118, 110, 0.18); border-radius: 8px; background: rgba(240, 253, 250, 0.62); }
-.dark .experience-collection { border-color: rgba(45, 212, 191, 0.2); background: rgba(15, 35, 33, 0.5); }
+.experience-collection { padding: 0; }
 .experience-collection-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
 .experience-collection-kicker { margin: 0 0 8px; color: #0f766e; font: 600 12px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
 .experience-collection h2 { margin: 0; color: #16312d; font-size: 24px; line-height: 1.3; font-weight: 700; }
@@ -51,9 +50,9 @@ const items = computed(() => experiences.slice(0, props.limit))
 .experience-browse-link { display: inline-flex; flex: none; align-items: center; gap: 6px; color: #0f766e; font-size: 14px; font-weight: 650; text-decoration: none; }
 .experience-browse-link:hover { color: #0b5d57; text-decoration: underline; text-underline-offset: 4px; }
 .dark .experience-browse-link { color: #5eead4; }
-.experience-grid { display: grid; gap: 14px; }
+.experience-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .experience-collection-compact { padding: 20px; }
 .experience-collection-compact .experience-collection-heading { margin-bottom: 14px; }
 .experience-collection-compact h2 { font-size: 18px; }
-@media (max-width: 640px) { .experience-collection { padding: 22px 18px; }.experience-collection-heading { align-items: flex-start; flex-direction: column; gap: 12px; }.experience-browse-link { min-height: 32px; }.experience-collection h2 { font-size: 21px; } }
+@media (max-width: 640px) { .experience-collection-heading { align-items: flex-start; flex-direction: column; gap: 12px; }.experience-browse-link { min-height: 32px; }.experience-collection h2 { font-size: 21px; }.experience-grid { grid-template-columns: minmax(0, 1fr); } }
 </style>

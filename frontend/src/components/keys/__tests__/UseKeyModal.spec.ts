@@ -51,8 +51,12 @@ describe('UseKeyModal', () => {
     const migrationLink = wrapper.findComponent(RouterLinkStub)
     expect(migrationLink.exists()).toBe(true)
     expect(migrationLink.text()).toContain('旧对话无法继续')
-    expect(migrationLink.props('to')).toBe('/error-experiences/codex-session-migration')
+    expect(migrationLink.props('to')).toEqual({
+      path: '/error-experiences/codex-session-migration',
+      query: { from: 'p1', topic: 'conversationContinuity' }
+    })
     expect(migrationLink.html()).not.toContain('sk-test-secret')
+    expect(migrationLink.html()).not.toContain('https://example.com/v1')
   })
 
   it('omits the attribution override from every standard Claude Code setup form', async () => {
