@@ -416,8 +416,9 @@ export default {
         copy: 'Copy',
         copied: 'Copied',
         updatedAt: 'Last updated',
-        byokTitle: 'BYOK: your own official account',
-        managedTitle: 'Managed: a key issued by this site',
+        accountServiceTitle: 'Account balance service',
+        accountServiceAction: 'Add balance',
+        serviceKeyTitle: 'Service key configuration',
         apiKeyPlaceholder: '<YOUR_SERVICE_KEY>'
       },
       publicBenefit: {
@@ -505,10 +506,10 @@ export default {
       },
       codex: {
         title: 'Codex CLI setup, configuration and troubleshooting',
-        subtitle: 'Prefer your own official account; alternatively configure this gateway as a custom provider.',
-        intro: 'Codex CLI supports custom model providers via config.toml. Pick one of the two modes below.',
-        byok: 'Run codex and sign in with your own OpenAI account. We never log in for you, collect passwords, or relay through someone else’s subscription.',
-        managedIntro: 'Configure this gateway as a custom provider and inject the key via an environment variable:',
+        subtitle: 'Add balance, create a service key, and configure this site as a custom provider for Codex CLI.',
+        intro: 'Codex CLI supports custom model providers through config.toml.',
+        accountService: 'Sign in to this site, add balance, then create a service key in the dashboard to use the model service.',
+        managedIntro: 'After creating a service key, configure this site as a custom provider and inject the key through an environment variable:',
         steps: [
           { h: '1. Write the config', p: 'Merge the block below into ~/.codex/config.toml.' },
           { h: '2. Inject the key', p: 'Export it in your shell; never commit it to a repository.' },
@@ -520,11 +521,11 @@ export default {
         }
       },
       claudeCode: {
-        title: 'Claude Code with your own account or API key',
-        subtitle: 'Default to your own Claude subscription or Anthropic API key; gateway mode only when you explicitly choose it.',
+        title: 'Claude Code setup guide',
+        subtitle: 'Add balance, create a service key, and configure this site as the API base for Claude Code.',
         intro: 'Claude Code reads the API base URL and credential from environment variables.',
-        byok: 'Run claude and sign in with your own account, or set your own ANTHROPIC_API_KEY. Credentials stay on your machine.',
-        managedIntro: 'If you choose a key issued by this site, set:',
+        accountService: 'Sign in to this site, add balance, then create a service key in the dashboard to use the model service.',
+        managedIntro: 'After creating a service key, set:',
         steps: [
           { h: '1. Set the variables', p: 'Add them to your shell profile or export in the current session.' },
           { h: '2. Start Claude Code', p: 'Run claude and confirm the status line shows this site as the API base.' },

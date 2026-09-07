@@ -13,12 +13,12 @@ vi.mock('vue-i18n', async (importOriginal) => ({
 }))
 
 describe('ExperiencesView', () => {
-  it('renders the initial experiences and persists a topic filter in the route', async () => {
+  it('renders guide entries, keeps their public routes, and persists a topic filter in the route', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [{ path: '/experiences', component: ExperiencesView }]
     })
-    await router.push('/experiences')
+    await router.push('/experiences?source=home')
     await router.isReady()
 
     const wrapper = mount(ExperiencesView, {
@@ -29,11 +29,47 @@ describe('ExperiencesView', () => {
     })
 
     expect(wrapper.text()).toContain('GPT-6 已接入，为什么 Codex 仍然看不见？')
+    expect(wrapper.findAll('.experience-card')).toHaveLength(5)
     expect(wrapper.findAll('.experience-filter')).toHaveLength(5)
+    expect(wrapper.get('[data-experience-id="codex-cli"]').find('.experience-card-topic').text()).toBe('接入主题')
+    expect(wrapper.get('[data-experience-id="codex-cli"]').find('.experience-card-audience-label').text()).toBe('experiences.appliesTo')
 
-    await wrapper.findAll('.experience-filter')[2].trigger('click')
+    const routes = wrapper.findAllComponents(RouterLinkStub).map((link) => link.props('to'))
+    expect(routes).toEqual(expect.arrayContaining([
+      '/codex-cli',
+      '/claude-code',
+      '/openai-compatible-api',
+    ]))
+
+    await wrapper.get('[data-category-filter="connectionConfiguration"]').trigger('click')
     await flushPromises()
+    expect(wrapper.findAll('.experience-card')).toHaveLength(3)
+    expect(router.currentRoute.value.query.category).toBe('connectionConfiguration')
+    expect(router.currentRoute.value.query.source).toBe('home')
+
+    await wrapper.get('[data-category-filter="all"]').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.query.category).toBeUndefined()
+    expect(router.currentRoute.value.query.source).toBe('home')
+  })
+
+  it('reads the category filter from the URL on initial load', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/experiences', component: ExperiencesView }]
+    })
+    await router.push('/experiences?category=conversationContinuity')
+    await router.isReady()
+
+    const wrapper = mount(ExperiencesView, {
+      global: {
+        plugins: [router],
+        stubs: { PublicPageLayout, RouterLink: RouterLinkStub }
+      }
+    })
+
     expect(wrapper.findAll('.experience-card')).toHaveLength(1)
-    expect(router.currentRoute.value.query.category).toBe('conversationContinuity')
+    expect(wrapper.get('[data-experience-id="codex-session-migration"]').exists()).toBe(true)
+    expect(wrapper.get('[data-category-filter="conversationContinuity"]').classes()).toContain('is-active')
   })
 })

@@ -1,8 +1,8 @@
 <template>
   <!-- Row 1: Core Stats -->
-  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div class="dashboard-metrics" :class="{ 'dashboard-metrics-simple': isSimple }">
     <!-- Balance -->
-    <div v-if="!isSimple" class="card p-4">
+    <div v-if="!isSimple" class="dashboard-panel dashboard-metric dashboard-metric-balance">
       <div class="flex items-center gap-3">
         <div class="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
           <svg class="h-5 w-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -18,7 +18,7 @@
     </div>
 
     <!-- API Keys -->
-    <div class="card p-4">
+    <div class="dashboard-panel dashboard-metric">
       <div class="flex items-center gap-3">
         <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
           <Icon name="key" size="md" class="text-blue-600 dark:text-blue-400" :stroke-width="2" />
@@ -32,7 +32,7 @@
     </div>
 
     <!-- Today Requests -->
-    <div class="card p-4">
+    <div class="dashboard-panel dashboard-metric">
       <div class="flex items-center gap-3">
         <div class="rounded-lg bg-green-100 p-2 dark:bg-green-900/30">
           <Icon name="chart" size="md" class="text-green-600 dark:text-green-400" :stroke-width="2" />
@@ -46,7 +46,7 @@
     </div>
 
     <!-- Today Cost -->
-    <div class="card p-4">
+    <div class="dashboard-panel dashboard-metric">
       <div class="flex items-center gap-3">
         <div class="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
           <Icon name="dollar" size="md" class="text-purple-600 dark:text-purple-400" :stroke-width="2" />
@@ -68,9 +68,9 @@
   </div>
 
   <!-- Row 2: Token Stats -->
-  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div class="dashboard-metrics">
     <!-- Today Tokens -->
-    <div class="card p-4">
+    <div class="dashboard-panel dashboard-metric">
       <div class="flex items-center gap-3">
         <div class="rounded-lg bg-amber-100 p-2 dark:bg-amber-900/30">
           <Icon name="cube" size="md" class="text-amber-600 dark:text-amber-400" :stroke-width="2" />
@@ -84,7 +84,7 @@
     </div>
 
     <!-- Total Tokens -->
-    <div class="card p-4">
+    <div class="dashboard-panel dashboard-metric">
       <div class="flex items-center gap-3">
         <div class="rounded-lg bg-indigo-100 p-2 dark:bg-indigo-900/30">
           <Icon name="database" size="md" class="text-indigo-600 dark:text-indigo-400" :stroke-width="2" />
@@ -98,7 +98,7 @@
     </div>
 
     <!-- Performance (RPM/TPM) -->
-    <div class="card p-4">
+    <div class="dashboard-panel dashboard-metric">
       <div class="flex items-center gap-3">
         <div class="rounded-lg bg-violet-100 p-2 dark:bg-violet-900/30">
           <Icon name="bolt" size="md" class="text-violet-600 dark:text-violet-400" :stroke-width="2" />
@@ -118,7 +118,7 @@
     </div>
 
     <!-- Avg Response Time -->
-    <div class="card p-4">
+    <div class="dashboard-panel dashboard-metric">
       <div class="flex items-center gap-3">
         <div class="rounded-lg bg-rose-100 p-2 dark:bg-rose-900/30">
           <Icon name="clock" size="md" class="text-rose-600 dark:text-rose-400" :stroke-width="2" />
@@ -133,9 +133,9 @@
   </div>
 
   <!-- Row 3: Per-platform breakdown -->
-  <div v-if="!isSimple && platformCards.length > 0" class="card p-4">
-    <div class="mb-3 flex items-center justify-between">
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('dashboard.platformBreakdown') }}</h3>
+  <section v-if="!isSimple && platformCards.length > 0" class="dashboard-platforms">
+    <div class="dashboard-section-header mb-4">
+      <h2 class="dashboard-section-heading text-gray-900 dark:text-white">{{ t('dashboard.platformBreakdown') }}</h2>
       <span class="text-xs text-gray-500 dark:text-gray-400">
         {{ t('dashboard.platformCount', { count: sortedPlatforms.length }) }}
       </span>
@@ -145,7 +145,7 @@
         v-for="item in platformCards"
         :key="item.platform"
         :class="[
-          'rounded-lg border p-3',
+          'dashboard-panel min-w-0 p-4',
           item.isOther
             ? 'border-dashed border-gray-300 bg-gray-50 dark:border-dark-500 dark:bg-dark-700/30'
             : 'border-gray-200 dark:border-dark-600'
@@ -219,7 +219,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -389,3 +389,68 @@ const formatTokens = (t: number) => {
 }
 const formatDuration = (ms: number) => ms >= 1000 ? `${(ms / 1000).toFixed(2)}s` : `${ms.toFixed(0)}ms`
 </script>
+
+<style scoped>
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.dashboard-metric {
+  min-width: 0;
+  padding: 20px 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-metric > div {
+  align-items: flex-start;
+}
+
+.dashboard-metric > div > :first-child {
+  flex-shrink: 0;
+}
+
+.dashboard-metric > div > :last-child {
+  min-width: 0;
+}
+
+.dashboard-metric p {
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+
+.dashboard-metric.dashboard-metric-balance {
+  border-top: 2px solid var(--dashboard-accent, #0f766e);
+}
+
+.dashboard-platforms {
+  min-width: 0;
+  padding-top: 8px;
+}
+
+.dashboard-platforms .flex {
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.dashboard-platforms span {
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 480px) {
+  .dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .dashboard-metrics-simple {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+</style>

@@ -46,13 +46,14 @@
           </button>
         </div>
 
-        <section v-if="pageKey !== 'openaiCompat'" class="mk-section mk-byok">
-          <h2 class="mk-h2">{{ t('marketing.pages.common.byokTitle') }}</h2>
-          <p class="mk-p">{{ t(`marketing.pages.${pageKey}.byok`) }}</p>
+        <section v-if="pageKey !== 'openaiCompat'" class="mk-section mk-account-service">
+          <h2 class="mk-h2">{{ t('marketing.pages.common.accountServiceTitle') }}</h2>
+          <p class="mk-p">{{ t(`marketing.pages.${pageKey}.accountService`) }}</p>
+          <a href="https://www.ai.rest2build.lol/memberships" class="mk-account-link">{{ t('marketing.pages.common.accountServiceAction') }}</a>
         </section>
 
         <section class="mk-section">
-          <h2 v-if="pageKey !== 'openaiCompat'" class="mk-h2">{{ t('marketing.pages.common.managedTitle') }}</h2>
+          <h2 v-if="pageKey !== 'openaiCompat'" class="mk-h2">{{ t('marketing.pages.common.serviceKeyTitle') }}</h2>
           <p v-if="pageKey !== 'openaiCompat'" class="mk-p">{{ t(`marketing.pages.${pageKey}.managedIntro`) }}</p>
           <div v-for="(step, i) in steps" :key="i" class="mk-step">
             <h3 class="mk-h3">{{ step.h }}</h3>
@@ -199,7 +200,7 @@ const codeBlocks = computed<string[]>(() => {
       return [
         `# ~/.codex/config.toml
 model_provider = "rest2build"
-model = "gpt-5.5"
+model = "gpt-6-astra"
 
 [model_providers.rest2build]
 name = "Rest2Build"
@@ -296,60 +297,77 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.mk-article {
+  padding: 8px 0 0;
+}
 .mk-kicker {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #0d9488;
+  color: #0f766e;
 }
 .dark .mk-kicker {
   color: #5eead4;
 }
 .mk-title {
-  margin-top: 10px;
+  margin-top: 8px;
+  color: #1f2937;
   font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.dark .mk-title {
+  color: #f8fafc;
 }
 .mk-subtitle {
-  margin-top: 10px;
+  margin-top: 14px;
   font-size: 16px;
-  color: rgb(75 85 99);
+  line-height: 1.7;
+  color: #52615c;
 }
 .dark .mk-subtitle {
-  color: rgb(148 163 184);
+  color: #cbd5e1;
 }
 .mk-section {
-  margin-top: 28px;
-  border-radius: 18px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(12px);
+  margin-top: 20px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 12px 25px -24px rgba(15, 23, 42, 0.48);
   padding: 20px 22px;
 }
 .dark .mk-section {
-  border-color: rgba(148, 163, 184, 0.12);
-  background: rgba(10, 18, 32, 0.6);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(10, 18, 32, 0.68);
 }
-.mk-byok {
-  border-color: rgba(20, 184, 166, 0.4);
+.mk-account-service {
+  border-color: rgba(15, 118, 110, 0.4);
 }
 .mk-h2 {
+  color: #1f2937;
   font-size: 17px;
   font-weight: 700;
+  line-height: 1.45;
+}
+.dark .mk-h2 {
+  color: #f8fafc;
 }
 .mk-h3 {
   margin-top: 14px;
+  color: #1f2937;
   font-size: 14px;
   font-weight: 700;
+}
+.dark .mk-h3 {
+  color: #f8fafc;
 }
 .mk-p {
   margin-top: 8px;
   font-size: 14px;
   line-height: 1.7;
-  color: rgb(55 65 81);
+  color: #52615c;
 }
 .dark .mk-p {
   color: rgb(203 213 225);
@@ -360,7 +378,7 @@ onBeforeUnmount(() => {
   gap: 6px;
   font-size: 14px;
   line-height: 1.6;
-  color: rgb(55 65 81);
+  color: #52615c;
 }
 .dark .mk-list {
   color: rgb(203 213 225);
@@ -376,14 +394,14 @@ onBeforeUnmount(() => {
   top: 10px;
   width: 6px;
   height: 6px;
-  border-radius: 9999px;
-  background: #14b8a6;
+  border-radius: 2px;
+  background: #0f766e;
 }
 .mk-code {
   margin-top: 8px;
   overflow-x: auto;
-  border-radius: 12px;
-  background: #070d19;
+  border-radius: 8px;
+  background: #0a1220;
   padding: 14px 16px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12.5px;
@@ -398,10 +416,14 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(20, 184, 166, 0.35);
-  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(15, 118, 110, 0.28);
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.06);
   padding: 10px 14px;
+}
+.dark .mk-address,
+.dark .mk-bench-head {
+  background: rgba(15, 118, 110, 0.12);
 }
 .mk-address-label {
   font-size: 11px;
@@ -425,13 +447,16 @@ onBeforeUnmount(() => {
   color: #5eead4;
 }
 .mk-copy {
-  border-radius: 10px;
+  border-radius: 6px;
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #14b8a6 0%, #0891b2 60%, #4f46e5 140%);
+  background: #0f766e;
   white-space: nowrap;
+}
+.mk-copy:hover:not(:disabled) {
+  background: #0b5d57;
 }
 .mk-copy:disabled {
   opacity: 0.6;
@@ -441,10 +466,13 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border-radius: 18px;
-  border: 1px solid rgba(20, 184, 166, 0.45);
-  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(15, 118, 110, 0.32);
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.06);
   padding: 22px 24px;
+}
+.dark .mk-store {
+  background: rgba(15, 118, 110, 0.12);
 }
 .mk-store-label {
   font-size: 12px;
@@ -491,14 +519,15 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
   padding: 10px 12px;
+  box-shadow: 0 12px 25px -24px rgba(15, 23, 42, 0.48);
 }
 .dark .mk-stat {
-  border-color: rgba(148, 163, 184, 0.12);
-  background: rgba(10, 18, 32, 0.6);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(10, 18, 32, 0.68);
 }
 .mk-stat span {
   font-size: 11px;
@@ -518,7 +547,7 @@ onBeforeUnmount(() => {
 .mk-bench-bar {
   flex: 1;
   border-radius: 3px 3px 0 0;
-  background: linear-gradient(180deg, #2dd4bf, #0891b2);
+  background: #0f766e;
   min-height: 4px;
 }
 .mk-bench-bar.is-fail {
@@ -536,22 +565,64 @@ onBeforeUnmount(() => {
   gap: 10px;
 }
 .mk-cta {
-  border-radius: 12px;
+  border-radius: 6px;
   padding: 10px 18px;
   font-size: 14px;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #14b8a6 0%, #0891b2 60%, #4f46e5 140%);
-  box-shadow: 0 10px 24px -12px rgba(20, 184, 166, 0.6);
+  background: #0f766e;
+}
+.mk-cta:hover {
+  background: #0b5d57;
 }
 .mk-cta-ghost {
-  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 6px;
   padding: 10px 18px;
   font-size: 14px;
   font-weight: 500;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: #45534e;
 }
 .dark .mk-cta-ghost {
   border-color: rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+}
+.mk-account-link {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  margin-top: 14px;
+  border-radius: 6px;
+  background: #0f766e;
+  padding: 8px 14px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.mk-account-link:hover {
+  background: #0b5d57;
+}
+@media (max-width: 640px) {
+  .mk-title {
+    font-size: 27px;
+  }
+  .mk-address {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .mk-address-label {
+    grid-column: 1 / -1;
+    margin-right: 0;
+  }
+  .mk-bench-head {
+    align-items: stretch;
+  }
+  .mk-bench-head > div {
+    width: 100%;
+  }
+  .mk-bench-head .mk-copy {
+    align-self: flex-start;
+  }
 }
 </style>

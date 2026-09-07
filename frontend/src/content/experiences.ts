@@ -1,4 +1,5 @@
 import { CODEX_SESSION_MIGRATION } from '../constants/codexMigration'
+import { PUBLIC_PAGES } from '../constants/brand'
 
 export type ExperienceCategory =
   | 'connectionConfiguration'
@@ -11,10 +12,13 @@ export interface ExperienceCategoryDefinition {
   labelKey: string
 }
 
+export type ExperienceIcon = 'chat' | 'link' | 'sparkles' | 'sync' | 'terminal'
+
 export interface ExperienceContent {
   id: string
   category: ExperienceCategory
   route: string
+  icon: ExperienceIcon
   title: string
   summary: string
   series: string
@@ -59,9 +63,49 @@ const gpt6AstraNotVisiblePrompt = `我使用 Sub2API 中转站接入 Codex，目
 
 export const experiences: ExperienceContent[] = [
   {
+    id: 'codex-cli',
+    category: 'connectionConfiguration',
+    route: PUBLIC_PAGES.codex,
+    icon: 'terminal',
+    title: 'Codex CLI 接入与配置',
+    summary: '从 config.toml 到最小请求，分清官方账号与自定义 provider 的配置边界。',
+    series: '接入主题',
+    subtitle: '面向 Codex CLI 的接入、配置与常见错误排查',
+    applicableTo: 'Codex CLI 使用者 · 自有官方账号或本站服务密钥',
+    updatedAt: '2026-09-08',
+    prompt: '',
+  },
+  {
+    id: 'claude-code',
+    category: 'connectionConfiguration',
+    route: PUBLIC_PAGES.claudeCode,
+    icon: 'chat',
+    title: 'Claude Code 接入与配置',
+    summary: '通过环境变量设定 API 地址与凭证，并明确切换回官方方式的恢复路径。',
+    series: '接入主题',
+    subtitle: '面向 Claude Code 的自有账号与 API Key 接入指南',
+    applicableTo: 'Claude Code 使用者 · 自有账号、Anthropic API Key 或本站服务密钥',
+    updatedAt: '2026-09-08',
+    prompt: '',
+  },
+  {
+    id: 'openai-compatible-api',
+    category: 'connectionConfiguration',
+    route: PUBLIC_PAGES.openaiCompat,
+    icon: 'link',
+    title: 'OpenAI 兼容接口与迁移测试',
+    summary: '替换 SDK 的 base_url 和密钥，完成最小请求、流式响应与错误处理的迁移检查。',
+    series: '接入主题',
+    subtitle: '面向 OpenAI 兼容接口的 SDK 迁移与验证',
+    applicableTo: 'OpenAI 或 Anthropic SDK 接入者 · 迁移测试场景',
+    updatedAt: '2026-09-08',
+    prompt: '',
+  },
+  {
     id: 'codex-session-migration',
     category: 'conversationContinuity',
     route: CODEX_SESSION_MIGRATION.route,
+    icon: 'sync',
     title: CODEX_SESSION_MIGRATION.title,
     summary: '先只读定位旧任务的 provider 关联，再用经验证备份、计划摘要和恢复日志完成可审阅的本机历史迁移。',
     series: 'Codex 使用错误说明',
@@ -74,6 +118,7 @@ export const experiences: ExperienceContent[] = [
     id: 'gpt-6-astra-not-visible',
     category: 'modelsUsage',
     route: '/error-experiences/gpt-6-astra-not-visible',
+    icon: 'sparkles',
     title: 'GPT-6 已接入，为什么 Codex 仍然看不见？',
     summary: '把服务可调用、客户端可见和任务选中分开检查，避免把模型目录、桌面版本或旧任务状态误判为同一个问题。',
     series: 'Codex 使用错误说明',

@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, RouterLinkStub } from '@vue/test-utils'
 
+import enLanding from '../../i18n/locales/en/landing'
+import zhLanding from '../../i18n/locales/zh/landing'
 import HomeView from '../HomeView.vue'
 
 const { appStore, authStore } = vi.hoisted(() => ({
@@ -194,5 +196,22 @@ describe('HomeView compact mode', () => {
     })
 
     expect(modelPlazaDestination(wrapper)).toBeUndefined()
+  })
+})
+
+describe('HomeView public positioning localization', () => {
+  it('keeps Chinese positioning centered on experience sharing', () => {
+    expect(zhLanding.marketing.positioning).toBe('AI 使用经验分享与开发接入支持')
+    expect(zhLanding.marketing.nonOfficialShort).toBe('官方 API 兼容接入 · 多模型直连 · 即刻体验')
+  })
+
+  it('does not surface an isolated English managed-gateway label in Chinese', () => {
+    expect(zhLanding.marketing.modes.managed.title).toBe('本站托管接入')
+    expect(zhLanding.marketing.modes.managed.title).not.toContain('Managed Gateway')
+  })
+
+  it('keeps the English locale fully English', () => {
+    expect(enLanding.marketing.positioning).toBe('Multi-model API trial access & developer integration support')
+    expect(enLanding.marketing.modes.managed.title).toBe('Managed Gateway')
   })
 })

@@ -1,16 +1,16 @@
 <template>
-  <div class="space-y-6">
+  <section class="min-w-0 space-y-4" :aria-label="t('dashboard.timeRange')">
     <!-- Date Range Filter -->
-    <div class="card p-4">
-      <div class="flex flex-wrap items-center gap-4">
-        <div class="flex items-center gap-2">
+    <div class="dashboard-filter">
+      <div class="flex min-w-0 flex-wrap items-center gap-3">
+        <div class="flex min-w-0 flex-wrap items-center gap-2">
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('dashboard.timeRange') }}:</span>
           <DateRangePicker :start-date="startDate" :end-date="endDate" @update:startDate="$emit('update:startDate', $event)" @update:endDate="$emit('update:endDate', $event)" @change="$emit('dateRangeChange', $event)" />
         </div>
-        <button @click="$emit('refresh')" :disabled="loading" class="btn btn-secondary">
-          {{ t('common.refresh') }}
+        <button @click="$emit('refresh')" :disabled="loading" class="dashboard-refresh" :title="t('common.refresh')" :aria-label="t('common.refresh')">
+          <Icon name="refresh" size="md" :class="{ 'animate-spin': loading }" />
         </button>
-        <div class="ml-auto flex items-center gap-2">
+        <div class="flex items-center gap-2 sm:ml-auto">
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('dashboard.granularity') }}:</span>
           <div class="w-28">
             <Select :model-value="granularity" :options="[{value:'day', label:t('dashboard.day')}, {value:'hour', label:t('dashboard.hour')}]" @update:model-value="$emit('update:granularity', $event)" @change="$emit('granularityChange')" />
@@ -20,13 +20,13 @@
     </div>
 
     <!-- Charts Grid -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div class="grid min-w-0 grid-cols-1 gap-4 2xl:grid-cols-2">
       <!-- Model Distribution Chart -->
-      <div class="card relative overflow-hidden p-4">
+      <div class="dashboard-panel relative overflow-hidden p-4 sm:p-5">
         <div v-if="loading" class="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm dark:bg-dark-800/50">
           <LoadingSpinner size="md" />
         </div>
-        <h3 class="mb-4 text-sm font-semibold text-gray-900 dark:text-white">{{ t('dashboard.modelDistribution') }}</h3>
+        <h2 class="mb-4 text-sm font-semibold text-gray-900 dark:text-white">{{ t('dashboard.modelDistribution') }}</h2>
         <div class="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
           <div class="h-48 w-48 shrink-0">
             <Doughnut v-if="modelData" :data="modelData" :options="doughnutOptions" />
@@ -58,9 +58,9 @@
       </div>
 
       <!-- Token Usage Trend Chart -->
-      <TokenUsageTrend :trend-data="trend" :loading="loading" />
+      <TokenUsageTrend class="dashboard-panel" :trend-data="trend" :loading="loading" />
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -69,6 +69,7 @@ import { useI18n } from 'vue-i18n'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import DateRangePicker from '@/components/common/DateRangePicker.vue'
 import Select from '@/components/common/Select.vue'
+import Icon from '@/components/icons/Icon.vue'
 import { Doughnut } from 'vue-chartjs'
 import TokenUsageTrend from '@/components/charts/TokenUsageTrend.vue'
 import type { TrendDataPoint, ModelStat } from '@/types'
@@ -101,3 +102,38 @@ const doughnutOptions = {
   }
 }
 </script>
+
+<style scoped>
+.dashboard-filter {
+  padding: 16px 0;
+  border-top: 1px solid var(--dashboard-border, #dfe7e5);
+  border-bottom: 1px solid var(--dashboard-border, #dfe7e5);
+}
+
+.dashboard-refresh {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--dashboard-border, #dfe7e5);
+  border-radius: 8px;
+  color: var(--dashboard-accent, #0f766e);
+  background: var(--dashboard-surface, #fff);
+}
+
+.dashboard-refresh:hover:not(:disabled) {
+  background: var(--dashboard-hover, #f0f7f5);
+}
+
+.dashboard-refresh:focus-visible {
+  outline: 2px solid var(--dashboard-accent, #0f766e);
+  outline-offset: 3px;
+}
+
+.dashboard-refresh:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+</style>

@@ -1,13 +1,13 @@
 <template>
-  <AppLayout>
-    <div class="space-y-6">
-      <div v-if="loading" class="flex items-center justify-center py-12"><LoadingSpinner /></div>
+  <AppLayout class="dashboard-layout">
+    <div class="dashboard-content">
+      <div v-if="loading" class="flex min-h-64 items-center justify-center" :aria-busy="true"><LoadingSpinner /></div>
       <template v-else-if="stats">
         <UserDashboardStats :stats="stats" :balance="user?.balance || 0" :is-simple="authStore.isSimpleMode" :platform-quotas="platformQuotas" />
         <UserDashboardCharts v-model:startDate="startDate" v-model:endDate="endDate" v-model:granularity="granularity" :loading="loadingCharts" :trend="trendData" :models="modelStats" @dateRangeChange="loadCharts" @granularityChange="loadCharts" @refresh="refreshAll" />
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div class="lg:col-span-2"><UserDashboardRecentUsage :data="recentUsage" :loading="loadingUsage" /></div>
-          <div class="lg:col-span-1"><UserDashboardQuickActions /></div>
+        <div class="dashboard-activity grid grid-cols-1 gap-8 xl:grid-cols-3">
+          <div class="min-w-0 xl:col-span-2"><UserDashboardRecentUsage :data="recentUsage" :loading="loadingUsage" /></div>
+          <div class="min-w-0 xl:col-span-1"><UserDashboardQuickActions /></div>
         </div>
       </template>
       <ExperienceCollection data-testid="dashboard-experience-sharing" compact />
@@ -40,3 +40,68 @@ const refreshAll = () => { loadStats(); loadCharts(); loadRecent(); loadPlatform
 
 onMounted(() => { refreshAll() })
 </script>
+
+<style scoped>
+.dashboard-layout {
+  --dashboard-surface: #ffffff;
+  --dashboard-border: #dfe7e5;
+  --dashboard-hover: #f0f7f5;
+  --dashboard-accent: #0f766e;
+  background: #f5f8f7;
+}
+
+:global(.dark) .dashboard-layout {
+  --dashboard-surface: #131b1d;
+  --dashboard-border: #293638;
+  --dashboard-hover: #1b2c2c;
+  --dashboard-accent: #5eead4;
+  background: #0c1315;
+}
+
+.dashboard-layout :deep(.bg-mesh-gradient) {
+  display: none;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1280px;
+  min-width: 0;
+  margin: 0 auto;
+  letter-spacing: 0;
+}
+
+.dashboard-activity {
+  padding: 8px 0 24px;
+  border-bottom: 1px solid var(--dashboard-border);
+}
+
+.dashboard-content :deep(.dashboard-panel) {
+  min-width: 0;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 8px;
+  background: var(--dashboard-surface);
+  box-shadow: none;
+}
+
+.dashboard-content :deep(.dashboard-section-heading) {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+
+.dashboard-content :deep(.dashboard-section-header) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--dashboard-border);
+}
+</style>

@@ -3,9 +3,32 @@
  * 通过封装组件测试仪表板核心数据加载流程
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { mount, shallowMount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { defineComponent, ref, onMounted, nextTick } from 'vue'
+import UserDashboardCharts from '@/components/user/dashboard/UserDashboardCharts.vue'
+import UserDashboardRecentUsage from '@/components/user/dashboard/UserDashboardRecentUsage.vue'
+import UserDashboardQuickActions from '@/components/user/dashboard/UserDashboardQuickActions.vue'
+import UserDashboardStats from '@/components/user/dashboard/UserDashboardStats.vue'
+import type { UserDashboardStats as UserStats } from '@/api/usage'
+import type { UsageLog } from '@/types'
+
+const dashboardMocks = vi.hoisted(() => ({ push: vi.fn(), refreshAccess: vi.fn(), canUseBatchImage: false }))
+
+vi.mock('vue-router', async (importOriginal) => ({
+  ...await importOriginal<typeof import('vue-router')>(),
+  useRouter: () => ({ push: dashboardMocks.push }),
+}))
+vi.mock('vue-i18n', async (importOriginal) => ({
+  ...await importOriginal<typeof import('vue-i18n')>(),
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+vi.mock('@/composables/useBatchImageAccess', () => ({
+  useBatchImageAccess: () => ({
+    canUseBatchImage: dashboardMocks.canUseBatchImage,
+    refreshBatchImageAccess: dashboardMocks.refreshAccess,
+  }),
+}))
 
 // Mock API
 const mockGetDashboardStats = vi.fn()
@@ -168,5 +191,95 @@ describe('Dashboard 数据加载', () => {
     await flushPromises()
 
     expect(wrapper.find('.stats').exists()).toBe(false)
+  })
+})
+
+describe('Dashboard actual component interactions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    dashboardMocks.canUseBatchImage = false
+  })
+
+  it('keeps refresh named and prevents refresh while charts are loading', async () => {
+    const wrapper = shallowMount(UserDashboardCharts, {
+      props: { loading: false, startDate: '2026-09-01', endDate: '2026-09-07', granularity: 'day', trend: [], models: [] },
+    })
+    const refresh = wrapper.get('button[aria-label="common.refresh"]')
+    await refresh.trigger('click')
+    expect(wrapper.emitted('refresh')).toHaveLength(1)
+    await wrapper.setProps({ loading: true })
+    expect(refresh.attributes('disabled')).toBeDefined()
+    await refresh.trigger('click')
+    expect(wrapper.emitted('refresh')).toHaveLength(1)
+  })
+
+  it('continues forwarding date and granularity changes from the controls', () => {
+    const wrapper = shallowMount(UserDashboardCharts, {
+      props: { loading: false, startDate: '2026-09-01', endDate: '2026-09-07', granularity: 'day', trend: [], models: [] },
+    })
+    wrapper.findComponent({ name: 'DateRangePicker' }).vm.$emit('update:startDate', '2026-09-03')
+    wrapper.findComponent({ name: 'DateRangePicker' }).vm.$emit('change', { startDate: '2026-09-03', endDate: '2026-09-07' })
+    wrapper.findComponent({ name: 'Select' }).vm.$emit('update:model-value', 'hour')
+    wrapper.findComponent({ name: 'Select' }).vm.$emit('change')
+    expect(wrapper.emitted('update:startDate')).toEqual([['2026-09-03']])
+    expect(wrapper.emitted('dateRangeChange')).toHaveLength(1)
+    expect(wrapper.emitted('update:granularity')).toEqual([['hour']])
+    expect(wrapper.emitted('granularityChange')).toHaveLength(1)
+  })
+
+  it('preserves quick action destinations and restricted image access', async () => {
+    const wrapper = shallowMount(UserDashboardQuickActions)
+    expect(dashboardMocks.refreshAccess).toHaveBeenCalledOnce()
+    const buttons = wrapper.findAll('button')
+    expect(buttons).toHaveLength(3)
+    for (const button of buttons) await button.trigger('click')
+    expect(dashboardMocks.push.mock.calls).toEqual([['/keys'], ['/usage'], ['/redeem']])
+    wrapper.unmount()
+    dashboardMocks.canUseBatchImage = true
+    const enabled = shallowMount(UserDashboardQuickActions)
+    const imageAction = enabled.findAll('button').find((button) => button.text().includes('dashboard.batchImageAgent'))
+    expect(imageAction).toBeDefined()
+    await imageAction!.trigger('click')
+    expect(dashboardMocks.push).toHaveBeenLastCalledWith('/batch-image')
+  })
+
+  it('preserves complete model names, actual and standard prices in usage rows', () => {
+    const model = 'provider-a/very-long-model-identifier-for-compact-mobile-layout'
+    const wrapper = shallowMount(UserDashboardRecentUsage, {
+      props: {
+        loading: false,
+        data: [{ id: 1, model, actual_cost: 0.125, total_cost: 0.25, input_tokens: 100, output_tokens: 200, created_at: '2026-09-07T08:00:00Z' } as UsageLog],
+      },
+      global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    })
+    expect(wrapper.text()).toContain(model)
+    expect(wrapper.text()).toContain('$0.1250')
+    expect(wrapper.text()).toContain('$0.2500')
+    expect(wrapper.text()).toContain('300 tokens')
+    expect(wrapper.findComponent({ name: 'EmptyState' }).exists()).toBe(false)
+  })
+
+  it('keeps usage loading and empty states distinct', async () => {
+    const wrapper = shallowMount(UserDashboardRecentUsage, {
+      props: { data: [], loading: true },
+      global: { stubs: { RouterLink: true } },
+    })
+    expect(wrapper.findComponent({ name: 'LoadingSpinner' }).exists()).toBe(true)
+    expect(wrapper.findComponent({ name: 'EmptyState' }).exists()).toBe(false)
+    await wrapper.setProps({ loading: false })
+    expect(wrapper.findComponent({ name: 'LoadingSpinner' }).exists()).toBe(false)
+    expect(wrapper.findComponent({ name: 'EmptyState' }).props('title')).toBe('dashboard.noUsageRecords')
+  })
+
+  it('keeps balances and platform quotas hidden in simple mode', async () => {
+    const wrapper = shallowMount(UserDashboardStats, {
+      props: { stats: { total_api_keys: 2, today_requests: 15 } as UserStats, balance: 1234.5, isSimple: false },
+    })
+    expect(wrapper.text()).toContain('$1,234.50')
+    expect(wrapper.text()).toContain('dashboard.apiKeys')
+    await wrapper.setProps({ isSimple: true })
+    expect(wrapper.text()).not.toContain('dashboard.balance')
+    expect(wrapper.text()).not.toContain('dashboard.platformBreakdown')
+    expect(wrapper.text()).toContain('dashboard.todayRequests')
   })
 })

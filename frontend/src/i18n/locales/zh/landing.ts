@@ -416,8 +416,9 @@ export default {
         copy: '复制',
         copied: '已复制',
         updatedAt: '最近更新',
-        byokTitle: 'BYOK：用你自己的官方账号',
-        managedTitle: 'Managed：用本站签发的密钥',
+        accountServiceTitle: '账户充值服务',
+        accountServiceAction: '前往充值',
+        serviceKeyTitle: '服务密钥配置',
         apiKeyPlaceholder: '<你的服务密钥>'
       },
       publicBenefit: {
@@ -505,10 +506,10 @@ export default {
       },
       codex: {
         title: 'Codex CLI 接入、配置与常见错误排查',
-        subtitle: '优先使用你自己的官方账号；也可以把本站网关配置为自定义 provider。',
-        intro: 'Codex CLI 支持通过 config.toml 自定义 model provider。以下两种方式二选一。',
-        byok: '直接运行 codex，按官方流程登录你自己的 OpenAI 账号。我们不代登、不接收密码，也不会用他人的订阅凭证替你转发请求。',
-        managedIntro: '把本站网关配置为自定义 provider，密钥通过环境变量注入：',
+        subtitle: '充值后创建服务密钥，将本站配置为 Codex CLI 的自定义服务提供方。',
+        intro: 'Codex CLI 支持通过 config.toml 配置自定义服务提供方。',
+        accountService: '登录本站账户并充值后，即可在控制台创建服务密钥，按用量使用模型服务。',
+        managedIntro: '创建服务密钥后，将本站配置为自定义服务提供方，并通过环境变量注入密钥：',
         steps: [
           { h: '1. 写入配置', p: '把下面的内容合并到 ~/.codex/config.toml。' },
           { h: '2. 注入密钥', p: '在 shell 中导出环境变量，不要把密钥写进仓库。' },
@@ -520,11 +521,11 @@ export default {
         }
       },
       claudeCode: {
-        title: 'Claude Code 自有账号与 API Key 接入指南',
-        subtitle: '默认使用你自己的 Claude 订阅或 Anthropic API Key；网关模式仅在你明确选择时使用。',
+        title: 'Claude Code 接入指南',
+        subtitle: '充值后创建服务密钥，将本站配置为 Claude Code 的服务地址。',
         intro: 'Claude Code 通过环境变量识别 API 地址与凭证。',
-        byok: '运行 claude 并按官方流程登录你自己的账号，或设置你自己的 ANTHROPIC_API_KEY。凭证保存在你本机，不经过本站。',
-        managedIntro: '如果你选择使用本站签发的密钥，设置以下环境变量：',
+        accountService: '登录本站账户并充值后，即可在控制台创建服务密钥，按用量使用模型服务。',
+        managedIntro: '创建服务密钥后，设置以下环境变量：',
         steps: [
           { h: '1. 设置环境变量', p: '写入 shell 配置文件或在当前会话导出。' },
           { h: '2. 启动 Claude Code', p: '运行 claude，确认状态栏显示的 API 地址是本站。' },

@@ -80,7 +80,19 @@ describe('MarketingPageView', () => {
     const wrapper = mountPage('codex')
     expect(wrapper.text()).toContain('wire_api = "responses"')
     expect(wrapper.text()).toContain('/v1"')
+    expect(wrapper.text()).toContain('model = "gpt-6-astra"')
+    expect(wrapper.text()).not.toContain('model = "gpt-5.5"')
     const claude = mountPage('claudeCode')
     expect(claude.text()).toContain('ANTHROPIC_BASE_URL')
+  })
+
+  it.each(['codex', 'claudeCode'])('links %s setup to account balance', (key) => {
+    const wrapper = mountPage(key)
+    const membershipLink = wrapper.get('a[href="https://www.ai.rest2build.lol/memberships"]')
+
+    expect(wrapper.text()).toContain(zh.marketing.pages.common.accountServiceTitle)
+    expect(wrapper.text()).toContain(zh.marketing.pages.common.accountServiceAction)
+    expect(wrapper.text()).not.toContain('不代登')
+    expect(membershipLink.text()).toBe(zh.marketing.pages.common.accountServiceAction)
   })
 })
