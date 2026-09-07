@@ -121,6 +121,10 @@ describe('HomeView compact mode', () => {
     expect(html.indexOf('marketing.modes.title')).toBeGreaterThan(html.indexOf('data-testid="experience-sharing"'))
   })
 
+  it('renders one footer on the default home', () => {
+    expect(mountHome().findAll('footer')).toHaveLength(1)
+  })
+
   it('links unauthenticated visitors to login', () => {
     expect(compactDestination(mountHome({ compact_home_enabled: true }))).toBe('/login')
   })

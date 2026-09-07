@@ -723,7 +723,6 @@
         </div>
       </div>
     </footer>
-    <Rest2BuildBrandFooter />
   </div>
 </template>
 
@@ -735,7 +734,6 @@ import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
 import BrandWordmark from '@/components/common/BrandWordmark.vue'
 import RelayStationVisual from '@/components/common/RelayStationVisual.vue'
-import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
 import ExperienceCollection from '@/components/experiences/ExperienceCollection.vue'
 import { useLatencyProbe } from '@/composables/useLatencyProbe'
 import { BRAND_DOMAIN, PUBLIC_PAGES, resolveBrandName, resolveStoreName } from '@/constants/brand'
