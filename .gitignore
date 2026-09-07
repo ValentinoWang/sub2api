@@ -144,6 +144,8 @@ docs/*
 !docs/channel-monitor-v2-safe-defaults.md
 !docs/LDXP_SALES_CHANNEL_DEVELOPMENT.md
 !docs/LDXP_SALES_CHANNEL_HUMAN_ACCEPTANCE.md
+!docs/MEMBERSHIP_FULFILLMENT.md
+!docs/MEMBERSHIP_FULFILLMENT_HUMAN_ACCEPTANCE.md
 !docs/rest2build-handbook.html
 !docs/error-experiences/
 docs/error-experiences/*

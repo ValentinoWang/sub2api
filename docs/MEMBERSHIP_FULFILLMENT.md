@@ -11,6 +11,12 @@ admin API and the deployment secret store. Do not put customer session data,
 CDKs, browser-agent requests, or storage credentials in tickets, chat, shell
 history, or ordinary logs.
 
+The operator and acceptance owner must also use the
+[`MEMBERSHIP_FULFILLMENT_HUMAN_ACCEPTANCE.md`](MEMBERSHIP_FULFILLMENT_HUMAN_ACCEPTANCE.md)
+checklist. Its current release record distinguishes the completed machine
+deployment checks from the still-pending human, supplier, and entitlement
+verification. Do not infer human acceptance from this operations guide.
+
 ## Evidence Levels and Product Boundary
 
 Keep these levels separate in change records and customer-facing statements.
