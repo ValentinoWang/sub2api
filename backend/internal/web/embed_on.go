@@ -181,6 +181,11 @@ func (s *FrontendServer) Middleware() gin.HandlerFunc {
 
 		// For index.html or SPA routes, serve with injected settings
 		if cleanPath == "index.html" || !s.fileExists(cleanPath) {
+			if strings.HasPrefix(cleanPath, "codex-session-migrate-") {
+				c.String(http.StatusNotFound, "Requested migration download was not found")
+				c.Abort()
+				return
+			}
 			s.serveIndexHTML(c)
 			return
 		}

@@ -1,0 +1,126 @@
+{
+  "node_id": "N5",
+  "semantic_key": "requirement.n5",
+  "stage": "R2",
+  "work_kind": "implementation",
+  "domain_lane": "r2",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1",
+    "N3",
+    "N4"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "codex-migration.documentation-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n5"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "N6",
+    "QR2"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N5.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "frontend/src/components/keys/UseKeyModal.vue",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/components/keys/__tests__/UseKeyModal.spec.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/constants/codexMigration.ts",
+      "operation": "create"
+    },
+    {
+      "path": "frontend/src/router/index.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/prerender.config.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/__tests__/prerender.config.spec.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/package.json",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/public/sitemap.xml",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/public/codex-session-migrate-manifest.json",
+      "operation": "create"
+    },
+    {
+      "path": "frontend/public/codex-session-migrate-1.0.0.zip",
+      "operation": "create"
+    },
+    {
+      "path": "frontend/public/codex-session-migrate-prompt.txt",
+      "operation": "create"
+    },
+    {
+      "path": "frontend/src/i18n/locales/zh/misc.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/i18n/locales/en/misc.ts",
+      "operation": "modify"
+    }
+  ],
+  "required_lanes": [
+    "machine/unit",
+    "machine/integration-contract",
+    "machine/e2e"
+  ],
+  "goal": "让 P1 接入说明、经验详情、预渲染和下载清单消费同一目标配置及发布内容。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N5/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    },
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

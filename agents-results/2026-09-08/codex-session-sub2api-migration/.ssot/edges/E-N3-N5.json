@@ -1,0 +1,15 @@
+{
+  "edge_id": "E-N3-N5",
+  "from": "N3",
+  "to": "N5",
+  "dependency_type": "hard",
+  "dependency_scope": "specific-output",
+  "reason_code": "acceptance-dependency",
+  "required_state": "ACCEPTED",
+  "assumption_ids": [],
+  "invalidation_keys": [
+    "requirement.n3"
+  ],
+  "transferred_input": "交付同一核心的跨平台命令行、离线工具包、机器可读报告和真实客户端接续验证。",
+  "gate_evidence": "acceptance contract evidence"
+}

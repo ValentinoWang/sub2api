@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "tool_version": "1.0.0",
+  "file": "codex-session-migrate-1.0.0.zip",
+  "size": 10181,
+  "sha256": "5937fa36296b7b7c3217fcb3c4ed9fdd451b03a5012af636b4febe27b8408092",
+  "minimum_python": "3.11",
+  "platforms": [
+    "macOS",
+    "Linux",
+    "Windows"
+  ],
+  "client_support": "Supported JSONL session metadata and SQLite indexes with session_id/thread_id/id plus model_provider/provider columns."
+}

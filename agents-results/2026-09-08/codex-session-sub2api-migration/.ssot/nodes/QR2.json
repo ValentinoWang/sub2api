@@ -1,0 +1,61 @@
+{
+  "node_id": "QR2",
+  "semantic_key": "acceptance.release.r2",
+  "stage": "R2",
+  "work_kind": "release-decision",
+  "domain_lane": "r2",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "N4",
+    "N5",
+    "N6"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "codex-migration.documentation-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "release.r2"
+  ],
+  "write_authority": "shared-generated",
+  "unlocks": [],
+  "node_role": "acceptance-gate",
+  "execution_actor": "human",
+  "execution_contract_ref": "nodes/QR2.json",
+  "side_effect_class": "none",
+  "candidate_identity_policy": "must-match",
+  "goal": "按来源完成标准接受 R2 候选版本",
+  "owner": "发布决策负责人",
+  "acceptance_contract_ref": "acceptance-fragments/QR2/acceptance-contract.md",
+  "source_requirement_refs": [
+    "RQ-SITE"
+  ],
+  "release_authority": {
+    "mode": "external",
+    "provider": "repository",
+    "authorities": [
+      {
+        "role_id": "release-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "source_completion_requirement_refs": [
+    "RQ-SITE"
+  ],
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    }
+  ]
+}

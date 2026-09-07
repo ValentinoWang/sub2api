@@ -1,0 +1,15 @@
+{
+  "edge_id": "E-D1-N4",
+  "from": "D1",
+  "to": "N4",
+  "dependency_type": "hard",
+  "dependency_scope": "specific-output",
+  "reason_code": "contract-dependency",
+  "required_state": "ACCEPTED",
+  "assumption_ids": [],
+  "invalidation_keys": [
+    "codex-migration.documentation-scope.v1"
+  ],
+  "transferred_input": "用户确认编制本地旧对话迁移工具与站内经验下载衔接的开发 SSOT，仅确认文档范围。",
+  "gate_evidence": "acceptance contract evidence"
+}

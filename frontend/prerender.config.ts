@@ -101,6 +101,17 @@ function errorExperienceHTML(): string {
     <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
 }
 
+function codexSessionMigrationHTML(): string {
+  const experience = experiences.find((item) => item.id === 'codex-session-migration')
+  if (!experience) throw new Error('[prerender] codex session migration experience is missing')
+  return `<nav aria-label="经验分享路径"><a href="/home">首页</a> / <a href="/experiences">经验分享</a> / <a href="/experiences?category=integrationTroubleshooting">接入与排障</a> / Codex 使用错误说明</nav>
+    <p>错误经验 / ERR-002 · 适用：Codex 桌面端与命令行使用者 · 更新：2026-09-08</p>
+    <section><h2>情况说明</h2><p>切换接入方式后，旧任务可能仍指向已经删除的 provider 名称，导致打开或继续旧任务时提示 provider 不存在。此工具先只读检查实际数据根和有效配置，再生成可审阅计划。</p><p><strong>只处理本机任务关联。</strong>它不迁移 ChatGPT 网页历史、云端记忆、正在进行的请求或服务端 Redis 状态。</p></section>
+    <section><h2>Codex 帮你处理</h2><pre style="white-space:pre-wrap">${esc(experience.prompt)}</pre><p><a href="/codex-session-migrate-1.0.0.zip">下载离线工具包</a> · <a href="/codex-session-migrate-prompt.txt">下载提示词</a> · <a href="/codex-session-migrate-manifest.json">查看校验清单</a></p></section>
+    <section><h2>给人看的：原因、证据与经验</h2><h3>provider、请求地址和凭据不是同一件事</h3><p>工具必须从实际生效配置识别目标，不能把所有任务硬改为一个站点示例名称。</p><h3>备份不成立就禁止写入</h3><p>全部被选 JSONL 与 SQLite 对象都要先建立并读回验证备份。输入漂移、未知格式或多来源冲突会停在诊断阶段。</p><h3>结构验证不等于原任务接续</h3><p>迁移后还要重新打开同一个旧任务，引用已存测试事实并追加一轮交流；新建任务成功不能替代该检查。</p></section>
+    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
+}
+
 function experiencesIndexHTML(): string {
   const copy = zhMisc.experiences
   const entries = experiences.map((experience) => {
@@ -144,12 +155,14 @@ export function buildPrerenderPages(): PrerenderPage[] {
       description: zhMisc.experiences.indexDescription,
       body: experiencesIndexHTML()
     },
-    {
-      route: PUBLIC_PAGES.errorExperience,
-      title: 'GPT-6 已接入，为什么 Codex 仍然看不见？',
-      description: 'Codex 桌面中 GPT-6-Astra 不可见时，区分中转站支持、客户端模型目录与当前任务选择的公开排障经验。',
-      body: errorExperienceHTML()
-    }
+    ...experiences.map((experience) => ({
+      route: experience.route,
+      title: experience.title,
+      description: experience.id === 'codex-session-migration'
+        ? '安全诊断并修复切换接入方式后 Codex 本机旧任务的失效 provider 关联，提供备份、计划、恢复与回滚边界。'
+        : 'Codex 桌面中 GPT-6-Astra 不可见时，区分中转站支持、客户端模型目录与当前任务选择的公开排障经验。',
+      body: experience.id === 'codex-session-migration' ? codexSessionMigrationHTML() : errorExperienceHTML()
+    }))
   ]
   return pages
 }

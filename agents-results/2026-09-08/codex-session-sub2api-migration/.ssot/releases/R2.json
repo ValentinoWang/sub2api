@@ -1,0 +1,25 @@
+{
+  "release_id": "R2",
+  "release_gate_node": "QR2",
+  "title": "站内经验、P1 接入与公开下载闭环",
+  "user_value": "用户从本站接入教程或经验分享进入同一案例，下载对应系统的工具或复制独立 Codex 指令，修复后返回接入流程。",
+  "independent_failure": "站点发布失败可撤回该候选下载和页面；已验证的本机工具仍有效，不触碰账号、支付、凭据或服务端业务数据库。",
+  "release_authority": {
+    "mode": "external",
+    "provider": "repository",
+    "authorities": [
+      {
+        "role_id": "release-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "node_ids": [
+    "N4",
+    "N5",
+    "N6",
+    "QR2"
+  ]
+}

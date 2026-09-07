@@ -1,0 +1,30 @@
+name: Codex session migration
+
+on:
+  push:
+    paths:
+      - 'tools/codex_migration_inspect.py'
+      - 'tools/codex_migration_transaction.py'
+      - 'tools/codex_session_migrate.py'
+      - 'tools/test_codex_*.py'
+      - '.github/workflows/codex-session-migration.yml'
+  pull_request:
+    paths:
+      - 'tools/codex_migration_inspect.py'
+      - 'tools/codex_migration_transaction.py'
+      - 'tools/codex_session_migrate.py'
+      - 'tools/test_codex_*.py'
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest discover -s tools -p 'test_codex_*.py'

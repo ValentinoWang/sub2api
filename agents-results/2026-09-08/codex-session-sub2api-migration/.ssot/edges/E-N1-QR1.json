@@ -1,0 +1,15 @@
+{
+  "edge_id": "E-N1-QR1",
+  "from": "N1",
+  "to": "QR1",
+  "dependency_type": "hard",
+  "dependency_scope": "specific-output",
+  "reason_code": "acceptance-dependency",
+  "required_state": "ACCEPTED",
+  "assumption_ids": [],
+  "invalidation_keys": [
+    "requirement.n1"
+  ],
+  "transferred_input": "识别实际客户端数据根、目标接入配置及需要迁移的旧任务，生成只读可审阅计划。",
+  "gate_evidence": "acceptance contract evidence"
+}

@@ -1,0 +1,39 @@
+{
+  "node_id": "D1",
+  "semantic_key": "codex-migration.documentation-scope",
+  "stage": "R1",
+  "work_kind": "decision-acceptance",
+  "domain_lane": "decision",
+  "execution_state": "ACCEPTED",
+  "decision_state": "ACCEPTED",
+  "decision_version": 1,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [],
+  "invalidation_keys": [
+    "codex-migration.documentation-scope.v1"
+  ],
+  "write_authority": "isolated-record",
+  "unlocks": [
+    "N1",
+    "N2",
+    "N3",
+    "N4",
+    "N5",
+    "N6"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "human",
+  "execution_contract_ref": "nodes/D1.json",
+  "side_effect_class": "none",
+  "candidate_identity_policy": "none",
+  "goal": "用户确认编制本地旧对话迁移工具与站内经验下载衔接的开发 SSOT，仅确认文档范围。",
+  "owner": "决策负责人",
+  "decision_record_ref": "agents-results/2026-09-08/codex-session-sub2api-migration/scope-decision.md",
+  "blocking_reasons": [],
+  "readiness_gaps": []
+}

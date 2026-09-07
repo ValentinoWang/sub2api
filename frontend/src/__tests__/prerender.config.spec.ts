@@ -13,7 +13,7 @@ describe('home static prerender', () => {
     expect(experience).toBeGreaterThan(-1)
     expect(experiencesLink).toBeGreaterThan(experience)
     expect(faq).toBeGreaterThan(experiencesLink)
-    expect(html).toContain('GPT-6 已接入，为什么 Codex 仍然看不见？')
+    expect(html).toContain('切换接入后，为什么 Codex 旧对话无法继续？')
   })
 
   it('keeps compact output aligned with the compact Vue home branch', () => {

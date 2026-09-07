@@ -42,7 +42,7 @@ describe('public experience publication', () => {
     expect(article?.body).toContain('<h2>情况说明</h2>')
     expect(article?.body).toContain('<h2>Codex 帮你处理</h2>')
     expect(article?.body).toContain('<h2>给人看的：原因、证据与经验</h2>')
-    expect(article?.body).toContain('GPT-6-Astra')
+    expect(article?.body).toContain(publishedExperience.id === 'codex-session-migration' ? 'provider 名称' : 'GPT-6-Astra')
   })
 
   it('keeps every static experience handoff resolvable by the public Vue router', () => {
@@ -52,7 +52,9 @@ describe('public experience publication', () => {
     expect(indexRoute.meta.requiresAuth).toBe(false)
     for (const experience of experiences) {
       const articleRoute = router.resolve(experience.route)
-      expect(articleRoute.name).toBe('ErrorExperienceGpt6AstraNotVisible')
+      expect(articleRoute.name).toBe(experience.id === 'codex-session-migration'
+        ? 'CodexSessionMigration'
+        : 'ErrorExperienceGpt6AstraNotVisible')
       expect(articleRoute.meta.requiresAuth).toBe(false)
     }
   })

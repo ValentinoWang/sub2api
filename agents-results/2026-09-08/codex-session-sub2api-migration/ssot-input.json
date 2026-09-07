@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "plan_version": 1,
+  "dag_version": 1,
+  "interface_freeze_version": 1,
+  "depth": "L2",
+  "task_slug": "codex-session-sub2api-migration",
+  "governance_reason": "用户明确要求开发 SSOT；本机 Codex 历史接续迁移和 rest2build 经验栏目下载发布存在独立验收、跨文件恢复和外部客户端边界。本轮只编制开发文档，不执行产品实现、用户数据迁移或线上发布。",
+  "selection_authority": "user",
+  "target_evidence_level": "production",
+  "world_verification": true,
+  "strict_acceptance_profile_version": 2,
+  "authority_binding_version": 1,
+  "structured_result_version": 1,
+  "node_state_model": 2,
+  "acceptance_contract_policy_version": 2,
+  "view_model": 2,
+  "shared_acceptance_policies": [
+    {"id": "SAP-MIGRATION-EVIDENCE", "version": 1, "path": "agents-results/2026-09-08/codex-session-sub2api-migration/shared-acceptance-policy.md", "allowed_sections": ["Risks and open decisions"]}
+  ],
+  "principal_registry": {
+    "schema_version": 1,
+    "principals": [
+      {"principal_ref": "implementation-owner", "provider": "repository", "subject": "codex-session-migration-implementation", "status": "active", "trust": "repository-bound", "roles": ["implementation-owner"]},
+      {"principal_ref": "product-owner", "provider": "repository", "subject": "vsiyo", "status": "active", "trust": "repository-bound", "roles": ["acceptance-owner", "release-owner"]}
+    ]
+  },
+  "sources": [
+    {"id": "SRC-CONNECT", "path": "frontend/src/components/keys/UseKeyModal.vue", "role": "current-implementation", "authority_by_dimension": {"information_architecture": "informative", "visual_tokens": "not-applicable", "layout": "informative", "interaction_behavior": "informative", "seed_data": "not-applicable", "runtime_side_effects": "informative"}},
+    {"id": "SRC-EXPERIENCE", "path": "frontend/src/content/experiences.ts", "role": "current-implementation", "authority_by_dimension": {"information_architecture": "informative", "visual_tokens": "not-applicable", "layout": "not-applicable", "interaction_behavior": "informative", "seed_data": "not-applicable", "runtime_side_effects": "not-applicable"}},
+    {"id": "SRC-ROUTER", "path": "frontend/src/router/index.ts", "role": "current-implementation", "authority_by_dimension": {"information_architecture": "informative", "visual_tokens": "not-applicable", "layout": "not-applicable", "interaction_behavior": "informative", "seed_data": "not-applicable", "runtime_side_effects": "not-applicable"}},
+    {"id": "SRC-PRERENDER", "path": "frontend/prerender.config.ts", "role": "current-implementation", "authority_by_dimension": {"information_architecture": "informative", "visual_tokens": "not-applicable", "layout": "informative", "interaction_behavior": "informative", "seed_data": "not-applicable", "runtime_side_effects": "not-applicable"}},
+    {"id": "SRC-EMBED", "path": "backend/internal/web/embed_on.go", "role": "current-implementation", "authority_by_dimension": {"information_architecture": "informative", "visual_tokens": "not-applicable", "layout": "not-applicable", "interaction_behavior": "informative", "seed_data": "not-applicable", "runtime_side_effects": "informative"}},
+    {"id": "SRC-EXPERIENCE-SKILL", "path": "skills/sub2api-error-experience/SKILL.md", "role": "authority-data", "authority_by_dimension": {"information_architecture": "informative", "visual_tokens": "not-applicable", "layout": "informative", "interaction_behavior": "informative", "seed_data": "not-applicable", "runtime_side_effects": "not-applicable"}}
+  ],
+  "decisions": [
+    {"id": "D1", "key": "codex-migration.documentation-scope", "version": 1, "record": "agents-results/2026-09-08/codex-session-sub2api-migration/scope-decision.md", "summary": "用户确认编制本地旧对话迁移工具与站内经验下载衔接的开发 SSOT，仅确认文档范围。"}
+  ],
+  "releases": [
+    {
+      "id": "R1", "gate_node": "QR1", "title": "本机 Codex 历史接续工具",
+      "source_completion_refs": ["RQ-LOCAL"],
+      "user_value": "用户可离线诊断接入变更造成的旧任务关联问题，审阅计划后完成可恢复迁移，并在真实客户端继续原任务。",
+      "independent_acceptance": "诊断无数据修改、备份门禁、迁移恢复故障测试、三种操作系统的受控客户端恢复证据全部成立；无需等待站点上线。",
+      "independent_failure": "任何备份或计划一致性错误均阻止写入；跨 JSONL 与 SQLite 的中断进入明确恢复状态，不依赖经验页是否在线。",
+      "release_authority": {"mode": "external", "provider": "repository", "authorities": [{"role_id": "release-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "acceptance_seeds": [
+        "tools/test_codex_session_migrate.py 的跨系统夹具、故障注入及回滚检查全部通过且零跳过；真实已支持客户端重开迁移前的同一个任务，能引用迁移前测试事实并追加一轮交流。",
+        "tools/build_codex_session_migrate.py 输出可解包的完整离线工具包、版本及摘要；备份不成立或输入漂移时工具退出为阻塞状态，原始配置、任务内容及无关数据库行均保持原值。"
+      ]
+    },
+    {
+      "id": "R2", "gate_node": "QR2", "title": "站内经验、P1 接入与公开下载闭环",
+      "source_completion_refs": ["RQ-SITE"],
+      "user_value": "用户从本站接入教程或经验分享进入同一案例，下载对应系统的工具或复制独立 Codex 指令，修复后返回接入流程。",
+      "independent_acceptance": "经验列表、详情、P1 双向入口、公开下载、无脚本首屏及生产只读回读均成立，并有用户侧签字记录。",
+      "independent_failure": "站点发布失败可撤回该候选下载和页面；已验证的本机工具仍有效，不触碰账号、支付、凭据或服务端业务数据库。",
+      "release_authority": {"mode": "external", "provider": "repository", "authorities": [{"role_id": "release-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "acceptance_seeds": [
+        "/experiences 能进入 /error-experiences/codex-session-migration，P1 返回路径保持原接入场景；生产下载的文件与页面展示版本和摘要一致，失败下载不得返回伪装成脚本的前端 HTML。",
+        "docs/human-acceptance/CODEX_SESSION_MIGRATION.md 对 macOS、Linux、Windows 分别记录真实下载、运行、旧任务接续结果及验收人和复核人；自动测试不能代替签字，尚无记录时状态保持待验收。"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "N1", "release": "R1", "goal": "识别实际客户端数据根、目标接入配置及需要迁移的旧任务，生成只读可审阅计划。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/integration-contract"],
+      "write_targets": [{"path": "tools/codex_migration_inspect.py", "operation": "create"}, {"path": "tools/test_codex_migration_inspect.py", "operation": "create"}],
+      "acceptance_seeds": [
+        "tools/test_codex_migration_inspect.py 覆盖官方 openai、第三方自定义名称、缺失 provider、仅认证切换无需迁移及目标已经匹配；使用 TOML 和 JSON 解析器区分名称大小写，未声明目标或多入口冲突时只输出诊断。",
+        "tools/codex_migration_inspect.py 扫描 CODEX_HOME、sessions 与 archived_sessions，并识别索引真实结构；默认诊断不会改动任何被检文件、SQLite 及其日志或共享内存，计划显示任务数量、范围、源到目标映射及阻塞项。",
+        "tools/test_codex_migration_inspect.py 对自定义数据目录、旧任务近期续写、重复片段、索引与元数据冲突、损坏 JSONL 和未知数据库结构分别断言；禁止按文件修改时间推导全部迁移对象或假定文件数等于任务数。"
+      ]
+    },
+    {
+      "id": "N2", "release": "R1", "depends_on": ["N1"], "goal": "实现先备份再写入的迁移事务、崩溃恢复、精准回滚及内容守恒验证。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/integration-contract", "machine/non-functional"],
+      "write_targets": [{"path": "tools/codex_migration_transaction.py", "operation": "create"}, {"path": "tools/test_codex_migration_transaction.py", "operation": "create"}],
+      "acceptance_seeds": [
+        "tools/test_codex_migration_transaction.py 注入备份创建失败、读回摘要不符、磁盘不足、权限拒绝及客户端写入；任一故障均禁止进入首次数据修改，不能重建事后副本并称为原始备份。",
+        "tools/codex_migration_transaction.py 只修改已选任务中已支持的 session_meta.payload.model_provider 和对应索引行；未修改消息与附件逐字节守恒，配置和认证文件不写入，无关任务行及其更新时间保持原值。",
+        "tools/test_codex_migration_transaction.py 在每次文件替换和数据库提交前后强制中断再恢复；只有所有目标完成并验证才报告成功，中间状态要求恢复；重复执行不重复迁移，输入摘要变化阻止沿用旧计划。",
+        "tools/codex_migration_transaction.py 回滚前验证当前状态仍匹配迁移后记录；有新增消息或索引变化时拒绝覆盖并输出可恢复的冲突报告，其他任务新增数据不得被整库恢复抹除。"
+      ]
+    },
+    {
+      "id": "N3", "release": "R1", "depends_on": ["N2"], "goal": "交付同一核心的跨平台命令行、离线工具包、机器可读报告和真实客户端接续验证。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/local-runtime", "machine/non-functional"],
+      "write_targets": [{"path": "tools/codex_session_migrate.py", "operation": "create"}, {"path": "tools/test_codex_session_migrate.py", "operation": "create"}, {"path": "tools/build_codex_session_migrate.py", "operation": "create"}, {"path": "tools/codex-session-migrate.sh", "operation": "create"}, {"path": "tools/codex-session-migrate.ps1", "operation": "create"}, {"path": ".github/workflows/codex-session-migration.yml", "operation": "create"}],
+      "acceptance_seeds": [
+        "tools/codex_session_migrate.py 提供 inspect、plan、apply、verify、recover、rollback，默认只读；在 macOS、Linux、Windows 使用相同核心，缺 Python 3.11 或数据格式不支持时明确退出，不安装运行时或放宽系统策略。",
+        "tools/test_codex_session_migrate.py 断言脱敏输出不含密钥、认证内容和私人消息，远程下载内容不直接通过管道执行；500 个任务共 1 GiB 的基准扫描峰值额外内存不超过 256 MiB，附件不入模型、不上传。",
+        ".github/workflows/codex-session-migration.yml 在三个系统以隔离目录执行零跳过回归；额外真实客户端记录必须证明重启后能列出、打开、继续同一个旧任务，不以数据库读取或新建任务成功替代。"
+      ]
+    },
+    {
+      "id": "N4", "release": "R2", "depends_on": ["N1"], "goal": "新增面向普通使用者的完整迁移案例和自包含 Codex 处理指令。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/e2e"],
+      "write_targets": [{"path": "frontend/src/content/experiences.ts", "operation": "modify"}, {"path": "frontend/src/views/public/CodexSessionMigrationView.vue", "operation": "create"}, {"path": "frontend/src/views/public/__tests__/CodexSessionMigrationView.spec.ts", "operation": "create"}, {"path": "frontend/src/views/public/__tests__/ExperiencesView.spec.ts", "operation": "modify"}, {"path": "docs/error-experiences/2026-09-08-codex-session-migration.md", "operation": "create"}, {"path": "docs/error-experiences/README.md", "operation": "modify"}, {"path": "docs/error-experiences/index.html", "operation": "modify"}],
+      "acceptance_seeds": [
+        "frontend/src/views/public/CodexSessionMigrationView.vue 按情况说明、Codex 帮你处理、给人看的顺序展示同一个案例；包含系统适用范围、工具下载、指令复制及复制失败反馈，沿用 rest2build 已批准品牌收尾。",
+        "frontend/src/content/experiences.ts 中迁移案例的指令可脱离文章执行，要求先诊断再审阅目标并验证备份；不得写死用户路径、旧 provider 名、认证模式或本机地址，明确无法在当前应用关闭后继续的步骤由离线脚本完成。",
+        "docs/error-experiences/2026-09-08-codex-session-migration.md、静态预览和网页的指令与支持边界一致；公开内容不包含所附截图的真实密钥或私人会话，只说明本地历史接续，不能承诺网页记忆迁移或无损迁移正在进行的工具调用。"
+      ]
+    },
+    {
+      "id": "N5", "release": "R2", "depends_on": ["N3", "N4"], "goal": "让 P1 接入说明、经验详情、预渲染和下载清单消费同一目标配置及发布内容。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/unit", "machine/integration-contract", "machine/e2e"],
+      "write_targets": [{"path": "frontend/src/components/keys/UseKeyModal.vue", "operation": "modify"}, {"path": "frontend/src/components/keys/__tests__/UseKeyModal.spec.ts", "operation": "modify"}, {"path": "frontend/src/constants/codexMigration.ts", "operation": "create"}, {"path": "frontend/src/router/index.ts", "operation": "modify"}, {"path": "frontend/prerender.config.ts", "operation": "modify"}, {"path": "frontend/src/__tests__/prerender.config.spec.ts", "operation": "modify"}, {"path": "frontend/package.json", "operation": "modify"}, {"path": "frontend/public/sitemap.xml", "operation": "modify"}, {"path": "frontend/public/codex-session-migrate-manifest.json", "operation": "create"}, {"path": "frontend/public/codex-session-migrate-1.0.0.zip", "operation": "create"}, {"path": "frontend/public/codex-session-migrate-prompt.txt", "operation": "create"}, {"path": "frontend/src/i18n/locales/zh/misc.ts", "operation": "modify"}, {"path": "frontend/src/i18n/locales/en/misc.ts", "operation": "modify"}],
+      "acceptance_seeds": [
+        "frontend/src/components/keys/UseKeyModal.vue 各 Codex 接入场景提供迁移入口并使用与当前示例一致的目标 provider 和 Base URL；OpenAI 与 sub2api 可因场景不同共存，不自动重命名用户已有配置，地址和凭据不得进入链接参数。",
+        "frontend/prerender.config.ts、经验网页及 frontend/public/codex-session-migrate-prompt.txt 的指令由同一内容定义产生；入口允许公开访问且后端模式可达，关闭 JavaScript 仍能看到完整症状、指令和真实下载链接。",
+        "frontend/public/codex-session-migrate-manifest.json 与工具包实际版本、大小、摘要、系统支持矩阵一致；页面和包作为同一发布候选更新，404、HTML 回退、缺附件或缓存旧包均导致下载验收失败。"
+      ]
+    },
+    {
+      "id": "N6", "release": "R2", "depends_on": ["N5"], "goal": "补齐嵌入分发验证、公开站点交付检查和独立用户验收材料。",
+      "decision_refs": ["D1"],
+      "owner": {"role_id": "implementation-owner", "principal_ref": "implementation-owner"},
+      "acceptance": {"mode": "independent", "authorities": [{"role_id": "acceptance-owner", "principal_ref": "product-owner"}], "quorum": 1, "minimum_trust": "repository-bound"},
+      "lanes": ["machine/integration-contract", "production", "human"],
+      "write_targets": [{"path": "backend/internal/web/experiences_prerender_test.go", "operation": "modify"}, {"path": "backend/internal/web/codex_migration_download_test.go", "operation": "create"}, {"path": "backend/internal/web/embed_on.go", "operation": "modify"}, {"path": "docs/CODEX_SESSION_MIGRATION_RELEASE.md", "operation": "create"}, {"path": "docs/human-acceptance/CODEX_SESSION_MIGRATION.md", "operation": "create"}, {"path": "docs/human-acceptance/README.md", "operation": "modify"}],
+      "acceptance_seeds": [
+        "backend/internal/web/codex_migration_download_test.go 验证真实嵌入产物能提供可解包下载及匹配清单，未知下载路径返回明确失败；公开站点按相同路径回读可见入口、正文和下载内容，不能用 Vite 预览代替。",
+        "docs/human-acceptance/CODEX_SESSION_MIGRATION.md 只包含用户步骤、可见结果、通过或阻塞条件及验收人复核人签字；技术版本、命令、日志和发布回滚证据只进入 docs/CODEX_SESSION_MIGRATION_RELEASE.md。",
+        "docs/CODEX_SESSION_MIGRATION_RELEASE.md 区分本机结构校验、真实客户端接续与线上分发；缺任一系统真实客户端或签字证据时明确待验收，不以其他系统通过替代，也不要求读者拥有服务器管理权限。"
+      ]
+    }
+  ]
+}

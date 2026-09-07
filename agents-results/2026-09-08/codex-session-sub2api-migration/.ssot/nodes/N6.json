@@ -1,0 +1,96 @@
+{
+  "node_id": "N6",
+  "semantic_key": "requirement.n6",
+  "stage": "R2",
+  "work_kind": "implementation",
+  "domain_lane": "r2",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1",
+    "N5"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "codex-migration.documentation-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n6"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "QR2"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N6.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "backend/internal/web/experiences_prerender_test.go",
+      "operation": "modify"
+    },
+    {
+      "path": "backend/internal/web/codex_migration_download_test.go",
+      "operation": "create"
+    },
+    {
+      "path": "backend/internal/web/embed_on.go",
+      "operation": "modify"
+    },
+    {
+      "path": "docs/CODEX_SESSION_MIGRATION_RELEASE.md",
+      "operation": "create"
+    },
+    {
+      "path": "docs/human-acceptance/CODEX_SESSION_MIGRATION.md",
+      "operation": "create"
+    },
+    {
+      "path": "docs/human-acceptance/README.md",
+      "operation": "modify"
+    }
+  ],
+  "required_lanes": [
+    "machine/integration-contract",
+    "production",
+    "human"
+  ],
+  "goal": "补齐嵌入分发验证、公开站点交付检查和独立用户验收材料。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N6/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    },
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

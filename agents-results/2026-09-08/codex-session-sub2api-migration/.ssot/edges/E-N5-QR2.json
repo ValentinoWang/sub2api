@@ -1,0 +1,15 @@
+{
+  "edge_id": "E-N5-QR2",
+  "from": "N5",
+  "to": "QR2",
+  "dependency_type": "hard",
+  "dependency_scope": "specific-output",
+  "reason_code": "acceptance-dependency",
+  "required_state": "ACCEPTED",
+  "assumption_ids": [],
+  "invalidation_keys": [
+    "requirement.n5"
+  ],
+  "transferred_input": "让 P1 接入说明、经验详情、预渲染和下载清单消费同一目标配置及发布内容。",
+  "gate_evidence": "acceptance contract evidence"
+}

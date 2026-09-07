@@ -1,0 +1,308 @@
+{
+  "planning_compiler_schema_version": 1,
+  "classification": {
+    "applicability": "ssot",
+    "ssot_depth": "L2",
+    "artifact_policy": "create-ssot",
+    "selection_authority": "user",
+    "rationale": "用户明确要求开发 SSOT；本机 Codex 历史接续迁移和 rest2build 经验栏目下载发布存在独立验收、跨文件恢复和外部客户端边界。本轮只编制开发文档，不执行产品实现、用户数据迁移或线上发布。"
+  },
+  "source_inputs": [
+    {
+      "external_dependency_id": "EXT-CONNECT",
+      "path": "frontend/src/components/keys/UseKeyModal.vue",
+      "commit": "f0653b309ebf12624c2b22d21ebd3a6f03cebb47",
+      "blob": "0f4e3b31e0ae62de02665b1a11223242e0cae92f",
+      "sha256": "a4c696ff15ef5e9501d3c58a0ec17c9dbeb26d668298e8974139f0217e267242"
+    },
+    {
+      "external_dependency_id": "EXT-EXPERIENCE",
+      "path": "frontend/src/content/experiences.ts",
+      "commit": "f0653b309ebf12624c2b22d21ebd3a6f03cebb47",
+      "blob": "9f3aa6abc123d71f913d41953650a28a922160f5",
+      "sha256": "c60179c26fcef995a648fd6e665443978b053df70c30ac61fdc96d6047f5342c"
+    },
+    {
+      "external_dependency_id": "EXT-ROUTER",
+      "path": "frontend/src/router/index.ts",
+      "commit": "f0653b309ebf12624c2b22d21ebd3a6f03cebb47",
+      "blob": "eb7b9419e75c3b551823a32c28a2c8637ec0abe4",
+      "sha256": "44ede3515ae50a08f89d07411c24a769b7295742c0618c6b104d40788fa7c010"
+    },
+    {
+      "external_dependency_id": "EXT-PRERENDER",
+      "path": "frontend/prerender.config.ts",
+      "commit": "f0653b309ebf12624c2b22d21ebd3a6f03cebb47",
+      "blob": "27c370ccfc86c6b662a16cd809186f0105e324c1",
+      "sha256": "bc80f6a0a357535a8cfe3a1ef02449df57d33a9a06b62ac4c6474a542e630bdb"
+    },
+    {
+      "external_dependency_id": "EXT-EMBED",
+      "path": "backend/internal/web/embed_on.go",
+      "commit": "f0653b309ebf12624c2b22d21ebd3a6f03cebb47",
+      "blob": "befa80345dcc6a679657b5f9b7f56e5bca0051ad",
+      "sha256": "e8a80701f50d6f033426499ddae4addb00b6e2dcb540d11a9a6e27dee657ef1b"
+    },
+    {
+      "external_dependency_id": "EXT-EXPERIENCE-SKILL",
+      "path": "skills/sub2api-error-experience/SKILL.md",
+      "commit": "f0653b309ebf12624c2b22d21ebd3a6f03cebb47",
+      "blob": "5da6e9bc4eea7adb93ae3b2369f28ac929039a34",
+      "sha256": "abd0c93b31bdd3966d9e5f3e7677fd30bad212a42194dd8877ec9253815fa523"
+    }
+  ],
+  "external_systems": [],
+  "acceptance_layers": [
+    "human",
+    "machine/e2e",
+    "machine/integration-contract",
+    "machine/local-runtime",
+    "machine/non-functional",
+    "machine/unit",
+    "production"
+  ],
+  "release_boundary_compiler": {
+    "boundary_required": true,
+    "decision_authority": "source",
+    "rationale": "Each release slice carries its own user value and failure boundary."
+  },
+  "macro_phases": [
+    {
+      "id": "P1",
+      "title": "Delivery",
+      "release_ids": [
+        "R1",
+        "R2"
+      ]
+    }
+  ],
+  "release_slices": [
+    {
+      "id": "R1",
+      "macro_phase_id": "P1",
+      "title": "本机 Codex 历史接续工具",
+      "user_value": "用户可离线诊断接入变更造成的旧任务关联问题，审阅计划后完成可恢复迁移，并在真实客户端继续原任务。",
+      "independent_acceptance": "诊断无数据修改、备份门禁、迁移恢复故障测试、三种操作系统的受控客户端恢复证据全部成立；无需等待站点上线。",
+      "independent_failure": "任何备份或计划一致性错误均阻止写入；跨 JSONL 与 SQLite 的中断进入明确恢复状态，不依赖经验页是否在线。",
+      "future_phase_required_for_success": false,
+      "node_ids": [
+        "F",
+        "D1",
+        "N1",
+        "N2",
+        "N3",
+        "QR1"
+      ],
+      "source_completion_requirement_refs": [
+        "RQ-LOCAL"
+      ],
+      "development_baseline": "f0653b309ebf12624c2b22d21ebd3a6f03cebb47",
+      "promotion_baseline": "a60e5b619642beff23a83db4dce298114152f1d6",
+      "release_candidate": "5e1ade7e304775ede63e080d7c300c8f8dd5b590283d0f1762162405fbf1e355"
+    },
+    {
+      "id": "R2",
+      "macro_phase_id": "P1",
+      "title": "站内经验、P1 接入与公开下载闭环",
+      "user_value": "用户从本站接入教程或经验分享进入同一案例，下载对应系统的工具或复制独立 Codex 指令，修复后返回接入流程。",
+      "independent_acceptance": "经验列表、详情、P1 双向入口、公开下载、无脚本首屏及生产只读回读均成立，并有用户侧签字记录。",
+      "independent_failure": "站点发布失败可撤回该候选下载和页面；已验证的本机工具仍有效，不触碰账号、支付、凭据或服务端业务数据库。",
+      "future_phase_required_for_success": false,
+      "node_ids": [
+        "N4",
+        "N5",
+        "N6",
+        "QR2"
+      ],
+      "source_completion_requirement_refs": [
+        "RQ-SITE"
+      ],
+      "development_baseline": "f0653b309ebf12624c2b22d21ebd3a6f03cebb47",
+      "promotion_baseline": "a60e5b619642beff23a83db4dce298114152f1d6",
+      "release_candidate": "c3fe63665cb362e6e87024936f3860b437456821988277d2cf3ad40065e8f9f5"
+    }
+  ],
+  "waves": [
+    {
+      "id": "W-R1",
+      "release_id": "R1",
+      "node_ids": [
+        "F",
+        "D1",
+        "N1",
+        "N2",
+        "N3",
+        "QR1"
+      ]
+    },
+    {
+      "id": "W-R2",
+      "release_id": "R2",
+      "node_ids": [
+        "N4",
+        "N5",
+        "N6",
+        "QR2"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "D1",
+      "kind": "decision",
+      "goal": "用户确认编制本地旧对话迁移工具与站内经验下载衔接的开发 SSOT，仅确认文档范围。",
+      "dependencies": [
+        "F"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "决策负责人"
+    },
+    {
+      "id": "F",
+      "kind": "deterministic-generation",
+      "goal": "建立来源身份基线",
+      "dependencies": [],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "编排器"
+    },
+    {
+      "id": "N1",
+      "kind": "implementation",
+      "goal": "识别实际客户端数据根、目标接入配置及需要迁移的旧任务，生成只读可审阅计划。",
+      "dependencies": [
+        "F",
+        "D1"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "N2",
+      "kind": "implementation",
+      "goal": "实现先备份再写入的迁移事务、崩溃恢复、精准回滚及内容守恒验证。",
+      "dependencies": [
+        "F",
+        "D1",
+        "N1"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "N3",
+      "kind": "implementation",
+      "goal": "交付同一核心的跨平台命令行、离线工具包、机器可读报告和真实客户端接续验证。",
+      "dependencies": [
+        "F",
+        "D1",
+        "N2"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "N4",
+      "kind": "implementation",
+      "goal": "新增面向普通使用者的完整迁移案例和自包含 Codex 处理指令。",
+      "dependencies": [
+        "F",
+        "D1",
+        "N1"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "N5",
+      "kind": "implementation",
+      "goal": "让 P1 接入说明、经验详情、预渲染和下载清单消费同一目标配置及发布内容。",
+      "dependencies": [
+        "F",
+        "D1",
+        "N3",
+        "N4"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "N6",
+      "kind": "implementation",
+      "goal": "补齐嵌入分发验证、公开站点交付检查和独立用户验收材料。",
+      "dependencies": [
+        "F",
+        "D1",
+        "N5"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "implementation-owner"
+    },
+    {
+      "id": "QR1",
+      "kind": "convergence",
+      "goal": "按来源完成标准接受 R1 候选版本",
+      "dependencies": [
+        "N1",
+        "N2",
+        "N3"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "发布决策负责人"
+    },
+    {
+      "id": "QR2",
+      "kind": "convergence",
+      "goal": "按来源完成标准接受 R2 候选版本",
+      "dependencies": [
+        "N4",
+        "N5",
+        "N6"
+      ],
+      "acceptance": "Contract and required lane evidence accepted.",
+      "owner": "发布决策负责人"
+    }
+  ],
+  "artifacts": {
+    "ssot_bundle": true,
+    "generated_views": [
+      "main",
+      "topology",
+      "nodes-r1",
+      "nodes-r2"
+    ],
+    "worker_ledger": false,
+    "evidence_identity_registry": false,
+    "resource_matrix": false,
+    "runner_registry": false
+  },
+  "artifacts_inventory": {
+    "total_nodes": 10,
+    "implementation_nodes": 6,
+    "worker_nodes": 0,
+    "generated_views": 4
+  },
+  "complexity_budget": {
+    "authority": "user",
+    "rationale": "One node per declared item plus decision and release gates.",
+    "limits": {
+      "total_nodes": 10,
+      "implementation_nodes_per_release": 3,
+      "codex_worker_nodes": 0,
+      "generated_views": 4
+    },
+    "exception": null
+  },
+  "goal_size_detector": {
+    "implementation_or_migration_nodes": 6,
+    "external_systems": 0,
+    "release_slices": 2,
+    "production_migrations": 0,
+    "acceptance_layers": 7,
+    "split_required": false,
+    "split_strategy": "release"
+  },
+  "strict_acceptance_profile_version": 2,
+  "authority_binding_version": 1,
+  "structured_result_version": 1,
+  "node_state_model": 2
+}

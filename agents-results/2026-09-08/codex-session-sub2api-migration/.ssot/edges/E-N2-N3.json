@@ -1,0 +1,15 @@
+{
+  "edge_id": "E-N2-N3",
+  "from": "N2",
+  "to": "N3",
+  "dependency_type": "hard",
+  "dependency_scope": "specific-output",
+  "reason_code": "acceptance-dependency",
+  "required_state": "ACCEPTED",
+  "assumption_ids": [],
+  "invalidation_keys": [
+    "requirement.n2"
+  ],
+  "transferred_input": "实现先备份再写入的迁移事务、崩溃恢复、精准回滚及内容守恒验证。",
+  "gate_evidence": "acceptance contract evidence"
+}

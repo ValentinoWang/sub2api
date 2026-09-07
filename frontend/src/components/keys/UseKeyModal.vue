@@ -231,6 +231,15 @@
           </p>
         </section>
 
+        <RouterLink
+          v-if="showCodexMigrationHelp"
+          :to="codexMigrationRoute"
+          class="flex items-center justify-between gap-3 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900 transition-colors hover:bg-teal-100 dark:border-teal-900 dark:bg-teal-950/30 dark:text-teal-100 dark:hover:bg-teal-950/50"
+        >
+          <span><strong>切换接入后旧对话无法继续？</strong><span class="mt-0.5 block text-xs text-teal-700 dark:text-teal-300">先诊断实际生效配置，再下载可回滚的本地历史迁移工具。</span></span>
+          <Icon name="arrowRight" size="sm" class="flex-shrink-0" />
+        </RouterLink>
+
         <!-- Usage Note -->
         <div v-if="showPlatformNote" class="flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
           <Icon name="infoCircle" size="md" class="text-blue-500 flex-shrink-0 mt-0.5" />
@@ -269,6 +278,7 @@ import {
   parseCodexCatalogModels,
   selectCodexConfigReasoningEffort
 } from '@/utils/codexCatalogConfig'
+import { CODEX_SESSION_MIGRATION } from '@/constants/codexMigration'
 
 interface Props {
   show: boolean
@@ -318,6 +328,11 @@ const showCodexModelCatalog = computed(() =>
   (activeClientTab.value === 'codex' ||
     (props.platform === 'openai' && activeClientTab.value === 'codex-ws'))
 )
+
+const showCodexMigrationHelp = computed(() =>
+  props.show && (activeClientTab.value === 'codex' || activeClientTab.value === 'codex-ws')
+)
+const codexMigrationRoute = CODEX_SESSION_MIGRATION.route
 
 const codexModelCatalogPath = computed(() => {
   const isWindows = activeTab.value === 'windows'

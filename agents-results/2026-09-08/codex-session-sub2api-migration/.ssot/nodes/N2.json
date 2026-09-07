@@ -1,0 +1,81 @@
+{
+  "node_id": "N2",
+  "semantic_key": "requirement.n2",
+  "stage": "R1",
+  "work_kind": "implementation",
+  "domain_lane": "r1",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1",
+    "N1"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "codex-migration.documentation-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n2"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "N3",
+    "QR1"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N2.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "tools/codex_migration_transaction.py",
+      "operation": "create"
+    },
+    {
+      "path": "tools/test_codex_migration_transaction.py",
+      "operation": "create"
+    }
+  ],
+  "required_lanes": [
+    "machine/unit",
+    "machine/integration-contract",
+    "machine/non-functional"
+  ],
+  "goal": "实现先备份再写入的迁移事务、崩溃恢复、精准回滚及内容守恒验证。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N2/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    },
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

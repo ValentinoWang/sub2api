@@ -81,6 +81,15 @@ const routes: RouteRecordRaw[] = [
       titleKey: 'experiences.gpt6Title'
     }
   },
+  {
+    path: '/error-experiences/codex-session-migration',
+    name: 'CodexSessionMigration',
+    component: () => import('@/views/public/CodexSessionMigrationView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: '切换接入后，为什么 Codex 旧对话无法继续？'
+    }
+  },
 
   {
     path: '/status',
@@ -848,7 +857,7 @@ let authInitialized = false
 const navigationLoading = useNavigationLoadingState()
 // 延迟初始化预加载，传入 router 实例
 let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
-const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/experiences', '/error-experiences/gpt-6-astra-not-visible']
+const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/experiences', '/error-experiences/gpt-6-astra-not-visible', '/error-experiences/codex-session-migration']
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
   '/auth/linuxdo/callback',

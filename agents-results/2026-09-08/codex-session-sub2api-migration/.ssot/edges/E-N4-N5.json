@@ -1,0 +1,15 @@
+{
+  "edge_id": "E-N4-N5",
+  "from": "N4",
+  "to": "N5",
+  "dependency_type": "hard",
+  "dependency_scope": "specific-output",
+  "reason_code": "acceptance-dependency",
+  "required_state": "ACCEPTED",
+  "assumption_ids": [],
+  "invalidation_keys": [
+    "requirement.n4"
+  ],
+  "transferred_input": "新增面向普通使用者的完整迁移案例和自包含 Codex 处理指令。",
+  "gate_evidence": "acceptance contract evidence"
+}

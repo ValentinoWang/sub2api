@@ -1,0 +1,77 @@
+{
+  "node_id": "N1",
+  "semantic_key": "requirement.n1",
+  "stage": "R1",
+  "work_kind": "implementation",
+  "domain_lane": "r1",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "codex-migration.documentation-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n1"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "N2",
+    "N4",
+    "QR1"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N1.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "tools/codex_migration_inspect.py",
+      "operation": "create"
+    },
+    {
+      "path": "tools/test_codex_migration_inspect.py",
+      "operation": "create"
+    }
+  ],
+  "required_lanes": [
+    "machine/unit",
+    "machine/integration-contract"
+  ],
+  "goal": "识别实际客户端数据根、目标接入配置及需要迁移的旧任务，生成只读可审阅计划。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N1/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "node_id": "N3",
+  "semantic_key": "requirement.n3",
+  "stage": "R1",
+  "work_kind": "implementation",
+  "domain_lane": "r1",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1",
+    "N2"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "codex-migration.documentation-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n3"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "N5",
+    "QR1"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N3.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "tools/codex_session_migrate.py",
+      "operation": "create"
+    },
+    {
+      "path": "tools/test_codex_session_migrate.py",
+      "operation": "create"
+    },
+    {
+      "path": "tools/build_codex_session_migrate.py",
+      "operation": "create"
+    },
+    {
+      "path": "tools/codex-session-migrate.sh",
+      "operation": "create"
+    },
+    {
+      "path": "tools/codex-session-migrate.ps1",
+      "operation": "create"
+    },
+    {
+      "path": ".github/workflows/codex-session-migration.yml",
+      "operation": "create"
+    }
+  ],
+  "required_lanes": [
+    "machine/unit",
+    "machine/local-runtime",
+    "machine/non-functional"
+  ],
+  "goal": "交付同一核心的跨平台命令行、离线工具包、机器可读报告和真实客户端接续验证。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N3/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    },
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

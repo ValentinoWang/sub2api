@@ -1,0 +1,100 @@
+{
+  "node_id": "N4",
+  "semantic_key": "requirement.n4",
+  "stage": "R2",
+  "work_kind": "implementation",
+  "domain_lane": "r2",
+  "execution_state": "PLANNED",
+  "decision_state": "NOT_APPLICABLE",
+  "decision_version": null,
+  "readiness_mode": "FORMAL",
+  "hard_dependencies": [
+    "F",
+    "D1",
+    "N1"
+  ],
+  "soft_dependencies": [],
+  "assumption_ids": [],
+  "decision_refs": [
+    {
+      "semantic_key": "codex-migration.documentation-scope",
+      "version": 1
+    }
+  ],
+  "invalidation_keys": [
+    "requirement.n4"
+  ],
+  "write_authority": "implementation",
+  "unlocks": [
+    "N5",
+    "QR2"
+  ],
+  "node_role": "leaf",
+  "execution_actor": "orchestrator",
+  "execution_contract_ref": "nodes/N4.json",
+  "side_effect_class": "reversible",
+  "candidate_identity_policy": "none",
+  "write_targets": [
+    {
+      "path": "frontend/src/content/experiences.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "frontend/src/views/public/CodexSessionMigrationView.vue",
+      "operation": "create"
+    },
+    {
+      "path": "frontend/src/views/public/__tests__/CodexSessionMigrationView.spec.ts",
+      "operation": "create"
+    },
+    {
+      "path": "frontend/src/views/public/__tests__/ExperiencesView.spec.ts",
+      "operation": "modify"
+    },
+    {
+      "path": "docs/error-experiences/2026-09-08-codex-session-migration.md",
+      "operation": "create"
+    },
+    {
+      "path": "docs/error-experiences/README.md",
+      "operation": "modify"
+    },
+    {
+      "path": "docs/error-experiences/index.html",
+      "operation": "modify"
+    }
+  ],
+  "required_lanes": [
+    "machine/unit",
+    "machine/e2e"
+  ],
+  "goal": "新增面向普通使用者的完整迁移案例和自包含 Codex 处理指令。",
+  "owner": "implementation-owner",
+  "acceptance_contract_ref": "acceptance-fragments/N4/acceptance-contract.md",
+  "acceptance": {
+    "mode": "independent",
+    "authorities": [
+      {
+        "role_id": "acceptance-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "blocking_reasons": [],
+  "readiness_gaps": [
+    {
+      "code": "HARD_DEPENDENCY_NOT_ACCEPTED"
+    },
+    {
+      "code": "ACCEPTANCE_CONTRACT_NOT_APPROVED"
+    },
+    {
+      "code": "TEST_BASELINE_NOT_LOCKED"
+    },
+    {
+      "code": "PROTECTED_ACCEPTANCE_TEST_NOT_REGISTERED"
+    }
+  ]
+}

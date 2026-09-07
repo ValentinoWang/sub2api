@@ -1,3 +1,5 @@
+import { CODEX_SESSION_MIGRATION } from '../constants/codexMigration'
+
 export type ExperienceCategory =
   | 'toolUse'
   | 'integrationTroubleshooting'
@@ -56,6 +58,18 @@ const gpt6AstraNotVisiblePrompt = `我使用 Sub2API 中转站接入 Codex，目
 不要把配置文件写好、安装包下载完成或模型目录有名字当作修复完成。如果必须由我结束当前任务或重启应用，先给出准备情况、恢复方式和重启后的检查项。`
 
 export const experiences: ExperienceContent[] = [
+  {
+    id: 'codex-session-migration',
+    category: 'integrationTroubleshooting',
+    route: CODEX_SESSION_MIGRATION.route,
+    title: CODEX_SESSION_MIGRATION.title,
+    summary: '先只读定位旧任务的 provider 关联，再用经验证备份、计划摘要和恢复日志完成可审阅的本机历史迁移。',
+    series: 'Codex 使用错误说明',
+    subtitle: '解决你使用 Codex 或 Claude Code 的最后一公里',
+    applicableTo: 'Codex 桌面端与命令行使用者 · macOS、Linux、Windows',
+    updatedAt: '2026-09-08',
+    prompt: CODEX_SESSION_MIGRATION.prompt,
+  },
   {
     id: 'gpt-6-astra-not-visible',
     category: 'integrationTroubleshooting',

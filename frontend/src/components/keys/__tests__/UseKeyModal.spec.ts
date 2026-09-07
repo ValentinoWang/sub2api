@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises, mount } from '@vue/test-utils'
+import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { nextTick } from 'vue'
 
 const { copyToClipboardMock, saveAsMock } = vi.hoisted(() => ({
@@ -38,6 +38,21 @@ describe('UseKeyModal', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
     saveAsMock.mockClear()
+  })
+
+  it('links every Codex setup context to the local-history migration experience without exposing credentials', async () => {
+    const wrapper = mount(UseKeyModal, {
+      props: { show: true, apiKey: 'sk-test-secret', baseUrl: 'https://example.com/v1', platform: 'openai' },
+      global: { stubs: { BaseDialog: { template: '<div><slot /><slot name="footer" /></div>' }, Icon: { template: '<span />' }, RouterLink: RouterLinkStub } }
+    })
+
+    await nextTick()
+
+    const migrationLink = wrapper.findComponent(RouterLinkStub)
+    expect(migrationLink.exists()).toBe(true)
+    expect(migrationLink.text()).toContain('旧对话无法继续')
+    expect(migrationLink.props('to')).toBe('/error-experiences/codex-session-migration')
+    expect(migrationLink.html()).not.toContain('sk-test-secret')
   })
 
   it('omits the attribution override from every standard Claude Code setup form', async () => {

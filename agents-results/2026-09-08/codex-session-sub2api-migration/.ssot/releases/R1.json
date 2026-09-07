@@ -1,0 +1,27 @@
+{
+  "release_id": "R1",
+  "release_gate_node": "QR1",
+  "title": "本机 Codex 历史接续工具",
+  "user_value": "用户可离线诊断接入变更造成的旧任务关联问题，审阅计划后完成可恢复迁移，并在真实客户端继续原任务。",
+  "independent_failure": "任何备份或计划一致性错误均阻止写入；跨 JSONL 与 SQLite 的中断进入明确恢复状态，不依赖经验页是否在线。",
+  "release_authority": {
+    "mode": "external",
+    "provider": "repository",
+    "authorities": [
+      {
+        "role_id": "release-owner",
+        "principal_ref": "product-owner"
+      }
+    ],
+    "quorum": 1,
+    "minimum_trust": "repository-bound"
+  },
+  "node_ids": [
+    "F",
+    "D1",
+    "N1",
+    "N2",
+    "N3",
+    "QR1"
+  ]
+}
