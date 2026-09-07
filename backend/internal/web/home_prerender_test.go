@@ -72,6 +72,9 @@ func TestHomePrerenderArtifactContainsTheFormalLandingPage(t *testing.T) {
 		`data-home-hero`,
 		`data-home-primary-cta`,
 		`href="/login"`,
+		`data-home-experience-featured`,
+		`href="/experiences"`,
+		`data-home-faq`,
 	} {
 		if !strings.Contains(body, marker) {
 			t.Errorf("home prerender must contain %q, got no formal first-paint landing page", marker)
@@ -155,6 +158,9 @@ func TestHomeRouteServesThePrerenderedPageWithPublicConfiguration(t *testing.T) 
 		`data-home-hero`,
 		`data-home-primary-cta`,
 		`href="/login"`,
+		`data-home-experience-featured`,
+		`href="/experiences"`,
+		`data-home-faq`,
 		`window.__APP_CONFIG__=`,
 		`nonce="home-prerender-test-nonce"`,
 	} {
@@ -178,6 +184,11 @@ func TestHomeRouteServesThePrerenderedPageWithPublicConfiguration(t *testing.T) 
 		t.Error("GET /home must use the public settings snapshot that is injected for Vue")
 	}
 	main := formalHomeMain(t, body)
+	if experience := strings.Index(main, `data-home-experience-featured`); experience == -1 {
+		t.Error("GET /home must keep the experience sharing feature before Vue runs")
+	} else if faq := strings.Index(main, `data-home-faq`); faq == -1 || experience > faq {
+		t.Error("GET /home must place experience sharing before FAQ before Vue runs")
+	}
 	if !strings.Contains(main, "Gateway One") || !strings.Contains(main, "A readable public subtitle") {
 		t.Error("GET /home must render the same public branding inside the no-JavaScript landing page")
 	}
