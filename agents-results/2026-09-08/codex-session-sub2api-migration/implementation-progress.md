@@ -46,3 +46,7 @@ uv run --with pyyaml --with jsonschema python \
 ## 当前验收边界
 
 自动验证证明支持的本地 JSONL/SQLite 夹具、离线包与站内分发行为符合实现范围。它不证明任意历史客户端格式、正在运行的连接或 ChatGPT 网页历史可迁移。真实 macOS、Linux、Windows 客户端必须各自重新打开同一个迁移前旧任务、引用保留事实并完成一轮新交流；在每个平台填写可见结果并由验收人与复核人签字前，`docs/human-acceptance/CODEX_SESSION_MIGRATION.md` 保持“待验收”。
+
+## 源码同步边界
+
+GitHub Fork 主线已推送并读回 `60f5ff5770b071919d9b19fb94f16340b1912f32`。2026-09-08 对 `ubuntu@43.156.50.78:/home/ubuntu/sub2api` 的只读 SSH 检查被服务器以 `Permission denied (publickey)` 拒绝，未读取工作树、未同步源码、未重启服务，也未执行生产发布。服务器管理员授权现有工作站密钥后，必须先重新检查远端工作树、分支和远端地址，再进行常规拉取。
