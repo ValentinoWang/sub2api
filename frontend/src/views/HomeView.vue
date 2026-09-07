@@ -328,6 +328,9 @@
           </div>
         </section>
 
+        <!-- Featured experience: place reusable help before a visitor chooses an access mode. -->
+        <ExperienceCollection class="mb-20" />
+
         <!-- Two access modes -->
         <section class="mb-20">
           <div class="mb-8 text-center" data-reveal>
@@ -627,8 +630,6 @@
             <router-link :to="PUBLIC_PAGES.security" class="underline decoration-dotted underline-offset-4">{{ t('marketing.nav.security') }}</router-link>
           </p>
         </section>
-
-        <ExperienceCollection class="mb-20" />
 
         <!-- FAQ (static, crawlable) -->
         <section class="mb-20">

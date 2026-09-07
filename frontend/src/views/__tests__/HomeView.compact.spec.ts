@@ -50,6 +50,7 @@ function mountHome(settings: Record<string, unknown> = {}) {
         RouterLink: RouterLinkStub,
         LocaleSwitcher: { template: '<div data-testid="locale-switcher" />' },
         Icon: { template: '<span data-testid="icon" />' },
+        ExperienceCollection: { template: '<section data-testid="experience-sharing" />' },
       },
     },
   })
@@ -109,6 +110,13 @@ describe('HomeView compact mode', () => {
 
     expect(wrapper.find('[data-testid="compact-home"]').exists()).toBe(false)
     expect(wrapper.find('.terminal-container').exists()).toBe(true)
+  })
+
+  it('places experience sharing before the two access modes on the default home', () => {
+    const html = mountHome().html()
+
+    expect(html.indexOf('data-testid="experience-sharing"')).toBeGreaterThan(-1)
+    expect(html.indexOf('marketing.modes.title')).toBeGreaterThan(html.indexOf('data-testid="experience-sharing"'))
   })
 
   it('links unauthenticated visitors to login', () => {
