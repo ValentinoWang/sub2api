@@ -1,0 +1,33 @@
+{
+  "backup_excludes_config": true,
+  "backup_inventory_scoped": true,
+  "config_unchanged": true,
+  "conflicts_preserved": 2,
+  "credentials_unchanged": true,
+  "merged": {
+    "bytes": 412,
+    "conflicting_identities": 1,
+    "exact_duplicates": 0,
+    "output_files": 4,
+    "source_files": 4,
+    "status": "merged",
+    "target": "/private/var/folders/w0/td0lhml95j374vr26ypgjzfh0000gn/T/codex-memory-acceptance-f099vzhr/unified-home"
+  },
+  "planned": {
+    "bytes": 412,
+    "conflicting_identities": 1,
+    "exact_duplicates": 0,
+    "output_files": 4,
+    "plan": "/private/var/folders/w0/td0lhml95j374vr26ypgjzfh0000gn/T/codex-memory-acceptance-f099vzhr/plan.json",
+    "source_files": 4,
+    "status": "planned"
+  },
+  "provider_labels": [
+    "oauth",
+    "sub2api",
+    "custom"
+  ],
+  "restored": "restored",
+  "status": "passed",
+  "temporary_state_removed_on_exit": true
+}

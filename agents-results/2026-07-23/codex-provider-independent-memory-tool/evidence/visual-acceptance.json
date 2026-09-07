@@ -1,0 +1,66 @@
+{
+  "status": "passed",
+  "baseUrl": "http://127.0.0.1:4173",
+  "cases": [
+    {
+      "name": "docs-desktop",
+      "route": "/docs",
+      "status": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dimensions": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440
+      },
+      "pageErrors": [],
+      "screenshot": "docs-desktop.png"
+    },
+    {
+      "name": "memory-desktop",
+      "route": "/docs/codex-memory",
+      "status": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dimensions": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440
+      },
+      "pageErrors": [],
+      "screenshot": "memory-desktop.png"
+    },
+    {
+      "name": "memory-mobile",
+      "route": "/docs/codex-memory",
+      "status": 200,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "dimensions": {
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "pageErrors": [],
+      "screenshot": "memory-mobile.png"
+    },
+    {
+      "name": "login-mobile",
+      "route": "/login",
+      "status": 200,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "dimensions": {
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "pageErrors": [],
+      "screenshot": "login-mobile.png"
+    }
+  ]
+}
