@@ -64,7 +64,7 @@ describe('MarketingPageView', () => {
     expect(wrapper.findAll('footer .brand-statement')).toHaveLength(1)
     expect(wrapper.get('footer .brand-tagline').text()).toBe('歇一会儿，让 AI 接着干。')
     expect(wrapper.get('footer .brand-service').text()).toBe(
-      'rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。'
+      'rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。'
     )
   })
 

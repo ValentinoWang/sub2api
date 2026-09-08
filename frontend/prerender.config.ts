@@ -98,7 +98,7 @@ function errorExperienceHTML(): string {
     <section><h2>情况说明</h2><p>你已经按照本站接入说明配置了 Codex，站点也已提供 GPT-6-Astra，但桌面模型选择器里仍然只有旧模型。中转站能否调用模型、桌面应用是否展示模型、当前任务实际选择哪个模型，是不同环节。</p><ul><li>桌面模型列表没有 GPT-6-Astra。</li><li>终端已更新，桌面仍显示旧列表。</li><li>模型可选，但原任务还在使用旧模型。</li><li>不确定实际连接的是本站、旧地址，还是本机代理。</li></ul></section>
     <section><h2>Codex 帮你处理</h2><pre style="white-space:pre-wrap">${esc(prompt)}</pre></section>
     <section><h2>给人看的：原因、证据与经验</h2><h3>支持、可见与选中不是同一个开关</h3><p>先分开检查中转站与个人访问权限、客户端模型目录，以及默认配置与当前任务选择。API 成功不必然使桌面出现新模型；桌面没有新模型也不能单独证明中转站不支持它。</p><h3>终端升级不代表桌面升级</h3><p>终端命令与桌面应用可各自携带 Codex。历史案例中，桌面内置 0.153.3 将 Astra 标记为 hide，0.153.4 恢复 list；这只是带日期的排查线索，应以当前实际运行版本和官方说明为准。</p><h3>先判断缓存是否真的相关</h3><p>不要删除整个 Codex 目录、memories、任务历史、认证或 Docker 数据。仅在确认存在、被读取且过时后，定点清理可再生的模型元数据缓存。</p><h3>恢复验收</h3><p>重新打开应用后，应分别确认实际版本、模型是否可见、任务是否明确选择目标模型，以及使用个人入口完成的最小请求是否成功。</p></section>
-    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
+    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
 }
 
 function codexSessionMigrationHTML(): string {
@@ -109,7 +109,7 @@ function codexSessionMigrationHTML(): string {
     <section><h2>情况说明</h2><p>切换接入方式后，旧任务可能仍指向已经删除的 provider 名称，导致打开或继续旧任务时提示 provider 不存在。此工具先只读检查实际数据根和有效配置，再生成可审阅计划。</p><p><strong>只处理本机任务关联。</strong>它不迁移 ChatGPT 网页历史、云端记忆、正在进行的请求或服务端 Redis 状态。</p></section>
     <section><h2>Codex 帮你处理</h2><pre style="white-space:pre-wrap">${esc(experience.prompt)}</pre><p><a href="/codex-session-migrate-1.0.0.zip">下载离线工具包</a> · <a href="/codex-session-migrate-prompt.txt">下载提示词</a> · <a href="/codex-session-migrate-manifest.json">查看校验清单</a></p></section>
     <section><h2>给人看的：原因、证据与经验</h2><h3>provider、请求地址和凭据不是同一件事</h3><p>工具必须从实际生效配置识别目标，不能把所有任务硬改为一个站点示例名称。</p><h3>备份不成立就禁止写入</h3><p>全部被选 JSONL 与 SQLite 对象都要先建立并读回验证备份。输入漂移、未知格式或多来源冲突会停在诊断阶段。</p><h3>结构验证不等于原任务接续</h3><p>迁移后还要重新打开同一个旧任务，引用已存测试事实并追加一轮交流；新建任务成功不能替代该检查。</p></section>
-    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
+    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
 }
 
 function experiencesIndexHTML(): string {
