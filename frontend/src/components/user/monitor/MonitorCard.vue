@@ -1,13 +1,13 @@
 <template>
   <button
     type="button"
-    class="group text-left p-5 rounded-2xl min-h-[280px] w-full bg-white/70 backdrop-blur-xl border border-gray-200/80 shadow-card dark:bg-dark-800/60 dark:border-dark-700/70 hover:-translate-y-1 hover:shadow-card-hover dark:hover:border-primary-500/30 hover:border-gray-300 transition-all duration-300 ease-out flex flex-col"
+    class="monitor-card group flex min-h-[280px] w-full flex-col rounded-lg border p-4 text-left"
     @click="emit('click')"
   >
     <!-- Header: icon + name/model + status chip -->
     <div class="flex items-start gap-3">
       <span
-        class="w-9 h-9 rounded-xl ring-1 ring-black/5 dark:ring-white/10 grid place-items-center flex-shrink-0"
+        class="monitor-card-provider grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg"
         :class="[providerGradient(item.provider), providerTintClass]"
       >
         <ProviderIcon :provider="item.provider" :size="20" />
@@ -59,7 +59,7 @@
     <MonitorQuotaView v-if="quotaVisible" :snapshot="item.latest_quota" class="mt-2" />
 
     <!-- Divider -->
-    <div class="mt-4 border-t border-gray-100 dark:border-dark-700/60"></div>
+    <div class="monitor-card-divider mt-4 border-t"></div>
 
     <!-- Availability row -->
     <MonitorAvailabilityRow
@@ -143,3 +143,34 @@ const extraModelsCountLabel = computed(() => {
   return t('monitorCommon.extraModelsCount', { n: count })
 })
 </script>
+
+<style scoped>
+.monitor-card {
+  border-color: var(--user-border);
+  background: var(--user-surface);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.monitor-card:hover {
+  border-color: var(--dashboard-accent);
+  box-shadow: 0 8px 18px rgb(15 23 42 / 0.08);
+  transform: translateY(-2px);
+}
+
+.monitor-card:focus-visible {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 2px;
+}
+
+.monitor-card-provider {
+  border: 1px solid var(--user-border);
+}
+
+.monitor-card-divider {
+  border-color: var(--user-border);
+}
+</style>

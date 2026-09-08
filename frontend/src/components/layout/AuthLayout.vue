@@ -126,13 +126,16 @@
         </div>
 
         <!-- Copyright -->
-        <div class="mt-8 text-center text-xs text-gray-400 dark:text-dark-500">
+        <div
+          v-if="!$slots.afterContent"
+          class="auth-copyright mt-8 text-center text-xs text-gray-400 dark:text-dark-500"
+        >
           &copy; {{ currentYear }} {{ BRAND_DOMAIN }} · {{ t('home.meme.footer') }}
           <p class="mt-2 text-[11px] leading-relaxed">{{ t('marketing.nonOfficialShort') }}</p>
         </div>
       </div>
     </div>
-    <div v-if="$slots.afterContent" class="relative z-10 mx-auto w-full max-w-4xl px-4 pb-10 sm:px-6">
+    <div v-if="$slots.afterContent" class="auth-after-content relative z-10 mx-auto w-full px-4 pb-10 sm:px-6">
       <slot name="afterContent" />
     </div>
   </div>
@@ -184,6 +187,11 @@ onMounted(() => {
   background:
     radial-gradient(1000px 500px at 50% -10%, rgba(20, 184, 166, 0.14), transparent 60%), #f6f9fc;
 }
+
+.auth-after-content {
+  max-width: calc(76rem + 3rem);
+}
+
 .dark .auth-root {
   --auth-line: rgba(148, 163, 184, 0.08);
   --auth-glass: rgba(10, 18, 32, 0.66);

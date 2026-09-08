@@ -14,6 +14,136 @@
 </template>
 
 <style scoped>
-.brand-statement { background: #191f1c; padding: 72px 24px 28px; color: #c4d0c9; text-align: center; }.brand-statement-inner { width: min(880px, 100%); margin: 0 auto; }.brand-wordmark { display: inline-flex; align-items: center; gap: 14px; color: #f7faf8; font-size: 36px; font-weight: 750; line-height: 1.3; text-decoration: none; }.brand-wordmark img { width: 48px; height: 48px; }.brand-tagline { margin: 32px 0 14px; font-size: 52px; font-weight: 750; line-height: 1.4; color: #f7faf8; }.brand-tagline span { display: inline-block; }.brand-tagline span:last-child { color: #d4ed9b; }.brand-subline { margin: 0 0 26px; font-size: 20px; color: #d6dfda; }.brand-service { max-width: 760px; margin: 0 auto 28px; font-size: 16px; line-height: 1.9; }.brand-domain { display: inline-block; color: #d4ed9b; font: 700 18px ui-monospace, SFMono-Regular, Menlo, monospace; text-underline-offset: 7px; }.brand-wordmark:focus-visible, .brand-domain:focus-visible { outline: 3px solid #d4ed9b; outline-offset: 5px; }
-@media (max-width: 640px) { .brand-statement { padding: 48px 16px 24px; }.brand-wordmark { font-size: 30px; gap: 12px; }.brand-wordmark img { width: 42px; height: 42px; }.brand-tagline { margin-top: 24px; font-size: 30px; line-height: 1.5; }.brand-subline { font-size: 16px; }.brand-service { text-align: left; font-size: 14px; } }
+.brand-statement {
+  border-top: 1px solid #c9ddd0;
+  background: #edf7f0;
+  padding: 72px 24px 28px;
+  color: #3b5849;
+  text-align: center;
+}
+
+.dark .brand-statement {
+  border-color: #2b4639;
+  background: #17221c;
+  color: #c4d0c9;
+}
+
+.brand-statement-inner {
+  width: min(880px, 100%);
+  margin: 0 auto;
+}
+
+.brand-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: #143b2a;
+  font-size: 36px;
+  font-weight: 750;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.dark .brand-wordmark {
+  color: #f7faf8;
+}
+
+.brand-wordmark img {
+  width: 48px;
+  height: 48px;
+}
+
+.brand-tagline {
+  margin: 32px 0 14px;
+  color: #143b2a;
+  font-size: 52px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.dark .brand-tagline {
+  color: #f7faf8;
+}
+
+.brand-tagline span {
+  display: inline-block;
+}
+
+.brand-tagline span:last-child {
+  color: #2c7456;
+}
+
+.dark .brand-tagline span:last-child {
+  color: #d4ed9b;
+}
+
+.brand-subline {
+  margin: 0 0 26px;
+  color: #365847;
+  font-size: 20px;
+}
+
+.dark .brand-subline {
+  color: #d6dfda;
+}
+
+.brand-service {
+  max-width: 760px;
+  margin: 0 auto 28px;
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+.brand-domain {
+  display: inline-block;
+  color: #176c52;
+  font: 700 18px ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-underline-offset: 7px;
+}
+
+.dark .brand-domain {
+  color: #d4ed9b;
+}
+
+.brand-wordmark:focus-visible,
+.brand-domain:focus-visible {
+  outline: 3px solid #2c7456;
+  outline-offset: 5px;
+}
+
+.dark .brand-wordmark:focus-visible,
+.dark .brand-domain:focus-visible {
+  outline-color: #d4ed9b;
+}
+
+@media (max-width: 640px) {
+  .brand-statement {
+    padding: 48px 16px 24px;
+  }
+
+  .brand-wordmark {
+    gap: 12px;
+    font-size: 30px;
+  }
+
+  .brand-wordmark img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .brand-tagline {
+    margin-top: 24px;
+    font-size: 30px;
+    line-height: 1.5;
+  }
+
+  .brand-subline {
+    font-size: 16px;
+  }
+
+  .brand-service {
+    text-align: left;
+    font-size: 14px;
+  }
+}
 </style>

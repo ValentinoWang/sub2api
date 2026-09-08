@@ -166,6 +166,25 @@ describe('KeyUsageView daily detail', () => {
     vi.unstubAllGlobals()
   })
 
+  it('uses one shared rest2build brand footer on the public key usage page', () => {
+    const wrapper = mount(KeyUsageView, {
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          LocaleSwitcher: true,
+          Icon: true,
+        },
+      },
+    })
+
+    expect(wrapper.findAll('footer')).toHaveLength(1)
+    expect(wrapper.findAll('footer .brand-statement')).toHaveLength(1)
+    expect(wrapper.get('footer .brand-tagline').text()).toBe('歇一会儿，让 AI 接着干。')
+    expect(wrapper.text()).not.toContain('All rights reserved.')
+
+    wrapper.unmount()
+  })
+
   it('renders daily usage detail rows after a successful query', async () => {
     const wrapper = mount(KeyUsageView, {
       global: {

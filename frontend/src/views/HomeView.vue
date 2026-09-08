@@ -1,6 +1,6 @@
 <template>
   <!-- Custom Home Content: Full Page Mode -->
-  <div v-if="hasHomeContent" class="min-h-screen">
+  <div v-if="hasHomeContent" class="home-custom-content min-h-screen">
     <!-- iframe mode -->
     <iframe
       v-if="isHomeContentUrl"
@@ -10,6 +10,9 @@
     ></iframe>
     <!-- HTML mode - SECURITY: homeContent is admin-only setting, XSS risk is acceptable -->
     <div v-else v-html="homeContent"></div>
+    <footer class="home-custom-footer">
+      <Rest2BuildBrandFooter />
+    </footer>
   </div>
 
   <!-- Compact Home Page -->
@@ -95,8 +98,8 @@
       </div>
     </main>
 
-    <footer class="relative z-10 min-w-0 border-t border-gray-200/60 px-4 py-5 text-center text-sm text-gray-500 [overflow-wrap:anywhere] sm:px-6 dark:border-white/5 dark:text-dark-400">
-      &copy; {{ currentYear }} {{ BRAND_DOMAIN }} · {{ t('home.meme.footer') }}
+    <footer class="relative z-10">
+      <Rest2BuildBrandFooter />
     </footer>
   </div>
 
@@ -359,6 +362,9 @@
                 <li v-for="(pt, i) in stringList('marketing.modes.byok.points')" :key="i"><Icon name="shield" size="sm" class="text-indigo-400" />{{ pt }}</li>
               </ul>
               <div class="mt-4 flex flex-wrap gap-2">
+                <a href="https://www.ai.rest2build.lol/memberships" class="home-mode-membership-link">
+                  <Icon name="creditCard" size="sm" />{{ t('marketing.pages.common.accountServiceAction') }}
+                </a>
                 <router-link :to="PUBLIC_PAGES.codex" class="home-mode-link">Codex CLI →</router-link>
                 <router-link :to="PUBLIC_PAGES.claudeCode" class="home-mode-link">Claude Code →</router-link>
                 <router-link :to="PUBLIC_PAGES.openaiCompat" class="home-mode-link">OpenAI SDK →</router-link>
@@ -670,58 +676,8 @@
       </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="relative z-10 border-t border-gray-200/60 px-6 py-10 dark:border-white/5">
-      <div class="mx-auto grid max-w-6xl gap-8 text-sm md:grid-cols-[1.2fr_1fr_1fr]">
-        <div>
-          <p class="text-base font-semibold"><BrandWordmark :name="siteName" /></p>
-          <p class="mt-1 text-gray-600 dark:text-dark-300">{{ t('marketing.lab') }} · {{ t('marketing.positioning') }}</p>
-          <p class="mt-3 text-xs leading-relaxed text-gray-500 dark:text-dark-400">{{ t('marketing.disclaimer') }}</p>
-          <router-link :to="PUBLIC_PAGES.verify" class="home-verify mt-4">
-            <Icon name="badge" size="sm" />{{ t('marketing.footer.verifyHint') }}：{{ storeName }}
-          </router-link>
-        </div>
-        <div>
-          <p class="home-footer-h">{{ t('marketing.nav.publicInfo') }}</p>
-          <ul class="mt-3 space-y-2 text-gray-500 dark:text-dark-400">
-            <li v-for="link in publicLinks" :key="link.to"><router-link :to="link.to" class="hover:text-gray-900 dark:hover:text-white">{{ link.label }}</router-link></li>
-          </ul>
-        </div>
-        <div>
-          <p class="home-footer-h">{{ t('marketing.nav.legal') }}</p>
-          <ul class="mt-3 space-y-2 text-gray-500 dark:text-dark-400">
-            <li v-for="doc in legalDocuments" :key="doc.id"><router-link :to="`/legal/${doc.id}`" class="hover:text-gray-900 dark:hover:text-white">{{ doc.title }}</router-link></li>
-            <li v-if="docUrl"><a :href="docUrl" target="_blank" rel="noopener noreferrer" class="hover:text-gray-900 dark:hover:text-white">{{ t('home.docs') }}</a></li>
-            <li><a :href="githubUrl" target="_blank" rel="noopener noreferrer" class="hover:text-gray-900 dark:hover:text-white">{{ t('marketing.footer.builtOn') }}</a></li>
-          </ul>
-        </div>
-      </div>
-      <div
-        class="mx-auto mt-8 flex max-w-6xl flex-col items-center justify-between gap-4 border-t border-gray-200/60 pt-6 text-center dark:border-white/5 sm:flex-row sm:text-left"
-      >
-        <p class="text-sm text-gray-500 dark:text-dark-400">
-          &copy; {{ currentYear }} <span class="font-mono">{{ BRAND_DOMAIN }}</span> · {{ t('home.meme.footer') }}
-        </p>
-        <div class="flex items-center gap-5">
-          <a
-            v-if="docUrl"
-            :href="docUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-sm text-gray-500 transition-colors hover:text-gray-900 dark:text-dark-400 dark:hover:text-white"
-          >
-            {{ t('home.docs') }}
-          </a>
-          <a
-            :href="githubUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-sm text-gray-500 transition-colors hover:text-gray-900 dark:text-dark-400 dark:hover:text-white"
-          >
-            GitHub
-          </a>
-        </div>
-      </div>
+    <footer class="relative z-10">
+      <Rest2BuildBrandFooter />
     </footer>
   </div>
 </template>
@@ -735,8 +691,9 @@ import Icon from '@/components/icons/Icon.vue'
 import BrandWordmark from '@/components/common/BrandWordmark.vue'
 import RelayStationVisual from '@/components/common/RelayStationVisual.vue'
 import ExperienceCollection from '@/components/experiences/ExperienceCollection.vue'
+import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
 import { useLatencyProbe } from '@/composables/useLatencyProbe'
-import { BRAND_DOMAIN, PUBLIC_PAGES, resolveBrandName, resolveStoreName } from '@/constants/brand'
+import { BRAND_DOMAIN, PUBLIC_PAGES, resolveBrandName } from '@/constants/brand'
 import { sanitizeUrl } from '@/utils/url'
 import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
 
@@ -763,23 +720,6 @@ const faqItems = computed(() => {
     return { q: i18nStr(item.q), a: i18nStr(item.a) }
   })
 })
-const publicLinks = computed(() => [
-  { to: PUBLIC_PAGES.codex, label: t('marketing.nav.codex') },
-  { to: PUBLIC_PAGES.claudeCode, label: t('marketing.nav.claudeCode') },
-  { to: PUBLIC_PAGES.openaiCompat, label: t('marketing.nav.openaiCompat') },
-  { to: PUBLIC_PAGES.publicBenefit, label: t('marketing.nav.publicBenefit') },
-  { to: PUBLIC_PAGES.business, label: t('marketing.nav.business') },
-  { to: PUBLIC_PAGES.security, label: t('marketing.nav.security') },
-  { to: PUBLIC_PAGES.benchmarks, label: t('marketing.nav.benchmarks') },
-  { to: PUBLIC_PAGES.share, label: t('marketing.nav.share') },
-  { to: PUBLIC_PAGES.experiences, label: t('experiences.nav') },
-  { to: PUBLIC_PAGES.status, label: t('marketing.nav.status') },
-  { to: PUBLIC_PAGES.models, label: t('marketing.nav.models') },
-  { to: PUBLIC_PAGES.keyUsage, label: t('marketing.nav.keyUsage') }
-])
-const legalDocuments = computed(() => appStore.cachedPublicSettings?.login_agreement_documents ?? [])
-const storeName = computed(() => resolveStoreName(appStore.cachedPublicSettings?.xianyu_store_name))
-
 const authStore = useAuthStore()
 const appStore = useAppStore()
 
@@ -801,9 +741,6 @@ const isHomeContentUrl = computed(() => {
 
 // Theme
 const isDark = ref(document.documentElement.classList.contains('dark'))
-
-// GitHub URL
-const githubUrl = 'https://github.com/Wei-Shaw/sub2api'
 
 // Auth state
 const isAuthenticated = computed(() => authStore.isAuthenticated)
@@ -841,9 +778,6 @@ async function copyBaseUrl() {
 
 // Live latency probe against this deployment's /health
 const { latencyMs, state: latencyState } = useLatencyProbe()
-
-// Current year for footer
-const currentYear = computed(() => new Date().getFullYear())
 
 // Background particles (deterministic layout, no per-render randomness)
 const particles = Array.from({ length: 18 }, (_, index) => {
@@ -1541,6 +1475,32 @@ onBeforeUnmount(() => {
 .home-mode-link:hover {
   border-color: rgba(99, 102, 241, 0.6);
 }
+.home-mode-membership-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #0f766e;
+  border-radius: 8px;
+  padding: 4px 10px;
+  color: #fff;
+  background: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.home-mode-membership-link:hover {
+  border-color: #115e59;
+  background: #115e59;
+}
+.dark .home-mode-membership-link {
+  border-color: #2dd4bf;
+  color: #042f2e;
+  background: #5eead4;
+}
+.dark .home-mode-membership-link:hover {
+  border-color: #99f6e4;
+  background: #99f6e4;
+}
 .home-line {
   display: flex;
   flex-direction: column;
@@ -1638,29 +1598,6 @@ onBeforeUnmount(() => {
 .dark .home-faq-a {
   color: rgb(203 213 225);
 }
-.home-footer-h {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgb(107 114 128);
-}
-.home-verify {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 9999px;
-  border: 1px solid rgba(20, 184, 166, 0.4);
-  background: rgba(20, 184, 166, 0.08);
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #0f766e;
-}
-.dark .home-verify {
-  color: #5eead4;
-}
-
 /* ============ Chips ============ */
 
 .home-section-kicker {

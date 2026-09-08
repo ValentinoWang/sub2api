@@ -57,10 +57,15 @@ describe('MarketingPageView', () => {
     ['claudeCode', zh.marketing.pages.claudeCode.title],
     ['openaiCompat', zh.marketing.pages.openaiCompat.title],
     ['benchmarks', zh.marketing.pages.benchmarks.title]
-  ])('renders the %s page title and disclaimer', (key, title) => {
+  ])('renders the %s page title with the rest2build brand footer', (key, title) => {
     const wrapper = mountPage(key)
     expect(wrapper.get('h1').text()).toBe(title)
-    expect(wrapper.text()).toContain(zh.marketing.disclaimer)
+    expect(wrapper.text()).not.toContain(zh.marketing.disclaimer)
+    expect(wrapper.findAll('footer .brand-statement')).toHaveLength(1)
+    expect(wrapper.get('footer .brand-tagline').text()).toBe('歇一会儿，让 AI 接着干。')
+    expect(wrapper.get('footer .brand-service').text()).toBe(
+      'rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。'
+    )
   })
 
   it('renders every section of a static page', () => {

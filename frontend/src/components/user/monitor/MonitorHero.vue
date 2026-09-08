@@ -1,9 +1,9 @@
 <template>
-  <section class="py-3 md:py-4">
+  <section class="monitor-hero py-3 md:py-4">
     <div class="flex items-center justify-end gap-3 flex-wrap">
       <div
         role="tablist"
-        class="inline-flex p-0.5 rounded-xl bg-gray-100 dark:bg-dark-800 border border-gray-200/60 dark:border-dark-700/60 text-xs"
+        class="monitor-window-tabs inline-flex rounded-lg p-0.5 text-xs"
       >
         <button
           v-for="opt in windowOptions"
@@ -11,9 +11,9 @@
           type="button"
           role="tab"
           :aria-selected="window === opt.value"
-          class="px-3 py-1 rounded-lg transition-colors"
+          class="monitor-window-tab rounded-md px-3 py-1 transition-colors"
           :class="window === opt.value
-            ? 'bg-white dark:bg-dark-700 shadow-sm text-gray-900 dark:text-white font-semibold'
+            ? 'monitor-window-tab--active font-semibold'
             : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
           @click="emit('update:window', opt.value)"
         >
@@ -34,7 +34,7 @@
 
       <button
         type="button"
-        class="h-8 w-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-dark-700 transition-colors disabled:opacity-50"
+        class="monitor-hero-refresh flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors disabled:opacity-50 dark:text-gray-400"
         :disabled="loading"
         :title="t('common.refresh')"
         @click="emit('refresh')"
@@ -114,3 +114,29 @@ const overallDotClass = computed(() => {
 })
 
 </script>
+
+<style scoped>
+.monitor-hero {
+  border-bottom: 1px solid var(--user-border);
+}
+
+.monitor-window-tabs {
+  border: 1px solid var(--user-border);
+  background: var(--user-surface);
+}
+
+.monitor-window-tab--active {
+  background: var(--user-hover);
+  color: var(--user-foreground);
+}
+
+.monitor-hero-refresh:hover:not(:disabled) {
+  background: var(--user-hover);
+  color: var(--user-foreground);
+}
+
+.monitor-hero-refresh:focus-visible {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 2px;
+}
+</style>

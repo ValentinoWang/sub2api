@@ -47,7 +47,31 @@ onUnmounted(() => {
 /* 桌面端：Flexbox 布局 */
 .table-page-layout {
   @apply flex flex-col gap-6;
-  height: calc(100vh - 64px - 4rem); /* 减去 header + lg:p-8 的上下padding */
+  height: var(--user-content-viewport-height, calc(100vh - 64px - 4rem));
+}
+
+:global(.user-brand-shell) .table-page-layout {
+  color: var(--user-foreground);
+}
+
+:global(.user-brand-shell) .table-page-layout:not(.mobile-mode) .table-scroll-container {
+  background-color: var(--user-surface);
+  border-color: var(--user-border);
+  border-radius: 8px;
+}
+
+:global(.user-brand-shell) .table-scroll-container :deep(thead) {
+  background-color: var(--user-canvas);
+}
+
+:global(.user-brand-shell) .table-scroll-container :deep(th) {
+  color: var(--user-muted);
+  border-color: var(--user-border);
+}
+
+:global(.user-brand-shell) .table-scroll-container :deep(td) {
+  color: var(--user-foreground);
+  border-color: var(--user-border);
 }
 
 .layout-section-fixed {
@@ -94,6 +118,12 @@ onUnmounted(() => {
 /* 移动端：恢复正常滚动 */
 .table-page-layout.mobile-mode .table-scroll-container {
   @apply h-auto overflow-visible border-none shadow-none bg-transparent;
+}
+
+:global(.user-brand-shell) .table-page-layout.mobile-mode .table-scroll-container {
+  background-color: transparent;
+  border-width: 0;
+  box-shadow: none;
 }
 
 .table-page-layout.mobile-mode .layout-section-scrollable {

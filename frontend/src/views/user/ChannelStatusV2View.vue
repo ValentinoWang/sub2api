@@ -1,14 +1,13 @@
 <template>
   <AppLayout>
-    <div class="space-y-6 pb-12">
-      <!-- Ops-style elevated shell: title toolbar + filters (mirrors OpsDashboardHeader) -->
+    <div class="monitor-v2-page space-y-5 pb-10">
       <section
-        class="card sticky top-0 z-20 !rounded-3xl !border-0 p-0 shadow-sm ring-1 ring-gray-900/5 backdrop-blur-sm dark:!bg-dark-800 dark:ring-dark-700 supports-[backdrop-filter]:bg-white/95 dark:supports-[backdrop-filter]:bg-dark-800/95"
+        class="monitor-v2-command sticky top-0 z-20 p-0 backdrop-blur-sm"
       >
-        <header class="page-header mb-0 flex flex-wrap items-start justify-between gap-4 border-b border-gray-100 px-5 py-4 dark:border-dark-700 sm:px-6">
+        <header class="monitor-v2-command-header page-header mb-0 flex flex-wrap items-start justify-between gap-4 border-b px-5 py-4 sm:px-6">
           <div class="min-w-0">
             <h1 class="page-title flex items-center gap-2 text-xl font-black text-gray-900 dark:text-white">
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400">
                 <Icon name="chart" size="sm" />
               </span>
               {{ t('channelMonitorV2.title') }}
@@ -44,7 +43,7 @@
             </div>
           </div>
           <button
-            class="btn btn-secondary btn-icon flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-400 dark:hover:bg-dark-600"
+            class="monitor-v2-refresh btn btn-secondary btn-icon flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 dark:text-gray-400"
             type="button"
             :title="t('common.refresh')"
             :disabled="loading || featureDisabled"
@@ -108,7 +107,7 @@
             </button>
           </div>
 
-          <span class="mx-0.5 hidden h-5 w-px shrink-0 bg-gray-200 dark:bg-dark-700 sm:block" aria-hidden="true"></span>
+          <span class="monitor-toolbar-divider mx-0.5 hidden h-5 w-px shrink-0 sm:block" aria-hidden="true"></span>
 
           <FilterMultiSelect
             v-model="filter.platforms"
@@ -141,7 +140,7 @@
             {{ t('channelMonitorV2.clearFilters') }}
           </button>
 
-          <span class="mx-0.5 hidden h-5 w-px shrink-0 bg-gray-200 dark:bg-dark-700 md:block" aria-hidden="true"></span>
+          <span class="monitor-toolbar-divider mx-0.5 hidden h-5 w-px shrink-0 md:block" aria-hidden="true"></span>
 
           <Select
             v-model="matrixGroupBy"
@@ -195,7 +194,7 @@
 
       <section
         v-if="viewState !== 'ready'"
-        class="card flex min-h-[320px] flex-col items-center justify-center gap-4 px-6 py-10 text-center !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700"
+        class="monitor-v2-state flex min-h-[320px] flex-col items-center justify-center gap-4 px-6 py-10 text-center"
         :data-testid="'channel-monitor-v2-state'"
         :data-state="viewState"
         :role="viewState === 'request-failed' ? 'alert' : 'status'"
@@ -236,7 +235,7 @@
 
       <div
         v-if="viewState === 'ready' && lastLoadError"
-        class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100"
+        class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100"
         role="alert"
         data-testid="channel-monitor-v2-stale-error"
       >
@@ -252,12 +251,14 @@
         :aria-label="t('channelMonitorV2.summaryAria')"
       >
         <MetricCell
+          class="monitor-v2-metric"
           :label="t('channelMonitorV2.metrics.successRate')"
           :value="formatPercent(1 - snapshot.metrics.error_rate)"
           :detail="t('channelMonitorV2.metrics.errorRateValue', { value: formatPercent(snapshot.metrics.error_rate) })"
           :state="snapshot.health.error_rate"
         />
         <MetricCell
+          class="monitor-v2-metric"
           :label="t('channelMonitorV2.metrics.ttftP50')"
           :value="formatMs(snapshot.metrics.ttft.p50_ms)"
           :detail="latencyKpiSecondary(snapshot.metrics.ttft)"
@@ -266,12 +267,14 @@
         />
         <MetricCell
           v-if="showThroughput"
+          class="monitor-v2-metric"
           :label="t('channelMonitorV2.metrics.tps')"
           :value="formatTps(snapshot.metrics.tpm)"
           :detail="t('channelMonitorV2.metrics.tpsDetail')"
           :title="exactTps(snapshot.metrics.tpm)"
         />
         <MetricCell
+          class="monitor-v2-metric"
           :label="t('channelMonitorV2.metrics.cacheRate')"
           :value="formatPercent(snapshot.metrics.cache_rate)"
           :detail="t('channelMonitorV2.metrics.cacheDetail')"
@@ -279,6 +282,7 @@
         />
         <MetricCell
           v-if="showThroughput"
+          class="monitor-v2-metric"
           :label="t('channelMonitorV2.metrics.rpm')"
           :value="formatRate(snapshot.metrics.rpm)"
           :detail="t('channelMonitorV2.metrics.rpmDetail')"
@@ -294,19 +298,21 @@
         <div
           v-for="i in (showThroughput ? 5 : 4)"
           :key="i"
-          class="h-24 animate-pulse rounded-2xl bg-gray-50 dark:bg-dark-900/30"
+          class="monitor-v2-skeleton h-24 animate-pulse rounded-lg"
         />
       </section>
 
       <div class="relative min-h-[320px]">
         <MonitorTrendChart
           v-if="trendView === 'line'"
+          class="monitor-v2-visual"
           :trend="snapshot?.trend || []"
           :coverage="snapshot?.coverage || null"
           :loading="loading && !snapshot"
         />
         <RelayPulseMatrix
           v-else-if="matrix"
+          class="monitor-v2-visual"
           :rows="matrixRows"
           :coverage="matrix.coverage"
           :health-mode="healthMode"
@@ -314,14 +320,14 @@
         />
         <div
           v-else-if="loading"
-          class="card flex min-h-[320px] items-center justify-center !rounded-3xl !border-0 text-sm text-gray-400 shadow-sm ring-1 ring-gray-900/5 dark:ring-dark-700"
+          class="monitor-v2-loading flex min-h-[320px] items-center justify-center text-sm text-gray-400"
         >
           <span class="animate-pulse">{{ t('common.loading') }}</span>
         </div>
       </div>
 
-      <section class="card flex min-h-0 flex-col overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
-        <div class="border-b border-gray-100 px-5 pt-4 dark:border-dark-700 sm:px-6">
+      <section class="monitor-v2-table-panel flex min-h-0 flex-col overflow-hidden">
+        <div class="monitor-v2-table-tabs border-b px-5 pt-4 sm:px-6">
           <nav class="tabs w-full max-w-md sm:w-auto" role="tablist" :aria-label="t('channelMonitorV2.tabs.aria')">
             <button
               v-for="item in tabs"
@@ -388,7 +394,7 @@
             <div
               v-for="row in errorRows"
               :key="row.category"
-              class="rounded-2xl bg-gray-50 p-4 text-sm dark:bg-dark-900/30"
+              class="monitor-v2-error-row rounded-lg p-4 text-sm"
               :class="row.ignored ? 'opacity-60' : ''"
             >
               <button
@@ -413,12 +419,12 @@
                 >{{ formatPercent(row.rate) }}</small>
                 <Icon name="chevronDown" size="sm" :class="['text-gray-400 transition-transform', expandedErrors.has(row.category) ? 'rotate-180' : '']" />
               </button>
-              <div v-if="expandedErrors.has(row.category)" class="mt-3 space-y-2 border-t border-gray-100 pt-3 dark:border-dark-700">
+              <div v-if="expandedErrors.has(row.category)" class="monitor-v2-error-details mt-3 space-y-2 border-t pt-3">
                 <template v-if="isAdmin && (row.details || []).length">
                   <div
                     v-for="(detail, index) in row.details || []"
                     :key="`${row.category}:${index}:${detail.message}`"
-                    class="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-dark-900/50 dark:text-dark-300"
+                    class="monitor-v2-error-detail rounded-lg px-3 py-2 text-xs text-gray-600 dark:text-dark-300"
                   >
                     <div class="mb-1 flex flex-wrap items-center gap-2">
                       <span class="badge badge-gray !px-1.5 !py-0 text-[10px]">{{ detail.platform || '-' }}</span>
@@ -1009,6 +1015,78 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.monitor-v2-page {
+  color: var(--user-foreground);
+}
+
+.monitor-v2-command,
+.monitor-v2-state,
+.monitor-v2-loading,
+.monitor-v2-table-panel {
+  border: 1px solid var(--user-border);
+  border-radius: 0.5rem;
+  background: var(--user-surface);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.monitor-v2-command-header,
+.monitor-v2-table-tabs,
+.monitor-v2-error-details {
+  border-color: var(--user-border);
+}
+
+.monitor-v2-refresh {
+  border-color: var(--user-border);
+  background: var(--user-hover);
+}
+
+.monitor-v2-refresh:hover:not(:disabled) {
+  background: var(--user-surface);
+  color: var(--user-foreground);
+}
+
+.monitor-toolbar-divider {
+  background: var(--user-border);
+}
+
+.monitor-v2-skeleton {
+  border: 1px solid var(--user-border);
+  background: var(--user-surface);
+}
+
+.monitor-v2-error-row {
+  border: 1px solid var(--user-border);
+  background: var(--user-hover);
+}
+
+.monitor-v2-error-detail {
+  border: 1px solid var(--user-border);
+  background: var(--user-surface);
+}
+
+/* V2 feature components remain API owners; the page supplies their user-shell surface. */
+.monitor-v2-page :deep(.monitor-v2-metric),
+.monitor-v2-page :deep(.monitor-v2-visual) {
+  border: 1px solid var(--user-border) !important;
+  border-radius: 0.5rem !important;
+  background: var(--user-surface) !important;
+  box-shadow: none !important;
+}
+
+.monitor-v2-page :deep(.monitor-v2-visual .matrix-scroll) {
+  border-radius: 0.5rem;
+  background: var(--user-hover);
+}
+
+.monitor-v2-page :deep(.monitor-v2-visual .matrix-header) {
+  background: var(--user-hover) !important;
+}
+
+.monitor-v2-page :deep(.monitor-v2-visual .dimension-cell),
+.monitor-v2-page :deep(.monitor-v2-visual .summary-value) {
+  background: var(--user-surface) !important;
+}
+
 .status-dot {
   display: inline-block;
   height: 0.5rem;

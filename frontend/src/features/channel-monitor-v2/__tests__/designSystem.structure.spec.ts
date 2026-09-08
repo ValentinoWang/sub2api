@@ -13,36 +13,59 @@ function read(rel: string) {
 }
 
 describe('channel-monitor-v2 design system structure', () => {
-  it('user ChannelStatus V2 shell uses page-header, card, btn, tabs utilities', () => {
-    // Route wrapper may switch V1/V2; design chrome lives on the V2 implementation.
-    const src = read('views/user/ChannelStatusV2View.vue')
-    expect(src).toContain('page-header')
-    expect(src).toContain('page-title')
-    expect(src).toContain('class="card')
-    expect(src).toContain('btn btn-secondary')
-    expect(src).toContain('class="tab')
-    expect(src).toContain('tab-active')
-    expect(src).toContain('badge badge-warning')
+  it('user V1 and V2 shells consume the AppLayout surface with compact monitor panels', () => {
+    const v1 = read('views/user/ChannelStatusV1View.vue')
+    const v1Card = read('components/user/monitor/MonitorCard.vue')
+    const v1Grid = read('components/user/monitor/MonitorCardGrid.vue')
+    const v1Hero = read('components/user/monitor/MonitorHero.vue')
+    const v1MetricPair = read('components/user/monitor/MonitorMetricPair.vue')
+    const v1Availability = read('components/user/monitor/MonitorAvailabilityRow.vue')
+    const v1Timeline = read('components/user/monitor/MonitorTimeline.vue')
+    const v1ProviderIcon = read('components/user/monitor/ProviderIcon.vue')
+    const v2 = read('views/user/ChannelStatusV2View.vue')
+
+    expect(v1).toContain('monitor-v1-page')
+    expect(v1Card).toContain('monitor-card')
+    expect(v1Card).toContain('var(--user-surface)')
+    expect(v1Grid).toContain('var(--user-border)')
+    expect(v1Hero).toContain('monitor-window-tabs')
+    expect(v1MetricPair).toContain('var(--user-hover)')
+    expect(v1Availability).toContain('var(--user-muted)')
+    expect(v1Timeline).toContain('var(--user-border)')
+    expect(v1ProviderIcon).toContain('var(--user-muted)')
+    expect(`${v1Card}${v1Grid}${v1Hero}${v1MetricPair}${v1Availability}${v1Timeline}${v1ProviderIcon}`)
+      .not.toMatch(/rounded-(?:2xl|3xl)/)
+
+    expect(v2).toContain('monitor-v2-page')
+    expect(v2).toContain('page-header')
+    expect(v2).toContain('page-title')
+    expect(v2).toContain('btn btn-secondary')
+    expect(v2).toContain('class="tab')
+    expect(v2).toContain('tab-active')
+    expect(v2).toContain('badge badge-warning')
+    expect(v2).toContain('var(--user-surface)')
+    expect(v2).toContain('var(--user-border)')
+    expect(v2).toContain('monitor-v2-metric')
+    expect(v2).toContain('monitor-v2-visual')
+    expect(v2).not.toMatch(/rounded-(?:2xl|3xl)/)
+    expect(v2).not.toContain('ring-1 ring-gray-900/5')
     // Compact single-row toolbar
-    expect(src).toContain('monitor-toolbar')
-    expect(src).toContain('clearFilters')
-    expect(src).toContain('healthModeOptions')
-    expect(src).toContain("'cache'")
-    // Ops elevation: rounded-3xl + ring surfaces
-    expect(src).toContain('rounded-3xl')
-    expect(src).toContain('ring-1 ring-gray-900/5')
+    expect(v2).toContain('monitor-toolbar')
+    expect(v2).toContain('clearFilters')
+    expect(v2).toContain('healthModeOptions')
+    expect(v2).toContain("'cache'")
     // Overview-first KPI strip before primary viz
-    expect(src.indexOf('summaryAria')).toBeLessThan(src.indexOf('MonitorTrendChart'))
+    expect(v2.indexOf('summaryAria')).toBeLessThan(v2.indexOf('MonitorTrendChart'))
     // No page-level fixed min-width that forces viewport horizontal scroll
-    expect(src).not.toMatch(/min-width:\s*980px/)
-    expect(src).not.toMatch(/min-w-\[980px\]/)
+    expect(v2).not.toMatch(/min-width:\s*980px/)
+    expect(v2).not.toMatch(/min-w-\[980px\]/)
     // Dense tables scroll internally
-    expect(src).toMatch(/max-h-\[min\(52vh/)
-    expect(src).toContain('overflow-auto')
+    expect(v2).toMatch(/max-h-\[min\(52vh/)
+    expect(v2).toContain('overflow-auto')
     // Trend view toggle (pulse matrix / line chart) + default platform/group dimension
-    expect(src).toContain("trendView")
-    expect(src).toContain("'platform_group'")
-    expect(src).toContain('MonitorTrendChart')
+    expect(v2).toContain("trendView")
+    expect(v2).toContain("'platform_group'")
+    expect(v2).toContain('MonitorTrendChart')
   })
 
   it('RelayPulseMatrix uses card chrome, matrix scroll, and hover tooltips (no click modal)', () => {

@@ -1,10 +1,10 @@
 <template>
-  <component :is="isPopup ? 'div' : AppLayout" :class="isPopup ? 'min-h-screen bg-gray-50 dark:bg-dark-900' : ''">
-    <div class="mx-auto max-w-lg space-y-6 py-8" :class="isPopup ? 'px-4' : ''">
+  <component :is="isPopup ? 'div' : AppLayout" :class="isPopup ? 'payment-page payment-canvas min-h-screen' : ''">
+    <div class="payment-page mx-auto max-w-lg space-y-6 py-8" :class="isPopup ? 'px-4' : ''">
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
       </div>
-      <div v-else-if="initError" class="card p-8 text-center">
+      <div v-else-if="initError" class="payment-surface p-8 text-center">
         <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
           <Icon name="exclamationCircle" size="xl" class="text-red-500" />
         </div>
@@ -14,16 +14,16 @@
       </div>
       <template v-else>
         <!-- 金额头部 -->
-        <div v-if="order" class="card overflow-hidden">
-          <div class="bg-gradient-to-br from-[#635bff] to-[#4f46e5] px-6 py-6 text-center">
-            <p class="text-sm font-medium text-indigo-200">{{ t('payment.actualPay') }}</p>
+        <div v-if="order" class="payment-surface overflow-hidden">
+          <div class="bg-gradient-to-br from-[#14b8a6] via-[#0891b2] to-[#4f46e5] px-6 py-6 text-center">
+            <p class="text-sm font-medium text-teal-50/85">{{ t('payment.actualPay') }}</p>
             <p class="mt-1 text-3xl font-bold text-white">{{ formatGatewayAmount(order.pay_amount) }}</p>
           </div>
         </div>
 
         <!-- 微信二维码展示 -->
         <template v-if="wechatQrUrl">
-          <div class="card p-6">
+          <div class="payment-surface p-6">
             <div class="flex flex-col items-center space-y-4">
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('payment.qr.scanWxpay') }}</p>
               <div class="relative rounded-lg border-2 border-[#2BB741] bg-green-50 p-4 dark:border-[#2BB741]/70 dark:bg-green-950/20">
@@ -37,14 +37,14 @@
               <p class="text-center text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.scanWxpayHint') }}</p>
             </div>
           </div>
-          <div class="card p-4 text-center">
+          <div class="payment-surface p-4 text-center">
             <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.waitingPayment') }}</p>
           </div>
         </template>
 
         <!-- 支付宝跳转状态 -->
         <template v-else-if="redirecting">
-          <div class="card p-6">
+          <div class="payment-surface p-6">
             <div class="flex flex-col items-center space-y-4 py-4">
               <div class="h-10 w-10 animate-spin rounded-full border-4 border-[#00AEEF] border-t-transparent"></div>
               <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.payInNewWindowHint') }}</p>
@@ -54,7 +54,7 @@
 
         <!-- 成功状态 -->
         <template v-else-if="stripeSuccess">
-          <div class="card p-6 text-center">
+          <div class="payment-surface p-6 text-center">
             <div class="flex flex-col items-center gap-3 py-4">
               <div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
                 <Icon name="check" size="lg" class="text-green-500" />
@@ -67,7 +67,7 @@
 
         <!-- 无指定方式或未知方式时展示完整 Payment Element -->
         <template v-else-if="showPaymentElement">
-          <div class="card p-6">
+          <div class="payment-surface p-6">
             <div id="stripe-payment-element" class="min-h-[200px]"></div>
             <p v-if="stripeError" class="mt-4 text-sm text-red-600 dark:text-red-400">{{ stripeError }}</p>
             <button class="btn btn-stripe mt-6 w-full py-3 text-base" :disabled="stripeSubmitting || !stripeReady" @click="handleGenericPay">
@@ -79,14 +79,14 @@
             </button>
           </div>
           <div class="text-center">
-            <button class="btn btn-secondary" @click="router.push('/purchase')">{{ t('payment.result.backToRecharge') }}</button>
+            <button class="btn btn-secondary payment-secondary" @click="router.push('/purchase')">{{ t('payment.result.backToRecharge') }}</button>
           </div>
         </template>
 
         <!-- 错误状态 -->
-        <div v-if="stripeError && !showPaymentElement" class="card p-4">
+        <div v-if="stripeError && !showPaymentElement" class="payment-surface p-4">
           <p class="text-sm text-red-600 dark:text-red-400">{{ stripeError }}</p>
-          <button class="btn btn-secondary mt-3 w-full" @click="router.push('/purchase')">{{ t('payment.result.backToRecharge') }}</button>
+          <button class="btn btn-secondary payment-secondary mt-3 w-full" @click="router.push('/purchase')">{{ t('payment.result.backToRecharge') }}</button>
         </div>
       </template>
     </div>
@@ -312,3 +312,52 @@ onUnmounted(() => {
   if (pollTimer) clearInterval(pollTimer)
 })
 </script>
+
+<style scoped>
+.payment-page {
+  --payment-surface: rgba(255, 255, 255, 0.84);
+  --payment-border: rgba(15, 23, 42, 0.08);
+  --payment-shadow: 0 20px 42px -32px rgba(15, 23, 42, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+:global(.dark) .payment-page {
+  --payment-surface: rgba(10, 18, 32, 0.82);
+  --payment-border: rgba(148, 163, 184, 0.14);
+  --payment-shadow: 0 24px 48px -32px rgba(0, 0, 0, 0.88), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.payment-canvas {
+  background-color: #f6f9fc;
+}
+
+:global(.dark) .payment-canvas {
+  background-color: #050b14;
+}
+
+.payment-surface {
+  border: 1px solid var(--payment-border);
+  border-radius: 8px;
+  background-color: var(--payment-surface);
+  box-shadow: var(--payment-shadow);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+.payment-secondary {
+  border-color: var(--payment-border);
+  background-color: var(--payment-surface);
+  box-shadow: none;
+}
+
+.payment-secondary:hover {
+  border-color: rgba(20, 184, 166, 0.5);
+  background-color: rgba(20, 184, 166, 0.08);
+}
+
+:global(.dark) .payment-secondary {
+  background-color: var(--payment-surface);
+}
+
+:global(.dark) .payment-secondary:hover {
+  background-color: rgba(20, 184, 166, 0.12);
+}
+</style>

@@ -209,7 +209,9 @@
       </p>
     </template>
     <template #afterContent>
-      <ExperienceCollection compact />
+      <div class="login-experience-shell">
+        <ExperienceCollection compact :limit="3" />
+      </div>
       <Rest2BuildBrandFooter class="mt-8 overflow-hidden rounded-lg" />
     </template>
   </AuthLayout>
@@ -738,6 +740,26 @@ function handle2FACancel(): void {
 </script>
 
 <style scoped>
+.login-experience-shell :deep(.experience-collection-compact) {
+  padding: 0;
+}
+
+.login-experience-shell :deep(.experience-grid) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 960px) {
+  .login-experience-shell :deep(.experience-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .login-experience-shell :deep(.experience-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.3s ease;

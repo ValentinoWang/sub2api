@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-dark-900">
+  <div class="payment-page payment-canvas flex min-h-screen items-center justify-center px-4">
     <div class="w-full max-w-md space-y-6">
       <!-- Loading -->
       <div v-if="loading" class="flex items-center justify-center py-20">
@@ -33,7 +33,7 @@
           </p>
         </div>
         <!-- Order Info -->
-        <div v-if="order" class="rounded-xl bg-white p-5 shadow-sm dark:bg-dark-800">
+        <div v-if="order" class="payment-surface p-5">
           <div class="space-y-3 text-sm">
             <div v-if="hasOrderId(order)" class="flex justify-between">
               <span class="text-gray-500 dark:text-gray-400">{{ t('payment.orders.orderId') }}</span>
@@ -70,7 +70,7 @@
           </div>
         </div>
         <!-- EasyPay return info (when no order loaded) -->
-        <div v-else-if="returnInfo" class="rounded-xl bg-white p-5 shadow-sm dark:bg-dark-800">
+        <div v-else-if="returnInfo" class="payment-surface p-5">
           <div class="space-y-3 text-sm">
             <div v-if="returnInfo.outTradeNo" class="flex justify-between">
               <span class="text-gray-500 dark:text-gray-400">{{ t('payment.orders.orderId') }}</span>
@@ -88,7 +88,7 @@
         </div>
         <!-- Actions -->
         <div class="flex gap-3">
-          <button class="btn btn-secondary flex-1" @click="router.push('/purchase')">{{ t('payment.result.backToRecharge') }}</button>
+          <button class="btn btn-secondary payment-secondary flex-1" @click="router.push('/purchase')">{{ t('payment.result.backToRecharge') }}</button>
           <button class="btn btn-primary flex-1" @click="router.push('/orders')">{{ t('payment.result.viewOrders') }}</button>
         </div>
       </template>
@@ -461,3 +461,52 @@ onBeforeUnmount(() => {
   clearStatusRefreshTimer()
 })
 </script>
+
+<style scoped>
+.payment-page {
+  --payment-surface: rgba(255, 255, 255, 0.84);
+  --payment-border: rgba(15, 23, 42, 0.08);
+  --payment-shadow: 0 20px 42px -32px rgba(15, 23, 42, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+:global(.dark) .payment-page {
+  --payment-surface: rgba(10, 18, 32, 0.82);
+  --payment-border: rgba(148, 163, 184, 0.14);
+  --payment-shadow: 0 24px 48px -32px rgba(0, 0, 0, 0.88), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.payment-canvas {
+  background-color: #f6f9fc;
+}
+
+:global(.dark) .payment-canvas {
+  background-color: #050b14;
+}
+
+.payment-surface {
+  border: 1px solid var(--payment-border);
+  border-radius: 8px;
+  background-color: var(--payment-surface);
+  box-shadow: var(--payment-shadow);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+.payment-secondary {
+  border-color: var(--payment-border);
+  background-color: var(--payment-surface);
+  box-shadow: none;
+}
+
+.payment-secondary:hover {
+  border-color: rgba(20, 184, 166, 0.5);
+  background-color: rgba(20, 184, 166, 0.08);
+}
+
+:global(.dark) .payment-secondary {
+  background-color: var(--payment-surface);
+}
+
+:global(.dark) .payment-secondary:hover {
+  background-color: rgba(20, 184, 166, 0.12);
+}
+</style>

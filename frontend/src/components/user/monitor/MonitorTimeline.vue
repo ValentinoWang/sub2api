@@ -1,7 +1,7 @@
 <template>
-  <div class="mt-4 pt-3 border-t border-gray-100 dark:border-dark-700/60">
+  <div class="monitor-timeline mt-4 border-t pt-3">
     <div
-      class="flex justify-between text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2"
+      class="monitor-timeline-meta mb-2 flex justify-between text-[10px] font-semibold uppercase tracking-widest"
     >
       <span>{{ t('monitorCommon.history60pts', { n: length }) }}</span>
       <span class="tabular-nums">{{ t('monitorCommon.nextUpdateIn', { n: countdownSeconds }) }}</span>
@@ -9,7 +9,7 @@
 
     <div
       v-if="maintenance"
-      class="flex h-5 w-full items-center justify-center rounded border border-dashed border-gray-300 dark:border-dark-600 text-[10px] uppercase tracking-widest text-gray-400"
+      class="monitor-timeline-maintenance flex h-5 w-full items-center justify-center rounded border border-dashed text-[10px] uppercase tracking-widest"
     >
       {{ t('monitorCommon.maintenancePaused') }}
     </div>
@@ -25,7 +25,7 @@
     </div>
 
     <div
-      class="mt-1 flex justify-between text-[9px] uppercase tracking-widest text-gray-400"
+      class="monitor-timeline-meta mt-1 flex justify-between text-[9px] uppercase tracking-widest"
     >
       <span>{{ t('monitorCommon.past') }}</span>
       <span>{{ t('monitorCommon.now') }}</span>
@@ -113,3 +113,18 @@ const displayBars = computed<Bar[]>(() => {
   return bars
 })
 </script>
+
+<style scoped>
+.monitor-timeline {
+  border-color: var(--user-border);
+}
+
+.monitor-timeline-meta,
+.monitor-timeline-maintenance {
+  color: var(--user-muted);
+}
+
+.monitor-timeline-maintenance {
+  border-color: var(--user-border);
+}
+</style>

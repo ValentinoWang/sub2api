@@ -32,20 +32,9 @@
       </div>
     </main>
 
-    <footer
-      class="relative z-10"
-      :class="$slots.footer ? '' : 'border-t border-gray-200/60 px-6 py-8 dark:border-white/5'"
-    >
+    <footer class="relative z-10">
       <slot name="footer">
-        <div class="mx-auto flex max-w-5xl flex-col gap-4 text-center text-xs text-gray-500 dark:text-dark-400 sm:text-left">
-          <p>{{ t('marketing.disclaimer') }}</p>
-          <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
-            <router-link v-for="link in footerLinks" :key="link.to" :to="link.to" class="hover:text-gray-900 dark:hover:text-white">
-              {{ link.label }}
-            </router-link>
-          </div>
-          <p>&copy; {{ currentYear }} <span class="font-mono">{{ BRAND_DOMAIN }}</span> · {{ t('marketing.nonOfficialShort') }}</p>
-        </div>
+        <Rest2BuildBrandFooter />
       </slot>
     </footer>
   </div>
@@ -58,7 +47,8 @@ import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores'
 import BrandWordmark from '@/components/common/BrandWordmark.vue'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
-import { BRAND_DOMAIN, PUBLIC_PAGES, resolveBrandName } from '@/constants/brand'
+import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
+import { PUBLIC_PAGES, resolveBrandName } from '@/constants/brand'
 import { sanitizeUrl } from '@/utils/url'
 
 const { t } = useI18n()
@@ -69,7 +59,6 @@ const siteName = computed(() => resolveBrandName(appStore.cachedPublicSettings?.
 const siteLogo = computed(() =>
   sanitizeUrl(appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true })
 )
-const currentYear = computed(() => new Date().getFullYear())
 const widePublicPaths: ReadonlySet<string> = new Set([
   PUBLIC_PAGES.experiences,
   PUBLIC_PAGES.codex,
@@ -90,14 +79,6 @@ const navLinks = computed(() => [
   { to: PUBLIC_PAGES.status, label: t('marketing.nav.status') }
 ])
 
-const footerLinks = computed(() => [
-  { to: PUBLIC_PAGES.home, label: t('marketing.pages.common.backHome') },
-  { to: PUBLIC_PAGES.openaiCompat, label: t('marketing.nav.openaiCompat') },
-  { to: PUBLIC_PAGES.security, label: t('marketing.nav.security') },
-  { to: PUBLIC_PAGES.verify, label: t('marketing.nav.verify') },
-  { to: PUBLIC_PAGES.models, label: t('marketing.nav.models') },
-  { to: PUBLIC_PAGES.keyUsage, label: t('marketing.nav.keyUsage') }
-])
 </script>
 
 <style scoped>

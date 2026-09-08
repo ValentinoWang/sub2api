@@ -88,6 +88,7 @@ describe('HomeView compact mode', () => {
 
     expect(wrapper.get('#custom-home').text()).toBe('Custom home')
     expect(wrapper.find('[data-testid="compact-home"]').exists()).toBe(false)
+    expect(wrapper.find('[aria-label="rest2build 公司标语与传播口号"]').exists()).toBe(true)
   })
 
   it('renders custom URL content ahead of compact mode', () => {
@@ -98,6 +99,7 @@ describe('HomeView compact mode', () => {
 
     expect(wrapper.get('iframe').attributes('src')).toBe('https://example.com/home')
     expect(wrapper.find('[data-testid="compact-home"]').exists()).toBe(false)
+    expect(wrapper.find('[aria-label="rest2build 公司标语与传播口号"]').exists()).toBe(true)
   })
 
   it('treats whitespace-only custom content as empty and selects compact mode', () => {
@@ -123,8 +125,19 @@ describe('HomeView compact mode', () => {
     expect(html.indexOf('marketing.modes.title')).toBeGreaterThan(html.indexOf('data-testid="experience-sharing"'))
   })
 
+  it('sends account-service visitors from the access-mode section to memberships', () => {
+    const membershipLink = mountHome().get('a[href="https://www.ai.rest2build.lol/memberships"]')
+
+    expect(membershipLink.classes()).toContain('home-mode-membership-link')
+  })
+
   it('renders one footer on the default home', () => {
     expect(mountHome().findAll('footer')).toHaveLength(1)
+  })
+
+  it('uses the rest2build brand statement for default and compact footers', () => {
+    expect(mountHome().find('[aria-label="rest2build 公司标语与传播口号"]').exists()).toBe(true)
+    expect(mountHome({ compact_home_enabled: true }).find('[aria-label="rest2build 公司标语与传播口号"]').exists()).toBe(true)
   })
 
   it('links unauthenticated visitors to login', () => {

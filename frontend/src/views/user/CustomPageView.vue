@@ -1,7 +1,7 @@
 <template>
   <AppLayout>
     <div class="custom-page-layout">
-      <div class="card flex-1 min-h-0 overflow-hidden">
+      <div class="card custom-page-card flex-1 min-h-0 overflow-hidden">
         <div v-if="loading" class="flex h-full items-center justify-center py-12">
           <div
             class="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"
@@ -10,18 +10,18 @@
 
         <div
           v-else-if="!menuItem"
-          class="flex h-full items-center justify-center p-10 text-center"
+          class="custom-page-state flex h-full items-center justify-center p-10 text-center"
         >
           <div class="max-w-md">
             <div
-              class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-dark-700"
+              class="custom-page-state-icon mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
             >
-              <Icon name="link" size="lg" class="text-gray-400" />
+              <Icon name="link" size="lg" class="custom-page-state-icon-mark" />
             </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 class="custom-page-state-title text-lg font-semibold">
               {{ t('customPage.notFoundTitle') }}
             </h3>
-            <p class="mt-2 text-sm text-gray-500 dark:text-dark-400">
+            <p class="custom-page-state-description mt-2 text-sm">
               {{ t('customPage.notFoundDesc') }}
             </p>
           </div>
@@ -77,17 +77,17 @@
         </div>
 
         <!-- URL not configured -->
-        <div v-else-if="!isValidUrl" class="flex h-full items-center justify-center p-10 text-center">
+        <div v-else-if="!isValidUrl" class="custom-page-state flex h-full items-center justify-center p-10 text-center">
           <div class="max-w-md">
             <div
-              class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-dark-700"
+              class="custom-page-state-icon mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
             >
-              <Icon name="link" size="lg" class="text-gray-400" />
+              <Icon name="link" size="lg" class="custom-page-state-icon-mark" />
             </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 class="custom-page-state-title text-lg font-semibold">
               {{ t('customPage.notConfiguredTitle') }}
             </h3>
-            <p class="mt-2 text-sm text-gray-500 dark:text-dark-400">
+            <p class="custom-page-state-description mt-2 text-sm">
               {{ t('customPage.notConfiguredDesc') }}
             </p>
           </div>
@@ -376,7 +376,34 @@ onUnmounted(() => {
 <style scoped>
 .custom-page-layout {
   @apply flex flex-col;
-  height: calc(100vh - 64px - 4rem);
+  height: var(--user-content-viewport-height, calc(100vh - 64px - 4rem));
+}
+
+:global(.user-brand-shell) .custom-page-layout {
+  color: var(--user-foreground);
+}
+
+:global(.user-brand-shell) .custom-page-card {
+  background-color: var(--user-surface);
+  border-color: var(--user-border);
+  border-radius: 8px;
+  color: var(--user-foreground);
+}
+
+:global(.user-brand-shell) .custom-page-state-icon {
+  background-color: var(--user-hover);
+}
+
+:global(.user-brand-shell) .custom-page-state-icon-mark {
+  color: var(--user-muted);
+}
+
+:global(.user-brand-shell) .custom-page-state-title {
+  color: var(--user-foreground);
+}
+
+:global(.user-brand-shell) .custom-page-state-description {
+  color: var(--user-muted);
 }
 
 .toc-sidebar {
@@ -385,6 +412,11 @@ onUnmounted(() => {
   min-width: 160px;
   max-width: 280px;
   overflow: hidden;
+}
+
+:global(.user-brand-shell) .toc-sidebar {
+  background-color: var(--user-canvas);
+  border-color: var(--user-border);
 }
 
 @media (max-width: 640px) {
@@ -404,12 +436,29 @@ onUnmounted(() => {
   @apply flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-dark-600;
 }
 
+:global(.user-brand-shell) .toc-header {
+  border-color: var(--user-border);
+}
+
 .toc-title {
   @apply text-sm font-semibold text-gray-700 dark:text-dark-200;
 }
 
+:global(.user-brand-shell) .toc-title {
+  color: var(--user-foreground);
+}
+
 .toc-close-btn {
   @apply p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-dark-200 hover:bg-gray-200 dark:hover:bg-dark-600 transition-colors;
+}
+
+:global(.user-brand-shell) .toc-close-btn {
+  color: var(--user-muted);
+}
+
+:global(.user-brand-shell) .toc-close-btn:hover {
+  color: var(--user-foreground);
+  background-color: var(--user-hover);
 }
 
 .toc-nav {
@@ -421,8 +470,21 @@ onUnmounted(() => {
   @apply text-gray-600 dark:text-dark-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-dark-600;
 }
 
+:global(.user-brand-shell) .toc-item {
+  color: var(--user-muted);
+}
+
+:global(.user-brand-shell) .toc-item:hover {
+  color: var(--user-foreground);
+  background-color: var(--user-hover);
+}
+
 .toc-item.toc-active {
   @apply text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 font-medium;
+}
+
+:global(.user-brand-shell) .toc-item.toc-active {
+  background-color: var(--user-hover);
 }
 
 .toc-level-1 { padding-left: 8px; }
@@ -437,6 +499,16 @@ onUnmounted(() => {
   @apply shadow-sm transition-colors cursor-pointer;
 }
 
+:global(.user-brand-shell) .toc-toggle-btn {
+  color: var(--user-foreground);
+  background-color: var(--user-surface);
+  border-color: var(--user-border);
+}
+
+:global(.user-brand-shell) .toc-toggle-btn:hover {
+  background-color: var(--user-hover);
+}
+
 .custom-embed-shell {
   @apply relative;
   @apply h-full w-full overflow-hidden rounded-2xl;
@@ -444,9 +516,21 @@ onUnmounted(() => {
   @apply p-0;
 }
 
+:global(.user-brand-shell) .custom-embed-shell {
+  background: var(--user-canvas);
+  border-radius: 8px;
+}
+
 .custom-open-fab {
   @apply absolute right-3 top-3 z-10;
   @apply shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-dark-800/80;
+}
+
+:global(.user-brand-shell) .custom-open-fab {
+  color: var(--user-foreground);
+  background-color: var(--user-surface);
+  border-color: var(--user-border);
+  border-radius: 6px;
 }
 
 .custom-embed-frame {
@@ -466,24 +550,38 @@ onUnmounted(() => {
   line-height: 1.7;
   color: inherit;
 }
+.user-brand-shell .markdown-page-content {
+  color: var(--user-foreground);
+  background-color: var(--user-canvas);
+}
 .markdown-page-content h1 { @apply text-3xl font-bold mt-8 mb-4 pb-2 border-b border-gray-200 dark:border-dark-600; }
 .markdown-page-content h2 { @apply text-2xl font-bold mt-6 mb-3; }
 .markdown-page-content h3 { @apply text-xl font-semibold mt-5 mb-2; }
 .markdown-page-content h4 { @apply text-lg font-semibold mt-4 mb-2; }
+.user-brand-shell .markdown-page-content h1,
+.user-brand-shell .markdown-page-content h2,
+.user-brand-shell .markdown-page-content h3,
+.user-brand-shell .markdown-page-content h4 { color: var(--user-foreground); }
+.user-brand-shell .markdown-page-content h1 { border-color: var(--user-border); }
 .markdown-page-content p { @apply mb-4; }
 .markdown-page-content ul { @apply list-disc pl-6 mb-4; }
 .markdown-page-content ol { @apply list-decimal pl-6 mb-4; }
 .markdown-page-content li { @apply mb-1; }
 .markdown-page-content a { @apply text-primary-500 hover:text-primary-600 underline; }
 .markdown-page-content blockquote { @apply border-l-4 border-gray-300 dark:border-dark-500 pl-4 italic text-gray-600 dark:text-dark-300 my-4; }
+.user-brand-shell .markdown-page-content blockquote { border-color: var(--user-border); color: var(--user-muted); }
 .markdown-page-content img { @apply max-w-full h-auto rounded-lg my-4; }
 .markdown-page-content table { @apply w-full border-collapse my-4; }
 .markdown-page-content th { @apply border border-gray-300 dark:border-dark-500 px-3 py-2 bg-gray-50 dark:bg-dark-700 font-semibold text-left; }
 .markdown-page-content td { @apply border border-gray-300 dark:border-dark-500 px-3 py-2; }
+.user-brand-shell .markdown-page-content th { background-color: var(--user-surface); border-color: var(--user-border); }
+.user-brand-shell .markdown-page-content td { border-color: var(--user-border); }
 .markdown-page-content code { @apply bg-gray-100 dark:bg-dark-700 px-1.5 py-0.5 rounded text-sm font-mono; }
+.user-brand-shell .markdown-page-content code { background-color: var(--user-hover); color: var(--user-foreground); }
 .markdown-page-content pre { @apply bg-gray-900 dark:bg-dark-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4 relative; }
 .markdown-page-content pre code { @apply bg-transparent p-0 text-inherit; }
 .markdown-page-content hr { @apply my-6 border-gray-200 dark:border-dark-600; }
+.user-brand-shell .markdown-page-content hr { border-color: var(--user-border); }
 
 .copy-btn {
   position: absolute;

@@ -1,7 +1,7 @@
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-slate-50 p-4 dark:bg-slate-950">
+  <div class="payment-page payment-canvas flex min-h-screen items-center justify-center p-4">
     <div
-      class="w-full max-w-md space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-700 dark:bg-slate-900"
+      class="payment-surface w-full max-w-md space-y-4 p-6"
     >
       <!-- Amount + Order ID -->
       <div v-if="amount" class="text-center">
@@ -19,7 +19,7 @@
           {{ error }}
         </div>
         <button
-          class="w-full text-sm underline dark:text-blue-400 dark:hover:text-blue-300"
+          class="payment-text-action w-full text-sm underline"
           :style="{ color: methodColor }"
           @click="closeWindow"
         >
@@ -32,7 +32,7 @@
         <div class="text-5xl text-green-600 dark:text-green-400">✓</div>
         <p class="text-sm text-gray-500 dark:text-slate-400">{{ t('payment.result.success') }}</p>
         <button
-          class="text-sm underline dark:text-blue-400 dark:hover:text-blue-300"
+          class="payment-text-action text-sm underline"
           :style="{ color: methodColor }"
           @click="closeWindow"
         >
@@ -196,3 +196,49 @@ function startPolling() {
   }, 3000)
 }
 </script>
+
+<style scoped>
+.payment-page {
+  --payment-surface: rgba(255, 255, 255, 0.84);
+  --payment-border: rgba(15, 23, 42, 0.08);
+  --payment-shadow: 0 20px 42px -32px rgba(15, 23, 42, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+:global(.dark) .payment-page {
+  --payment-surface: rgba(10, 18, 32, 0.82);
+  --payment-border: rgba(148, 163, 184, 0.14);
+  --payment-shadow: 0 24px 48px -32px rgba(0, 0, 0, 0.88), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.payment-canvas {
+  background-color: #f6f9fc;
+}
+
+:global(.dark) .payment-canvas {
+  background-color: #050b14;
+}
+
+.payment-surface {
+  border: 1px solid var(--payment-border);
+  border-radius: 8px;
+  background-color: var(--payment-surface);
+  box-shadow: var(--payment-shadow);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+.payment-text-action {
+  font-weight: 500;
+  text-underline-offset: 0.25rem;
+  transition: opacity 0.2s ease;
+}
+
+.payment-text-action:hover {
+  opacity: 0.8;
+}
+
+.payment-text-action:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid rgba(20, 184, 166, 0.72);
+  outline-offset: 3px;
+}
+</style>

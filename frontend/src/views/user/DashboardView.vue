@@ -42,26 +42,6 @@ onMounted(() => { refreshAll() })
 </script>
 
 <style scoped>
-.dashboard-layout {
-  --dashboard-surface: #ffffff;
-  --dashboard-border: #dfe7e5;
-  --dashboard-hover: #f0f7f5;
-  --dashboard-accent: #0f766e;
-  background: #f5f8f7;
-}
-
-:global(.dark) .dashboard-layout {
-  --dashboard-surface: #131b1d;
-  --dashboard-border: #293638;
-  --dashboard-hover: #1b2c2c;
-  --dashboard-accent: #5eead4;
-  background: #0c1315;
-}
-
-.dashboard-layout :deep(.bg-mesh-gradient) {
-  display: none;
-}
-
 .dashboard-content {
   display: flex;
   flex-direction: column;

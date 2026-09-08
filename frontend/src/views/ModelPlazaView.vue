@@ -5,11 +5,14 @@
   </AppLayout>
 
   <!-- 独立形态:自带导航条(logo/站名 + 登录/回后台) -->
-  <div v-else class="min-h-screen bg-gray-50 dark:bg-dark-950">
+  <div v-else class="model-plaza-page flex min-h-screen flex-col">
     <PlazaNavBar />
-    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <ModelPlazaContent :response="data" :loading="loading" :error="loadFailed" />
     </main>
+    <footer>
+      <Rest2BuildBrandFooter />
+    </footer>
   </div>
 </template>
 
@@ -17,6 +20,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
 import PlazaNavBar from '@/components/modelPlaza/PlazaNavBar.vue'
 import ModelPlazaContent from '@/components/modelPlaza/ModelPlazaContent.vue'
 import { getModelPlaza, type ModelPlazaResponse } from '@/api/modelPlaza'
@@ -46,3 +50,15 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.model-plaza-page {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(20, 184, 166, 0.14), transparent 60%), #f6f9fc;
+}
+
+:global(.dark) .model-plaza-page {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(20, 184, 166, 0.18), transparent 60%), #050b14;
+}
+</style>
