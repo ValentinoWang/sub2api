@@ -52,7 +52,10 @@ function mountHome(settings: Record<string, unknown> = {}) {
         RouterLink: RouterLinkStub,
         LocaleSwitcher: { template: '<div data-testid="locale-switcher" />' },
         Icon: { template: '<span data-testid="icon" />' },
-        ExperienceCollection: { template: '<section data-testid="experience-sharing" />' },
+        ExperienceCollection: {
+          props: ['limit', 'columns'],
+          template: '<section data-testid="experience-sharing" :data-limit="limit" :data-columns="columns" />',
+        },
       },
     },
   })
@@ -123,6 +126,13 @@ describe('HomeView compact mode', () => {
     expect(wrapper.get('[data-home-layout-revision="experience-before-access-modes-v1"]')).toBeTruthy()
     expect(html.indexOf('data-testid="experience-sharing"')).toBeGreaterThan(-1)
     expect(html.indexOf('marketing.modes.title')).toBeGreaterThan(html.indexOf('data-testid="experience-sharing"'))
+  })
+
+  it('features three experience cards in a three-column home collection', () => {
+    const experienceCollection = mountHome().get('[data-testid="experience-sharing"]')
+
+    expect(experienceCollection.attributes('data-limit')).toBe('3')
+    expect(experienceCollection.attributes('data-columns')).toBe('3')
   })
 
   it('sends account-service visitors from the access-mode section to memberships', () => {

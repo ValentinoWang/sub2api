@@ -333,7 +333,7 @@
         </section>
 
         <!-- Featured experience: place reusable help before a visitor chooses an access mode. -->
-        <ExperienceCollection class="mb-20" />
+        <ExperienceCollection class="mb-20" :limit="3" :columns="3" />
 
         <!-- Two access modes -->
         <section class="mb-20">

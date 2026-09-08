@@ -12,7 +12,7 @@
       </router-link>
     </div>
 
-    <div class="experience-grid">
+    <div class="experience-grid" :class="{ 'experience-grid--three-columns': columns === 3 }">
       <ExperienceCard v-for="experience in items" :key="experience.id" :experience="experience" />
     </div>
   </section>
@@ -29,10 +29,12 @@ const props = withDefaults(defineProps<{
   compact?: boolean
   showBrowseLink?: boolean
   limit?: number
+  columns?: 2 | 3
 }>(), {
   compact: false,
   showBrowseLink: true,
   limit: 1,
+  columns: 2,
 })
 
 const { t } = useI18n()
@@ -52,8 +54,10 @@ const items = computed(() => experiences.slice(0, props.limit))
 .experience-browse-link:focus-visible { outline: 2px solid #0f766e; outline-offset: 3px; border-radius: 4px; }
 .dark .experience-browse-link { color: #5eead4; }
 .experience-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.experience-grid--three-columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .experience-collection-compact { padding: 18px; }
 .experience-collection-compact .experience-collection-heading { margin-bottom: 14px; }
 .experience-collection-compact h2 { font-size: 18px; }
+@media (max-width: 960px) { .experience-grid--three-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .experience-collection-heading { align-items: flex-start; flex-direction: column; gap: 8px; }.experience-collection h2 { font-size: 21px; }.experience-grid { grid-template-columns: minmax(0, 1fr); }.experience-collection-compact { padding: 16px; } }
 </style>
