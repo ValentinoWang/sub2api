@@ -7,9 +7,10 @@ import "context"
 type HTTPUpstreamProfile string
 
 const (
-	HTTPUpstreamProfileDefault HTTPUpstreamProfile = ""
-	HTTPUpstreamProfileOpenAI  HTTPUpstreamProfile = "openai"
-	HTTPUpstreamProfileGrok    HTTPUpstreamProfile = "grok"
+	HTTPUpstreamProfileDefault    HTTPUpstreamProfile = ""
+	HTTPUpstreamProfileOpenAI     HTTPUpstreamProfile = "openai"
+	HTTPUpstreamProfileGrok       HTTPUpstreamProfile = "grok"
+	HTTPUpstreamProfileLongStream HTTPUpstreamProfile = "long_stream"
 )
 
 type httpUpstreamProfileContextKey struct{}
@@ -27,6 +28,13 @@ func WithHTTPUpstreamProfile(ctx context.Context, profile HTTPUpstreamProfile) c
 	return context.WithValue(ctx, httpUpstreamProfileContextKey{}, profile)
 }
 
+func withLongStreamHTTPUpstreamProfile(ctx context.Context, stream bool) context.Context {
+	if !stream {
+		return ctx
+	}
+	return WithHTTPUpstreamProfile(ctx, HTTPUpstreamProfileLongStream)
+}
+
 // HTTPUpstreamProfileFromContext resolves the upstream transport profile from ctx.
 func HTTPUpstreamProfileFromContext(ctx context.Context) HTTPUpstreamProfile {
 	if ctx == nil {
@@ -37,7 +45,7 @@ func HTTPUpstreamProfileFromContext(ctx context.Context) HTTPUpstreamProfile {
 		return HTTPUpstreamProfileDefault
 	}
 	switch profile {
-	case HTTPUpstreamProfileOpenAI, HTTPUpstreamProfileGrok:
+	case HTTPUpstreamProfileOpenAI, HTTPUpstreamProfileGrok, HTTPUpstreamProfileLongStream:
 		return profile
 	default:
 		return HTTPUpstreamProfileDefault

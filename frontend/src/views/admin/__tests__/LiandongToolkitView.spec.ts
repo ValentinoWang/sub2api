@@ -276,6 +276,28 @@ describe('LiandongToolkitView', () => {
     expect(wrapper.get('[data-testid="run-button"]').attributes('disabled')).toBeDefined()
   })
 
+  it('blocks a run when preview returns a non-balance grant type', async () => {
+    previewJob.mockResolvedValue({
+      products: [
+        previewItem(42, {
+          mapping: {
+            ...previewItem(42).mapping,
+            grant_type: 'subscription',
+          },
+        }),
+      ],
+    })
+    const wrapper = mountView()
+    await flushPromises()
+
+    await wrapper.get('[data-testid="preview-button"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="preview-section"]').text()).toContain('LDXP_PREVIEW_GRANT_TYPE_INVALID')
+    expect(wrapper.get('[data-testid="run-button"]').attributes('disabled')).toBeDefined()
+    expect(runJob).not.toHaveBeenCalled()
+  })
+
   it('discards an in-flight preview when the requested selection changes', async () => {
     let resolvePreview!: (value: unknown) => void
     previewJob.mockImplementation(() => new Promise(resolve => { resolvePreview = resolve }))

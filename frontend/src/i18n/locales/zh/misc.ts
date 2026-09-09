@@ -43,6 +43,7 @@ export default {
 
   // Version Badge
   version: {
+    publicRelease: '产品 {release} · 技术 v{technical}',
     currentVersion: '当前版本',
     latestVersion: '最新版本',
     upToDate: '已是最新版本',
@@ -140,7 +141,7 @@ export default {
       targetStock: '目标未售库存',
       enabled: '启用',
       empty: '暂无已配置商品映射',
-      priceHint: '销售价是链动小铺收款金额；入账余额是 Sub2API 兑换后的美元余额，两者是独立字段。目标库存默认 50000。'
+      priceHint: 'LDXP 商品映射仅发放余额。销售价是链动小铺收款金额；入账余额是 Sub2API 兑换后的美元余额，两者是独立字段。目标库存默认 50000。'
     },
     goods: {
       title: '远程商品',

@@ -682,6 +682,153 @@ func TestPaymentAmountToleranceForThreeDecimalCurrency(t *testing.T) {
 	assert.InDelta(t, 0.0005, paymentAmountToleranceForCurrency("KWD"), 1e-12)
 }
 
+func TestFirstTopupBonusClaimAndBalanceCommitAtomicallyAndRetry(t *testing.T) {
+	ctx := context.Background()
+	client := newPaymentConfigServiceTestClient(t)
+	_, err := client.ExecContext(ctx, `CREATE TABLE user_first_topup_bonus (
+		user_id INTEGER PRIMARY KEY,
+		order_id INTEGER NOT NULL,
+		bonus_amount REAL NOT NULL,
+		granted_at DATETIME NOT NULL
+	)`)
+	require.NoError(t, err)
+	user, err := client.User.Create().
+		SetEmail("first-topup-atomic@example.com").
+		SetPasswordHash("hash").
+		SetUsername("first-topup-atomic").
+		SetBalance(3).
+		SetTotalRecharged(4).
+		Save(ctx)
+	require.NoError(t, err)
+
+	trigger := `CREATE TRIGGER fail_first_topup_bonus_credit
+		BEFORE UPDATE OF balance ON users
+		WHEN NEW.id = ` + strconv.FormatInt(user.ID, 10) + `
+		BEGIN SELECT RAISE(ABORT, 'forced balance failure'); END`
+	_, err = client.ExecContext(ctx, trigger)
+	require.NoError(t, err)
+	svc := &PaymentService{entClient: client}
+
+	claimed, err := svc.claimAndCreditFirstTopupBonus(ctx, user.ID, 101, 8)
+	require.ErrorContains(t, err, "forced balance failure")
+	require.False(t, claimed)
+	assertFirstTopupClaimCount(t, ctx, client, user.ID, 0)
+	unchanged, err := client.User.Get(ctx, user.ID)
+	require.NoError(t, err)
+	require.Equal(t, 3.0, unchanged.Balance)
+	require.Equal(t, 4.0, unchanged.TotalRecharged)
+
+	_, err = client.ExecContext(ctx, "DROP TRIGGER fail_first_topup_bonus_credit")
+	require.NoError(t, err)
+	claimed, err = svc.claimAndCreditFirstTopupBonus(ctx, user.ID, 101, 8)
+	require.NoError(t, err)
+	require.True(t, claimed)
+	assertFirstTopupClaimCount(t, ctx, client, user.ID, 1)
+	credited, err := client.User.Get(ctx, user.ID)
+	require.NoError(t, err)
+	require.Equal(t, 11.0, credited.Balance)
+	require.Equal(t, 12.0, credited.TotalRecharged)
+
+	claimed, err = svc.claimAndCreditFirstTopupBonus(ctx, user.ID, 102, 8)
+	require.NoError(t, err)
+	require.False(t, claimed)
+	credited, err = client.User.Get(ctx, user.ID)
+	require.NoError(t, err)
+	require.Equal(t, 11.0, credited.Balance)
+	require.Equal(t, 12.0, credited.TotalRecharged)
+}
+
+func TestExecuteBalanceFulfillmentRetriesBonusWithoutRedeemingAgain(t *testing.T) {
+	ctx := context.Background()
+	client := newPaymentConfigServiceTestClient(t)
+	ensurePaymentAuditOrderActionUniqueIndex(t, ctx, client)
+	_, err := client.ExecContext(ctx, `CREATE TABLE user_first_topup_bonus (
+		user_id INTEGER PRIMARY KEY,
+		order_id INTEGER NOT NULL,
+		bonus_amount REAL NOT NULL,
+		granted_at DATETIME NOT NULL
+	)`)
+	require.NoError(t, err)
+	order := createPaymentFulfillmentSubscriptionOrder(t, ctx, client, OrderStatusPaid, time.Now())
+	order, err = client.PaymentOrder.UpdateOneID(order.ID).
+		SetOrderType(payment.OrderTypeBalance).
+		ClearPlanID().
+		ClearSubscriptionGroupID().
+		ClearSubscriptionDays().
+		Save(ctx)
+	require.NoError(t, err)
+
+	trigger := `CREATE TRIGGER fail_first_topup_bonus_fulfillment
+		BEFORE UPDATE OF balance ON users
+		WHEN NEW.id = ` + strconv.FormatInt(order.UserID, 10) + `
+		BEGIN SELECT RAISE(ABORT, 'forced fulfillment bonus failure'); END`
+	_, err = client.ExecContext(ctx, trigger)
+	require.NoError(t, err)
+
+	redeemRepo := &paymentFulfillmentRedeemRepo{}
+	mainCreditCalls := 0
+	userRepo := &mockUserRepo{getByIDUser: &User{ID: order.UserID}}
+	userRepo.updateBalanceFn = func(_ context.Context, id int64, amount float64) error {
+		require.Equal(t, order.UserID, id)
+		require.Equal(t, order.Amount, amount)
+		mainCreditCalls++
+		return nil
+	}
+	redeemService := NewRedeemService(
+		redeemRepo,
+		userRepo,
+		nil,
+		&paymentFulfillmentRedeemCacheStub{},
+		nil,
+		client,
+		nil,
+		nil,
+	)
+	settingService := NewSettingService(&paymentFulfillmentSettingRepoStub{values: map[string]string{
+		SettingKeyFirstTopupBonusTiers: `[{"min_amount":50,"bonus_amount":8}]`,
+	}}, nil)
+	svc := &PaymentService{
+		entClient:      client,
+		redeemService:  redeemService,
+		userRepo:       userRepo,
+		settingService: settingService,
+	}
+
+	err = svc.ExecuteBalanceFulfillment(ctx, order.ID)
+	require.ErrorContains(t, err, "forced fulfillment bonus failure")
+	require.Equal(t, 1, mainCreditCalls)
+	require.Len(t, redeemRepo.useCalls, 1)
+	assertFirstTopupClaimCount(t, ctx, client, order.UserID, 0)
+	failedOrder, err := client.PaymentOrder.Get(ctx, order.ID)
+	require.NoError(t, err)
+	require.Equal(t, OrderStatusFailed, failedOrder.Status)
+
+	_, err = client.ExecContext(ctx, "DROP TRIGGER fail_first_topup_bonus_fulfillment")
+	require.NoError(t, err)
+	require.NoError(t, svc.ExecuteBalanceFulfillment(ctx, order.ID))
+	require.Equal(t, 1, mainCreditCalls, "retry must not redeem the already-used code again")
+	require.Len(t, redeemRepo.useCalls, 1)
+	assertFirstTopupClaimCount(t, ctx, client, order.UserID, 1)
+	completedOrder, err := client.PaymentOrder.Get(ctx, order.ID)
+	require.NoError(t, err)
+	require.Equal(t, OrderStatusCompleted, completedOrder.Status)
+	creditedUser, err := client.User.Get(ctx, order.UserID)
+	require.NoError(t, err)
+	require.Equal(t, 8.0, creditedUser.Balance)
+	require.Equal(t, 8.0, creditedUser.TotalRecharged)
+}
+
+func assertFirstTopupClaimCount(t *testing.T, ctx context.Context, client *dbent.Client, userID int64, want int) {
+	t.Helper()
+	rows, err := client.QueryContext(ctx, "SELECT COUNT(*) FROM user_first_topup_bonus WHERE user_id = ?", userID)
+	require.NoError(t, err)
+	defer func() { require.NoError(t, rows.Close()) }()
+	require.True(t, rows.Next())
+	var got int
+	require.NoError(t, rows.Scan(&got))
+	require.Equal(t, want, got)
+}
+
 func TestRetryFulfillmentRejectsFreshRechargingLease(t *testing.T) {
 	ctx := context.Background()
 	client := newPaymentConfigServiceTestClient(t)

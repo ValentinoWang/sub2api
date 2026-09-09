@@ -66,6 +66,8 @@ export default {
     copyFailed: '复制失败',
     verifying: '验证中...',
     processing: '处理中...',
+    updatedAt: '更新时间',
+    verify: '验证',
     contactSupport: '联系客服',
     add: '添加',
     invalidEmail: '请输入有效的邮箱地址',

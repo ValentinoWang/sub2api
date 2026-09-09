@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -56,6 +58,9 @@ func (s *adminServiceImpl) GetProxiesByIDs(ctx context.Context, ids []int64) ([]
 }
 
 func (s *adminServiceImpl) CreateProxy(ctx context.Context, input *CreateProxyInput) (*Proxy, error) {
+	if !isJSONTimeInRange(input.ExpiresAt) {
+		return nil, infraerrors.BadRequest("PROXY_EXPIRY_INVALID", "proxy expiry year must be between 0 and 9999")
+	}
 	// 规范化 fallback_mode
 	mode := input.FallbackMode
 	if mode == "" {
@@ -91,26 +96,62 @@ func (s *adminServiceImpl) CreateProxy(ctx context.Context, input *CreateProxyIn
 }
 
 func (s *adminServiceImpl) UpdateProxy(ctx context.Context, id int64, input *UpdateProxyInput) (*Proxy, error) {
-	// 校验：backup_proxy_id 不能是自身
-	if input.BackupProxyID != nil && *input.BackupProxyID == id {
-		return nil, infraerrors.BadRequest("PROXY_BACKUP_SELF", "backup proxy cannot be itself")
+	if input == nil {
+		return nil, infraerrors.BadRequest("PROXY_UPDATE_INVALID", "proxy update is required")
 	}
-	// 规范化 fallback_mode
-	mode := input.FallbackMode
-	if mode == "" {
-		mode = FallbackModeNone
-	}
-	// 校验：mode=proxy 必须有 backup
-	if mode == FallbackModeProxy && input.BackupProxyID == nil {
-		return nil, infraerrors.BadRequest("PROXY_BACKUP_REQUIRED", "backup proxy required when fallback_mode=proxy")
-	}
-	if input.ExpiryWarnDays < 0 {
-		return nil, infraerrors.BadRequest("PROXY_WARN_DAYS_INVALID", "expiry_warn_days must be >= 0")
+	if !isJSONTimeInRange(input.ExpiresAt) {
+		return nil, infraerrors.BadRequest("PROXY_EXPIRY_INVALID", "proxy expiry year must be between 0 and 9999")
 	}
 
-	proxy, err := s.proxyRepo.GetByID(ctx, id)
+	var before proxyNetworkIdentity
+	apply := func(proxy *Proxy) error {
+		before = proxyNetworkIdentityOf(proxy)
+		return applyAdminProxyUpdate(id, proxy, input)
+	}
+
+	var proxy *Proxy
+	var err error
+	if updater, ok := s.proxyRepo.(interface {
+		UpdateFields(context.Context, int64, func(*Proxy) error) (*Proxy, error)
+	}); ok {
+		proxy, err = updater.UpdateFields(ctx, id, apply)
+	} else {
+		proxy, err = s.proxyRepo.GetByID(ctx, id)
+		if err == nil {
+			err = apply(proxy)
+		}
+		if err == nil {
+			err = s.proxyRepo.Update(ctx, proxy)
+		}
+	}
 	if err != nil {
 		return nil, err
+	}
+	if before != proxyNetworkIdentityOf(proxy) && s.proxyLatencyCache != nil {
+		if err := s.proxyLatencyCache.DeleteProxyLatency(ctx, id); err != nil {
+			logger.LegacyPrintf("service.admin", "Warning: invalidate proxy latency cache failed: %v", err)
+		}
+	}
+	return proxy, nil
+}
+
+func applyAdminProxyUpdate(id int64, proxy *Proxy, input *UpdateProxyInput) error {
+	if input.BackupProxyID != nil && *input.BackupProxyID == id {
+		return infraerrors.BadRequest("PROXY_BACKUP_SELF", "backup proxy cannot be itself")
+	}
+	mode := proxy.FallbackMode
+	if input.FallbackMode != "" {
+		mode = input.FallbackMode
+	}
+	backupID := proxy.BackupProxyID
+	if input.BackupProxyID != nil || input.ClearBackupID {
+		backupID = input.BackupProxyID
+	}
+	if mode == FallbackModeProxy && backupID == nil {
+		return infraerrors.BadRequest("PROXY_BACKUP_REQUIRED", "backup proxy required when fallback_mode=proxy")
+	}
+	if input.ExpiryWarnDays != nil && *input.ExpiryWarnDays < 0 {
+		return infraerrors.BadRequest("PROXY_WARN_DAYS_INVALID", "expiry_warn_days must be >= 0")
 	}
 
 	if input.Name != "" {
@@ -125,28 +166,63 @@ func (s *adminServiceImpl) UpdateProxy(ctx context.Context, id int64, input *Upd
 	if input.Port != 0 {
 		proxy.Port = input.Port
 	}
-	if input.Username != "" {
+	if input.UsernameSet {
 		proxy.Username = input.Username
+	} else if input.ClearUsername {
+		proxy.Username = ""
 	}
-	if input.Password != "" {
+	if input.PasswordSet {
 		proxy.Password = input.Password
+	} else if input.ClearPassword {
+		proxy.Password = ""
 	}
 	if input.Status != "" {
 		proxy.Status = input.Status
 	}
-	// 透传有效期与回退字段
-	proxy.ExpiresAt = input.ExpiresAt
-	proxy.FallbackMode = mode
-	proxy.BackupProxyID = input.BackupProxyID
-	proxy.ExpiryWarnDays = input.ExpiryWarnDays
-
-	if err := s.proxyRepo.Update(ctx, proxy); err != nil {
-		return nil, err
+	if input.ExpiresAt != nil || input.ClearExpiresAt {
+		proxy.ExpiresAt = input.ExpiresAt
 	}
-	return proxy, nil
+	proxy.FallbackMode = mode
+	proxy.BackupProxyID = backupID
+	if input.ExpiryWarnDays != nil {
+		proxy.ExpiryWarnDays = *input.ExpiryWarnDays
+	}
+	return nil
+}
+
+type proxyNetworkIdentity struct {
+	protocol string
+	host     string
+	port     int
+	username string
+	password string
+}
+
+func proxyNetworkIdentityOf(proxy *Proxy) proxyNetworkIdentity {
+	if proxy == nil {
+		return proxyNetworkIdentity{}
+	}
+	return proxyNetworkIdentity{
+		protocol: proxy.Protocol,
+		host:     proxy.Host,
+		port:     proxy.Port,
+		username: proxy.Username,
+		password: proxy.Password,
+	}
+}
+
+func proxyNetworkIdentityHash(proxy *Proxy) string {
+	identity := proxyNetworkIdentityOf(proxy)
+	digest := sha256.Sum256([]byte(fmt.Sprintf("%s\x00%s\x00%d\x00%s\x00%s", identity.protocol, identity.host, identity.port, identity.username, identity.password)))
+	return hex.EncodeToString(digest[:])
 }
 
 func (s *adminServiceImpl) DeleteProxy(ctx context.Context, id int64) error {
+	if deleter, ok := s.proxyRepo.(interface {
+		DeleteIfUnused(context.Context, int64) error
+	}); ok {
+		return deleter.DeleteIfUnused(ctx, id)
+	}
 	count, err := s.proxyRepo.CountAccountsByProxyID(ctx, id)
 	if err != nil {
 		return err
@@ -164,22 +240,7 @@ func (s *adminServiceImpl) BatchDeleteProxies(ctx context.Context, ids []int64) 
 	}
 
 	for _, id := range ids {
-		count, err := s.proxyRepo.CountAccountsByProxyID(ctx, id)
-		if err != nil {
-			result.Skipped = append(result.Skipped, ProxyBatchDeleteSkipped{
-				ID:     id,
-				Reason: err.Error(),
-			})
-			continue
-		}
-		if count > 0 {
-			result.Skipped = append(result.Skipped, ProxyBatchDeleteSkipped{
-				ID:     id,
-				Reason: ErrProxyInUse.Error(),
-			})
-			continue
-		}
-		if err := s.proxyRepo.Delete(ctx, id); err != nil {
+		if err := s.DeleteProxy(ctx, id); err != nil {
 			result.Skipped = append(result.Skipped, ProxyBatchDeleteSkipped{
 				ID:     id,
 				Reason: err.Error(),
@@ -209,7 +270,7 @@ func (s *adminServiceImpl) TestProxy(ctx context.Context, id int64) (*ProxyTestR
 	proxyURL := proxy.URL()
 	exitInfo, latencyMs, err := s.proxyProber.ProbeProxy(ctx, proxyURL)
 	if err != nil {
-		s.saveProxyLatency(ctx, id, &ProxyLatencyInfo{
+		s.saveProxyLatency(ctx, proxy, &ProxyLatencyInfo{
 			Success:   false,
 			Message:   err.Error(),
 			UpdatedAt: time.Now(),
@@ -221,7 +282,7 @@ func (s *adminServiceImpl) TestProxy(ctx context.Context, id int64) (*ProxyTestR
 	}
 
 	latency := latencyMs
-	s.saveProxyLatency(ctx, id, &ProxyLatencyInfo{
+	s.saveProxyLatency(ctx, proxy, &ProxyLatencyInfo{
 		Success:     true,
 		LatencyMs:   &latency,
 		Message:     "Proxy is accessible",
@@ -267,7 +328,7 @@ func (s *adminServiceImpl) CheckProxyQuality(ctx context.Context, id int64) (*Pr
 		})
 		result.FailedCount++
 		finalizeProxyQualityResult(result)
-		s.saveProxyQualitySnapshot(ctx, id, result, nil)
+		s.saveProxyQualitySnapshot(ctx, proxy, result, nil)
 		return result, nil
 	}
 
@@ -281,7 +342,7 @@ func (s *adminServiceImpl) CheckProxyQuality(ctx context.Context, id int64) (*Pr
 		})
 		result.FailedCount++
 		finalizeProxyQualityResult(result)
-		s.saveProxyQualitySnapshot(ctx, id, result, nil)
+		s.saveProxyQualitySnapshot(ctx, proxy, result, nil)
 		return result, nil
 	}
 
@@ -310,7 +371,7 @@ func (s *adminServiceImpl) CheckProxyQuality(ctx context.Context, id int64) (*Pr
 		})
 		result.FailedCount++
 		finalizeProxyQualityResult(result)
-		s.saveProxyQualitySnapshot(ctx, id, result, exitInfo)
+		s.saveProxyQualitySnapshot(ctx, proxy, result, exitInfo)
 		return result, nil
 	}
 
@@ -330,7 +391,7 @@ func (s *adminServiceImpl) CheckProxyQuality(ctx context.Context, id int64) (*Pr
 	}
 
 	finalizeProxyQualityResult(result)
-	s.saveProxyQualitySnapshot(ctx, id, result, exitInfo)
+	s.saveProxyQualitySnapshot(ctx, proxy, result, exitInfo)
 	return result, nil
 }
 
@@ -478,7 +539,7 @@ func proxyQualityBaseConnectivityPass(result *ProxyQualityCheckResult) bool {
 	return false
 }
 
-func (s *adminServiceImpl) saveProxyQualitySnapshot(ctx context.Context, proxyID int64, result *ProxyQualityCheckResult, exitInfo *ProxyExitInfo) {
+func (s *adminServiceImpl) saveProxyQualitySnapshot(ctx context.Context, proxy *Proxy, result *ProxyQualityCheckResult, exitInfo *ProxyExitInfo) {
 	if result == nil {
 		return
 	}
@@ -506,7 +567,7 @@ func (s *adminServiceImpl) saveProxyQualitySnapshot(ctx context.Context, proxyID
 		info.Region = exitInfo.Region
 		info.City = exitInfo.City
 	}
-	s.saveProxyLatency(ctx, proxyID, info)
+	s.saveProxyLatency(ctx, proxy, info)
 }
 
 func (s *adminServiceImpl) probeProxyLatency(ctx context.Context, proxy *Proxy) {
@@ -515,7 +576,7 @@ func (s *adminServiceImpl) probeProxyLatency(ctx context.Context, proxy *Proxy) 
 	}
 	exitInfo, latencyMs, err := s.proxyProber.ProbeProxy(ctx, proxy.URL())
 	if err != nil {
-		s.saveProxyLatency(ctx, proxy.ID, &ProxyLatencyInfo{
+		s.saveProxyLatency(ctx, proxy, &ProxyLatencyInfo{
 			Success:   false,
 			Message:   err.Error(),
 			UpdatedAt: time.Now(),
@@ -524,7 +585,7 @@ func (s *adminServiceImpl) probeProxyLatency(ctx context.Context, proxy *Proxy) 
 	}
 
 	latency := latencyMs
-	s.saveProxyLatency(ctx, proxy.ID, &ProxyLatencyInfo{
+	s.saveProxyLatency(ctx, proxy, &ProxyLatencyInfo{
 		Success:     true,
 		LatencyMs:   &latency,
 		Message:     "Proxy is accessible",
@@ -555,7 +616,7 @@ func (s *adminServiceImpl) attachProxyLatency(ctx context.Context, proxies []Pro
 
 	for i := range proxies {
 		info := latencies[proxies[i].ID]
-		if info == nil {
+		if info == nil || info.IdentityHash == "" || info.IdentityHash != proxyNetworkIdentityHash(&proxies[i].Proxy) {
 			continue
 		}
 		if info.Success {
@@ -578,14 +639,19 @@ func (s *adminServiceImpl) attachProxyLatency(ctx context.Context, proxies []Pro
 	}
 }
 
-func (s *adminServiceImpl) saveProxyLatency(ctx context.Context, proxyID int64, info *ProxyLatencyInfo) {
-	if s.proxyLatencyCache == nil || info == nil {
+func (s *adminServiceImpl) saveProxyLatency(ctx context.Context, expected *Proxy, info *ProxyLatencyInfo) {
+	if s.proxyLatencyCache == nil || expected == nil || info == nil {
+		return
+	}
+	current, err := s.proxyRepo.GetByID(ctx, expected.ID)
+	if err != nil || proxyNetworkIdentityOf(current) != proxyNetworkIdentityOf(expected) {
 		return
 	}
 
 	merged := *info
-	if latencies, err := s.proxyLatencyCache.GetProxyLatencies(ctx, []int64{proxyID}); err == nil {
-		if existing := latencies[proxyID]; existing != nil {
+	merged.IdentityHash = proxyNetworkIdentityHash(expected)
+	if latencies, err := s.proxyLatencyCache.GetProxyLatencies(ctx, []int64{expected.ID}); err == nil {
+		if existing := latencies[expected.ID]; existing != nil && existing.IdentityHash == merged.IdentityHash {
 			if merged.QualityCheckedAt == nil &&
 				merged.QualityScore == nil &&
 				merged.QualityGrade == "" &&
@@ -602,7 +668,7 @@ func (s *adminServiceImpl) saveProxyLatency(ctx context.Context, proxyID int64, 
 		}
 	}
 
-	if err := s.proxyLatencyCache.SetProxyLatency(ctx, proxyID, &merged); err != nil {
+	if err := s.proxyLatencyCache.SetProxyLatency(ctx, expected.ID, &merged); err != nil {
 		logger.LegacyPrintf("service.admin", "Warning: store proxy latency cache failed: %v", err)
 	}
 }

@@ -500,3 +500,23 @@ type helperConcurrencyCacheStubWithError struct {
 func (s *helperConcurrencyCacheStubWithError) AcquireAccountSlot(ctx context.Context, accountID int64, maxConcurrency int, requestID string) (bool, error) {
 	return false, s.err
 }
+
+func TestSetClaudeCodeClientContext_ParsedRequestRequiresTrustedHaikuProbeMarker(t *testing.T) {
+	c, _ := newHelperTestContext(http.MethodPost, "/v1/messages")
+	c.Request.Header.Set("User-Agent", "claude-cli/2.1.260 (external, cli)")
+
+	parsed := &service.ParsedRequest{Model: "claude-sonnet-4-5", MaxTokens: 1}
+	SetClaudeCodeClientContext(c, nil, parsed)
+	require.False(t, service.IsClaudeCodeClient(c.Request.Context()))
+
+	c2, _ := newHelperTestContext(http.MethodPost, "/v1/messages")
+	c2.Request.Header.Set("User-Agent", "claude-cli/2.1.260 (external, cli)")
+	SetClaudeCodeClientContext(c2, nil, &service.ParsedRequest{Model: "claude-haiku-4-5", MaxTokens: 1})
+	require.False(t, service.IsClaudeCodeClient(c2.Request.Context()))
+
+	c3, _ := newHelperTestContext(http.MethodPost, "/v1/messages")
+	c3.Request.Header.Set("User-Agent", "claude-cli/2.1.260 (external, cli)")
+	c3.Request = c3.Request.WithContext(service.WithIsMaxTokensOneHaikuRequest(c3.Request.Context(), true, false))
+	SetClaudeCodeClientContext(c3, nil, &service.ParsedRequest{Model: "claude-haiku-4-5", MaxTokens: 1})
+	require.True(t, service.IsClaudeCodeClient(c3.Request.Context()))
+}

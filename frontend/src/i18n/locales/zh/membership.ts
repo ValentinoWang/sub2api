@@ -3,6 +3,7 @@ export default {
     title: '会员充值',
     days: '天',
     continue: '继续',
+    coupon: '优惠券码',
     catalog: '可用会员商品',
     orders: '我的订单',
     unavailable: '暂停售 / 待验证',

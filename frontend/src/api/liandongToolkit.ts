@@ -41,7 +41,7 @@ export interface LiandongProductMapping {
   usd_credit: number
   target_stock: number
   enabled: boolean
-  grant_type?: string
+  grant_type?: 'balance'
   external_url?: string
   version?: number
   threshold?: number
@@ -56,7 +56,7 @@ export interface LiandongMappingSnapshot {
   version?: number
   goods_id: number
   cny_amount: number
-  grant_type?: string
+  grant_type?: 'balance'
   usd_credit: number
   external_url?: string
   target_stock: number

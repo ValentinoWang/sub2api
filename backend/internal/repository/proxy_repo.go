@@ -123,6 +123,54 @@ func (r *proxyRepository) Update(ctx context.Context, proxyIn *service.Proxy) er
 	return nil
 }
 
+// UpdateFields locks and reloads the current row before applying a partial
+// update, so concurrent partial updates cannot overwrite one another's fields.
+func (r *proxyRepository) UpdateFields(ctx context.Context, id int64, apply func(*service.Proxy) error) (*service.Proxy, error) {
+	if apply == nil {
+		return nil, service.ErrProxyNotFound
+	}
+	if contextTx := dbent.TxFromContext(ctx); contextTx != nil {
+		return updateProxyFieldsOnClient(ctx, contextTx.Client(), id, apply)
+	}
+	tx, err := r.client.Tx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback() }()
+	txCtx := dbent.NewTxContext(ctx, tx)
+	updated, err := updateProxyFieldsOnClient(txCtx, tx.Client(), id, apply)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+func updateProxyFieldsOnClient(ctx context.Context, client *dbent.Client, id int64, apply func(*service.Proxy) error) (*service.Proxy, error) {
+	if _, err := lockProxyProbeIdentity(ctx, client, id); err != nil {
+		return nil, err
+	}
+	currentEntity, err := client.Proxy.Get(ctx, id)
+	if err != nil {
+		if dbent.IsNotFound(err) {
+			return nil, service.ErrProxyNotFound
+		}
+		return nil, err
+	}
+	current := proxyEntityToService(currentEntity)
+	if err := apply(current); err != nil {
+		return nil, err
+	}
+	updated, err := updateProxyAndInvalidateProbeSnapshots(ctx, client, current)
+	if err != nil {
+		return nil, err
+	}
+	applyProxyEntityToService(current, updated)
+	return current, nil
+}
+
 type proxyProbeIdentity struct {
 	protocol string
 	host     string
@@ -275,6 +323,56 @@ func enqueueProxyProbeAccountChanges(ctx context.Context, exec sqlExecutor, acco
 
 func (r *proxyRepository) Delete(ctx context.Context, id int64) error {
 	_, err := r.client.Proxy.Delete().Where(proxy.IDEQ(id)).Exec(ctx)
+	return err
+}
+
+// DeleteIfUnused performs reference checks and the soft delete in one
+// transaction. Backup references are treated as live usage instead of being
+// silently detached by the self-referencing foreign key.
+func (r *proxyRepository) DeleteIfUnused(ctx context.Context, id int64) error {
+	if contextTx := dbent.TxFromContext(ctx); contextTx != nil {
+		return deleteProxyIfUnusedOnClient(ctx, contextTx.Client(), id)
+	}
+	tx, err := r.client.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+	txCtx := dbent.NewTxContext(ctx, tx)
+	if err := deleteProxyIfUnusedOnClient(txCtx, tx.Client(), id); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func deleteProxyIfUnusedOnClient(ctx context.Context, client *dbent.Client, id int64) error {
+	rows, err := client.QueryContext(ctx, `SELECT id FROM proxies WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`, id)
+	if err != nil {
+		return err
+	}
+	exists := rows.Next()
+	if closeErr := rows.Close(); closeErr != nil {
+		return closeErr
+	}
+	if !exists {
+		return nil
+	}
+
+	var accountCount int64
+	if err := scanSingleRow(ctx, client, `SELECT COUNT(*) FROM accounts WHERE proxy_id = $1 AND deleted_at IS NULL`, []any{id}, &accountCount); err != nil {
+		return err
+	}
+	if accountCount > 0 {
+		return service.ErrProxyInUse
+	}
+	var backupReferenceCount int64
+	if err := scanSingleRow(ctx, client, `SELECT COUNT(*) FROM proxies WHERE backup_proxy_id = $1 AND deleted_at IS NULL`, []any{id}, &backupReferenceCount); err != nil {
+		return err
+	}
+	if backupReferenceCount > 0 {
+		return service.ErrProxyBackupInUse
+	}
+	_, err = client.Proxy.Delete().Where(proxy.IDEQ(id)).Exec(ctx)
 	return err
 }
 
@@ -742,27 +840,29 @@ func (r *proxyRepository) sweepOneExpiredProxyOnExec(ctx context.Context, exec s
 		rows *sql.Rows
 		err  error
 	)
+	// Match the current proxy even after an earlier fallback. Keep the first
+	// origin so manual revert still restores the originally assigned proxy.
 	if target == nil {
 		rows, err = exec.QueryContext(ctx, `
-			UPDATE accounts SET proxy_id=NULL, proxy_fallback_origin_id=$1,
+			UPDATE accounts SET proxy_id=NULL, proxy_fallback_origin_id=COALESCE(proxy_fallback_origin_id,$1),
 				extra=CASE
 					WHEN type='apikey' AND extra ? 'upstream_billing_probe'
 					THEN extra - 'upstream_billing_probe'
 					ELSE extra
 				END,
 				updated_at=NOW()
-			WHERE proxy_id=$1 AND proxy_fallback_origin_id IS NULL AND deleted_at IS NULL
+			WHERE proxy_id=$1 AND deleted_at IS NULL
 			RETURNING id`, proxyID)
 	} else {
 		rows, err = exec.QueryContext(ctx, `
-			UPDATE accounts SET proxy_id=$2, proxy_fallback_origin_id=$1,
+			UPDATE accounts SET proxy_id=$2, proxy_fallback_origin_id=COALESCE(proxy_fallback_origin_id,$1),
 				extra=CASE
 					WHEN type='apikey' AND extra ? 'upstream_billing_probe'
 					THEN extra - 'upstream_billing_probe'
 					ELSE extra
 				END,
 				updated_at=NOW()
-			WHERE proxy_id=$1 AND proxy_fallback_origin_id IS NULL AND deleted_at IS NULL
+			WHERE proxy_id=$1 AND deleted_at IS NULL
 			RETURNING id`, proxyID, *target)
 	}
 	if err != nil {

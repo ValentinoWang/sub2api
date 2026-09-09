@@ -45,7 +45,7 @@ describe('liandongToolkitAPI', () => {
     const config = {
       merchant_token: 'merchant-token',
       generate_code_secret: false,
-      products: [{ goods_id: 42, cny_amount: 20, usd_credit: 2.78, target_stock: 50000, enabled: true }],
+      products: [{ goods_id: 42, cny_amount: 20, usd_credit: 2.78, target_stock: 50000, enabled: true, grant_type: 'balance' as const }],
     }
     await updateConfig(config)
     expect(put).toHaveBeenCalledWith('/admin/tools/ldxp/config', config)

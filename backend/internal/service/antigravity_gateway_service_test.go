@@ -299,6 +299,7 @@ func TestAntigravityGatewayService_ForwardGemini_UsesConfiguredProjectFallback(t
 	c.Request = httptest.NewRequest(http.MethodPost, "/antigravity/v1beta/models/gemini-2.5-flash:streamGenerateContent", bytes.NewReader(body))
 
 	upstreamBody := []byte("data: {\"response\":{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"ok\"}]},\"finishReason\":\"STOP\"}],\"usageMetadata\":{\"promptTokenCount\":1,\"candidatesTokenCount\":1}}}\n\n")
+	var upstreamProfile HTTPUpstreamProfile
 	upstream := &queuedHTTPUpstreamStub{
 		responses: []*http.Response{
 			{
@@ -306,6 +307,9 @@ func TestAntigravityGatewayService_ForwardGemini_UsesConfiguredProjectFallback(t
 				Header:     http.Header{"Content-Type": []string{"text/event-stream"}},
 				Body:       io.NopCloser(bytes.NewReader(upstreamBody)),
 			},
+		},
+		onCall: func(req *http.Request, _ *queuedHTTPUpstreamStub) {
+			upstreamProfile = HTTPUpstreamProfileFromContext(req.Context())
 		},
 	}
 	svc := &AntigravityGatewayService{
@@ -334,6 +338,7 @@ func TestAntigravityGatewayService_ForwardGemini_UsesConfiguredProjectFallback(t
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Len(t, upstream.requestBodies, 1)
+	require.Equal(t, HTTPUpstreamProfileLongStream, upstreamProfile)
 
 	var wrapped map[string]any
 	require.NoError(t, json.Unmarshal(upstream.requestBodies[0], &wrapped))

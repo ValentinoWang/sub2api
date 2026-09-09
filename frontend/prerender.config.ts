@@ -15,7 +15,7 @@ import en from './src/i18n/locales/en/landing'
 import zhMisc from './src/i18n/locales/zh/misc'
 import enMisc from './src/i18n/locales/en/misc'
 import { BRAND_DOMAIN, PUBLIC_PAGES } from './src/constants/brand'
-import { experiences } from './src/content/experiences'
+import { experiences, getExperienceById } from './src/content/experiences'
 
 type Section = { h: string; p?: string; items?: string[] }
 
@@ -133,6 +133,22 @@ function experiencesIndexHTML(): string {
 export function buildPrerenderPages(): PrerenderPage[] {
   const m = zh.marketing
   const p = m.pages
+  const standaloneExperiencePages = [
+    {
+      id: 'codex-session-migration',
+      description: '安全诊断并修复切换接入方式后 Codex 本机旧任务的失效 provider 关联，提供备份、计划、恢复与回滚边界。',
+      body: codexSessionMigrationHTML()
+    },
+    {
+      id: 'gpt-6-astra-not-visible',
+      description: 'Codex 桌面中 GPT-6-Astra 不可见时，区分中转站支持、客户端模型目录与当前任务选择的公开排障经验。',
+      body: errorExperienceHTML()
+    }
+  ].map(({ id, description, body }) => {
+    const experience = getExperienceById(id)
+    if (!experience) throw new Error(`[prerender] experience ${id} is missing`)
+    return { route: experience.route, title: experience.title, description, body }
+  })
   const pages: PrerenderPage[] = [
     { route: PUBLIC_PAGES.publicBenefit, title: p.publicBenefit.title, description: p.publicBenefit.subtitle, body: sectionsHTML(p.publicBenefit.sections as Section[]) },
     { route: PUBLIC_PAGES.business, title: p.business.title, description: p.business.subtitle, body: sectionsHTML(p.business.sections as Section[]) },
@@ -155,14 +171,7 @@ export function buildPrerenderPages(): PrerenderPage[] {
       description: zhMisc.experiences.indexDescription,
       body: experiencesIndexHTML()
     },
-    ...experiences.map((experience) => ({
-      route: experience.route,
-      title: experience.title,
-      description: experience.id === 'codex-session-migration'
-        ? '安全诊断并修复切换接入方式后 Codex 本机旧任务的失效 provider 关联，提供备份、计划、恢复与回滚边界。'
-        : 'Codex 桌面中 GPT-6-Astra 不可见时，区分中转站支持、客户端模型目录与当前任务选择的公开排障经验。',
-      body: experience.id === 'codex-session-migration' ? codexSessionMigrationHTML() : errorExperienceHTML()
-    }))
+    ...standaloneExperiencePages
   ]
   return pages
 }
@@ -241,9 +250,9 @@ const HOME_LOCALE_CONTENT = {
 } as const
 
 function homeExperienceSection(locale: HomeLocale): string {
-  const experience = experiences[0]
+  const experience = getExperienceById('codex-cli')
   if (!experience) {
-    throw new Error('[prerender] no published experience is available for the home template')
+    throw new Error('[prerender] featured codex-cli experience is missing')
   }
   const copy = HOME_LOCALE_CONTENT[locale].experiences
   const category = copy.categories[experience.category]

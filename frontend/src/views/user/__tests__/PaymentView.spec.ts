@@ -26,6 +26,7 @@ const showWarning = vi.hoisted(() => vi.fn())
 const getCheckoutInfo = vi.hoisted(() => vi.fn())
 const bridgeInvoke = vi.hoisted(() => vi.fn())
 const translate = vi.hoisted(() => vi.fn((key: string) => key))
+const cachedPublicSettings = vi.hoisted(() => ({ value: {} as Record<string, string> }))
 
 vi.mock('vue-router', async () => {
   const actual = await vi.importActual<typeof import('vue-router')>('vue-router')
@@ -78,6 +79,7 @@ vi.mock('@/stores', () => ({
     showError,
     showInfo,
     showWarning,
+    cachedPublicSettings: cachedPublicSettings.value,
   }),
 }))
 
@@ -281,6 +283,69 @@ async function mountSubscriptionPlanList(planCount: number) {
   return wrapper
 }
 
+describe('PaymentView help text', () => {
+  beforeEach(() => {
+    vi.useRealTimers()
+    routeState.path = '/purchase'
+    routeState.query = {}
+    createOrder.mockReset()
+    window.localStorage.clear()
+  })
+
+  async function mountHelp(help_text: string, help_image_url = '') {
+    getCheckoutInfo.mockReset().mockResolvedValue(checkoutInfoFixture({ help_text, help_image_url }))
+    const wrapper = shallowMount(PaymentView, {
+      global: {
+        stubs: {
+          AppLayout: { template: '<div><slot /></div>' },
+          Teleport: true,
+          Transition: false,
+        },
+      },
+    })
+    await flushPromises()
+    return wrapper
+  }
+
+  it('renders headings, emphasis, links, and lists in payment help without starting checkout', async () => {
+    const wrapper = await mountHelp('## Recharge help\n\n**Read first**\n\n- [Contact support](https://example.com/help)')
+    const help = wrapper.get('.markdown-body')
+    expect(help.get('h2').text()).toBe('Recharge help')
+    expect(help.get('strong').text()).toBe('Read first')
+    expect(help.get('li a').attributes('href')).toBe('https://example.com/help')
+    expect(createOrder).not.toHaveBeenCalled()
+  })
+
+  it('removes scripts, event handlers, and unsafe URLs from rendered help', async () => {
+    const wrapper = await mountHelp([
+      '<script>alert(1)</script>',
+      '<img src="https://example.com/help.png" onerror="alert(1)">',
+      '[Unsafe](javascript:alert%281%29)',
+      '[Support](https://example.com/help)',
+    ].join('\n\n'))
+    const help = wrapper.get('.markdown-body')
+    expect(help.find('script').exists()).toBe(false)
+    expect(help.get('img').attributes('onerror')).toBeUndefined()
+    expect(help.findAll('a').map(link => link.attributes('href'))).toEqual([undefined, 'https://example.com/help'])
+  })
+
+  it('keeps plain-text soft line breaks and the separate help image preview', async () => {
+    const wrapper = await mountHelp('First line\nSecond line', 'https://example.com/help.png')
+    const help = wrapper.get('.markdown-body')
+    expect(help.get('p').text()).toBe('First line\nSecond line')
+    expect(help.find('br').exists()).toBe(false)
+    await wrapper.get('img').trigger('click')
+    expect(wrapper.findAll('img')).toHaveLength(2)
+    expect(wrapper.findAll('img')[1].attributes('src')).toBe('https://example.com/help.png')
+  })
+
+  it('keeps image-only help without an empty Markdown container', async () => {
+    const wrapper = await mountHelp('', 'https://example.com/help.png')
+    expect(wrapper.find('.markdown-body').exists()).toBe(false)
+    expect(wrapper.get('img').attributes('src')).toBe('https://example.com/help.png')
+  })
+})
+
 describe('PaymentView subscription plan grid', () => {
   it.each([3, 4, 6])('keeps %i plans on the existing mobile/tablet/desktop grid', async (planCount) => {
     const wrapper = await mountSubscriptionPlanList(planCount)
@@ -297,6 +362,10 @@ describe('PaymentView subscription plan grid', () => {
 })
 
 describe('PaymentView recharge rate preview', () => {
+  beforeEach(() => {
+    cachedPublicSettings.value = {}
+  })
+
   it('uses the selected payment method currency in both locale templates', async () => {
     translate.mockClear()
     routeState.path = '/purchase'
@@ -330,6 +399,36 @@ describe('PaymentView recharge rate preview', () => {
     })
     expect(en.payment.rechargeRatePreview).toBe('Current rate: 1 {currency} = {usd} USD')
     expect(zh.payment.rechargeRatePreview).toBe('当前倍率：1 {currency} = {usd} USD')
+  })
+
+  it('selects the first top-up tier from credited balance instead of payment input', async () => {
+    cachedPublicSettings.value = {
+      first_topup_bonus_tiers: JSON.stringify([
+        { min_amount: 20, bonus_amount: 2 },
+        { min_amount: 50, bonus_amount: 8 },
+      ]),
+    }
+    routeState.path = '/purchase'
+    routeState.query = {}
+    getCheckoutInfo.mockReset().mockResolvedValue(checkoutInfoFixture({ balance_recharge_multiplier: 2 }))
+
+    const wrapper = shallowMount(PaymentView, {
+      global: {
+        stubs: {
+          AppLayout: { template: '<div><slot /></div>' },
+          Teleport: true,
+          Transition: false,
+        },
+      },
+    })
+    await flushPromises()
+    wrapper.getComponent(AmountInput).vm.$emit('update:modelValue', 25)
+    await flushPromises()
+
+    const tiers = wrapper.get('[data-testid="first-topup-bonus"]').findAll('span')
+    expect(tiers).toHaveLength(2)
+    expect(tiers[0].classes()).not.toContain('ring-2')
+    expect(tiers[1].classes()).toContain('ring-2')
   })
 })
 

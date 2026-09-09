@@ -17,6 +17,7 @@ import (
 	dbent "github.com/Wei-Shaw/sub2api/ent"
 	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
 	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
+	dbuser "github.com/Wei-Shaw/sub2api/ent/user"
 	"github.com/Wei-Shaw/sub2api/internal/payment"
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 )
@@ -403,7 +404,9 @@ func (s *PaymentService) doBalance(ctx context.Context, o *dbent.PaymentOrder, l
 		if err := s.applyAffiliateRebateForOrder(ctx, o); err != nil {
 			return err
 		}
-		s.applyFirstTopupBonus(ctx, o)
+		if err := s.applyFirstTopupBonus(ctx, o); err != nil {
+			return err
+		}
 		// Code already created and redeemed — just mark completed
 		return s.markCompleted(ctx, o, lease, "RECHARGE_SUCCESS")
 	case redeemActionCreate:
@@ -420,35 +423,30 @@ func (s *PaymentService) doBalance(ctx context.Context, o *dbent.PaymentOrder, l
 	if err := s.applyAffiliateRebateForOrder(ctx, o); err != nil {
 		return err
 	}
-	s.applyFirstTopupBonus(ctx, o)
+	if err := s.applyFirstTopupBonus(ctx, o); err != nil {
+		return err
+	}
 	return s.markCompleted(ctx, o, lease, "RECHARGE_SUCCESS")
 }
 
 const paymentAuditFirstTopupBonus = "FIRST_TOPUP_BONUS"
 
-// applyFirstTopupBonus credits the configured first top-up bonus exactly once per user.
-//
-// The grant is guarded by a user-keyed claim row rather than by the order's audit log: the audit
-// log is unique on (order_id, action), which cannot stop a second grant when the same user has
-// two orders fulfilling concurrently, nor when a bonused order is later refunded and a new order
-// once again looks like a "first" top-up. Claiming before crediting also means a crash loses the
-// bonus rather than paying it twice.
-//
-// Best effort throughout: a failure here never blocks fulfillment of the order itself.
-func (s *PaymentService) applyFirstTopupBonus(ctx context.Context, o *dbent.PaymentOrder) {
-	if s == nil || o == nil || s.settingService == nil || s.userRepo == nil || s.entClient == nil {
-		return
+// applyFirstTopupBonus grants the configured bonus when this order can acquire the user's claim.
+// Claim and balance writes commit together; a failed attempt leaves the claim available for retry.
+func (s *PaymentService) applyFirstTopupBonus(ctx context.Context, o *dbent.PaymentOrder) error {
+	if s == nil || o == nil || s.settingService == nil || s.entClient == nil {
+		return nil
 	}
 	if o.OrderType != payment.OrderTypeBalance || o.Amount <= 0 {
-		return
+		return nil
 	}
 	tiers := s.settingService.FirstTopupBonusTiers(ctx)
 	if len(tiers) == 0 {
-		return
+		return nil
 	}
 	bonus := PickFirstTopupBonus(tiers, o.Amount)
 	if bonus <= 0 {
-		return
+		return nil
 	}
 	// Only a user's first top-up qualifies. A refunded earlier order still counts, because the
 	// claim row it created survives the refund.
@@ -458,27 +456,21 @@ func (s *PaymentService) applyFirstTopupBonus(ctx context.Context, o *dbent.Paym
 		paymentorder.StatusEQ(OrderStatusCompleted),
 		paymentorder.IDNEQ(o.ID),
 	).Count(ctx)
-	if err != nil || previous > 0 {
-		return
+	if err != nil {
+		return fmt.Errorf("check previous completed top-ups: %w", err)
+	}
+	if previous > 0 {
+		return nil
 	}
 
-	claimed, err := s.claimFirstTopupBonus(ctx, o.UserID, o.ID, bonus)
+	claimed, err := s.claimAndCreditFirstTopupBonus(ctx, o.UserID, o.ID, bonus)
 	if err != nil {
-		logger.LegacyPrintf("service.payment", "[Payment] first top-up bonus claim failed: order=%d user=%d err=%v", o.ID, o.UserID, err)
-		return
+		logger.LegacyPrintf("service.payment", "[Payment] first top-up bonus grant failed: order=%d user=%d err=%v", o.ID, o.UserID, err)
+		return err
 	}
 	if !claimed {
 		// Another order for this user already took the bonus.
-		return
-	}
-
-	if err := s.userRepo.UpdateBalance(ctx, o.UserID, bonus); err != nil {
-		logger.LegacyPrintf("service.payment", "[Payment] first top-up bonus credit failed: order=%d user=%d bonus=%.4f err=%v", o.ID, o.UserID, bonus, err)
-		// Release the claim so a later retry can grant the bonus.
-		if releaseErr := s.releaseFirstTopupBonusClaim(ctx, o.UserID); releaseErr != nil {
-			logger.LegacyPrintf("service.payment", "[Payment] first top-up bonus claim release failed: user=%d err=%v", o.UserID, releaseErr)
-		}
-		return
+		return nil
 	}
 
 	s.writeAuditLog(ctx, o.ID, paymentAuditFirstTopupBonus, "system", map[string]any{
@@ -486,54 +478,60 @@ func (s *PaymentService) applyFirstTopupBonus(ctx context.Context, o *dbent.Paym
 		"orderAmount": o.Amount,
 		"tierCount":   len(tiers),
 	})
+	return nil
 }
 
-// claimFirstTopupBonus atomically reserves the one-per-user bonus. It reports false when the user
-// already holds a claim, which is the signal to skip the credit.
-func (s *PaymentService) claimFirstTopupBonus(ctx context.Context, userID, orderID int64, bonus float64) (bool, error) {
+func (s *PaymentService) claimAndCreditFirstTopupBonus(ctx context.Context, userID, orderID int64, bonus float64) (bool, error) {
 	client := s.entClient
 	if client == nil {
 		return false, errors.New("nil payment client")
 	}
+	tx, err := client.Tx(ctx)
+	if err != nil {
+		return false, fmt.Errorf("begin first top-up bonus transaction: %w", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+	txClient := tx.Client()
+
 	query := fmt.Sprintf(`
-INSERT INTO user_first_topup_bonus (user_id, order_id, bonus_amount, granted_at)
-VALUES ($1, $2, $3, %s)
-ON CONFLICT (user_id) DO NOTHING
-RETURNING user_id`, paymentAuditCurrentTimestampExpr(client))
+	INSERT INTO user_first_topup_bonus (user_id, order_id, bonus_amount, granted_at)
+	VALUES ($1, $2, $3, %s)
+	ON CONFLICT (user_id) DO NOTHING`, paymentAuditCurrentTimestampExpr(client))
 	if paymentAuditDialect(client) != dialect.Postgres {
 		query = `
-INSERT INTO user_first_topup_bonus (user_id, order_id, bonus_amount, granted_at)
-VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-ON CONFLICT (user_id) DO NOTHING
-RETURNING user_id`
+	INSERT INTO user_first_topup_bonus (user_id, order_id, bonus_amount, granted_at)
+	VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+	ON CONFLICT (user_id) DO NOTHING`
 	}
-	rows, err := client.QueryContext(ctx, query, userID, orderID, bonus)
+	result, err := txClient.ExecContext(ctx, query, userID, orderID, bonus)
 	if err != nil {
 		return false, err
 	}
-	defer func() { _ = rows.Close() }()
-	if !rows.Next() {
-		return false, rows.Err()
+	claimed, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("read first top-up bonus claim result: %w", err)
 	}
-	var claimedUser int64
-	if err := rows.Scan(&claimedUser); err != nil {
-		return false, err
+	if claimed == 0 {
+		if err := tx.Commit(); err != nil {
+			return false, fmt.Errorf("commit existing first top-up bonus claim: %w", err)
+		}
+		return false, nil
+	}
+	updated, err := txClient.User.Update().
+		Where(dbuser.IDEQ(userID)).
+		AddBalance(bonus).
+		AddTotalRecharged(bonus).
+		Save(ctx)
+	if err != nil {
+		return false, fmt.Errorf("credit first top-up bonus: %w", err)
+	}
+	if updated != 1 {
+		return false, fmt.Errorf("credit first top-up bonus: user %d not found", userID)
+	}
+	if err := tx.Commit(); err != nil {
+		return false, fmt.Errorf("commit first top-up bonus: %w", err)
 	}
 	return true, nil
-}
-
-// releaseFirstTopupBonusClaim drops a reservation whose credit did not land.
-func (s *PaymentService) releaseFirstTopupBonusClaim(ctx context.Context, userID int64) error {
-	client := s.entClient
-	if client == nil {
-		return errors.New("nil payment client")
-	}
-	query := "DELETE FROM user_first_topup_bonus WHERE user_id = $1"
-	if paymentAuditDialect(client) != dialect.Postgres {
-		query = "DELETE FROM user_first_topup_bonus WHERE user_id = ?"
-	}
-	_, err := client.ExecContext(ctx, query, userID)
-	return err
 }
 
 func (s *PaymentService) markCompleted(ctx context.Context, o *dbent.PaymentOrder, lease *paymentFulfillmentLease, auditAction string) error {

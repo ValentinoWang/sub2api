@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMigration236MembershipFulfillmentAppliesAndEnforcesInvariants(t *testing.T) {
+func TestRest2BuildProductSchemaAppliesAndEnforcesMembershipInvariants(t *testing.T) {
 	ctx := context.Background()
 	require.NoError(t, ApplyMigrations(ctx, integrationDB))
 
@@ -22,9 +22,9 @@ func TestMigration236MembershipFulfillmentAppliesAndEnforcesInvariants(t *testin
 	require.NoError(t, tx.QueryRowContext(ctx, `
 SELECT count(*)
 FROM schema_migrations
-WHERE filename IN ('236_membership_fulfillment.sql', '237_membership_coupon_late_payment.sql')
+WHERE filename = '238_rest2build_product_schema.sql'
 `).Scan(&applied))
-	require.Equal(t, 2, applied, "membership migrations 236 and 237 must both be recorded")
+	require.Equal(t, 1, applied, "the consolidated rest2build product migration must be recorded")
 
 	rows, err := tx.QueryContext(ctx, `
 SELECT sku, for_sale, paused, verified_run_id IS NULL, verified_at IS NULL

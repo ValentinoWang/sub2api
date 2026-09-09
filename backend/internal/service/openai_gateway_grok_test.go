@@ -348,7 +348,7 @@ func TestNormalizeGrokChatReasoningEffort(t *testing.T) {
 	require.False(t, gjson.GetBytes(patched, "reasoning_effort").Exists())
 }
 
-func TestPatchGrokResponsesBodyDropsNestedUnsupportedFields(t *testing.T) {
+func TestPatchGrokResponsesBodyOnlyDropsProtocolExternalWebAccess(t *testing.T) {
 	t.Parallel()
 
 	body := []byte(`{
@@ -358,13 +358,21 @@ func TestPatchGrokResponsesBodyDropsNestedUnsupportedFields(t *testing.T) {
 		"tools": [
 			{"type": "function", "name": "kept_fn", "external_web_access": true, "parameters": {"type": "object", "properties": {"q": {"type": "string", "external_web_access": true}}}}
 		],
+		"input": [{"type":"message","role":"user","content":[{"type":"input_text","text":"external_web_access"}],"external_web_access":"message-data"},
+			{"type":"function_call_output","call_id":"call_1","output":{"external_web_access":"tool-output"}}],
 		"metadata": {"external_web_access": false, "large_id": 9007199254740993}
 	}`)
 
 	patched, err := patchGrokResponsesBody(body, "grok-4.3")
 	require.NoError(t, err)
 	require.True(t, json.Valid(patched))
-	require.False(t, strings.Contains(string(patched), "external_web_access"))
+	require.False(t, gjson.GetBytes(patched, "external_web_access").Exists())
+	require.False(t, gjson.GetBytes(patched, "tools.0.external_web_access").Exists())
+	require.True(t, gjson.GetBytes(patched, "tools.0.parameters.properties.q.external_web_access").Bool())
+	require.Equal(t, "message-data", gjson.GetBytes(patched, "input.0.external_web_access").String())
+	toolOutput := gjson.GetBytes(patched, "input.1.output").String()
+	require.True(t, json.Valid([]byte(toolOutput)), string(patched))
+	require.Equal(t, "tool-output", gjson.Get(toolOutput, "external_web_access").String())
 	require.Equal(t, "kept_fn", gjson.GetBytes(patched, "tools.0.name").String())
 	require.False(t, gjson.GetBytes(patched, "metadata").Exists())
 }

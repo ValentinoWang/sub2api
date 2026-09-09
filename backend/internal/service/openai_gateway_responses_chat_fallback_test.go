@@ -5,6 +5,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -181,6 +182,97 @@ func TestForwardResponses_ForceChatCompletionsRoutesStreamingToChatCompletions(t
 	require.Equal(t, 3, result.Usage.OutputTokens)
 	require.True(t, result.Stream)
 	require.NotNil(t, result.FirstTokenMs)
+}
+
+func TestForwardResponses_ChatFallbackClientDisconnectIsRecordedAcrossDrainOutcomes(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name      string
+		body      io.ReadCloser
+		wantError bool
+	}{
+		{
+			name: "terminal usage",
+			body: io.NopCloser(strings.NewReader(strings.Join([]string{
+				`data: {"id":"chatcmpl_disconnect","choices":[{"index":0,"delta":{"content":"ok"}}]}`,
+				"",
+				`data: {"id":"chatcmpl_disconnect","choices":[],"usage":{"prompt_tokens":7,"completion_tokens":4,"total_tokens":11}}`,
+				"",
+				"data: [DONE]",
+				"",
+			}, "\n"))),
+		},
+		{
+			name: "upstream read error after usage",
+			body: &openAIChatStreamReadErrorCloser{
+				payload: []byte("data: {\"id\":\"chatcmpl_disconnect_error\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ok\"}}],\"usage\":{\"prompt_tokens\":7,\"completion_tokens\":4,\"total_tokens\":11}}\n\n"),
+				err:     errors.New("upstream read failed"),
+			},
+			wantError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(rec)
+			c.Writer = &openAIChatFailingWriter{ResponseWriter: c.Writer, failAfter: 0}
+			requestBody := []byte(`{"model":"gpt-5.4","input":"hello","stream":true}`)
+			c.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", bytes.NewReader(requestBody))
+			upstream := &httpUpstreamRecorder{resp: &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     http.Header{"Content-Type": []string{"text/event-stream"}},
+				Body:       tt.body,
+			}}
+			svc := &OpenAIGatewayService{cfg: rawChatCompletionsTestConfig(), httpUpstream: upstream}
+
+			result, err := svc.Forward(context.Background(), c, forceChatResponsesFallbackAccount(), requestBody)
+			if tt.wantError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.NotNil(t, result)
+			require.True(t, result.ClientDisconnect)
+			require.Equal(t, 7, result.Usage.InputTokens)
+			require.Equal(t, 4, result.Usage.OutputTokens)
+		})
+	}
+}
+
+func TestForwardResponses_ChatFallbackClientDisconnectDrainIsBounded(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Writer = &openAIChatFailingWriter{ResponseWriter: c.Writer, failAfter: 0}
+	requestBody := []byte(`{"model":"gpt-5.4","input":"hello","stream":true}`)
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", bytes.NewReader(requestBody))
+	blockingBody := newOpenAICompatBlockingReadCloser([]byte(
+		"data: {\"id\":\"chatcmpl_disconnect_blocked\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ok\"}}]}\n\n",
+	))
+	upstream := &httpUpstreamRecorder{resp: &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     http.Header{"Content-Type": []string{"text/event-stream"}},
+		Body:       blockingBody,
+	}}
+	cfg := rawChatCompletionsTestConfig()
+	cfg.Gateway.StreamDataIntervalTimeout = 1
+	svc := &OpenAIGatewayService{cfg: cfg, httpUpstream: upstream}
+
+	start := time.Now()
+	result, err := svc.Forward(context.Background(), c, forceChatResponsesFallbackAccount(), requestBody)
+
+	require.Error(t, err)
+	require.NotNil(t, result)
+	require.True(t, result.ClientDisconnect)
+	require.Less(t, time.Since(start), 2*time.Second)
+	select {
+	case <-blockingBody.closed:
+	default:
+		t.Fatal("disconnect drain timeout did not close the upstream response body")
+	}
 }
 
 func TestForwardResponses_ChatFallbackRejectsInvalidToolArgumentsAtOutputLimit(t *testing.T) {

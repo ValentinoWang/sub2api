@@ -140,10 +140,11 @@ func (s *AntigravityGatewayService) ForwardGemini(ctx context.Context, c *gin.Co
 	// Antigravity 上游只支持流式请求，统一使用 streamGenerateContent
 	// 如果客户端请求非流式，在响应处理阶段会收集完整流式响应后返回
 	upstreamAction := "streamGenerateContent"
+	upstreamCtx := withLongStreamHTTPUpstreamProfile(ctx, true)
 
 	// 执行带重试的请求
 	result, err := s.antigravityRetryLoop(antigravityRetryLoopParams{
-		ctx:             ctx,
+		ctx:             upstreamCtx,
 		prefix:          prefix,
 		account:         account,
 		proxyURL:        proxyURL,
@@ -198,7 +199,7 @@ func (s *AntigravityGatewayService) ForwardGemini(ctx context.Context, c *gin.Co
 
 				fallbackWrapped, err := s.wrapV1InternalRequest(projectID, fallbackModel, injectedBody)
 				if err == nil {
-					fallbackReq, err := antigravity.NewAPIRequest(ctx, upstreamAction, accessToken, fallbackWrapped)
+					fallbackReq, err := antigravity.NewAPIRequest(upstreamCtx, upstreamAction, accessToken, fallbackWrapped)
 					if err == nil {
 						fallbackResp, err := s.httpUpstream.Do(fallbackReq, proxyURL, account.ID, account.Concurrency)
 						if err == nil && fallbackResp.StatusCode < 400 {
@@ -245,7 +246,7 @@ func (s *AntigravityGatewayService) ForwardGemini(ctx context.Context, c *gin.Co
 			retryWrappedBody, wrapErr := s.wrapV1InternalRequest(projectID, mappedModel, cleanedInjectedBody)
 			if wrapErr == nil {
 				retryResult, retryErr := s.antigravityRetryLoop(antigravityRetryLoopParams{
-					ctx:             ctx,
+					ctx:             upstreamCtx,
 					prefix:          prefix,
 					account:         account,
 					proxyURL:        proxyURL,

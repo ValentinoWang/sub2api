@@ -1,7 +1,7 @@
 # Membership Fulfillment Operations
 
 This guide operates the optional membership fulfillment domain added by
-`backend/migrations/236_membership_fulfillment.sql`. It does not establish that
+`backend/migrations/238_rest2build_product_schema.sql`. It does not establish that
 any upstream membership is available, that a payment channel is approved, or
 that a product may be sold. The initial database rows are deliberately closed:
 both products have `for_sale=false` and `paused=true`.

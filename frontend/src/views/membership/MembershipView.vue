@@ -27,11 +27,15 @@
               </div>
               <span class="badge shrink-0" :class="product.for_sale ? 'badge-success' : 'badge-warning'">{{ product.for_sale ? t('common.available') : t('membership.unavailable') }}</span>
             </div>
-            <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4 dark:border-dark-700">
+            <div class="mt-4 grid gap-3 border-t border-gray-100 pt-4 dark:border-dark-700 sm:grid-cols-[minmax(0,1fr)_minmax(10rem,14rem)_auto] sm:items-end">
               <div>
                 <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ money(product.price_minor, product.currency) }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ product.available > 0 ? `${product.available} ${t('common.available')}` : t('membership.outOfStock') }}</p>
               </div>
+              <label class="block min-w-0 text-sm text-gray-700 dark:text-gray-300">
+                <span class="mb-1 block text-xs font-medium">{{ t('membership.coupon') }}</span>
+                <input v-model="couponCodes[product.sku]" class="input w-full" autocomplete="off" :data-test="`coupon-${product.sku}`" />
+              </label>
               <button class="btn btn-primary btn-sm" :disabled="!product.for_sale || creatingSKU === product.sku" :data-test="`create-${product.sku}`" @click="createOrder(product)">
                 {{ creatingSKU === product.sku ? t('common.processing') : t('membership.continue') }}
               </button>
@@ -120,6 +124,7 @@ const orders = ref<MembershipOrder[]>([])
 const selectedOrder = ref<MembershipOrder | null>(null)
 const loading = ref(false)
 const creatingSKU = ref('')
+const couponCodes = ref<Record<string, string>>({})
 const credentialValue = ref('')
 const accountID = ref('')
 const consent = ref(false)
@@ -141,7 +146,9 @@ function date(value: string): string { return formatDateTimeToMinute(value) || '
 function stateLabel(state: MembershipFulfillmentState): string { return t(`membership.states.${state}`) }
 function stateClass(state: MembershipFulfillmentState): string { return state === 'succeeded' ? 'badge-success' : state === 'review_required' || state === 'failed' ? 'badge-warning' : state === 'canceled' ? 'badge-danger' : 'badge-primary' }
 function canPay(order: MembershipOrder): boolean { return order.payment_state === 'created' && !order.input_required && order.fulfillment_state !== 'canceled' }
-function canContinuePayment(order: MembershipOrder): boolean { return order.payment_state === 'pending' && order.fulfillment_state !== 'canceled' }
+function canContinuePayment(order: MembershipOrder): boolean {
+  return order.payment_state === 'pending' && !['canceled', 'review_required'].includes(order.fulfillment_state)
+}
 
 async function load(): Promise<void> {
   loading.value = true
@@ -153,7 +160,8 @@ async function load(): Promise<void> {
 async function createOrder(product: MembershipProduct): Promise<void> {
   creatingSKU.value = product.sku
   try {
-    const created = await membershipAPI.createOrder({ sku: product.sku })
+    const coupon = couponCodes.value[product.sku]?.trim()
+    const created = await membershipAPI.createOrder({ sku: product.sku, coupon: coupon || undefined })
     const order = await membershipAPI.getOrder(created.id)
     orders.value = [order, ...orders.value.filter((item) => item.id !== order.id)]
     selectedOrder.value = order

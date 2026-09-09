@@ -15,9 +15,39 @@ type updatingProxyRepoStub struct {
 	updateCalls int
 }
 
+type atomicUpdatingProxyRepoStub struct {
+	*updatingProxyRepoStub
+	atomicCalls int
+}
+
+func (s *atomicUpdatingProxyRepoStub) UpdateFields(_ context.Context, _ int64, apply func(*Proxy) error) (*Proxy, error) {
+	s.atomicCalls++
+	copy := *s.proxy
+	if err := apply(&copy); err != nil {
+		return nil, err
+	}
+	s.proxy = &copy
+	return &copy, nil
+}
+
 func (s *updatingProxyRepoStub) GetByID(context.Context, int64) (*Proxy, error) {
 	copy := *s.proxy
 	return &copy, nil
+}
+
+func TestAdminProxyUpdateUsesAtomicRepositoryMergeWhenAvailable(t *testing.T) {
+	repo := &atomicUpdatingProxyRepoStub{updatingProxyRepoStub: &updatingProxyRepoStub{
+		proxyRepoStub: &proxyRepoStub{},
+		proxy:         &Proxy{ID: 9, Protocol: "http", Host: "old.example", Port: 3128, FallbackMode: FallbackModeNone},
+	}}
+	svc := &adminServiceImpl{proxyRepo: repo}
+
+	got, err := svc.UpdateProxy(context.Background(), 9, &UpdateProxyInput{Name: "renamed"})
+
+	require.NoError(t, err)
+	require.Equal(t, "renamed", got.Name)
+	require.Equal(t, 1, repo.atomicCalls)
+	require.Zero(t, repo.updateCalls)
 }
 
 func (s *updatingProxyRepoStub) Update(_ context.Context, proxy *Proxy) error {
@@ -57,11 +87,12 @@ func TestBothProxyUpdateServicesUseRepositoryUpdateBoundary(t *testing.T) {
 			},
 		}
 		svc := &adminServiceImpl{proxyRepo: repo}
+		warnDays := 7
 
 		_, err := svc.UpdateProxy(context.Background(), 9, &UpdateProxyInput{
 			Host:           "new.example",
 			FallbackMode:   FallbackModeNone,
-			ExpiryWarnDays: 7,
+			ExpiryWarnDays: &warnDays,
 		})
 
 		require.NoError(t, err)

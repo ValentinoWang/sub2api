@@ -42,6 +42,19 @@ describe('MembershipView', () => {
     expect(wrapper.get('[data-test="create-chatgpt_pro_20x"]').attributes('disabled')).toBeDefined()
   })
 
+  it('submits a trimmed coupon from the selected product card', async () => {
+    const availableProduct = { ...product, for_sale: true, available: 3 }
+    listProducts.mockResolvedValueOnce([availableProduct])
+    const wrapper = mountView()
+    await flushPromises()
+
+    await wrapper.get('[data-test="coupon-chatgpt_pro_20x"]').setValue('  SAVE10  ')
+    await wrapper.get('[data-test="create-chatgpt_pro_20x"]').trigger('click')
+    await flushPromises()
+
+    expect(createOrder).toHaveBeenCalledWith({ sku: 'chatgpt_pro_20x', coupon: 'SAVE10' })
+  })
+
   it('maps a raw upstream Axios error to a local safe message without rendering its details', async () => {
     const upstreamMessage = 'https://supplier.internal.example rejected CDK and task_id=private-task-9'
     listProducts.mockRejectedValueOnce({ code: 'UPSTREAM_STACKTRACE', message: upstreamMessage, detail: upstreamMessage })
@@ -108,5 +121,19 @@ describe('MembershipView', () => {
     expect(createPaymentRedirectTicket).toHaveBeenCalledWith('order-1')
     expect(wrapper.get('[data-test="continue-membership-payment"]').attributes('href')).toBe(redirectURL)
     expect(JSON.stringify(localStorage)).not.toContain('ticket=')
+  })
+
+  it('does not offer continued payment for a pending order that requires review', async () => {
+    const reviewOrder = { ...order, input_required: false, payment_state: 'pending', fulfillment_state: 'review_required', error_code: 'REVIEW_REQUIRED' }
+    listOrders.mockResolvedValueOnce([reviewOrder])
+    getOrder.mockResolvedValueOnce(reviewOrder)
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-test="detail-order-1"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('[data-test="resume-membership-payment"]').exists()).toBe(false)
+    expect(wrapper.find('[data-test="membership-payment"]').exists()).toBe(false)
+    expect(createPaymentRedirectTicket).not.toHaveBeenCalled()
   })
 })

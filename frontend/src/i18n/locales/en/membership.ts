@@ -3,6 +3,7 @@ export default {
     title: 'Membership recharge',
     days: 'days',
     continue: 'Continue',
+    coupon: 'Coupon code',
     catalog: 'Available memberships',
     orders: 'Your orders',
     unavailable: 'Unavailable / pending verification',

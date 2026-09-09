@@ -19,7 +19,10 @@ const { appStore, api } = vi.hoisted(() => ({
 vi.mock('@/stores/app', () => ({ useAppStore: () => appStore }))
 vi.mock('@/stores/auth', () => ({ useAuthStore: () => ({ isAdmin: false }) }))
 vi.mock('@/api/channelMonitorV2', () => api)
-vi.mock('@/utils/featureFlags', () => ({ isChannelMonitorThroughputHidden: () => false }))
+vi.mock('@/utils/featureFlags', () => ({
+  isChannelMonitorThroughputHidden: () => false,
+  isChannelMonitorUserRankingHidden: () => false,
+}))
 vi.mock('vue-router', () => ({
   useRoute: () => ({ query: {} }),
   useRouter: () => ({ replace: vi.fn() }),

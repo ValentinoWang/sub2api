@@ -94,12 +94,21 @@
         </div>
 
         <!-- Iframe embed mode -->
-        <div v-else class="custom-embed-shell">
+        <div v-else ref="embedShell" class="custom-embed-shell">
           <a
+            ref="openButton"
             :href="embeddedUrl"
             target="_blank"
             rel="noopener noreferrer"
             class="btn btn-secondary btn-sm custom-open-fab"
+            :style="openButtonPosition ? { left: `${openButtonPosition.x}px`, top: `${openButtonPosition.y}px`, right: 'auto' } : undefined"
+            @pointerdown="startButtonDrag"
+            @pointermove="moveButtonDrag"
+            @pointerup="endButtonDrag"
+            @pointercancel="endButtonDrag"
+            @lostpointercapture="endButtonDrag"
+            @dragstart.prevent
+            @click="handleOpenButtonClick"
           >
             <Icon name="externalLink" size="sm" class="mr-1.5" :stroke-width="2" />
             {{ t('customPage.openInNewTab') }}
@@ -107,6 +116,9 @@
           <iframe
             :src="embeddedUrl"
             class="custom-embed-frame"
+            :sandbox="iframeSandbox"
+            referrerpolicy="no-referrer"
+            loading="lazy"
             allowfullscreen
           ></iframe>
         </div>
@@ -118,6 +130,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useResizeObserver } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores'
 import { useAuthStore } from '@/stores/auth'
@@ -150,6 +163,63 @@ const tocVisible = ref(typeof window !== 'undefined' ? window.innerWidth > 768 :
 const activeHeadingId = ref('')
 let themeObserver: MutationObserver | null = null
 
+const embedShell = ref<HTMLElement | null>(null)
+const openButton = ref<HTMLAnchorElement | null>(null)
+const openButtonPosition = ref<{ x: number; y: number } | null>(null)
+let buttonDrag: { pointerId: number; startX: number; startY: number; x: number; y: number } | null = null
+let suppressButtonClick = false
+
+function setOpenButtonPosition(x: number, y: number) {
+  const shell = embedShell.value
+  const button = openButton.value
+  if (!shell || !button) return
+  openButtonPosition.value = {
+    x: Math.max(0, Math.min(x, shell.clientWidth - button.offsetWidth)),
+    y: Math.max(0, Math.min(y, shell.clientHeight - button.offsetHeight)),
+  }
+}
+
+function startButtonDrag(event: PointerEvent) {
+  if (event.button !== 0 || !event.isPrimary || !openButton.value) return
+  const button = openButton.value
+  suppressButtonClick = false
+  buttonDrag = {
+    pointerId: event.pointerId, startX: event.clientX, startY: event.clientY,
+    x: button.offsetLeft, y: button.offsetTop,
+  }
+  // Capture keeps receiving moves when the pointer crosses the embedded iframe.
+  button.setPointerCapture(event.pointerId)
+}
+
+function moveButtonDrag(event: PointerEvent) {
+  if (!buttonDrag || event.pointerId !== buttonDrag.pointerId) return
+  const dx = event.clientX - buttonDrag.startX
+  const dy = event.clientY - buttonDrag.startY
+  if (!suppressButtonClick && Math.hypot(dx, dy) < 4) return
+  suppressButtonClick = true
+  setOpenButtonPosition(buttonDrag.x + dx, buttonDrag.y + dy)
+  event.preventDefault()
+}
+
+function endButtonDrag(event: PointerEvent) {
+  if (!buttonDrag || event.pointerId !== buttonDrag.pointerId) return
+  buttonDrag = null
+  if (openButton.value?.hasPointerCapture(event.pointerId)) {
+    openButton.value.releasePointerCapture(event.pointerId)
+  }
+}
+
+function handleOpenButtonClick(event: MouseEvent) {
+  if (suppressButtonClick && event.detail !== 0) event.preventDefault()
+  suppressButtonClick = false
+}
+
+useResizeObserver([embedShell, openButton], () => {
+  if (openButtonPosition.value) {
+    setOpenButtonPosition(openButtonPosition.value.x, openButtonPosition.value.y)
+  }
+})
+
 const menuItemId = computed(() => route.params.id as string)
 
 const menuItem = computed(() => {
@@ -173,10 +243,26 @@ const markdownSlug = computed(() => {
 
 const isMarkdownMode = computed(() => !!markdownSlug.value)
 
+const iframeSandbox = 'allow-forms allow-same-origin allow-scripts'
+
+function trustedIframeSource(value: string): string {
+  if (!value || typeof window === 'undefined') return ''
+  try {
+    const parsed = new URL(value, window.location.origin)
+    if (parsed.username || parsed.password) return ''
+    if (parsed.origin !== window.location.origin && parsed.protocol !== 'https:') return ''
+    return parsed.toString()
+  } catch {
+    return ''
+  }
+}
+
 const embeddedUrl = computed(() => {
   if (!menuItem.value || isMarkdownMode.value) return ''
+  const source = trustedIframeSource(menuItem.value.url)
+  if (!source) return ''
   return buildEmbeddedUrl(
-    menuItem.value.url,
+    source,
     authStore.user?.id,
     authStore.token,
     pageTheme.value,
@@ -186,8 +272,7 @@ const embeddedUrl = computed(() => {
 
 const isValidUrl = computed(() => {
   if (isMarkdownMode.value) return false
-  const url = embeddedUrl.value
-  return url.startsWith('http://') || url.startsWith('https://')
+  return embeddedUrl.value !== ''
 })
 
 function generateHeadingId(text: string, index: number): string {
@@ -241,10 +326,7 @@ async function fetchAndRenderMarkdown(slug: string) {
     )
 
     const html = marked.parse(raw) as string
-    const sanitized = DOMPurify.sanitize(html, {
-      ADD_TAGS: ['iframe'],
-      ADD_ATTR: ['allowfullscreen', 'frameborder', 'src'],
-    })
+    const sanitized = DOMPurify.sanitize(html)
 
     // Inject IDs into headings and build TOC
     const toc: TocItem[] = []
@@ -522,7 +604,7 @@ onUnmounted(() => {
 }
 
 .custom-open-fab {
-  @apply absolute right-3 top-3 z-10;
+  @apply absolute right-3 top-3 z-10 w-max max-w-full touch-none select-none transition-colors;
   @apply shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-dark-800/80;
 }
 

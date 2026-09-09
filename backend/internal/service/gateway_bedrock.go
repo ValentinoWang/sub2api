@@ -185,13 +185,14 @@ func (s *GatewayService) executeBedrockUpstream(
 ) (*http.Response, error) {
 	var resp *http.Response
 	var err error
+	upstreamCtx := withLongStreamHTTPUpstreamProfile(ctx, stream)
 	retryStart := time.Now()
 	for attempt := 1; attempt <= maxRetryAttempts; attempt++ {
 		var upstreamReq *http.Request
 		if account.IsBedrockAPIKey() {
-			upstreamReq, err = s.buildUpstreamRequestBedrockAPIKey(ctx, body, modelID, region, stream, apiKey)
+			upstreamReq, err = s.buildUpstreamRequestBedrockAPIKey(upstreamCtx, body, modelID, region, stream, apiKey)
 		} else {
-			upstreamReq, err = s.buildUpstreamRequestBedrock(ctx, body, modelID, region, stream, signer)
+			upstreamReq, err = s.buildUpstreamRequestBedrock(upstreamCtx, body, modelID, region, stream, signer)
 		}
 		if err != nil {
 			return nil, err

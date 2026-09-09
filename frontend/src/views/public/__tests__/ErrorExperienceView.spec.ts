@@ -34,7 +34,7 @@ describe('ErrorExperienceView', () => {
       '给人看的：原因、证据与经验'
     ])
     expect(wrapper.find('.brand-tagline').text()).toBe('歇一会儿，让 AI 接着干。')
-    expect(wrapper.find('.brand-service').text()).toContain('面向 Codex、Claude Code 等工具的 AI 模型接入服务')
+    expect(wrapper.find('.brand-service').text()).toContain('面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务')
     expect(wrapper.find('.experience-breadcrumb').text()).toContain('GPT-6 已接入，为什么 Codex 仍然看不见？')
   })
 

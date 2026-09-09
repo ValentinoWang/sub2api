@@ -43,6 +43,7 @@ export default {
 
   // Version Badge
   version: {
+    publicRelease: 'Product {release} · Technical v{technical}',
     currentVersion: 'Current Version',
     latestVersion: 'Latest Version',
     upToDate: "You're running the latest version.",
@@ -142,7 +143,7 @@ export default {
       targetStock: 'Target unsold stock',
       enabled: 'Enabled',
       empty: 'No product mappings configured',
-      priceHint: 'Selling price is the amount collected by Liandong; credited balance is the USD balance granted by Sub2API redemption. They are separate fields. Target stock defaults to 50,000.'
+      priceHint: 'LDXP mappings grant balance only. Selling price is the amount collected by Liandong; credited balance is the USD balance granted by Sub2API redemption. They are separate fields. Target stock defaults to 50,000.'
     },
     goods: {
       title: 'Remote goods',

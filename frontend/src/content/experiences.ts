@@ -18,6 +18,7 @@ export interface ExperienceContent {
   id: string
   category: ExperienceCategory
   route: string
+  routeName: string
   icon: ExperienceIcon
   title: string
   summary: string
@@ -66,6 +67,7 @@ export const experiences: ExperienceContent[] = [
     id: 'codex-cli',
     category: 'connectionConfiguration',
     route: PUBLIC_PAGES.codex,
+    routeName: 'GuideCodex',
     icon: 'terminal',
     title: 'Codex CLI 接入与配置',
     summary: '从 config.toml 到最小请求，分清官方账号与自定义 provider 的配置边界。',
@@ -79,6 +81,7 @@ export const experiences: ExperienceContent[] = [
     id: 'claude-code',
     category: 'connectionConfiguration',
     route: PUBLIC_PAGES.claudeCode,
+    routeName: 'GuideClaudeCode',
     icon: 'chat',
     title: 'Claude Code 接入与配置',
     summary: '通过环境变量设定 API 地址与凭证，并明确切换回官方方式的恢复路径。',
@@ -92,6 +95,7 @@ export const experiences: ExperienceContent[] = [
     id: 'openai-compatible-api',
     category: 'connectionConfiguration',
     route: PUBLIC_PAGES.openaiCompat,
+    routeName: 'GuideOpenAICompat',
     icon: 'link',
     title: 'OpenAI 兼容接口与迁移测试',
     summary: '替换 SDK 的 base_url 和密钥，完成最小请求、流式响应与错误处理的迁移检查。',
@@ -105,6 +109,7 @@ export const experiences: ExperienceContent[] = [
     id: 'codex-session-migration',
     category: 'conversationContinuity',
     route: CODEX_SESSION_MIGRATION.route,
+    routeName: 'CodexSessionMigration',
     icon: 'sync',
     title: CODEX_SESSION_MIGRATION.title,
     summary: '先只读定位旧任务的 provider 关联，再用经验证备份、计划摘要和恢复日志完成可审阅的本机历史迁移。',
@@ -118,6 +123,7 @@ export const experiences: ExperienceContent[] = [
     id: 'gpt-6-astra-not-visible',
     category: 'modelsUsage',
     route: '/error-experiences/gpt-6-astra-not-visible',
+    routeName: 'ErrorExperienceGpt6AstraNotVisible',
     icon: 'sparkles',
     title: 'GPT-6 已接入，为什么 Codex 仍然看不见？',
     summary: '把服务可调用、客户端可见和任务选中分开检查，避免把模型目录、桌面版本或旧任务状态误判为同一个问题。',

@@ -852,7 +852,7 @@ function configProduct(product: LiandongProductMapping): LiandongProductMapping 
     usd_credit: numberOr(product.usd_credit, 0),
     target_stock: positiveInteger(product.target_stock) || DEFAULT_LIANDONG_TARGET_STOCK,
     enabled: product.enabled === true,
-    grant_type: normalizedGrantType(product.grant_type),
+    grant_type: 'balance',
     version: positiveInteger(product.version) || 1,
   }
   const externalUrl = product.external_url?.trim()
@@ -1141,7 +1141,7 @@ function previewItemErrors(item: unknown, expectedGoodsId: number): string[] {
   if (mappingCny === undefined) errors.push('LDXP_PREVIEW_PRICE_UNKNOWN')
   if (mappingUsd === undefined) errors.push('LDXP_PREVIEW_CREDIT_INVALID')
   if (mappingTarget === undefined) errors.push('LDXP_PREVIEW_TARGET_INVALID')
-  if (!grantType) errors.push('LDXP_PREVIEW_GRANT_TYPE_INVALID')
+  if (grantType !== 'balance') errors.push('LDXP_PREVIEW_GRANT_TYPE_INVALID')
   if (mapping.external_url !== undefined && typeof mapping.external_url !== 'string') errors.push('LDXP_PREVIEW_EXTERNAL_URL_INVALID')
 
   const targetStock = positiveInteger(record.target_stock)

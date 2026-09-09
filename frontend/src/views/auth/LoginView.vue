@@ -197,7 +197,7 @@
     </div>
 
     <!-- Footer -->
-    <template v-if="!backendModeEnabled" #footer>
+    <template v-if="!backendModeEnabled && publicSettingsLoaded && registrationEnabled" #footer>
       <p class="text-gray-500 dark:text-dark-400">
         {{ t('auth.dontHaveAccount') }}
         <router-link
@@ -246,7 +246,6 @@ import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue
 import { useAuthStore, useAppStore } from '@/stores'
 import {
   buildOAuthLoginStartURL,
-  getPublicSettings,
   isTotp2FARequired,
   isWeChatWebOAuthEnabled,
   startOAuthLogin,
@@ -255,6 +254,7 @@ import {
 import type {
   ActionCaptchaRequestProof,
   LoginAgreementDocument,
+  PublicSettings,
   TotpLoginResponse
 } from '@/types'
 import { extractI18nErrorMessage } from '@/utils/apiError'
@@ -278,6 +278,7 @@ const showPassword = ref<boolean>(false)
 const publicSettingsLoaded = ref<boolean>(false)
 
 // Public settings
+const registrationEnabled = ref<boolean>(false)
 const turnstileEnabled = ref<boolean>(false)
 const turnstileSiteKey = ref<string>('')
 const tencentCaptchaEnabled = ref<boolean>(false)
@@ -304,6 +305,12 @@ const loginAgreementRevision = ref<string>('')
 const loginAgreementDocuments = ref<LoginAgreementDocument[]>([])
 const agreementAccepted = ref<boolean>(false)
 const showAgreementModal = ref<boolean>(false)
+
+const initialPublicSettings = appStore.cachedPublicSettings ?? window.__APP_CONFIG__
+if (initialPublicSettings) {
+  applyPublicSettings(initialPublicSettings)
+  publicSettingsLoaded.value = true
+}
 
 // Turnstile
 const turnstileRef = ref<InstanceType<typeof TurnstileWidget> | null>(null)
@@ -388,28 +395,8 @@ onMounted(async () => {
   }
 
   try {
-    const settings = await getPublicSettings()
-    turnstileEnabled.value = settings.turnstile_enabled
-    turnstileSiteKey.value = settings.turnstile_site_key || ''
-    tencentCaptchaEnabled.value = settings.tencent_captcha_enabled === true
-    tencentCaptchaAppId.value = settings.tencent_captcha_app_id || ''
-    tencentCaptchaRegion.value = settings.tencent_captcha_region || 'cn'
-    aliyunCaptchaEnabled.value = settings.aliyun_captcha_enabled === true
-    aliyunCaptchaSceneId.value = settings.aliyun_captcha_scene_id || ''
-    aliyunCaptchaPrefix.value = settings.aliyun_captcha_prefix || ''
-    aliyunCaptchaRegion.value = settings.aliyun_captcha_region || 'cn'
-    linuxdoOAuthEnabled.value = settings.linuxdo_oauth_enabled
-    dingtalkOAuthEnabled.value = settings.dingtalk_oauth_enabled ?? false
-    wechatOAuthEnabled.value = isWeChatWebOAuthEnabled(settings)
-    backendModeEnabled.value = settings.backend_mode_enabled
-    oidcOAuthEnabled.value = settings.oidc_oauth_enabled
-    oidcOAuthProviderName.value = settings.oidc_oauth_provider_name || 'OIDC'
-    githubOAuthEnabled.value = settings.github_oauth_enabled
-    googleOAuthEnabled.value = settings.google_oauth_enabled
-    backendModeEnabled.value = settings.backend_mode_enabled
-    passwordResetEnabled.value = settings.password_reset_enabled
-    passkeyEnabled.value = settings.passkey_enabled === true
-    applyLoginAgreementSettings(settings)
+    const settings = await appStore.fetchPublicSettings()
+    if (settings) applyPublicSettings(settings)
   } catch (error) {
     console.error('Failed to load public settings:', error)
     loginAgreementEnabled.value = false
@@ -420,6 +407,30 @@ onMounted(async () => {
 })
 
 // ==================== Login Agreement ====================
+
+function applyPublicSettings(settings: PublicSettings): void {
+  registrationEnabled.value = settings.registration_enabled === true
+  turnstileEnabled.value = settings.turnstile_enabled
+  turnstileSiteKey.value = settings.turnstile_site_key || ''
+  tencentCaptchaEnabled.value = settings.tencent_captcha_enabled === true
+  tencentCaptchaAppId.value = settings.tencent_captcha_app_id || ''
+  tencentCaptchaRegion.value = settings.tencent_captcha_region || 'cn'
+  aliyunCaptchaEnabled.value = settings.aliyun_captcha_enabled === true
+  aliyunCaptchaSceneId.value = settings.aliyun_captcha_scene_id || ''
+  aliyunCaptchaPrefix.value = settings.aliyun_captcha_prefix || ''
+  aliyunCaptchaRegion.value = settings.aliyun_captcha_region || 'cn'
+  linuxdoOAuthEnabled.value = settings.linuxdo_oauth_enabled
+  dingtalkOAuthEnabled.value = settings.dingtalk_oauth_enabled ?? false
+  wechatOAuthEnabled.value = isWeChatWebOAuthEnabled(settings)
+  backendModeEnabled.value = settings.backend_mode_enabled
+  oidcOAuthEnabled.value = settings.oidc_oauth_enabled
+  oidcOAuthProviderName.value = settings.oidc_oauth_provider_name || 'OIDC'
+  githubOAuthEnabled.value = settings.github_oauth_enabled
+  googleOAuthEnabled.value = settings.google_oauth_enabled
+  passwordResetEnabled.value = settings.password_reset_enabled
+  passkeyEnabled.value = settings.passkey_enabled === true
+  applyLoginAgreementSettings(settings)
+}
 
 function applyLoginAgreementSettings(settings: {
   login_agreement_enabled?: boolean

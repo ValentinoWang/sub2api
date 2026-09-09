@@ -6,6 +6,7 @@ import (
 )
 
 type ProxyLatencyInfo struct {
+	IdentityHash     string    `json:"identity_hash,omitempty"`
 	Success          bool      `json:"success"`
 	LatencyMs        *int64    `json:"latency_ms,omitempty"`
 	Message          string    `json:"message,omitempty"`
@@ -26,4 +27,5 @@ type ProxyLatencyInfo struct {
 type ProxyLatencyCache interface {
 	GetProxyLatencies(ctx context.Context, proxyIDs []int64) (map[int64]*ProxyLatencyInfo, error)
 	SetProxyLatency(ctx context.Context, proxyID int64, info *ProxyLatencyInfo) error
+	DeleteProxyLatency(ctx context.Context, proxyID int64) error
 }

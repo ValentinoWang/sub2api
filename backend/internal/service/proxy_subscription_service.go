@@ -504,12 +504,7 @@ func (s *ProxySubscriptionService) setProxyStatusesBestEffort(ctx context.Contex
 }
 
 func (s *ProxySubscriptionService) setProxyStatus(ctx context.Context, proxy *Proxy, status string) error {
-	_, err := s.admin.UpdateProxy(ctx, proxy.ID, &UpdateProxyInput{
-		Name: proxy.Name, Protocol: proxy.Protocol, Host: proxy.Host, Port: proxy.Port,
-		Username: proxy.Username, Password: proxy.Password, Status: status,
-		ExpiresAt: proxy.ExpiresAt, FallbackMode: proxy.FallbackMode,
-		BackupProxyID: proxy.BackupProxyID, ExpiryWarnDays: proxy.ExpiryWarnDays,
-	})
+	_, err := s.admin.UpdateProxy(ctx, proxy.ID, &UpdateProxyInput{Status: status})
 	return err
 }
 

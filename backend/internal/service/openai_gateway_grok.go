@@ -763,53 +763,43 @@ func grokSupportsReasoningEffort(model string) bool {
 	}
 }
 
-var grokResponsesUnsupportedRecursiveFields = map[string]struct{}{
-	"external_web_access": {},
-}
-
-func sanitizeGrokResponsesUnsupportedFields(body []byte) ([]byte, error) {
+// sanitizeGrokUnsupportedFields removes the unsupported protocol option only
+// from locations where it is an OpenAI request field. Identically named keys
+// inside function schemas, messages, and tool outputs are user data.
+func sanitizeGrokUnsupportedFields(body []byte) ([]byte, error) {
 	if !bytes.Contains(body, []byte(`"external_web_access"`)) {
 		return body, nil
 	}
 
-	var payload any
+	var payload map[string]any
 	if err := decodeOpenAIJSONUseNumber(body, &payload); err != nil {
 		return nil, err
 	}
-	if !deleteJSONFields(payload, grokResponsesUnsupportedRecursiveFields) {
+	changed := false
+	if _, ok := payload["external_web_access"]; ok {
+		delete(payload, "external_web_access")
+		changed = true
+	}
+	if tools, ok := payload["tools"].([]any); ok {
+		for _, rawTool := range tools {
+			tool, ok := rawTool.(map[string]any)
+			if !ok {
+				continue
+			}
+			if _, ok := tool["external_web_access"]; ok {
+				delete(tool, "external_web_access")
+				changed = true
+			}
+		}
+	}
+	if !changed {
 		return body, nil
 	}
 	return marshalOpenAIUpstreamJSON(payload)
 }
 
-func deleteJSONFields(value any, fields map[string]struct{}) bool {
-	switch typed := value.(type) {
-	case map[string]any:
-		changed := false
-		for field := range fields {
-			if _, ok := typed[field]; ok {
-				delete(typed, field)
-				changed = true
-			}
-		}
-		for _, child := range typed {
-			if deleteJSONFields(child, fields) {
-				changed = true
-			}
-		}
-		return changed
-	case []any:
-		changed := false
-		for _, child := range typed {
-			if deleteJSONFields(child, fields) {
-				changed = true
-			}
-		}
-		return changed
-	default:
-		return false
-	}
-}
+// sanitizeGrokResponsesUnsupportedFields keeps the established call-site name.
+var sanitizeGrokResponsesUnsupportedFields = sanitizeGrokUnsupportedFields
 
 // additional_tools is a Codex/Responses Lite private input carrier. xAI's
 // Responses schema rejects the carrier itself, but accepts supported tools at

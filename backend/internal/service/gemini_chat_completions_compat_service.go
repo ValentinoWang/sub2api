@@ -321,6 +321,7 @@ func (s *GeminiMessagesCompatService) buildGeminiChatCompletionsUpstreamRequestF
 	switch account.Type {
 	case AccountTypeAPIKey:
 		return func(ctx context.Context) (*http.Request, string, error) {
+			ctx = withLongStreamHTTPUpstreamProfile(ctx, clientStream)
 			apiKey := account.GetCredential("api_key")
 			if strings.TrimSpace(apiKey) == "" {
 				return nil, "", errors.New("gemini api_key not configured")
@@ -353,6 +354,7 @@ func (s *GeminiMessagesCompatService) buildGeminiChatCompletionsUpstreamRequestF
 
 	case AccountTypeOAuth:
 		return func(ctx context.Context) (*http.Request, string, error) {
+			ctx = withLongStreamHTTPUpstreamProfile(ctx, useUpstreamStream)
 			if s.tokenProvider == nil {
 				return nil, "", errors.New("gemini token provider not configured")
 			}
@@ -420,6 +422,7 @@ func (s *GeminiMessagesCompatService) buildGeminiChatCompletionsUpstreamRequestF
 
 	case AccountTypeServiceAccount:
 		return func(ctx context.Context) (*http.Request, string, error) {
+			ctx = withLongStreamHTTPUpstreamProfile(ctx, clientStream)
 			if s.tokenProvider == nil {
 				return nil, "", errors.New("gemini token provider not configured")
 			}

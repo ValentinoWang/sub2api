@@ -34,6 +34,8 @@ vi.mock('@/stores', () => ({
     loginWithPasskey: (...args: unknown[]) => loginWithPasskeyMock(...args)
   }),
   useAppStore: () => ({
+    cachedPublicSettings: null,
+    fetchPublicSettings: (...args: unknown[]) => getPublicSettingsMock(...args),
     showError: vi.fn(),
     showSuccess: vi.fn(),
     showWarning: vi.fn()
@@ -44,7 +46,6 @@ vi.mock('@/api/auth', async () => {
   const actual = await vi.importActual<typeof import('@/api/auth')>('@/api/auth')
   return {
     ...actual,
-    getPublicSettings: (...args: unknown[]) => getPublicSettingsMock(...args),
     startOAuthLogin: (...args: unknown[]) => startOAuthLoginMock(...args),
     isTotp2FARequired: () => false,
     isWeChatWebOAuthEnabled: () => false

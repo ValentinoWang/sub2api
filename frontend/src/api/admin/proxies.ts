@@ -15,6 +15,60 @@ import type {
   AdminDataImportResult
 } from '@/types'
 
+const proxyProtocols = new Set(['http', 'https', 'socks5', 'socks5h'])
+const proxyStatuses = new Set(['active', 'inactive', 'expired'])
+const proxyFallbackModes = new Set(['none', 'proxy', 'direct'])
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isInteger(value: unknown, minimum: number): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= minimum
+}
+
+function assertProxyArray(value: unknown, requireAccountCount: boolean = false): asserts value is Proxy[] {
+  if (!Array.isArray(value)) {
+    throw new Error('Invalid proxy list response')
+  }
+  for (const item of value) {
+    if (
+      !isRecord(item) ||
+      !isInteger(item.id, 1) ||
+      typeof item.name !== 'string' ||
+      !proxyProtocols.has(String(item.protocol)) ||
+      typeof item.host !== 'string' ||
+      !isInteger(item.port, 1) ||
+      item.port > 65535 ||
+      (typeof item.username !== 'string' && item.username !== null) ||
+      (item.password !== undefined && typeof item.password !== 'string' && item.password !== null) ||
+      !proxyStatuses.has(String(item.status)) ||
+      (typeof item.expires_at !== 'string' && item.expires_at !== null) ||
+      !proxyFallbackModes.has(String(item.fallback_mode)) ||
+      (item.backup_proxy_id !== undefined && item.backup_proxy_id !== null && !isInteger(item.backup_proxy_id, 1)) ||
+      !isInteger(item.expiry_warn_days, 0) ||
+      typeof item.created_at !== 'string' ||
+      typeof item.updated_at !== 'string' ||
+      (requireAccountCount && !isInteger(item.account_count, 0))
+    ) {
+      throw new Error('Invalid proxy list response')
+    }
+  }
+}
+
+function assertProxyPagination(value: unknown): asserts value is PaginatedResponse<Proxy> {
+  if (
+    !isRecord(value) ||
+    !isInteger(value.total, 0) ||
+    !isInteger(value.page, 1) ||
+    !isInteger(value.page_size, 1) ||
+    !isInteger(value.pages, 1)
+  ) {
+    throw new Error('Invalid proxy pagination response')
+  }
+  assertProxyArray(value.items, true)
+}
+
 /**
  * List all proxies with pagination
  * @param page - Page number (default: 1)
@@ -44,6 +98,7 @@ export async function list(
     },
     signal: options?.signal
   })
+  assertProxyPagination(data)
   return data
 }
 
@@ -53,6 +108,7 @@ export async function list(
  */
 export async function getAll(): Promise<Proxy[]> {
   const { data } = await apiClient.get<Proxy[]>('/admin/proxies/all')
+  assertProxyArray(data)
   return data
 }
 
@@ -64,6 +120,7 @@ export async function getAllWithCount(): Promise<Proxy[]> {
   const { data } = await apiClient.get<Proxy[]>('/admin/proxies/all', {
     params: { with_count: 'true' }
   })
+  assertProxyArray(data, true)
   return data
 }
 
