@@ -11,11 +11,17 @@ admin API and the deployment secret store. Do not put customer session data,
 CDKs, browser-agent requests, or storage credentials in tickets, chat, shell
 history, or ordinary logs.
 
-The operator and acceptance owner must also use the
+The original
 [`human-acceptance/MEMBERSHIP_FULFILLMENT.md`](human-acceptance/MEMBERSHIP_FULFILLMENT.md)
-checklist. That document contains only observable human checks and the signed
-acceptance record. Keep build, deployment, migration, and automated test
-evidence in this operations guide or the restricted release record.
+checklist is a read-only historical reference. Do not append new tasks or signed
+acceptance records to it. New tasks follow the
+[Acceptance directory rules](../acceptance/README.md): machine, visual, sandbox,
+production, and release evidence belongs in
+`agents-results/YYYY-MM-DD/<task>/acceptance/`; human checklists, bindings,
+handoffs, and signed results belong in
+`acceptance/human/YYYY-Www/{未-}YYYY-MM-DD-<task-id>/`.
+Retain the `未-` prefix until there is a current valid human `PASS`. Historical
+records do not establish acceptance of a new task.
 
 ## Evidence Levels and Product Boundary
 

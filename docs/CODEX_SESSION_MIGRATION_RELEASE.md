@@ -1,6 +1,8 @@
 # Codex 本地旧对话接续：技术交付记录
 
-本文件保存开发、构建和发布边界；人类实际操作和签字仅记录在 `docs/human-acceptance/CODEX_SESSION_MIGRATION.md`。
+本文件保存开发、构建和发布边界；[原人类操作清单](human-acceptance/CODEX_SESSION_MIGRATION.md) 保留为只读历史参考，不再追加签署记录。
+
+新任务遵循 [Acceptance 目录与文档说明](../acceptance/README.md)：机器、视觉、sandbox、生产和发布证据写入 `agents-results/YYYY-MM-DD/<task>/acceptance/`；人类操作清单、绑定、入队和签署结果写入 `acceptance/human/YYYY-Www/{未-}YYYY-MM-DD-<task-id>/`。没有当前有效人工 `PASS` 时，物理目录保留 `未-` 前缀；历史清单与本技术交付记录均不能替代新任务的人工验收结论。
 
 工具版本为 `1.0.0`，站点对外发布标签为 `0.2.1`，两者不互相替代。交付候选包含离线工具包、提示词文本和 JSON 校验清单，三者由 `tools/build_codex_session_migrate.py` 共同生成或复制。
 

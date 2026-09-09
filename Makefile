@@ -1,4 +1,4 @@
-.PHONY: build build-backend build-frontend test test-backend test-frontend test-frontend-critical test-xui-sales
+.PHONY: build build-backend build-frontend test test-backend test-frontend test-frontend-critical test-xui-sales test-acceptance-layout
 
 FRONTEND_CRITICAL_VITEST := \
 	src/i18n/__tests__/localeKeyCompleteness.spec.ts \
@@ -28,7 +28,10 @@ build-frontend:
 	@pnpm --dir frontend run build
 
 # 运行测试（后端 + 前端）
-test: test-backend test-frontend
+test: test-acceptance-layout test-backend test-frontend
+
+test-acceptance-layout:
+	@bash tools/quality/run_acceptance_artifact_layout_guard.sh
 
 test-backend:
 	@$(MAKE) -C backend test

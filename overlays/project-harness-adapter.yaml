@@ -1,0 +1,33 @@
+project:
+  name: Sub2api
+  profile: project-sub2api
+
+acceptance:
+  task_evidence_root: agents-results
+  human_acceptance_root: acceptance/human
+  project_readme: acceptance/README.md
+  project_index: acceptance/index.md
+  human_acceptance_log_markdown: acceptance/human-acceptance-log.md
+  human_acceptance_log_json: acceptance/human-acceptance-log.json
+  legacy_root_manifest: acceptance/legacy-manifest.json
+  legacy_human_manifest: acceptance/human/legacy-manifest.json
+  blocking_items_per_release: 3
+  human_execution_phase: terminal-after-machine-green
+
+quality:
+  static_guards:
+    - make test-acceptance-layout
+  formatting: []
+  guard_policy:
+    evidence_root: agents-results
+    fast_budget_seconds: 30
+    medium_budget_seconds: 180
+    release_gate_commands: []
+
+qa:
+  screenshot: []
+  integration: []
+  evidence_root: agents-results
+
+skills:
+  enabled: []

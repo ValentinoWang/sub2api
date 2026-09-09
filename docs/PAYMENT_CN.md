@@ -412,7 +412,7 @@ FM 原生商户订单查询文档目前注明 **VIP 用户且需联系客服申�
 
 ### 人工测试与放行
 
-完整的逐项操作表和签字模板见 [LDXP 销售渠道人工验收清单](human-acceptance/LDXP_SALES_CHANNEL.md)。
+既有逐项操作表和签字模板见 [LDXP 销售渠道历史人工验收清单](human-acceptance/LDXP_SALES_CHANNEL.md)，该清单只读，不再追加新任务或签署记录。新任务按 [Acceptance 目录与文档说明](../acceptance/README.md) 建立 `acceptance/human/YYYY-Www/{未-}YYYY-MM-DD-<task-id>/` 人工工作区，没有当前有效人工 `PASS` 时保留 `未-` 前缀；机器、视觉、sandbox、生产和发布证据写入 `agents-results/YYYY-MM-DD/<task>/acceptance/`。
 
 人类只需要完成一次购买、一次兑换和一次重复兑换检查，并确认商品说明、到账金额和库存变化正确。代码、接口、数据库、批次和签名由自动化测试及技术人员验收。原生 LDXP 支付目前不验收，必须等正式协议和沙箱材料齐全后另行评审。
 
