@@ -77,7 +77,7 @@ RUN set -eu; \
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.toolkitVersion=${TOOLKIT_VERSION}" -o /out/ldxp-toolkit .; \
 	test -f /out/ldxp-toolkit && test -x /out/ldxp-toolkit; \
 	TOOLKIT_SHA256="$(sha256sum /out/ldxp-toolkit | awk '{print $1}')"; \
-	printf '{"schema_version":1,"program":"ldxp-toolkit","version":"%s","os":"linux","arch":"amd64","sha256":"%s"}\\n' "${TOOLKIT_VERSION}" "${TOOLKIT_SHA256}" > /out/ldxp-toolkit-release.json
+	printf '{"schema_version":1,"program":"ldxp-toolkit","version":"%s","os":"linux","arch":"amd64","sha256":"%s"}\n' "${TOOLKIT_VERSION}" "${TOOLKIT_SHA256}" > /out/ldxp-toolkit-release.json
 
 # -----------------------------------------------------------------------------
 # Stage 3: Backend Builder
