@@ -102,7 +102,25 @@ async function request(configuration, fetchImpl, method, relativePath, body, exp
   if (!payload || payload.code !== 0 || !payload.data || typeof payload.data !== "object") throw fail();
   const id = parseAnnouncementID(payload.data.id);
   if (expectedID !== undefined && id !== expectedID) throw fail();
+  return payload.data;
+}
+
+function requireAnnouncement(value, expected) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw fail();
+  const id = parseAnnouncementID(value.id);
+  if (expected.id !== undefined && id !== expected.id) throw fail();
+  if (expected.status !== undefined && value.status !== expected.status) throw fail();
+  if (expected.notifyMode !== undefined && value.notify_mode !== expected.notifyMode) throw fail();
+  if (expected.allUsers) {
+    if (!value.targeting || typeof value.targeting !== "object" || Array.isArray(value.targeting)) throw fail();
+    if (Object.keys(value.targeting).length !== 0) throw fail();
+  }
   return id;
+}
+
+async function verifyAnnouncement(configuration, fetchImpl, id, expected) {
+  const value = await request(configuration, fetchImpl, "GET", `admin/announcements/${id}`, undefined, id);
+  return requireAnnouncement(value, { ...expected, id });
 }
 
 async function readState(statePath) {
@@ -187,11 +205,38 @@ async function main(argv = process.argv.slice(2), dependencies = {}) {
   if (input.event === "start") {
     if (existing && existing.status === "start") {
       const id = parseAnnouncementID(existing.announcement_id);
-      await request(configuration, fetchImpl, "GET", `admin/announcements/${id}`, undefined, id);
+      await verifyAnnouncement(configuration, fetchImpl, id, {
+        status: "active",
+        notifyMode: "popup",
+        allUsers: true,
+      });
       output.write(`maintenance_announcement_id=${id}\n`);
       return { maintenanceAnnouncementID: id };
     }
-    const id = await request(configuration, fetchImpl, "POST", "admin/announcements", startAnnouncement(input));
+    if (existing && existing.status === "failed") {
+      const failedID = parseAnnouncementID(existing.announcement_id);
+      const archived = await request(
+        configuration,
+        fetchImpl,
+        "PUT",
+        `admin/announcements/${failedID}`,
+        { status: "archived" },
+        failedID,
+      );
+      requireAnnouncement(archived, { id: failedID, status: "archived" });
+      await verifyAnnouncement(configuration, fetchImpl, failedID, { status: "archived" });
+    }
+    const created = await request(configuration, fetchImpl, "POST", "admin/announcements", startAnnouncement(input));
+    const id = requireAnnouncement(created, {
+      status: "active",
+      notifyMode: "popup",
+      allUsers: true,
+    });
+    await verifyAnnouncement(configuration, fetchImpl, id, {
+      status: "active",
+      notifyMode: "popup",
+      allUsers: true,
+    });
     state.announcements[input.release] = {
       announcement_id: id,
       status: "start",
@@ -206,8 +251,20 @@ async function main(argv = process.argv.slice(2), dependencies = {}) {
   const id = parseAnnouncementID(existing.announcement_id);
 
   if (input.event === "complete") {
-    await request(configuration, fetchImpl, "PUT", `admin/announcements/${id}`, { status: "archived" }, id);
-    const recoveryID = await request(configuration, fetchImpl, "POST", "admin/announcements", recoveryAnnouncement(input));
+    const archived = await request(configuration, fetchImpl, "PUT", `admin/announcements/${id}`, { status: "archived" }, id);
+    requireAnnouncement(archived, { id, status: "archived" });
+    await verifyAnnouncement(configuration, fetchImpl, id, { status: "archived" });
+    const recovered = await request(configuration, fetchImpl, "POST", "admin/announcements", recoveryAnnouncement(input));
+    const recoveryID = requireAnnouncement(recovered, {
+      status: "active",
+      notifyMode: "popup",
+      allUsers: true,
+    });
+    await verifyAnnouncement(configuration, fetchImpl, recoveryID, {
+      status: "active",
+      notifyMode: "popup",
+      allUsers: true,
+    });
     state.announcements[input.release] = {
       announcement_id: id,
       recovery_announcement_id: recoveryID,
@@ -219,7 +276,13 @@ async function main(argv = process.argv.slice(2), dependencies = {}) {
     return { maintenanceAnnouncementID: id, recoveryAnnouncementID: recoveryID };
   }
 
-  await request(configuration, fetchImpl, "PUT", `admin/announcements/${id}`, delayedAnnouncement(input), id);
+  const delayed = await request(configuration, fetchImpl, "PUT", `admin/announcements/${id}`, delayedAnnouncement(input), id);
+  requireAnnouncement(delayed, { id, status: "active", notifyMode: "popup", allUsers: true });
+  await verifyAnnouncement(configuration, fetchImpl, id, {
+    status: "active",
+    notifyMode: "popup",
+    allUsers: true,
+  });
   state.announcements[input.release] = {
     announcement_id: id,
     status: "failed",
