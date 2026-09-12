@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/Wei-Shaw/sub2api/migrations"
 )
 
 // CommerceParity exposes only the effective business configuration, never credentials or codes.
@@ -61,7 +63,24 @@ func (s *LiandongRestockService) CommerceParity(ctx context.Context) (map[string
 	if refundGuard {
 		refundPolicy = "unused_only"
 	}
+	entries, err := migrations.FS.ReadDir(".")
+	if err != nil {
+		return nil, err
+	}
+	currentMigrations := make([]map[string]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".sql") {
+			continue
+		}
+		content, err := migrations.FS.ReadFile(entry.Name())
+		if err != nil {
+			return nil, err
+		}
+		checksum := sha256.Sum256([]byte(strings.TrimSpace(string(content))))
+		currentMigrations = append(currentMigrations, map[string]string{"version": entry.Name(), "checksum": hex.EncodeToString(checksum[:])})
+	}
 	return map[string]any{
+		"current_migrations":     currentMigrations,
 		"database_identity":      hex.EncodeToString(databaseDigest[:]),
 		"merchant_configured":    strings.TrimSpace(s.token) != "",
 		"code_secret_configured": len(s.codeSecret) >= 32, "code_secret_digest": digest,

@@ -20,7 +20,10 @@ func TestMigration236RenamesLegacyModelsListConfigColumn(t *testing.T) {
 	tx := testTx(t)
 	ctx := context.Background()
 
-	_, err := tx.ExecContext(ctx, "ALTER TABLE groups RENAME COLUMN model_allowlist TO models_list_config")
+	// Reconstruct the historical input; migration 240 retains this legacy column.
+	_, err := tx.ExecContext(ctx, "ALTER TABLE groups DROP COLUMN IF EXISTS models_list_config")
+	require.NoError(t, err)
+	_, err = tx.ExecContext(ctx, "ALTER TABLE groups RENAME COLUMN model_allowlist TO models_list_config")
 	require.NoError(t, err)
 
 	var groupID int64
@@ -50,7 +53,10 @@ func TestMigration236BackfillsWhenBothColumnsExist(t *testing.T) {
 	tx := testTx(t)
 	ctx := context.Background()
 
-	_, err := tx.ExecContext(ctx,
+	// Start from the pre-236 shape even when the full harness applied migration 240.
+	_, err := tx.ExecContext(ctx, "ALTER TABLE groups DROP COLUMN IF EXISTS models_list_config")
+	require.NoError(t, err)
+	_, err = tx.ExecContext(ctx,
 		"ALTER TABLE groups ADD COLUMN models_list_config JSONB NOT NULL DEFAULT '{}'::jsonb")
 	require.NoError(t, err)
 

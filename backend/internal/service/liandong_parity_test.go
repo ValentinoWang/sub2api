@@ -25,7 +25,10 @@ func TestLiandongParityReadsEffectivePoliciesWithoutLeakingSecrets(t *testing.T)
 	svc, settings, _ := newLiandongTestService("https://merchant.invalid")
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer func() { require.NoError(t, db.Close()) }()
+	defer func() {
+		mock.ExpectClose()
+		require.NoError(t, db.Close())
+	}()
 	svc.db = db
 	svc.settingRepo = paritySettings{settings}
 	svc.interval = 5 * time.Minute
@@ -68,7 +71,10 @@ func TestLiandongParityDoesNotClaimRefundProtectionWithoutMigration(t *testing.T
 	require.Error(t, err)
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer func() { require.NoError(t, db.Close()) }()
+	defer func() {
+		mock.ExpectClose()
+		require.NoError(t, db.Close())
+	}()
 	svc.db = db
 	mock.ExpectQuery("SELECT json_build_array").WillReturnRows(sqlmock.NewRows([]string{"identity"}).AddRow(`["test-cluster", "test-db"]`))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))

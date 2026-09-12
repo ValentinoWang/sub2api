@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "checksum_algorithm": "sha256_of_trimmed_sql",
+  "retired_migrations": [
+    {
+      "filename": "194_deepmath_openai_ws_policy.sql",
+      "checksum": "2617b3736727c66bff37736cb54ee64d73bb1f1912a52831cc4dc52081fa6b1c",
+      "observed_in": [
+        "prod"
+      ]
+    },
+    {
+      "filename": "195_deepmath_stored_responses_apikey_policy.sql",
+      "checksum": "eb6329ba91f938671e1abb350422521ba399c5e3d14c9fdd94d348d47b4e1ffe",
+      "observed_in": [
+        "prod"
+      ]
+    },
+    {
+      "filename": "231_codex_continuity.sql",
+      "checksum": "fb0fe071f9dc46bf545881a4dbd37c363d578a2a17bf350dcef2a4ca26c49a7d",
+      "observed_in": [
+        "dev",
+        "prod"
+      ]
+    },
+    {
+      "filename": "232_codex_continuity_client_window.sql",
+      "checksum": "c23cf6e17abd5c716852bbe5f47fe7b3031ecf76d9191c4e557ad5570819413e",
+      "observed_in": [
+        "dev",
+        "prod"
+      ]
+    },
+    {
+      "filename": "233_user_lifecycle_emails.sql",
+      "checksum": "51ac6f9cbadde06905353f2a7e2c57a4a1d2a07f23b07ca8995b4a6918f9d052",
+      "observed_in": [
+        "dev",
+        "prod"
+      ]
+    },
+    {
+      "filename": "234_user_first_topup_bonus.sql",
+      "checksum": "e1a5f5f407730fde09855df2ecf1811b225c440b9912d831bd8c9cc7dd0b1c65",
+      "observed_in": [
+        "dev",
+        "prod"
+      ]
+    },
+    {
+      "filename": "235_liandong_sales_channel.sql",
+      "checksum": "a63b03515aa530efe77d49181a2985da953e568b7d91706572c4943bfb002594",
+      "observed_in": [
+        "dev",
+        "prod"
+      ]
+    },
+    {
+      "filename": "236_membership_fulfillment.sql",
+      "checksum": "9439418945b02b697848eca8ef76a42d3e59f79e6176ee5b437958ca2b8f0e55",
+      "observed_in": [
+        "dev",
+        "prod"
+      ]
+    },
+    {
+      "filename": "237_membership_coupon_late_payment.sql",
+      "checksum": "076e78175d192a1ab0a9059fb353925c39ad15c327637f19e9d99336149ee91d",
+      "observed_in": [
+        "dev",
+        "prod"
+      ]
+    }
+  ]
+}

@@ -28,6 +28,8 @@ CONFIG_KEYS = {'url', 'app_container', 'db_container', 'ssh_host', 'ssh_key',
 BUSINESS_KEYS = {'business_rules', 'products', 'merchant_configured', 'code_secret_configured',
                  'code_secret_digest', 'purchase_enabled', 'restock_enabled', 'reconciliation_required',
                  'database_identity', 'purchase_url_configured'}
+API_KEYS = BUSINESS_KEYS | {'current_migrations'}
+RETIRED_MIGRATIONS_FILE = Path(__file__).with_name('commerce_retired_migrations.json')
 MIGRATIONS_SQL = (
     "SELECT COALESCE(json_agg(json_build_object('version',filename,'checksum',checksum) "
     "ORDER BY filename),'[]'::json) FROM schema_migrations"
@@ -36,6 +38,119 @@ IDENTITY_SQL = (
     "SELECT json_build_array(system_identifier::text,current_database()) "
     "FROM pg_control_system()"
 )
+SCHEMA_SQL = r"""
+SET search_path = pg_catalog;
+WITH namespaces AS (
+  SELECT oid, nspname FROM pg_namespace
+  WHERE nspname !~ '^pg_' AND nspname <> 'information_schema'
+), relations AS (
+  SELECT c.*, n.nspname FROM pg_class c JOIN namespaces n ON n.oid = c.relnamespace
+), objects AS (
+  SELECT 'relations' AS category, jsonb_build_object(
+    'schema', c.nspname, 'name', c.relname, 'kind', c.relkind,
+    'persistence', c.relpersistence, 'replica_identity', c.relreplident,
+    'row_security', c.relrowsecurity, 'force_row_security', c.relforcerowsecurity,
+    'partition_key', CASE WHEN c.relkind = 'p' THEN pg_get_partkeydef(c.oid) END,
+    'partition_bound', pg_get_expr(c.relpartbound, c.oid, false),
+    'options', c.reloptions,
+    'parents', (SELECT jsonb_agg(p.inhparent::regclass::text ORDER BY p.inhseqno)
+                FROM pg_inherits p WHERE p.inhrelid = c.oid)) AS item
+  FROM relations c WHERE c.relkind IN ('r','p','v','m','f')
+  UNION ALL
+  SELECT 'columns', jsonb_build_object(
+    'schema', c.nspname, 'relation', c.relname, 'name', a.attname,
+    'type', format_type(a.atttypid, a.atttypmod), 'not_null', a.attnotnull,
+    'default', pg_get_expr(d.adbin, d.adrelid, false), 'identity', a.attidentity,
+    'generated', a.attgenerated, 'dimensions', a.attndims,
+    'collation', CASE WHEN a.attcollation <> 0 THEN a.attcollation::regcollation::text END,
+    'storage', a.attstorage, 'compression', a.attcompression)
+  FROM relations c JOIN pg_attribute a ON a.attrelid = c.oid
+  LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
+  WHERE c.relkind IN ('r','p','v','m','f') AND a.attnum > 0 AND NOT a.attisdropped
+  UNION ALL
+  SELECT 'constraints', jsonb_build_object(
+    'schema', n.nspname, 'relation', r.relname, 'domain', t.typname,
+    'name', c.conname, 'type', c.contype, 'definition', pg_get_constraintdef(c.oid, false),
+    'validated', c.convalidated, 'deferrable', c.condeferrable,
+    'deferred', c.condeferred, 'no_inherit', c.connoinherit,
+    'enforced', COALESCE(to_jsonb(c)->'conenforced', 'true'::jsonb))
+  FROM pg_constraint c JOIN namespaces n ON n.oid = c.connamespace
+  LEFT JOIN pg_class r ON r.oid = c.conrelid LEFT JOIN pg_type t ON t.oid = c.contypid
+  WHERE c.contype <> 'n'
+  UNION ALL
+  SELECT 'indexes', jsonb_build_object(
+    'schema', c.nspname, 'relation', c.relname, 'name', x.relname,
+    'definition', pg_get_indexdef(i.indexrelid, 0, false),
+    'valid', i.indisvalid, 'ready', i.indisready, 'live', i.indislive,
+    'clustered', i.indisclustered, 'replica_identity', i.indisreplident, 'options', x.reloptions)
+  FROM relations c JOIN pg_index i ON i.indrelid = c.oid JOIN pg_class x ON x.oid = i.indexrelid
+  UNION ALL
+  SELECT 'sequences', jsonb_build_object(
+    'schema', c.nspname, 'name', c.relname, 'type', format_type(s.seqtypid, NULL),
+    'start', s.seqstart, 'increment', s.seqincrement, 'min', s.seqmin, 'max', s.seqmax,
+    'cache', s.seqcache, 'cycle', s.seqcycle,
+    'owned_by', (SELECT jsonb_agg(jsonb_build_array(rn.nspname, r.relname, a.attname)
+                                  ORDER BY rn.nspname, r.relname, a.attname)
+                 FROM pg_depend d JOIN pg_class r ON r.oid = d.refobjid
+                 JOIN pg_namespace rn ON rn.oid = r.relnamespace
+                 JOIN pg_attribute a ON a.attrelid = r.oid AND a.attnum = d.refobjsubid
+                 WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid
+                   AND d.refclassid = 'pg_class'::regclass AND d.deptype IN ('a','i')))
+  FROM relations c JOIN pg_sequence s ON s.seqrelid = c.oid
+  UNION ALL
+  SELECT 'functions', jsonb_build_object(
+    'schema', n.nspname, 'name', p.proname,
+    'arguments', pg_get_function_identity_arguments(p.oid),
+    'definition', pg_get_functiondef(p.oid))
+  FROM pg_proc p JOIN namespaces n ON n.oid = p.pronamespace WHERE p.prokind <> 'a'
+  UNION ALL
+  SELECT 'triggers', jsonb_build_object(
+    'schema', c.nspname, 'relation', c.relname, 'name', t.tgname,
+    'definition', pg_get_triggerdef(t.oid, false), 'enabled', t.tgenabled)
+  FROM pg_trigger t JOIN relations c ON c.oid = t.tgrelid WHERE NOT t.tgisinternal
+  UNION ALL
+  SELECT 'views', jsonb_build_object(
+    'schema', c.nspname, 'name', c.relname, 'definition', pg_get_viewdef(c.oid, false))
+  FROM relations c WHERE c.relkind IN ('v','m')
+  UNION ALL
+  SELECT 'types', jsonb_build_object(
+    'schema', n.nspname, 'name', t.typname, 'kind', t.typtype,
+    'base', CASE WHEN t.typbasetype <> 0 THEN format_type(t.typbasetype, t.typtypmod) END,
+    'not_null', t.typnotnull, 'default', t.typdefault,
+    'enum_labels', (SELECT jsonb_agg(e.enumlabel ORDER BY e.enumsortorder)
+                    FROM pg_enum e WHERE e.enumtypid = t.oid))
+  FROM pg_type t JOIN namespaces n ON n.oid = t.typnamespace
+  WHERE t.typtype IN ('d','e','r','m')
+  UNION ALL
+  SELECT 'policies', jsonb_build_object(
+    'schema', c.nspname, 'relation', c.relname, 'name', p.polname,
+    'command', p.polcmd, 'permissive', p.polpermissive,
+    'roles', (SELECT jsonb_agg(CASE WHEN role = 0 THEN 'PUBLIC' ELSE role::regrole::text END ORDER BY role::regrole::text)
+              FROM unnest(p.polroles) role),
+    'using', pg_get_expr(p.polqual, p.polrelid, false),
+    'check', pg_get_expr(p.polwithcheck, p.polrelid, false))
+  FROM pg_policy p JOIN relations c ON c.oid = p.polrelid
+  UNION ALL
+  SELECT 'rules', jsonb_build_object('schema', c.nspname, 'relation', c.relname,
+    'name', r.rulename, 'definition', pg_get_ruledef(r.oid, false), 'enabled', r.ev_enabled)
+  FROM pg_rewrite r JOIN relations c ON c.oid = r.ev_class WHERE r.rulename <> '_RETURN'
+  UNION ALL
+  SELECT 'extensions', jsonb_build_object('schema', n.nspname, 'name', e.extname, 'version', e.extversion)
+  FROM pg_extension e JOIN pg_namespace n ON n.oid = e.extnamespace
+  UNION ALL
+  SELECT 'unsupported', jsonb_build_object('schema', n.nspname, 'name', p.proname, 'kind', 'aggregate')
+  FROM pg_proc p JOIN namespaces n ON n.oid = p.pronamespace WHERE p.prokind = 'a'
+  UNION ALL
+  SELECT 'unsupported', jsonb_build_object('schema', c.nspname, 'name', c.relname, 'kind', c.relkind)
+  FROM relations c WHERE c.relkind IN ('f','c')
+  UNION ALL
+  SELECT 'unsupported', jsonb_build_object('schema', n.nspname, 'name', t.typname, 'kind', t.typtype)
+  FROM pg_type t JOIN namespaces n ON n.oid = t.typnamespace WHERE t.typtype IN ('r','m')
+)
+SELECT jsonb_object_agg(category, items) FROM (
+  SELECT category, jsonb_agg(item ORDER BY item::text) AS items FROM objects GROUP BY category
+) grouped;
+"""
 
 
 class ReleaseError(Exception):
@@ -183,23 +298,98 @@ def postgres(config, transport, command, sql=None):
     return transport.command(config, ['docker', 'exec', config['db_container'], *args])
 
 
-def normalize_schema(dump):
-    lines, dollar_quote = [], None
-    for line in dump.splitlines():
-        if dollar_quote is None and (not line.strip() or line.startswith('--') or
-                                     re.fullmatch(r'\\(?:un)?restrict\s+\S+', line)):
-            continue
-        lines.append(line.rstrip())
-        # Keep function bodies intact, including comment-like text and blank lines.
-        for match in re.finditer(r'\$(?:[A-Za-z_][A-Za-z0-9_]*)?\$', line):
-            delimiter = match.group()
-            if dollar_quote is None:
-                dollar_quote = delimiter
-            elif dollar_quote == delimiter:
-                dollar_quote = None
-    if not lines or dollar_quote is not None:
-        raise ReleaseError('schema dump is empty or incomplete')
-    return '\n'.join(lines) + '\n'
+SQL_LITERAL = r"'(?:[^']|'')*'"
+VARCHAR_LITERAL = SQL_LITERAL + r'::character varying'
+TEXT_VARCHAR_LITERAL = r'\(' + VARCHAR_LITERAL + r'\)::text'
+CHECK_ARRAY_CASTS = (
+    re.compile(r'\(ARRAY\[(?P<items>' + VARCHAR_LITERAL + r'(?:, ' + VARCHAR_LITERAL + r')*)\]\)::text\[\]'),
+    re.compile(r'ARRAY\[(?P<items>' + TEXT_VARCHAR_LITERAL + r'(?:, ' + TEXT_VARCHAR_LITERAL + r')*)\]'),
+)
+
+
+def normalize_check_definition(definition):
+    """Unify only PostgreSQL's two observed literal-varchar-array text coercions."""
+    if not isinstance(definition, str) or not definition.startswith('CHECK '):
+        return definition
+    for pattern in CHECK_ARRAY_CASTS:
+        literal_ranges = [(match.start(), match.end()) for match in re.finditer(SQL_LITERAL, definition)]
+        def replace(match):
+            if any(start <= match.start() < end for start, end in literal_ranges):
+                return match.group()
+            values = re.findall(SQL_LITERAL, match.group('items'))
+            return 'ARRAY[' + ', '.join(value + '::text' for value in values) + ']'
+        definition = pattern.sub(replace, definition)
+    return definition
+
+
+SCHEMA_CATEGORIES = ('relations', 'columns', 'constraints', 'indexes', 'sequences',
+                     'functions', 'triggers', 'views', 'types', 'policies', 'rules', 'extensions')
+
+
+def logical_schema(catalog):
+    exact_object(catalog, set(SCHEMA_CATEGORIES) | {'unsupported'}, {'relations', 'columns'})
+    if catalog.get('unsupported') or not catalog['relations'] or not catalog['columns']:
+        raise ReleaseError('catalog contains unsupported objects or lacks required relations and columns')
+    normalized = {}
+    for category in SCHEMA_CATEGORIES:
+        rows = catalog.get(category, [])
+        if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+            raise ReleaseError('schema catalog contains invalid object records')
+        entries = []
+        for row in rows:
+            item = dict(row)
+            if category == 'constraints' and item.get('type') == 'c':
+                item['definition'] = normalize_check_definition(item.get('definition'))
+            entries.append(item)
+        normalized[category] = sorted(entries, key=canonical_bytes)
+    return normalized
+
+
+def migration_map(records, label):
+    if not isinstance(records, list) or not records:
+        raise ReleaseError(f'{label}: provide a nonempty migration manifest')
+    result = {}
+    for record in records:
+        exact_object(record, {'version', 'checksum'}, {'version', 'checksum'})
+        version, checksum = record['version'], record['checksum']
+        if (not isinstance(version, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*\.sql', version)
+                or not isinstance(checksum, str) or not re.fullmatch(r'[0-9a-f]{64}', checksum)):
+            raise ReleaseError(f'{label}: require exact SQL filenames and SHA-256 checksums')
+        if version in result:
+            raise ReleaseError(f'{label}: duplicate migration filename')
+        result[version] = checksum
+    return result
+
+
+def validate_migration_history(applied, current, environment):
+    required = migration_map(current, 'current_migrations')
+    history = migration_map(applied, 'applied_migrations')
+    authority = read_json(RETIRED_MIGRATIONS_FILE)
+    exact_object(authority, {'schema_version', 'checksum_algorithm', 'retired_migrations'},
+                 {'schema_version', 'checksum_algorithm', 'retired_migrations'})
+    if type(authority['schema_version']) is not int or authority['schema_version'] != 1 or authority['checksum_algorithm'] != 'sha256_of_trimmed_sql':
+        raise ReleaseError('retired migration authority has an unsupported schema or checksum algorithm')
+    retired = {}
+    if not isinstance(authority['retired_migrations'], list):
+        raise ReleaseError('retired migration authority must contain explicit records')
+    for record in authority['retired_migrations']:
+        exact_object(record, {'filename', 'checksum', 'observed_in'}, {'filename', 'checksum', 'observed_in'})
+        entry = migration_map([{'version': record['filename'], 'checksum': record['checksum']}], 'retired_migrations')
+        scopes = record['observed_in']
+        if (not isinstance(scopes, list) or not scopes or any(value not in ('dev', 'prod') for value in scopes)
+                or len(scopes) != len(set(scopes)) or record['filename'] in retired):
+            raise ReleaseError('retired migration authority contains duplicate or invalid environment scopes')
+        retired[record['filename']] = (entry[record['filename']], scopes)
+    if set(required) & set(retired):
+        raise ReleaseError('current and retired migration authorities overlap')
+    if any(history.get(version) != checksum for version, checksum in required.items()):
+        raise ReleaseError('required migration is missing or mutated; align the database with the current release')
+    extra = []
+    for version in sorted(set(history) - set(required)):
+        if version not in retired or retired[version][0] != history[version] or environment not in retired[version][1]:
+            raise ReleaseError('unapproved retired migration history; review the exact filename and checksum')
+        extra.append({'version': version, 'checksum': history[version]})
+    return ([{'version': version, 'checksum': required[version]} for version in sorted(required)], extra)
 
 
 def canonical_bytes(value):
@@ -248,11 +438,11 @@ def acceptance_from_file(path, snapshot):
 
 def read_business(config, transport):
     business = transport.api(config, 'GET', PARITY_ROUTE)
-    exact_object(business, BUSINESS_KEYS, BUSINESS_KEYS)
+    exact_object(business, API_KEYS, API_KEYS)
     return business
 
 
-def collect(config, environment, transport):
+def collect(config, environment, transport, audit=None):
     image_id = transport.command(config, ['docker', 'inspect', '--type', 'container', '--format',
                                          '{{.Image}}', config['app_container']]).strip()
     if not re.fullmatch(r'sha256:[0-9a-f]{64}', image_id):
@@ -271,14 +461,19 @@ def collect(config, environment, transport):
     if (not isinstance(identity, list) or len(identity) != 2 or
             any(not isinstance(value, str) or not value for value in identity)):
         raise ReleaseError('database identity inspection is incomplete')
-    schema = normalize_schema(postgres(config, transport, 'pg_dump'))
+    schema = logical_schema(parse_json(postgres(config, transport, 'psql', SCHEMA_SQL)))
     database_identity = hashlib.sha256(raw_identity.encode()).hexdigest()
     business = read_business(config, transport)
     if business['database_identity'] != database_identity:
         raise ReleaseError('admin API and inspected database identities differ; correct the environment origin or containers')
+    current_migrations, retired = validate_migration_history(migrations, business.pop('current_migrations'), environment)
+    if audit is not None:
+        audit['retired_migrations'] = retired
+        audit['schema_objects'] = {category: len(rows) for category, rows in schema.items()}
+        audit['retired_authority_sha256'] = hashlib.sha256(canonical_bytes(read_json(RETIRED_MIGRATIONS_FILE))).hexdigest()
     snapshot = dict(environment=environment, version=version, source_commit=revision,
-                    image_id=image_id, migrations=migrations,
-                    schema_hash=hashlib.sha256(schema.encode()).hexdigest(),
+                    image_id=image_id, migrations=current_migrations,
+                    schema_hash=hashlib.sha256(canonical_bytes(schema)).hexdigest(),
                     **business)
     validator = parity.Validator()
     validator.snapshot(snapshot, environment, 'artifact')
@@ -291,8 +486,11 @@ def collect(config, environment, transport):
 
 def same_business(left, right):
     ignored = {'purchase_enabled', 'restock_enabled'}
-    return {key: left[key] for key in BUSINESS_KEYS - ignored} == {
+    return (migration_map(left['current_migrations'], 'current_migrations') ==
+            migration_map(right['migrations'], 'current_migrations') and
+            {key: left[key] for key in BUSINESS_KEYS - ignored} == {
         key: right[key] for key in BUSINESS_KEYS - ignored}
+            )
 
 
 def promote(config, snapshots, transport):
@@ -344,7 +542,8 @@ def promote(config, snapshots, transport):
 def execute(config, stage, enable_sales, transport):
     if enable_sales and stage != 'sales':
         raise ReleaseError('--enable-sales requires --stage sales')
-    snapshots = {environment: collect(config[environment], environment, transport)
+    audit = {environment: {} for environment in ('dev', 'prod')}
+    snapshots = {environment: collect(config[environment], environment, transport, audit[environment])
                  for environment in ('dev', 'prod')}
     hashes = {environment: hashlib.sha256(canonical_bytes(value)).hexdigest()
               for environment, value in snapshots.items()}
@@ -352,6 +551,7 @@ def execute(config, stage, enable_sales, transport):
     result['acceptance_binding_sha256'] = {environment: binding_sha256(value)
                                           for environment, value in snapshots.items()}
     result['snapshots'] = snapshots
+    result['collection_audit'] = audit
     result['enablement'] = {'requested': enable_sales, 'enabled': False}
     if enable_sales:
         for environment, snapshot in snapshots.items():

@@ -21,6 +21,9 @@ class FakeTransport:
         for environment in ('dev', 'prod'):
             identity = json.dumps(['123' if environment == 'dev' else '456', 'fixture'])
             self.snapshots[environment]['database_identity'] = hashlib.sha256(identity.encode()).hexdigest()
+            for migration in self.snapshots[environment]['migrations']:
+                migration['version'] += '.sql'
+            self.snapshots[environment]['current_migrations'] = copy.deepcopy(self.snapshots[environment]['migrations'])
         self.writes = []
         self.commands = []
         self.fail_write = None
@@ -38,13 +41,17 @@ class FakeTransport:
             return json.dumps(data['migrations'])
         if argv[-1] == release.IDENTITY_SQL:
             return json.dumps(['123' if config['environment'] == 'dev' else '456', 'fixture'])
-        return '-- Generated dump\n\\restrict random\nCREATE TABLE fixture(id integer);\n\\unrestrict random\n'
+        if argv[-1] == release.SCHEMA_SQL:
+            return json.dumps({'relations': [{'schema': 'public', 'name': 'fixture'}],
+                               'columns': [{'schema': 'public', 'relation': 'fixture', 'name': 'id',
+                                            'type': 'integer', 'not_null': True}]})
+        raise AssertionError('unexpected inspection command')
 
     def api(self, config, method, route, body=None):
         environment = config['environment']
         state = self.snapshots[environment]
         if method == 'GET':
-            return copy.deepcopy({key: state[key] for key in release.BUSINESS_KEYS})
+            return copy.deepcopy({key: state[key] for key in release.API_KEYS})
         self.writes.append((environment, method, route, copy.deepcopy(body)))
         if route == release.WORKER_ROUTE:
             state['restock_enabled'] = body['enabled']
@@ -87,7 +94,7 @@ class CommerceReleaseTest(unittest.TestCase):
         self.assertEqual(len(data['database_identity']), 64)
         self.assertNotIn('123', data['database_identity'])
         self.assertNotIn('acceptance', data)
-        self.assertTrue(any('pg_dump' in ' '.join(argv) for argv in self.transport.commands))
+        self.assertTrue(any(release.SCHEMA_SQL in argv for argv in self.transport.commands))
         self.assertTrue(any(release.MIGRATIONS_SQL in argv for argv in self.transport.commands))
 
     def test_artifact_passes_without_acceptance_and_sales_blocks_without_writes(self):
@@ -225,13 +232,76 @@ class CommerceReleaseTest(unittest.TestCase):
         self.assertFalse(self.transport.snapshots['prod']['purchase_enabled'])
         self.assertFalse(self.transport.snapshots['prod']['restock_enabled'])
 
-    def test_schema_normalizes_generated_noise_but_keeps_function_body(self):
-        first = '-- Dumped from 1\n\\restrict abc\nCREATE TABLE t(a int);\n\\unrestrict abc\n'
-        second = '-- Dumped from 2\n\\restrict xyz\n\nCREATE TABLE t(a int);\n\\unrestrict xyz\n'
-        self.assertEqual(release.normalize_schema(first), release.normalize_schema(second))
-        self.assertNotEqual(release.normalize_schema(first), release.normalize_schema(first.replace('int', 'text')))
-        function = 'CREATE FUNCTION f() RETURNS text AS $$\n-- body comment\n\nSELECT 1;\n$$ LANGUAGE sql;'
-        self.assertIn('-- body comment\n\n', release.normalize_schema(function))
+    def test_schema_fingerprint_ignores_only_object_and_column_enumeration_order(self):
+        first = {'relations': [{'schema': 'public', 'name': 'fixture'}],
+                 'columns': [{'name': 'first', 'type': 'text', 'not_null': True},
+                             {'name': 'second', 'type': 'integer', 'not_null': False}]}
+        second = copy.deepcopy(first)
+        second['columns'].reverse()
+        self.assertEqual(release.logical_schema(first), release.logical_schema(second))
+        second['columns'][0]['not_null'] = True
+        self.assertNotEqual(release.logical_schema(first), release.logical_schema(second))
+
+    def test_check_literal_array_cast_renderings_match_and_value_changes_do_not(self):
+        old = "CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'uploaded'::character varying])::text[])))"
+        new = "CHECK (((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('uploaded'::character varying)::text])))"
+        self.assertEqual(release.normalize_check_definition(old), release.normalize_check_definition(new))
+        self.assertNotEqual(release.normalize_check_definition(old),
+                            release.normalize_check_definition(new.replace('uploaded', 'failed')))
+        swapped = new.replace("('pending'", "('uploaded'").replace("('uploaded'::character varying)::text])))",
+                                                                               "('pending'::character varying)::text])))")
+        self.assertNotEqual(release.normalize_check_definition(old), release.normalize_check_definition(swapped))
+
+    def test_unknown_check_constructs_remain_exact(self):
+        definitions = ["CHECK (x = ANY ((ARRAY['a'::character varying(3)])::text[])))",
+                       "CHECK (x = ANY ((ARRAY[dynamic_value::character varying])::text[])))",
+                       "CHECK (amount >= 5)",
+                       "CHECK (x = ANY ((ARRAY['a'::character varying, 1])::text[])))"]
+        for definition in definitions:
+            self.assertEqual(release.normalize_check_definition(definition), definition)
+
+    def test_constraint_and_function_changes_are_preserved_in_fingerprint(self):
+        base = {'relations': [{'name': 't'}], 'columns': [{'name': 'id'}],
+                'constraints': [{'name': 'positive', 'type': 'c', 'definition': 'CHECK (amount > 0)'}],
+                'functions': [{'name': 'f', 'definition': 'SELECT 1;'}]}
+        for category, field, value in (('constraints', 'definition', 'CHECK (amount > 5)'),
+                                        ('constraints', 'type', 'u'), ('functions', 'definition', 'SELECT 2;')):
+            changed = copy.deepcopy(base)
+            changed[category][0][field] = value
+            self.assertNotEqual(release.logical_schema(base), release.logical_schema(changed))
+
+    def test_retired_history_is_separate_and_current_manifest_is_compared(self):
+        authority = release.read_json(release.RETIRED_MIGRATIONS_FILE)
+        retired = next(record for record in authority['retired_migrations'] if record['observed_in'] == ['prod'])
+        self.transport.snapshots['prod']['migrations'].append({'version': retired['filename'], 'checksum': retired['checksum']})
+        result = release.execute(self.config, 'artifact', False, self.transport)
+        self.assertTrue(result['passed'])
+        self.assertEqual(len(result['collection_audit']['prod']['retired_migrations']), 1)
+        self.assertEqual(result['snapshots']['dev']['migrations'], result['snapshots']['prod']['migrations'])
+
+    def test_missing_mutated_empty_and_unknown_migrations_block(self):
+        for change in ('missing', 'mutated', 'empty', 'unknown'):
+            self.transport = FakeTransport()
+            state = self.transport.snapshots['prod']
+            if change == 'missing':
+                state['migrations'].pop()
+            elif change == 'mutated':
+                state['migrations'][0]['checksum'] = '0' * 64
+            elif change == 'empty':
+                state['current_migrations'] = []
+            else:
+                state['migrations'].append({'version': '999_unknown.sql', 'checksum': '0' * 64})
+            with self.subTest(change=change), self.assertRaises(release.ReleaseError):
+                release.execute(self.config, 'artifact', False, self.transport)
+
+    def test_retired_history_requires_exact_hash_and_approved_environment(self):
+        authority = release.read_json(release.RETIRED_MIGRATIONS_FILE)
+        retired = next(record for record in authority['retired_migrations'] if record['observed_in'] == ['prod'])
+        current = self.transport.snapshots['prod']['current_migrations']
+        for environment, checksum in (('dev', retired['checksum']), ('prod', '0' * 64)):
+            history = current + [{'version': retired['filename'], 'checksum': checksum}]
+            with self.assertRaises(release.ReleaseError):
+                release.validate_migration_history(history, current, environment)
 
     def test_config_rejects_unknown_fields_injection_and_credential_urls(self):
         base = {environment: {'url': 'https://' + environment + '.invalid', 'app_container': 'app',
