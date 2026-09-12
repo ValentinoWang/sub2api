@@ -40,6 +40,8 @@ class LocalCITest(unittest.TestCase):
         self.stub('node', 'printf "0\\n"')
         self.stub('pnpm', 'printf "9.15.9\\n"')
         self.stub('go', 'printf "go0.0.0\\n"')
+        for name in ('golangci-lint', 'govulncheck', 'docker', 'corepack'):
+            self.stub(name, 'printf "%s\\n" "$0" >> "$CI_UNEXPECTED_CALLS"\nexit 97')
 
     def git(self, *args):
         subprocess.run(['git', '-C', str(self.repo), *args], check=True, capture_output=True)
@@ -51,11 +53,14 @@ class LocalCITest(unittest.TestCase):
 
     def run_ci(self, **environment):
         env = dict(os.environ, PATH=f'{self.bin}:{os.environ["PATH"]}',
-                   CI_NODE_BIN_DIR=str(self.bin), CI_TEST_LOG=str(self.base / 'corepack.log'))
+                   CI_NODE_BIN_DIR=str(self.bin), CI_TEST_LOG=str(self.base / 'corepack.log'),
+                   CI_UNEXPECTED_CALLS=str(self.base / 'unexpected-calls.log'))
         env.update(environment)
         result = subprocess.run(['bash', 'tools/quality/run_local_ci.sh', 'agents-results/evidence'],
                                 cwd=self.repo, env=env, capture_output=True, text=True)
         self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.base / 'unexpected-calls.log').exists(),
+                         'Toolchain validation fell through to external tools')
         summary = json.loads((self.repo / 'agents-results/evidence/summary.json').read_text())
         self.assertEqual(summary['exit_code'], result.returncode)
         return {stage['stage']: stage for stage in summary['stages']}
@@ -71,6 +76,8 @@ class LocalCITest(unittest.TestCase):
         self.assertEqual(stages['snapshot']['status'], 'PASS')
         self.assertEqual(stages['toolchain']['status'], 'FAIL')
         self.assertEqual(stages['frozen-install']['status'], 'NOT_RUN')
+        self.assertIn('requires Node 24',
+                      (self.repo / 'agents-results/evidence/toolchain.log').read_text())
 
     def test_dirty_source_is_rejected_before_install(self):
         (self.repo / 'source.txt').write_text('dirty\n')
@@ -82,6 +89,32 @@ class LocalCITest(unittest.TestCase):
         (self.repo / 'acceptance/README.md').write_text('uncommitted policy\n')
         stages = self.run_ci()
         self.assertEqual(stages['source-preflight']['status'], 'FAIL')
+
+    def test_each_toolchain_version_mismatch_stops_before_external_tools(self):
+        cases = (
+            ('node', '0', 'requires Node 24'),
+            ('pnpm', '11.19.0', 'requires pnpm 9.15.9'),
+            ('go', 'go0.0.0', 'requires Go 1.27.0'),
+            ('golangci-lint', 'golangci-lint has version 2.12.0', 'requires golangci-lint 2.13.x'),
+        )
+        for tool, version, diagnostic in cases:
+            with self.subTest(tool=tool):
+                fixture = LocalCITest()
+                fixture.setUp()
+                self.addCleanup(fixture.doCleanups)
+                for name, valid in (('node', '24'), ('pnpm', '9.15.9'),
+                                    ('go', 'go1.27.0'),
+                                    ('golangci-lint', 'golangci-lint has version 2.13.0')):
+                    fixture.stub(name, f'printf "%s\\n" "{valid}"')
+                fixture.stub(tool, f'printf "%s\\n" "{version}"')
+                if tool == 'pnpm':
+                    # Verify the preflight rejects an unsuccessful pinned shim too.
+                    fixture.stub('corepack', 'printf "8.0.0\\n"')
+                stages = fixture.run_ci()
+                self.assertEqual(stages['toolchain']['status'], 'FAIL')
+                self.assertEqual(stages['frozen-install']['status'], 'NOT_RUN')
+                self.assertIn(diagnostic,
+                              (fixture.repo / 'agents-results/evidence/toolchain.log').read_text())
 
     def test_inherited_go_test_filters_are_removed(self):
         self.stub('node', 'printf "24\\n"')

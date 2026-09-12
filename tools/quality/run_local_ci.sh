@@ -81,19 +81,27 @@ create_snapshot() {
 }
 preflight_toolchain() {
   command -v node
-  [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]]
+  [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]] || {
+    echo 'Local CI requires Node 24.' >&2; return 1;
+  }
   node --version
-  [[ "$(pnpm --version)" == 9.15.9 ]]
+  [[ "$(pnpm --version)" == 9.15.9 ]] || {
+    echo 'Local CI requires pnpm 9.15.9.' >&2; return 1;
+  }
   pnpm --version
   local expected actual
   expected="$(awk '$1 == "go" {print $2; exit}' backend/go.mod)"
   actual="$(cd backend && go env GOVERSION)"
-  [[ "$actual" == "go$expected" ]]
+  [[ "$actual" == "go$expected" ]] || {
+    printf 'Local CI requires Go %s, got %s.\n' "$expected" "$actual" >&2; return 1;
+  }
   printf '%s\n' "$actual"
   local lint_version
   lint_version="$(golangci-lint version)"
   printf '%s\n' "$lint_version"
-  [[ "$lint_version" =~ version[[:space:]]2\.13(\.|[[:space:]]) ]]
+  [[ "$lint_version" =~ version[[:space:]]2\.13(\.|[[:space:]]) ]] || {
+    echo 'Local CI requires golangci-lint 2.13.x.' >&2; return 1;
+  }
   govulncheck -version
   docker info --format '{{.ServerVersion}}'
 }
