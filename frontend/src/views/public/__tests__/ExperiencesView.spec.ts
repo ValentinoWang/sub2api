@@ -29,7 +29,7 @@ describe('ExperiencesView', () => {
     })
 
     expect(wrapper.text()).toContain('GPT-6 已接入，为什么 Codex 仍然看不见？')
-    expect(wrapper.findAll('.experience-card')).toHaveLength(5)
+    expect(wrapper.findAll('.experience-card')).toHaveLength(7)
     expect(wrapper.findAll('.experience-filter')).toHaveLength(5)
     expect(wrapper.get('[data-experience-id="codex-cli"]').find('.experience-card-topic').text()).toBe('接入主题')
     expect(wrapper.get('[data-experience-id="codex-cli"]').find('.experience-card-audience-label').text()).toBe('experiences.appliesTo')
@@ -39,11 +39,12 @@ describe('ExperiencesView', () => {
       '/codex-cli',
       '/claude-code',
       '/openai-compatible-api',
+      '/experiences/windows-11-wsl-codex-frontend',
     ]))
 
     await wrapper.get('[data-category-filter="connectionConfiguration"]').trigger('click')
     await flushPromises()
-    expect(wrapper.findAll('.experience-card')).toHaveLength(3)
+    expect(wrapper.findAll('.experience-card')).toHaveLength(4)
     expect(router.currentRoute.value.query.category).toBe('connectionConfiguration')
     expect(router.currentRoute.value.query.source).toBe('home')
 
@@ -51,6 +52,13 @@ describe('ExperiencesView', () => {
     await flushPromises()
     expect(router.currentRoute.value.query.category).toBeUndefined()
     expect(router.currentRoute.value.query.source).toBe('home')
+
+    await wrapper.get('[data-category-filter="troubleshooting"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('.experience-card')).toHaveLength(1)
+    expect(wrapper.text()).toContain('Windows 11 + WSL2 里 Codex 装好了却不能正常使用')
+    expect(wrapper.text()).not.toContain('第一次真实前端开发')
+    expect(router.currentRoute.value.query.category).toBe('troubleshooting')
   })
 
   it('reads the category filter from the URL on initial load', async () => {

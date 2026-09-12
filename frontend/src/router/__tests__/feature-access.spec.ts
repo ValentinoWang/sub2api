@@ -24,6 +24,7 @@ const appStore = vi.hoisted(() => ({
   publicSettingsLoaded: false,
   cachedPublicSettings: null as null | {
     payment_enabled?: boolean
+    purchase_subscription_enabled?: boolean
     risk_control_enabled?: boolean
     custom_menu_items?: []
   },
@@ -173,5 +174,33 @@ describe('feature route guard', () => {
     expect(appStore.fetchPublicSettings).not.toHaveBeenCalled()
     expect(next).toHaveBeenCalledOnce()
     expect(next).toHaveBeenCalledWith(target)
+  })
+
+  it('keeps purchase accessible when native payment is disabled but the store channel is enabled', async () => {
+    appStore.cachedPublicSettings = {
+      payment_enabled: false,
+      purchase_subscription_enabled: true,
+    }
+    appStore.publicSettingsLoaded = true
+
+    const { navigation, next } = runGuard({ requiresPurchase: true }, '/purchase')
+    await navigation
+
+    expect(next).toHaveBeenCalledOnce()
+    expect(next).toHaveBeenCalledWith()
+  })
+
+  it('blocks purchase only when both native payment and the store channel are disabled', async () => {
+    appStore.cachedPublicSettings = {
+      payment_enabled: false,
+      purchase_subscription_enabled: false,
+    }
+    appStore.publicSettingsLoaded = true
+
+    const { navigation, next } = runGuard({ requiresPurchase: true }, '/purchase')
+    await navigation
+
+    expect(next).toHaveBeenCalledOnce()
+    expect(next).toHaveBeenCalledWith('/dashboard')
   })
 })

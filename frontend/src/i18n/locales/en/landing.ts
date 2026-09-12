@@ -18,21 +18,12 @@ export default {
       badge: 'Next-gen AI API Gateway',
       status: 'online'
     },
-    flow: {
-      client: 'You · rest',
-      clientSub: 'sleep / slack off / chill',
-      gateway: 'Unified Gateway',
-      gatewaySub: 'auth · routing · billing',
-      pool: 'Account Pool',
-      upstream: 'AI · build',
-      upstreamSub: 'code / run tasks / ship'
-    },
     sell: {
-      kicker: 'AI API Relay',
+      kicker: 'AI model access & account top-ups',
       latency: 'Site access latency',
       latencyDesc: 'Live browser-to-/health RTT; it is not upstream model time',
-      stable: 'Never goes dark',
-      stableDesc: 'Account pool auto-failover, online 24/7',
+      stable: 'Multi-model routing',
+      stableDesc: 'Route by available accounts and quota, with failover support',
       relay: 'One base URL',
       relayDesc: 'Claude / GPT / Gemini behind a single endpoint',
       billing: 'Pay as you go',
@@ -44,7 +35,7 @@ export default {
       latencyLive: 'site RTT',
       probing: 'probing…',
       unavailable: 'n/a',
-      stamp: 'NEVER GOES DARK'
+      stamp: 'ACCESS ON DEMAND'
     },
     address: {
       title: 'API Base URL',
@@ -340,8 +331,8 @@ export default {
       publicInfo: 'Public info'
     },
     modes: {
-      kicker: 'Two ways in',
-      title: 'Managed gateway, or bring your own key',
+      kicker: 'Choose how you work',
+      title: 'API access and account subscriptions',
       managed: {
         badge: 'MANAGED',
         title: 'Managed Gateway',
@@ -349,24 +340,24 @@ export default {
         points: ['Per-user key, revocable anytime', 'OpenAI / Anthropic wire compatible', 'Usage and quota visible in real time']
       },
       byok: {
-        badge: 'BYOK',
-        title: 'BYOK Support',
-        desc: 'Use your own official account or API key. We only help configure and debug Codex CLI, Claude Code, Cursor, Cline and friends. Credentials stay on your machine.',
-        points: ['We never touch passwords', 'No cookies / OAuth tokens stored', 'No relaying through other people’s subscriptions']
+        badge: 'ACCOUNT TOP-UP',
+        title: 'Subscriptions for your own account',
+        desc: 'Review account top-up products such as ChatGPT Plus and ChatGPT Pro, including the plan, period, required information and support terms. Availability and progress follow the product page and your order.',
+        points: ['For your own account', 'Benefits and period follow the selected product', 'Account subscriptions and gateway balance are separate']
       }
     },
     lines: {
-      kicker: 'Two separate tracks',
-      title: 'Free tier is free. Business is business.',
+      kicker: 'Individual practice and team collaboration',
+      title: 'Community access and business services',
       benefit: {
-        title: 'Free trial access',
-        desc: 'A fixed allowance for first-time developers, students and open-source projects. No payment, no invoice, no review or referral required.',
-        cta: 'Free tier rules'
+        title: 'Student and open-source applications',
+        desc: 'For students in computing, AI, mathematics and related fields, and developers with a clear learning, research or open-source purpose. Applications depend on project use and available places.',
+        cta: 'Prepare an application'
       },
       business: {
-        title: 'Business services',
-        desc: 'Real pricing, contracts, usage statements, and invoices that match the work actually delivered.',
-        cta: 'Business services'
+        title: 'Business services and partnerships',
+        desc: 'Model access, team setup and development workflow support, with business contracts and invoices matching the paid services delivered.',
+        cta: 'Invoicing and cooperation'
       }
     },
     trust: {
@@ -390,8 +381,12 @@ export default {
           a: 'A service key issued by us that only works against this gateway. Upstream vendor keys are never shared, and we do not sell or share upstream accounts.'
         },
         {
+          q: 'Are Codex Pro, GPT Pro and Claude top-ups the same service?',
+          a: 'Account top-ups follow the listed product. Search terms such as Codex Pro and GPT Pro do not define a plan: check the specific ChatGPT Pro product and its Codex usage terms. Claude top-ups are offered only when an available product is listed. Account subscriptions do not add gateway API balance.'
+        },
+        {
           q: 'How do I get the free allowance? Do I need to leave a review?',
-          a: 'First-time developers, students and open-source projects can apply. Allowance, models and validity are published before issue. No review, share or referral is required, and renewal is not guaranteed.'
+          a: 'Students in related fields, developers with a learning or research purpose, and open-source maintainers can prepare an application. Reviews consider use and available places. Allowance, models and validity are confirmed before issue; no review, share or referral is required.'
         },
         {
           q: 'Can a company get an invoice?',
@@ -416,18 +411,18 @@ export default {
         copy: 'Copy',
         copied: 'Copied',
         updatedAt: 'Last updated',
-        accountServiceTitle: 'Account balance service',
-        accountServiceAction: 'Add balance',
+        accountServiceTitle: 'Account subscription top-ups',
+        accountServiceAction: 'View account top-ups',
         serviceKeyTitle: 'Service key configuration',
         apiKeyPlaceholder: '<YOUR_SERVICE_KEY>'
       },
       publicBenefit: {
-        title: 'Free tier rules',
-        subtitle: 'For first-time developers, students and open-source projects. No payment, no invoice, no review required.',
+        title: 'Student and open-source applications',
+        subtitle: 'Describe your learning, research or open-source project to apply for model access for practical use.',
         sections: [
           {
             h: 'Who can apply',
-            items: ['Developers integrating for the first time', 'Students (school email or ID)', 'Maintainers of public open-source projects', 'Non-commercial indie projects']
+            items: ['Students in computing, AI, mathematics and related fields', 'Developers with a clear learning or research purpose', 'Maintainers of public open-source projects', 'Applicants in other fields can explain their practical use of AI; field of study is not the sole criterion']
           },
           {
             h: 'Allowance and validity',
@@ -439,25 +434,29 @@ export default {
           },
           {
             h: 'How to apply',
-            p: 'Register, then tell us via the Xianyu store or the contact at the bottom of the page which tool you use, what for, and whether you have your own official account. Approved allowances land directly in your account.'
+            p: 'Prepare an application below on your device, then send it through a verified site contact. Generating a draft does not submit or approve it. Any allowance and redemption steps follow the actual review notice.'
           },
           {
-            h: 'Limits',
-            p: 'The free tier does not promise permanence, unlimited use or availability of any specific model. Accounts breaching the terms lose the allowance.'
+            h: 'Information and usage limits',
+            p: 'Provide only information needed for the application, with no identity documents, passwords or keys. This form creates a local draft without uploading it. Verify the recipient and purpose before sharing. Access follows the current rules and is not permanent or unlimited.'
           }
         ]
       },
       business: {
-        title: 'Business services & invoicing',
-        subtitle: 'Real pricing, contracts, usage statements and invoices that match the work.',
+        title: 'Business services, invoicing and partnerships',
+        subtitle: 'AI model access, tool configuration and workflow support for teams, with business contracts and invoices matching the actual services.',
         sections: [
           {
             h: 'What we deliver',
-            items: ['Gateway onboarding and configuration', 'OpenAI-compatible migration testing', 'SDK compatibility, error, timeout and rate-limit diagnosis', 'Quota, key and team management', 'Incident and migration support']
+            items: ['Codex, Claude Code and multi-model API configuration', 'Team quotas, service keys and cost management', 'SDK compatibility, error, timeout and rate-limit diagnosis', 'Team Skills and configuration steps based on existing experience', 'Harness engineering: task breakdown, human review, testing and delivery acceptance']
           },
           {
             h: 'Deliverables',
             items: ['Scope confirmation', 'Model and data-handling notes', 'Periodic usage and cost statements', 'Service contract', 'Invoice matching the actual service']
+          },
+          {
+            h: 'Business cooperation',
+            p: 'Discuss team onboarding, project support or ongoing services. Agree on scope, deliverables, fees and acceptance criteria before confirming the contracting entity, payment and invoicing details. Commitments follow the signed contract.'
           },
           {
             h: 'Invoicing principle',
@@ -506,9 +505,9 @@ export default {
       },
       codex: {
         title: 'Codex CLI setup, configuration and troubleshooting',
-        subtitle: 'Add balance, create a service key, and configure this site as a custom provider for Codex CLI.',
+        subtitle: 'Configure a gateway API service key and use this site as a custom provider for Codex CLI. API usage and account subscriptions are billed separately.',
         intro: 'Codex CLI supports custom model providers through config.toml.',
-        accountService: 'Sign in to this site, add balance, then create a service key in the dashboard to use the model service.',
+        accountService: 'For subscriptions on your own account, review listed products such as ChatGPT Plus and ChatGPT Pro. Gateway API access uses a separate service key and balance; an account subscription does not add API credit.',
         managedIntro: 'After creating a service key, configure this site as a custom provider and inject the key through an environment variable:',
         steps: [
           { h: '1. Write the config', p: 'Merge the block below into ~/.codex/config.toml.' },
@@ -522,9 +521,9 @@ export default {
       },
       claudeCode: {
         title: 'Claude Code setup guide',
-        subtitle: 'Add balance, create a service key, and configure this site as the API base for Claude Code.',
+        subtitle: 'Configure a gateway API service key and use this site as the API base for Claude Code. API usage and account subscriptions are billed separately.',
         intro: 'Claude Code reads the API base URL and credential from environment variables.',
-        accountService: 'Sign in to this site, add balance, then create a service key in the dashboard to use the model service.',
+        accountService: 'For Claude subscriptions or top-ups, check the products actually offered and their availability. Account subscriptions and gateway API access are billed separately; unlisted products and benefits are not promised.',
         managedIntro: 'After creating a service key, set:',
         steps: [
           { h: '1. Set the variables', p: 'Add them to your shell profile or export in the current session.' },

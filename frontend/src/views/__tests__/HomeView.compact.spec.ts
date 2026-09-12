@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ref } from 'vue'
 import { mount, RouterLinkStub } from '@vue/test-utils'
 
 import enLanding from '../../i18n/locales/en/landing'
@@ -35,7 +36,7 @@ vi.mock('vue-i18n', async (importOriginal) => {
   const actual = await importOriginal<typeof import('vue-i18n')>()
   return {
     ...actual,
-    useI18n: () => ({ t: (key: string) => key, tm: () => [], rt: (value: unknown) => String(value) }),
+    useI18n: () => ({ locale: ref('zh'), t: (key: string) => key, tm: () => [], rt: (value: unknown) => String(value) }),
   }
 })
 

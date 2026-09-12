@@ -62,7 +62,58 @@ const gpt6AstraNotVisiblePrompt = `我使用 Sub2API 中转站接入 Codex，目
 5. 若未恢复，是我本机可继续处理，还是需要联系站点管理员。
 不要把配置文件写好、安装包下载完成或模型目录有名字当作修复完成。如果必须由我结束当前任务或重启应用，先给出准备情况、恢复方式和重启后的检查项。`
 
+export const wsl2CodexEnvironmentPrompt = `我在 Windows 11 + WSL2 中使用 Codex CLI，现在遇到以下一种或多种情况：终端里找不到 codex；运行到的版本或安装位置不对；同一条命令在 PowerShell 和 Ubuntu 中结果不同；项目位于 /mnt/c 后速度慢、权限或软链接异常；Windows 能访问网络，但 WSL 中 Codex 登录或请求失败。我的目标是先判断问题属于 Windows、WSL2、Codex 安装、工作目录还是网络配置，再做最小修复，让 Codex 能从 WSL 中稳定启动并完成一次最小交互。
+
+请把我当作普通使用者。我可以操作自己的 Windows、WSL 发行版和 Codex 客户端，但没有中转站服务器、Docker 或管理员后台权限。不要要求我发送完整 API Key、认证文件或私人对话；命令输出中如果出现用户名、目录、令牌或代理凭证，请先提醒我脱敏。
+
+请先只读诊断，并明确告诉我每条命令应该在“Windows PowerShell”还是“WSL 的 Ubuntu Shell”中执行，不要把两种终端的命令混在同一个代码块里。
+
+第一步，在 Windows PowerShell 中检查 WSL2 本身：
+- 运行 wsl --status 和 wsl -l -v，确认目标发行版存在、状态正常且 VERSION 为 2；
+- 如果 WSL 未安装、发行版无法启动或版本不是 2，先说明现状和影响，再给出微软当前官方文档对应的最小处理步骤；
+- 不要删除、注销或重装发行版，不要执行 wsl --unregister，除非我另行明确授权并已有可验证备份。
+
+第二步，在 WSL 的 Ubuntu Shell 中确认当前环境：
+- 检查 echo $WSL_DISTRO_NAME、pwd、uname -a 和 printf '%s\\n' "$HOME"；
+- 判断我是否误在 PowerShell/CMD 中执行 Linux 命令，或者虽然打开了 WSL，却仍在 /mnt/c/... 的 Windows 挂载目录工作；
+- 如果工作目录在 /mnt/c，只说明它可能带来的文件 I/O、权限、大小写和软链接差异。先检查仓库是否有未提交内容和大文件，再给出迁移到 ~/code/... 的安全计划，不直接移动、覆盖或删除原目录。
+
+第三步，确认 WSL 实际运行哪一个 Codex：
+- 运行 command -v codex、type -a codex 和 codex --version，并检查解析出的路径属于 WSL 还是 Windows 挂载路径；
+- 只在确认 WSL 中缺少 Codex 或当前安装损坏后，才参考 Codex 当前官方安装说明进行安装或修复；不要同时混用多个安装方式，也不要把 Windows 侧可执行文件手工复制进 WSL；
+- 保留现有 Codex 配置、登录状态、memories、任务历史、skills、MCP 和项目 trust。不要通过删除整个 ~/.codex 来解决 command not found 或网络问题。
+
+第四步，核对配置和网络边界：
+- 确认当前进程读取的是 WSL 用户目录下的配置，不把 Windows 与 WSL 的 HOME、PATH、代理变量或认证状态当作自动共享；
+- 只显示 Base URL 的协议、主机和必要路径，Key 只报告“已配置/未配置”，不要打印值；
+- 分别检查 DNS、TLS、代理变量和目标入口的可达性。Windows 浏览器可访问不等于 WSL 一定继承相同代理；收到 401/403 说明已经到达某个 HTTP 服务，但仍需核对地址、认证和权限；超时、DNS 或证书错误应保留脱敏错误正文；
+- 不要登录、重启或修改中转站服务器，不要更改账号、密钥、上游路由或计费配置。任何可能产生费用的模型请求先征得我同意，只做一次简短验证，不循环重试。
+
+定位后，只执行与根因直接相关、可恢复的本机修复。修复完成后请分别报告：
+1. WSL 发行版和版本是否正确；
+2. 当前 Shell、HOME 和工作目录属于哪一侧；
+3. command -v codex 的实际路径与版本；
+4. 配置和网络检查通过到哪一层；
+5. Codex 是否能从 WSL 启动，以及最小交互是否实际完成；
+6. 哪些项目没有验证，是否需要我操作或联系站点管理员。
+
+不要把“安装命令执行完”“路径里出现 codex”或“HTTP 有响应”单独当作恢复成功。遇到缺少权限、工具或信息时，说明具体阻塞和下一步，不虚构已修复。`
+
 export const experiences: ExperienceContent[] = [
+  {
+    id: 'windows-11-wsl-codex-frontend',
+    category: 'connectionConfiguration',
+    route: PUBLIC_PAGES.wslCodexTutorial,
+    routeName: 'WslCodexFrontendTutorial',
+    icon: 'terminal',
+    title: 'Windows 11 + WSL2 使用 Codex：第一次真实前端开发',
+    summary: '一篇可以照着操作的入门经验：在自己的仓库里，让 Codex 读代码、改页面、启动测试和自查，最后由你验收。',
+    series: '新手实操经验',
+    subtitle: '不用背命令，学会把开发执行交给 Codex',
+    applicableTo: '第一次在 Windows 11 + WSL2 中使用 Codex CLI 的前端开发者',
+    updatedAt: '2026-09-10',
+    prompt: '',
+  },
   {
     id: 'codex-cli',
     category: 'connectionConfiguration',
@@ -118,6 +169,20 @@ export const experiences: ExperienceContent[] = [
     applicableTo: 'Codex 桌面端与命令行使用者 · macOS、Linux、Windows',
     updatedAt: '2026-09-08',
     prompt: CODEX_SESSION_MIGRATION.prompt,
+  },
+  {
+    id: 'windows-11-wsl2-codex-environment',
+    category: 'troubleshooting',
+    route: PUBLIC_PAGES.wslCodexTroubleshooting,
+    routeName: 'WslCodexTroubleshooting',
+    icon: 'terminal',
+    title: 'Windows 11 + WSL2 里 Codex 装好了却不能正常使用，怎么排查？',
+    summary: '分清 PowerShell 与 WSL，逐层检查发行版、Codex 路径、工作目录和网络，不再靠反复重装碰运气。',
+    series: 'Codex 使用错误说明',
+    subtitle: '先确定命令到底在哪一层运行，再处理安装、路径与连接问题',
+    applicableTo: 'Codex CLI 使用者 · Windows 11 + WSL2',
+    updatedAt: '2026-09-12',
+    prompt: wsl2CodexEnvironmentPrompt,
   },
   {
     id: 'gpt-6-astra-not-visible',

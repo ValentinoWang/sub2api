@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
+import { ref } from 'vue'
+import { createPinia } from 'pinia'
 import { mount, RouterLinkStub } from '@vue/test-utils'
 
 import zh from '@/i18n/locales/zh'
 import MarketingPageView from '../MarketingPageView.vue'
-import { XIANYU_STORE_NAME } from '@/constants/brand'
+import { BRAND_SERVICE_DESCRIPTION, XIANYU_STORE_NAME } from '@/constants/brand'
 
 const { routeMeta, appStore } = vi.hoisted(() => ({
   routeMeta: { marketingPage: 'publicBenefit' } as Record<string, unknown>,
@@ -27,6 +29,7 @@ function resolve(key: string): unknown {
 vi.mock('vue-i18n', async (importOriginal) => ({
   ...(await importOriginal<typeof import('vue-i18n')>()),
   useI18n: () => ({
+    locale: ref('zh'),
     t: (key: string) => {
       const value = resolve(key)
       return typeof value === 'string' ? value : key
@@ -40,6 +43,7 @@ function mountPage(marketingPage: string) {
   routeMeta.marketingPage = marketingPage
   return mount(MarketingPageView, {
     global: {
+      plugins: [createPinia()],
       stubs: {
         RouterLink: RouterLinkStub,
         LocaleSwitcher: { template: '<div />' }
@@ -64,7 +68,7 @@ describe('MarketingPageView', () => {
     expect(wrapper.findAll('footer .brand-statement')).toHaveLength(1)
     expect(wrapper.get('footer .brand-tagline').text()).toBe('歇一会儿，让 AI 接着干。')
     expect(wrapper.get('footer .brand-service').text()).toBe(
-      'rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。'
+      BRAND_SERVICE_DESCRIPTION
     )
   })
 

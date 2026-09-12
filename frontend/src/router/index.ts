@@ -72,6 +72,24 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/experiences/windows-11-wsl-codex-frontend',
+    name: 'WslCodexFrontendTutorial',
+    component: () => import('@/views/public/WslCodexFrontendTutorialView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: '在 Windows 11 的 WSL 中使用 Codex 完成一次真实的前端开发任务'
+    }
+  },
+  {
+    path: '/error-experiences/windows-11-wsl2-codex-environment',
+    name: 'WslCodexTroubleshooting',
+    component: () => import('@/views/public/WslCodexTroubleshootingView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Windows 11 + WSL2 里 Codex 装好了却不能正常使用，怎么排查？'
+    }
+  },
+  {
     path: '/error-experiences/gpt-6-astra-not-visible',
     name: 'ErrorExperienceGpt6AstraNotVisible',
     component: () => import('@/views/public/ErrorExperienceView.vue'),
@@ -394,7 +412,7 @@ const routes: RouteRecordRaw[] = [
       title: 'Purchase Subscription',
       titleKey: 'nav.buySubscription',
       descriptionKey: 'purchase.description',
-      requiresPayment: true
+      requiresPurchase: true
     }
   },
   {
@@ -857,7 +875,7 @@ let authInitialized = false
 const navigationLoading = useNavigationLoadingState()
 // 延迟初始化预加载，传入 router 实例
 let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
-const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/experiences', '/error-experiences/gpt-6-astra-not-visible', '/error-experiences/codex-session-migration']
+const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/experiences', '/error-experiences/gpt-6-astra-not-visible', '/error-experiences/codex-session-migration', '/error-experiences/windows-11-wsl2-codex-environment']
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
   '/auth/linuxdo/callback',
@@ -1015,7 +1033,7 @@ router.beforeEach(async (to, _from, next) => {
   // 公共设置可能尚未加载（App.vue 的 onMounted 异步拉取晚于首次导航，且纯静态部署
   // 无 __APP_CONFIG__ 注入）。此时 cachedPublicSettings 为空会把 payment/risk_control
   // 误判为“未启用”而错误拦截，故这里先确保设置加载完成。
-  if ((to.meta.requiresPayment || to.meta.requiresRiskControl) && !appStore.publicSettingsLoaded) {
+  if ((to.meta.requiresPayment || to.meta.requiresPurchase || to.meta.requiresRiskControl) && !appStore.publicSettingsLoaded) {
     try {
       await appStore.fetchPublicSettings()
     } catch (error) {
@@ -1029,6 +1047,16 @@ router.beforeEach(async (to, _from, next) => {
     to.meta.requiresPayment &&
     appStore.publicSettingsLoaded &&
     appStore.cachedPublicSettings?.payment_enabled === false
+  ) {
+    next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
+    return
+  }
+
+  if (
+    to.meta.requiresPurchase &&
+    appStore.publicSettingsLoaded &&
+    appStore.cachedPublicSettings?.payment_enabled === false &&
+    appStore.cachedPublicSettings?.purchase_subscription_enabled !== true
   ) {
     next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
     return

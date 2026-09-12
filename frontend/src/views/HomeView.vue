@@ -482,41 +482,7 @@
           </div>
         </section>
 
-        <!-- Request Flow -->
-        <section class="mb-20" data-reveal>
-          <div class="home-flow">
-            <div class="home-flow-node">
-              <div class="home-flow-icon">
-                <Icon name="terminal" size="md" />
-              </div>
-              <span class="home-flow-label">{{ t('home.flow.client') }}</span>
-              <span class="home-flow-sub">{{ t('home.flow.clientSub') }}</span>
-            </div>
-            <div class="home-flow-link" aria-hidden="true"><span class="home-flow-packet"></span></div>
-            <div class="home-flow-node home-flow-node-core">
-              <div class="home-flow-icon home-flow-icon-core">
-                <Icon name="cpu" size="md" />
-              </div>
-              <span class="home-flow-label">{{ t('home.flow.gateway') }}</span>
-              <span class="home-flow-sub">{{ t('home.flow.gatewaySub') }}</span>
-            </div>
-            <div class="home-flow-link" aria-hidden="true"><span class="home-flow-packet home-flow-packet-delay"></span></div>
-            <div class="home-flow-node">
-              <div class="home-flow-icon">
-                <Icon name="users" size="md" />
-              </div>
-              <span class="home-flow-label">{{ t('home.flow.pool') }}</span>
-            </div>
-            <div class="home-flow-link" aria-hidden="true"><span class="home-flow-packet home-flow-packet-delay-2"></span></div>
-            <div class="home-flow-node">
-              <div class="home-flow-icon">
-                <Icon name="sparkles" size="md" />
-              </div>
-              <span class="home-flow-label">{{ t('home.flow.upstream') }}</span>
-              <span class="home-flow-sub">{{ t('home.flow.upstreamSub') }}</span>
-            </div>
-          </div>
-        </section>
+        <ServicePaths class="mb-20" />
 
         <!-- Features Grid -->
         <section class="mb-20">
@@ -692,6 +658,7 @@ import BrandWordmark from '@/components/common/BrandWordmark.vue'
 import RelayStationVisual from '@/components/common/RelayStationVisual.vue'
 import ExperienceCollection from '@/components/experiences/ExperienceCollection.vue'
 import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
+import ServicePaths from '@/components/common/ServicePaths.vue'
 import { useLatencyProbe } from '@/composables/useLatencyProbe'
 import { BRAND_DOMAIN, PUBLIC_PAGES, resolveBrandName } from '@/constants/brand'
 import { sanitizeUrl } from '@/utils/url'
@@ -1612,161 +1579,6 @@ onBeforeUnmount(() => {
   color: #5eead4;
 }
 
-/* ============ Request Flow ============ */
-.home-flow {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  align-items: center;
-  border-radius: 24px;
-  border: 1px solid var(--home-glass-border);
-  background: var(--home-glass);
-  backdrop-filter: blur(16px);
-  padding: 28px 24px;
-}
-@media (min-width: 768px) {
-  .home-flow {
-    grid-template-columns: 1fr auto 1.2fr auto 1fr auto 1fr;
-    gap: 0;
-    padding: 32px 36px;
-  }
-}
-.home-flow-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-}
-.home-flow-icon {
-  display: flex;
-  height: 52px;
-  width: 52px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  border: 1px solid var(--home-glass-border);
-  background: rgba(255, 255, 255, 0.7);
-  color: #0d9488;
-  box-shadow: 0 8px 20px -12px rgba(2, 6, 23, 0.3);
-}
-.dark .home-flow-icon {
-  background: rgba(15, 23, 42, 0.8);
-  color: #5eead4;
-}
-.home-flow-icon-core {
-  height: 64px;
-  width: 64px;
-  color: #fff;
-  border-color: transparent;
-  background: linear-gradient(135deg, #14b8a6, #0891b2 60%, #4f46e5 140%);
-  box-shadow:
-    0 0 0 6px rgba(20, 184, 166, 0.12),
-    0 16px 40px -14px rgba(20, 184, 166, 0.8);
-  animation: home-core-pulse 3s ease-in-out infinite;
-}
-@keyframes home-core-pulse {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 6px rgba(20, 184, 166, 0.12),
-      0 16px 40px -14px rgba(20, 184, 166, 0.8);
-  }
-  50% {
-    box-shadow:
-      0 0 0 12px rgba(20, 184, 166, 0.06),
-      0 16px 50px -12px rgba(20, 184, 166, 0.95);
-  }
-}
-.home-flow-label {
-  font-size: 14px;
-  font-weight: 600;
-}
-.home-flow-sub {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
-  color: rgb(107 114 128);
-}
-.dark .home-flow-sub {
-  color: rgb(148 163 184);
-}
-.home-flow-link {
-  position: relative;
-  height: 28px;
-  width: 2px;
-  margin: 0 auto;
-  background: repeating-linear-gradient(180deg, rgba(20, 184, 166, 0.5) 0 4px, transparent 4px 8px);
-}
-@media (min-width: 768px) {
-  .home-flow-link {
-    height: 2px;
-    width: 100%;
-    min-width: 48px;
-    margin: 0 8px;
-    background: repeating-linear-gradient(90deg, rgba(20, 184, 166, 0.5) 0 6px, transparent 6px 12px);
-    transform: translateY(-14px);
-  }
-}
-.home-flow-packet {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  margin-left: -3px;
-  border-radius: 9999px;
-  background: #2dd4bf;
-  box-shadow: 0 0 12px 2px rgba(45, 212, 191, 0.8);
-  animation: home-packet-v 2.4s linear infinite;
-}
-@media (min-width: 768px) {
-  .home-flow-packet {
-    top: 50%;
-    left: 0;
-    margin-left: 0;
-    margin-top: -3px;
-    animation: home-packet-h 2.4s linear infinite;
-  }
-}
-.home-flow-packet-delay {
-  animation-delay: 0.8s;
-}
-.home-flow-packet-delay-2 {
-  animation-delay: 1.6s;
-}
-@keyframes home-packet-v {
-  from {
-    transform: translateY(-6px);
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-  }
-  85% {
-    opacity: 1;
-  }
-  to {
-    transform: translateY(28px);
-    opacity: 0;
-  }
-}
-@keyframes home-packet-h {
-  from {
-    left: 0;
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-  }
-  85% {
-    opacity: 1;
-  }
-  to {
-    left: 100%;
-    opacity: 0;
-  }
-}
-
 /* ============ Feature cards ============ */
 .home-card {
   position: relative;
@@ -2306,8 +2118,6 @@ onBeforeUnmount(() => {
   .home-aurora,
   .home-particle,
   .home-pulse-dot::after,
-  .home-flow-packet,
-  .home-flow-icon-core,
   .terminal-glow,
   .terminal-orbit,
   .terminal-progress-bar,

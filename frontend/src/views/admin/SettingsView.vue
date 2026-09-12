@@ -8295,6 +8295,17 @@
                 <Icon name="arrowRight" size="sm" />
               </router-link>
             </div>
+            <div class="space-y-4 border-t border-gray-100 p-6 dark:border-dark-700">
+              <div class="flex items-center justify-between gap-4">
+                <span class="text-sm font-medium">{{ t('admin.settings.payment.ldxpSalesChannel.buyerEnabled') }}</span>
+                <Toggle v-model="form.purchase_subscription_enabled" />
+              </div>
+              <div>
+                <label for="ldxp-buyer-url" class="input-label">{{ t('admin.settings.payment.ldxpSalesChannel.buyerUrl') }}</label>
+                <input id="ldxp-buyer-url" v-model="form.purchase_subscription_url" type="url" class="input mt-1" placeholder="https://…" :required="form.purchase_subscription_enabled" />
+                <p class="input-hint">{{ t('admin.settings.payment.ldxpSalesChannel.buyerHint') }}</p>
+              </div>
+            </div>
           </div>
 
           <!-- Provider Management -->
@@ -9523,6 +9534,8 @@ type SettingsForm = Omit<
 > & {
   /** Form always binds a concrete boolean (SystemSettings marks this optional). */
   channel_monitor_hide_throughput: boolean;
+  purchase_subscription_enabled: boolean;
+  purchase_subscription_url: string;
   channel_monitor_show_quota: boolean;
   channel_monitor_hide_user_ranking: boolean;
   smtp_password: string;
@@ -9617,6 +9630,8 @@ const form = reactive<SettingsForm>({
   backend_mode_enabled: false,
   hide_ccs_import_button: false,
   payment_enabled: false,
+  purchase_subscription_enabled: false,
+  purchase_subscription_url: "",
   risk_control_enabled: false,
   cyber_session_block_enabled: false,
   cyber_session_block_ttl_seconds: 3600,
@@ -11430,6 +11445,8 @@ async function saveSettings() {
       ),
       // Payment configuration
       payment_enabled: form.payment_enabled,
+      purchase_subscription_enabled: form.purchase_subscription_enabled,
+      purchase_subscription_url: form.purchase_subscription_url.trim(),
       risk_control_enabled: form.risk_control_enabled,
       cyber_session_block_enabled: form.cyber_session_block_enabled,
       cyber_session_block_ttl_seconds:

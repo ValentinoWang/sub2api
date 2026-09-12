@@ -21,6 +21,7 @@ import {
   previewJob,
   resumeJob,
   runJob,
+  setRestockEnabled,
   testConnection,
   updateConfig,
 } from '../liandongToolkit'
@@ -33,6 +34,13 @@ describe('liandongToolkitAPI', () => {
     get.mockResolvedValue({ data: {} })
     post.mockResolvedValue({ data: {} })
     put.mockResolvedValue({ data: {} })
+  })
+
+  it.each([true, false])('persists automatic restock enablement as %s', async enabled => {
+    const status = { enabled, configured: true, running: false, products: [] }
+    post.mockResolvedValueOnce({ data: status })
+    await expect(setRestockEnabled(enabled)).resolves.toEqual(status)
+    expect(post).toHaveBeenCalledWith('/admin/liandong/restock/enable', { enabled })
   })
 
   it('uses the dedicated installation and configuration paths', async () => {

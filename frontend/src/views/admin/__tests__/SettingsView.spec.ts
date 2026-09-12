@@ -1089,6 +1089,26 @@ describe("admin SettingsView payment visible method controls", () => {
     expect(payload).not.toHaveProperty("payment_visible_method_wxpay_enabled");
   });
 
+  it("loads and saves the public store URL used by the recharge page", async () => {
+    getSettings.mockResolvedValueOnce({
+      ...baseSettingsResponse,
+      purchase_subscription_enabled: true,
+      purchase_subscription_url: "https://shop.example.com/old",
+    });
+    const wrapper = mountView();
+    await flushPromises();
+    await openPaymentTab(wrapper);
+    const input = wrapper.get('#ldxp-buyer-url');
+    expect((input.element as HTMLInputElement).value).toBe("https://shop.example.com/old");
+    await input.setValue("https://shop.example.com/recharge");
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+    expect(updateSettings).toHaveBeenCalledWith(expect.objectContaining({
+      purchase_subscription_enabled: true,
+      purchase_subscription_url: "https://shop.example.com/recharge",
+    }));
+  });
+
   it("submits the admin recharge affiliate rebate setting", async () => {
     getSettings.mockResolvedValueOnce({
       ...baseSettingsResponse,

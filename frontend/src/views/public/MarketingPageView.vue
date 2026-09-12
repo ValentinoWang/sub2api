@@ -14,6 +14,7 @@
             <li v-for="(item, i) in section.items" :key="i">{{ item }}</li>
           </ul>
         </section>
+        <PublicBenefitApplication v-if="pageKey === 'publicBenefit'" :contact-info="contactInfo" />
       </template>
 
       <!-- ===== Xianyu verification ===== -->
@@ -124,6 +125,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores'
 import PublicPageLayout from '@/components/layout/PublicPageLayout.vue'
+import PublicBenefitApplication from '@/components/public/PublicBenefitApplication.vue'
 import { BRAND_DOMAIN, PUBLIC_PAGES, resolveStoreName } from '@/constants/brand'
 
 export type MarketingPageKey =

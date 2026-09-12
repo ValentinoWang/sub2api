@@ -9,7 +9,7 @@ describe('home static prerender', () => {
     const featuredExperience = getExperienceById('codex-cli')
     const html = renderHomePage(baseHTML, 'zh', 'default')
     const experience = html.indexOf('data-home-experience-featured')
-    const experiencesLink = html.indexOf('href="/experiences"')
+    const experiencesLink = html.indexOf('href="/experiences"', experience)
     const faq = html.indexOf('data-home-faq')
 
     expect(experience).toBeGreaterThan(-1)

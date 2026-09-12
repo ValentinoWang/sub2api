@@ -125,6 +125,9 @@
                       >
                     </p>
                   </div>
+                  <p v-if="refreshWarning" class="mt-3 text-amber-700 dark:text-amber-300" role="status">
+                    {{ t('purchase.refreshWarning') }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -346,31 +349,26 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
-import { useSubscriptionStore } from '@/stores/subscriptions'
 import { redeemAPI, authAPI, type RedeemHistoryItem } from '@/api'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { formatDateTime } from '@/utils/format'
+import { useRedeemCode } from '@/components/payment/useRedeemCode'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
 const appStore = useAppStore()
-const subscriptionStore = useSubscriptionStore()
 
 const user = computed(() => authStore.user)
 
-const redeemCode = ref('')
-const submitting = ref(false)
-const redeemResult = ref<{
-  message: string
-  type: string
-  value: number
-  new_balance?: number
-  new_concurrency?: number
-  group_name?: string
-  validity_days?: number
-} | null>(null)
-const errorMessage = ref('')
+const {
+  code: redeemCode,
+  submitting,
+  result: redeemResult,
+  error: errorMessage,
+  refreshWarning,
+  redeem: submitRedeem,
+} = useRedeemCode(() => t('redeem.failedToRedeem'))
 
 // History data
 const history = ref<RedeemHistoryItem[]>([])
@@ -432,48 +430,20 @@ const fetchHistory = async () => {
 }
 
 const handleRedeem = async () => {
+  if (submitting.value) return
   if (!redeemCode.value.trim()) {
     appStore.showError(t('redeem.pleaseEnterCode'))
     return
   }
 
-  submitting.value = true
-  errorMessage.value = ''
-  redeemResult.value = null
-
-  try {
-    const result = await redeemAPI.redeem(redeemCode.value.trim())
-
-    redeemResult.value = result
-
-    // Refresh user data to get updated balance/concurrency
-    await authStore.refreshUser()
-
-    // If subscription type, immediately refresh subscription status
-    if (result.type === 'subscription') {
-      try {
-        await subscriptionStore.fetchActiveSubscriptions(true) // force refresh
-      } catch (error) {
-        console.error('Failed to refresh subscriptions after redeem:', error)
-        appStore.showWarning(t('redeem.subscriptionRefreshFailed'))
-      }
-    }
-
-    // Clear the input
-    redeemCode.value = ''
-
-    // Refresh history
-    await fetchHistory()
-
-    // Show success toast
-    appStore.showSuccess(t('redeem.codeRedeemSuccess'))
-  } catch (error: any) {
-    errorMessage.value = error.response?.data?.detail || t('redeem.failedToRedeem')
-
+  const result = await submitRedeem()
+  if (!result) {
     appStore.showError(t('redeem.redeemFailed'))
-  } finally {
-    submitting.value = false
+    return
   }
+
+  await fetchHistory()
+  appStore.showSuccess(t('redeem.codeRedeemSuccess'))
 }
 
 onMounted(async () => {

@@ -4,11 +4,12 @@
 
 面向中转站使用者的客户端接入与排障帮助。以完整问题登记可复用的错误经验模块，每个模块对应一个编号、一张卡片和一份案例文档，说明如何识别问题、交给 Codex 处理、自查恢复结果及联系管理员。
 
-当前登记 2 个模块：“切换接入后，为什么 Codex 旧对话无法继续？”与“GPT-6 已接入，为什么 Codex 仍然看不见？”。
+当前登记 3 个模块：“切换接入后，为什么 Codex 旧对话无法继续？”、“GPT-6 已接入，为什么 Codex 仍然看不见？”与“Windows 11 + WSL2 里 Codex 装好了却不能正常使用，怎么排查？”。
 
 - [HTML 卡片预览](index.html)
 - [ERR-001 · GPT-6 已接入，为什么 Codex 仍然看不见？](2026-09-06-codex-astra-visibility.md)
 - [ERR-002 · 切换接入后，为什么 Codex 旧对话无法继续？](2026-09-08-codex-session-migration.md)
+- [ERR-003 · Windows 11 + WSL2 里 Codex 装好了却不能正常使用，怎么排查？](2026-09-12-windows-wsl2-codex-environment.md) · [HTML 预览](2026-09-12-windows-wsl2-codex-environment.html)
 
 记录时间：2026-09-06 13:27（Asia/Shanghai）。本目录是项目经验文档与独立静态预览，不是生产路由，也不是 SSOT 开发契约。尚未提交、推送或部署到线上。
 

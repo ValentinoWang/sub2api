@@ -1,5 +1,9 @@
 export default {
   dashboard: {
+    loadFailed: 'Dashboard data could not be loaded. Please try again.',
+    refreshFailed: 'Refresh failed. Previously loaded data is still shown.',
+    retry: 'Retry',
+
     title: 'Dashboard',
     welcomeMessage: "Welcome back! Here's an overview of your account.",
     balance: 'Balance',

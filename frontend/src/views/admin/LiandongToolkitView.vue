@@ -17,7 +17,7 @@
         <button
           type="button"
           class="btn btn-secondary btn-sm"
-          :disabled="loadingStatus"
+          :disabled="loadingStatus || savingRestock"
           :title="t('common.refresh')"
           data-testid="refresh-status"
           @click="loadStatus()"
@@ -116,6 +116,26 @@
         </div>
       </section>
 
+      <section class="card p-5 md:p-6" data-testid="auto-restock-section">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('ldxpToolkit.restock.title') }}</h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('ldxpToolkit.restock.description') }}</p>
+            <div class="mt-3 flex flex-wrap items-center gap-2" aria-live="polite">
+              <span class="badge" :class="status?.enabled === true ? 'badge-success' : 'badge-warning'" data-testid="auto-restock-status">
+                {{ typeof status?.enabled === 'boolean' ? t(status.enabled ? 'common.enabled' : 'common.disabled') : t('ldxpToolkit.restock.unknown') }}
+              </span>
+              <span v-if="status?.running" class="text-sm text-gray-500 dark:text-gray-400" data-testid="auto-restock-running">{{ t('ldxpToolkit.restock.running') }}</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" :disabled="!canToggleRestock" data-testid="toggle-auto-restock" @click="toggleRestock">
+            {{ savingRestock ? t('common.saving') : t(status?.enabled ? 'ldxpToolkit.restock.disable' : 'ldxpToolkit.restock.enable') }}
+          </button>
+        </div>
+        <p v-if="status && !status.configured && !status.enabled" class="mt-3 text-sm text-amber-700 dark:text-amber-300">{{ t('ldxpToolkit.restock.configurationRequired') }}</p>
+        <p v-if="restockError" class="mt-3 text-sm text-red-600 dark:text-red-400" role="alert" data-testid="auto-restock-error">{{ restockError }}</p>
+      </section>
+
       <!-- Connection and mappings -->
       <section class="card p-5 md:p-6" data-testid="connection-section">
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -159,7 +179,7 @@
               <Icon name="link" size="sm" :class="testingConnection ? 'animate-pulse' : ''" />
               {{ testingConnection ? t('common.loading') : t('ldxpToolkit.connection.testConnection') }}
             </button>
-            <button type="button" class="btn btn-primary btn-sm" :disabled="savingConfig || !hasValidConfiguration" data-testid="save-config" @click="saveConfiguration">
+            <button type="button" class="btn btn-primary btn-sm" :disabled="savingConfig || savingRestock || !hasValidConfiguration" data-testid="save-config" @click="saveConfiguration">
               <Icon name="check" size="sm" />
               {{ savingConfig ? t('common.saving') : t('common.save') }}
             </button>
@@ -380,7 +400,7 @@
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('ldxpToolkit.history.description') }}</p>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" :disabled="loadingStatus" :title="t('common.refresh')" @click="loadStatus()">
+          <button type="button" class="btn btn-secondary btn-sm" :disabled="loadingStatus || savingRestock" :title="t('common.refresh')" @click="loadStatus()">
             <Icon name="refresh" size="sm" :class="loadingStatus ? 'animate-spin' : ''" />
             {{ t('common.refresh') }}
           </button>
@@ -515,6 +535,10 @@ const installing = ref(false)
 const status = ref<LiandongStatus | null>(null)
 const statusError = ref('')
 const loadingStatus = ref(false)
+const savingRestock = ref(false)
+const restockError = ref('')
+const canToggleRestock = computed(() => !loadingStatus.value && !savingRestock.value && !savingConfig.value &&
+  !statusError.value && (status.value?.enabled === true || (status.value?.enabled === false && status.value.configured === true)))
 const merchantToken = ref('')
 const products = ref<LiandongProductMapping[]>([])
 const savingConfig = ref(false)
@@ -797,6 +821,31 @@ async function installToolkit(): Promise<void> {
       : operationError(error, t('ldxpToolkit.runtime.installFailed'), 'installation')
   } finally {
     installing.value = false
+  }
+}
+
+async function toggleRestock(): Promise<void> {
+  if (!canToggleRestock.value) return
+  const enabled = !status.value?.enabled
+  savingRestock.value = true
+  restockError.value = ''
+  try {
+    await liandongToolkitAPI.setRestockEnabled(enabled)
+    if (!await loadStatus()) {
+      restockError.value = t('ldxpToolkit.restock.readbackFailed')
+      return
+    }
+    if (status.value?.enabled !== enabled) {
+      restockError.value = t('ldxpToolkit.restock.notConfirmed')
+      return
+    }
+    appStore.showSuccess(t(enabled ? 'ldxpToolkit.restock.enabledSuccess' : 'ldxpToolkit.restock.disabledSuccess'))
+  } catch (error) {
+    restockError.value = operationError(error, t('ldxpToolkit.restock.updateFailed'), 'enablement')
+    // A lost response can follow a committed write; read the persisted state before offering another action.
+    if (!await loadStatus()) restockError.value += ` ${t('ldxpToolkit.restock.readbackFailed')}`
+  } finally {
+    savingRestock.value = false
   }
 }
 

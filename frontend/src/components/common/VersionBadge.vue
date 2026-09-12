@@ -629,11 +629,6 @@
         </div>
       </transition>
     </template>
-
-    <!-- Non-admin: Simple static version text -->
-    <span v-else-if="version" class="text-xs text-gray-500 dark:text-dark-400">
-      {{ t('version.publicRelease', { release: PUBLIC_RELEASE_NAME, technical: version }) }}
-    </span>
   </div>
 </template>
 
@@ -652,7 +647,6 @@ import { useClipboard } from '@/composables/useClipboard'
 import Icon from '@/components/icons/Icon.vue'
 
 const GITHUB_REPO = 'Wei-Shaw/sub2api'
-const PUBLIC_RELEASE_NAME = '0.2.4'
 // Docker Hub image published by CI (tags carry no "v" prefix, e.g. weishaw/sub2api:0.1.146)
 const DOCKER_IMAGE = 'weishaw/sub2api'
 

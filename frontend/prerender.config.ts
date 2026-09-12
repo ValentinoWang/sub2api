@@ -14,7 +14,8 @@ import zh from './src/i18n/locales/zh/landing'
 import en from './src/i18n/locales/en/landing'
 import zhMisc from './src/i18n/locales/zh/misc'
 import enMisc from './src/i18n/locales/en/misc'
-import { BRAND_DOMAIN, PUBLIC_PAGES } from './src/constants/brand'
+import { BRAND_DOMAIN, BRAND_SERVICE_DESCRIPTION, PUBLIC_PAGES } from './src/constants/brand'
+import { servicePaths } from './src/content/servicePaths'
 import { experiences, getExperienceById } from './src/content/experiences'
 
 type Section = { h: string; p?: string; items?: string[] }
@@ -59,12 +60,13 @@ function sectionsHTML(sections: Section[] | undefined): string {
     .join('')
 }
 
-function guideHTML(page: { intro: string; byok?: string; managedIntro?: string; steps: Section[]; troubleshooting: { h: string; items: string[] } }): string {
-  const byok = page.byok ? `<section><h2>BYOK</h2><p>${esc(page.byok)}</p></section>` : ''
+function guideHTML(page: { intro: string; accountService?: string; managedIntro?: string; steps: Section[]; troubleshooting: { h: string; items: string[] } }): string {
+  const common = zh.marketing.pages.common
+  const accountService = page.accountService ? `<section><h2>${esc(common.accountServiceTitle)}</h2><p>${esc(page.accountService)}</p><a href="https://www.ai.rest2build.lol/memberships">${esc(common.accountServiceAction)}</a></section>` : ''
   const managed = page.managedIntro ? `<p>${esc(page.managedIntro)}</p>` : ''
   const steps = page.steps.map((s) => `<h3>${esc(s.h)}</h3><p>${esc(s.p)}</p>`).join('')
   const ts = `<section><h2>${esc(page.troubleshooting.h)}</h2><ul>${page.troubleshooting.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul></section>`
-  return `<p>${esc(page.intro)}</p>${byok}<section>${managed}${steps}</section>${ts}`
+  return `<p>${esc(page.intro)}</p>${accountService}<section>${managed}${steps}</section>${ts}`
 }
 
 function errorExperienceHTML(): string {
@@ -98,7 +100,7 @@ function errorExperienceHTML(): string {
     <section><h2>情况说明</h2><p>你已经按照本站接入说明配置了 Codex，站点也已提供 GPT-6-Astra，但桌面模型选择器里仍然只有旧模型。中转站能否调用模型、桌面应用是否展示模型、当前任务实际选择哪个模型，是不同环节。</p><ul><li>桌面模型列表没有 GPT-6-Astra。</li><li>终端已更新，桌面仍显示旧列表。</li><li>模型可选，但原任务还在使用旧模型。</li><li>不确定实际连接的是本站、旧地址，还是本机代理。</li></ul></section>
     <section><h2>Codex 帮你处理</h2><pre style="white-space:pre-wrap">${esc(prompt)}</pre></section>
     <section><h2>给人看的：原因、证据与经验</h2><h3>支持、可见与选中不是同一个开关</h3><p>先分开检查中转站与个人访问权限、客户端模型目录，以及默认配置与当前任务选择。API 成功不必然使桌面出现新模型；桌面没有新模型也不能单独证明中转站不支持它。</p><h3>终端升级不代表桌面升级</h3><p>终端命令与桌面应用可各自携带 Codex。历史案例中，桌面内置 0.153.3 将 Astra 标记为 hide，0.153.4 恢复 list；这只是带日期的排查线索，应以当前实际运行版本和官方说明为准。</p><h3>先判断缓存是否真的相关</h3><p>不要删除整个 Codex 目录、memories、任务历史、认证或 Docker 数据。仅在确认存在、被读取且过时后，定点清理可再生的模型元数据缓存。</p><h3>恢复验收</h3><p>重新打开应用后，应分别确认实际版本、模型是否可见、任务是否明确选择目标模型，以及使用个人入口完成的最小请求是否成功。</p></section>
-    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
+    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>${esc(BRAND_SERVICE_DESCRIPTION)}</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
 }
 
 function codexSessionMigrationHTML(): string {
@@ -109,7 +111,30 @@ function codexSessionMigrationHTML(): string {
     <section><h2>情况说明</h2><p>切换接入方式后，旧任务可能仍指向已经删除的 provider 名称，导致打开或继续旧任务时提示 provider 不存在。此工具先只读检查实际数据根和有效配置，再生成可审阅计划。</p><p><strong>只处理本机任务关联。</strong>它不迁移 ChatGPT 网页历史、云端记忆、正在进行的请求或服务端 Redis 状态。</p></section>
     <section><h2>Codex 帮你处理</h2><pre style="white-space:pre-wrap">${esc(experience.prompt)}</pre><p><a href="/codex-session-migrate-1.0.0.zip">下载离线工具包</a> · <a href="/codex-session-migrate-prompt.txt">下载提示词</a> · <a href="/codex-session-migrate-manifest.json">查看校验清单</a></p></section>
     <section><h2>给人看的：原因、证据与经验</h2><h3>provider、请求地址和凭据不是同一件事</h3><p>工具必须从实际生效配置识别目标，不能把所有任务硬改为一个站点示例名称。</p><h3>备份不成立就禁止写入</h3><p>全部被选 JSONL 与 SQLite 对象都要先建立并读回验证备份。输入漂移、未知格式或多来源冲突会停在诊断阶段。</p><h3>结构验证不等于原任务接续</h3><p>迁移后还要重新打开同一个旧任务，引用已存测试事实并追加一轮交流；新建任务成功不能替代该检查。</p></section>
-    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
+    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>${esc(BRAND_SERVICE_DESCRIPTION)}</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
+}
+
+function wslCodexTutorialHTML(): string {
+  return `<nav aria-label="经验分享路径"><a href="/home">首页</a> / <a href="/experiences">经验分享</a> / Windows 11 + WSL2 + Codex</nav>
+    <p>经验分享 · 适合第一次在 Windows 11 + WSL2 中使用 Codex CLI 的前端开发者 · 更新：2026-09-10</p>
+    <section><h2>这篇经验怎么用</h2><p>打开自己的真实仓库，做到哪里看到哪里。WSL 终端命令输入 Ubuntu Shell；Prompt 输入 Codex；关键方案和最终页面由你判断。</p></section>
+    <section><h2>第一件事：确认打开的是 WSL 终端</h2><pre>echo $WSL_DISTRO_NAME\npwd\nuname -a</pre><p>推荐把仓库放在 <code>/home/username/code/project</code>，避免使用 <code>/mnt/c/Users/...</code> 带来的 I/O、权限和 symlink 问题。</p></section>
+    <section><h2>在 WSL 里面安装并启动 Codex</h2><pre>curl -fsSL https://chatgpt.com/codex/install.sh | sh\nwhich codex\ncodex --version\ncodex</pre><p>第一次运行时按照当前界面提示登录 ChatGPT。</p></section>
+    <section><h2>第一句话先让 Codex 带你看懂项目</h2><p>先让 Codex 调查技术栈、入口、路由、组件与测试命令，并明确暂时不要修改。确认方案方向后，再把真实前端需求交给它完成。</p></section>
+    <section><h2>写完以后，让 Codex 自己检查</h2><p>让 Codex 启动项目，执行类型检查、Lint、相关测试、浏览器检查、Console 检查及 Diff Review，再使用 <code>/review</code> 重新审查工作区。</p></section>
+    <section><h2>最后由你打开页面看结果</h2><p>你只需要判断页面是否符合目标、是否好用、业务逻辑是否正确。发现问题后描述具体现象，让 Codex 继续修复和重测。</p></section>
+    <section><h2>现在轮到你</h2><p>让 Codex 为自己的项目增加一个沿用现有设计系统、支持移动端并有返回入口的 About 页面。让它完成调查、计划、实现、启动、测试和 Review，再交给你验收。</p><p><a href="https://learn.chatgpt.com/docs/windows/wsl">查看 Codex WSL 官方文档</a></p></section>`
+}
+
+function wslCodexTroubleshootingHTML(): string {
+  const experience = getExperienceById('windows-11-wsl2-codex-environment')
+  if (!experience) throw new Error('[prerender] WSL2 Codex troubleshooting experience is missing')
+  return `<nav aria-label="经验分享路径"><a href="/home">首页</a> / <a href="/experiences">经验分享</a> / <a href="/experiences?category=troubleshooting">故障排查</a> / Codex 使用错误说明</nav>
+    <p>故障排查 / ERR-003 · 适用：${esc(experience.applicableTo)} · 更新：${esc(experience.updatedAt)}</p>
+    <section><h2>情况说明</h2><p>在 Windows 11 + WSL2 中，终端可能找不到 Codex，同一条命令在 PowerShell 和 Ubuntu 中结果不同，项目位于 /mnt/c 后出现速度或权限异常，或者 Windows 能联网而 WSL 中登录和请求失败。</p><p>Windows、WSL2 发行版、当前 Shell、Codex 可执行文件、HOME 与工作目录、WSL 网络需要逐层判断。本文只处理本机环境，不包含前端页面开发。</p></section>
+    <section><h2>Codex 帮你处理</h2><pre style="white-space:pre-wrap">${esc(experience.prompt)}</pre></section>
+    <section><h2>给人看的：原因、证据与经验</h2><h3>先确认命令在哪一层运行</h3><p>PowerShell 用于检查 WSL 发行版与版本；Ubuntu Shell 用于检查 Linux 内核、HOME、工作目录和 Codex 命令。两侧的路径、配置和安装状态不能互相代替。</p><h3>确认 WSL 实际运行哪一份 Codex</h3><pre>command -v codex\ntype -a codex\ncodex --version</pre><p>先读取路径和版本，再决定是否安装或修复。不要为了 command not found 删除整个 ~/.codex。</p><h3>把文件系统和网络分别排查</h3><p>/mnt/c 可以使用，但文件 I/O、权限、大小写和软链接行为可能与 WSL 自己的 Linux 文件系统不同。Windows 浏览器的代理、证书或登录状态也不一定自动传给 WSL。</p><h3>恢复验收</h3><p>分别确认 WSL2 版本、当前 Shell、Codex 路径与版本、配置和网络通过到哪一层，以及 Codex 是否在获得费用授权后完成一次简短交互。</p><p>真实 Windows 11 / WSL2 命令执行与初学者理解仍待人工实操。</p></section>
+    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>${esc(BRAND_SERVICE_DESCRIPTION)}</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
 }
 
 function experiencesIndexHTML(): string {
@@ -134,6 +159,16 @@ export function buildPrerenderPages(): PrerenderPage[] {
   const m = zh.marketing
   const p = m.pages
   const standaloneExperiencePages = [
+    {
+      id: 'windows-11-wsl-codex-frontend',
+      description: '在 Windows 11 的 WSL2 中，从真实仓库调查开始，用 Codex 完成前端开发、测试、Review 与人工验收闭环。',
+      body: wslCodexTutorialHTML()
+    },
+    {
+      id: 'windows-11-wsl2-codex-environment',
+      description: 'Windows 11 + WSL2 中 Codex 无法正常使用时，逐层检查发行版、Shell、可执行文件、工作目录和网络的公开排障经验。',
+      body: wslCodexTroubleshootingHTML()
+    },
     {
       id: 'codex-session-migration',
       description: '安全诊断并修复切换接入方式后 Codex 本机旧任务的失效 provider 关联，提供备份、计划、恢复与回滚边界。',
@@ -240,8 +275,8 @@ const HOME_STATIC_CSS = `:root{color-scheme:light;font-family:Inter,ui-sans-seri
 const HOME_STATIC_EXPERIENCE_CSS = `.home-static-section-heading{display:flex;align-items:end;justify-content:space-between;gap:1rem;margin-bottom:1rem}.home-static-section-heading h2,.home-static-faq h2{margin:.2rem 0 0}.home-static-section-heading p:not(.home-static-section-kicker){max-width:42rem;margin:.5rem 0 0;color:var(--muted);line-height:1.6}.home-static-section-kicker{margin:0;color:#0f766e;font:700 .72rem ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.07em;text-transform:uppercase}.dark .home-static-section-kicker{color:#5eead4}.home-static-experience-browse,.home-static-experience-card>a{display:inline-flex;align-items:center;gap:.4rem;color:#0f766e;font-size:.875rem;font-weight:750;text-decoration:underline;text-decoration-color:rgba(15,118,110,.35);text-underline-offset:4px}.dark .home-static-experience-browse,.dark .home-static-experience-card>a{color:#5eead4}.home-static-experience-card{padding:1.25rem;border:1px solid rgba(15,118,110,.22);border-radius:1rem;background:rgba(240,253,250,.64);box-shadow:0 16px 30px -27px rgba(15,118,110,.55)}.dark .home-static-experience-card{border-color:rgba(45,212,191,.22);background:rgba(15,35,33,.48)}.home-static-experience-meta{margin:0;color:var(--muted);font-size:.75rem}.home-static-experience-card h3{margin:.7rem 0 0;font-size:1.1rem;line-height:1.45}.home-static-experience-card>p:not(.home-static-experience-meta){margin:.55rem 0 0;color:var(--muted);line-height:1.65}.home-static-experience-card>a{margin-top:1rem}.home-static-faq>div{display:grid;gap:.65rem}.home-static-faq details{border:1px solid var(--border);border-radius:.8rem;background:var(--glass);padding:.85rem 1rem}.home-static-faq summary{cursor:pointer;font-weight:750}.home-static-faq details p{margin:.65rem 0 0;color:var(--muted);line-height:1.65}@media(max-width:760px){.home-static-section-heading{align-items:flex-start;flex-direction:column}.home-static-experience-browse{min-height:2rem}}`
 
 const HOME_COPY: Record<HomeLocale, { kicker: string; tagline: string; subtitle: string; login: string; docs: string; address: string; rtt: string; cards: Array<[string, string]>; footer: string }> = {
-  zh: { kicker: 'AI API 中转站', tagline: '人去 rest，AI 去 build。', subtitle: '一个入口接入多个 AI 模型；保留你自己的工具和工作流。', login: '登录', docs: '查看文档', address: 'API 接入地址', rtt: '本站 RTT', cards: [['实时状态', 'RTT 会在客户端测量完成后更新。'], ['统一入口', '一个 Base URL，兼容常用客户端。'], ['多模型接入', '在一个工作流中保持灵活选择。'], ['用量可见', '按实际使用量管理配额与账单。']], footer: 'rest 是你的，build 交给 AI。' },
-  en: { kicker: 'AI API RELAY', tagline: 'You rest. AI builds.', subtitle: 'One entry point for multiple AI models while your tools and workflow stay yours.', login: 'Login', docs: 'View docs', address: 'API base URL', rtt: 'Site RTT', cards: [['Live status', 'RTT updates after the client-side measurement completes.'], ['One endpoint', 'One Base URL for compatible clients.'], ['Model access', 'Keep a flexible choice inside one workflow.'], ['Usage visibility', 'Manage quotas and billing by actual use.']], footer: 'rest is yours. Let AI handle the build.' }
+  zh: { kicker: zh.home.sell.kicker, tagline: '人去 rest，AI 去 build。', subtitle: '面向 Codex、Claude Code 的 API 模型接入，以及 ChatGPT Plus、ChatGPT Pro 等账号订阅充值。可购项目以商品页为准；账号订阅与 API 余额分别管理。', login: '登录', docs: '查看文档', address: 'API 接入地址', rtt: '本站 RTT', cards: [['实时状态', 'RTT 会在客户端测量完成后更新。'], ['统一入口', '一个 Base URL，兼容常用客户端。'], ['多模型接入', '在一个工作流中保持灵活选择。'], ['用量可见', '按实际使用量管理配额与账单。']], footer: 'rest 是你的，build 交给 AI。' },
+  en: { kicker: en.home.sell.kicker, tagline: 'You rest. AI builds.', subtitle: 'API model access for Codex and Claude Code, and account subscription top-ups such as ChatGPT Plus and ChatGPT Pro. Availability follows product listings; subscription benefits and API balance are separate.', login: 'Login', docs: 'View docs', address: 'API base URL', rtt: 'Site RTT', cards: [['Live status', 'RTT updates after the client-side measurement completes.'], ['One endpoint', 'One Base URL for compatible clients.'], ['Model access', 'Keep a flexible choice inside one workflow.'], ['Usage visibility', 'Manage quotas and billing by actual use.']], footer: 'rest is yours. Let AI handle the build.' }
 }
 
 const HOME_LOCALE_CONTENT = {
@@ -269,14 +304,21 @@ function homeFaqSection(locale: HomeLocale): string {
   return `<section class="home-static-section home-static-faq" data-home-faq><p class="home-static-section-kicker">${esc(faq.kicker)}</p><h2>${esc(faq.title)}</h2><div>${items}</div></section>`
 }
 
+function homeServiceSection(locale: HomeLocale): string {
+  const copy = servicePaths[locale]
+  const lanes = copy.lanes.map(lane => `<section><h3>${esc(lane.title)}</h3><p>${esc(lane.subtitle)}</p><ol>${lane.steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol><a href="${esc(lane.href)}">${esc(lane.action)}</a></section>`).join('')
+  const resources = copy.resources.map(resource => `<section><h3>${esc(resource.title)}</h3><p>${esc(resource.description)}</p><a href="${esc(resource.href)}">${esc(resource.action)}</a></section>`).join('')
+  return `<section class="home-static-section" data-home-services><h2>${esc(copy.title)}</h2><p>${esc(copy.description)}</p>${lanes}<p>${esc(copy.note)}</p><h2>${esc(copy.practiceTitle)}</h2>${resources}</section>`
+}
+
 function homeTemplate(locale: HomeLocale, mode: HomeMode, includeAlternate = true): string {
   const copy = HOME_COPY[locale]
   const cards = copy.cards.map(([title, description]) => `<article class="home-static-card"><b>${esc(title)}</b><p>${esc(description)}</p></article>`).join('')
-  // Match the interactive default home order: platform overview, experience sharing, then FAQ.
+  // Preserve the service, experience and FAQ order of the interactive home.
   // Compact mode intentionally stays above-the-fold only, matching HomeView's compact branch.
   const sections = mode === 'compact'
     ? ''
-    : `<section class="home-static-section"><h2>${esc(copy.kicker)}</h2><div class="home-static-cards">${cards}</div></section>${homeExperienceSection(locale)}${homeFaqSection(locale)}`
+    : `<section class="home-static-section"><h2>${esc(copy.kicker)}</h2><div class="home-static-cards">${cards}</div></section>${homeServiceSection(locale)}${homeExperienceSection(locale)}${homeFaqSection(locale)}`
   const documentMarkup = `<!-- SUB2API_HOME_TEMPLATE -->\n<div id="app"><main data-home-prerender="${mode}" class="home-static home-static-${mode}" data-home-locale="${locale}"><div class="home-static-grid" aria-hidden="true"></div><header class="home-static-nav"><nav class="home-static-nav-inner" aria-label="Primary"><a class="home-static-brand" href="/home"><img src="${PRERENDER_PLACEHOLDERS.siteLogo}" width="36" height="36" alt="${PRERENDER_PLACEHOLDERS.siteName}" /><span>${PRERENDER_PLACEHOLDERS.siteName}</span></a><div class="home-static-actions"><a class="home-static-doc" href="${PRERENDER_PLACEHOLDERS.docUrl}" target="_blank" rel="noopener noreferrer">${esc(copy.docs)}</a><a class="home-static-button" href="/login" data-home-primary-cta>${esc(copy.login)}</a></div></nav></header><div class="home-static-main"><section class="home-static-hero" data-home-hero><div><p class="home-static-kicker"><i class="home-static-dot"></i>${esc(copy.kicker)}</p><h1 class="home-static-title">${PRERENDER_PLACEHOLDERS.siteName}</h1><p class="home-static-tagline">${esc(copy.tagline)}</p><p class="home-static-copy">${esc(copy.subtitle)} ${PRERENDER_PLACEHOLDERS.siteSubtitle}</p><div class="home-static-ctas"><a class="home-static-button" href="/login" data-home-primary-cta>${esc(copy.login)}</a><a class="home-static-doc" href="${PRERENDER_PLACEHOLDERS.docUrl}" target="_blank" rel="noopener noreferrer">${esc(copy.docs)}</a></div><div class="home-static-address"><div class="home-static-address-head"><span>${esc(copy.address)}</span><span>${PRERENDER_PLACEHOLDERS.siteSubtitle}</span></div><code>${PRERENDER_PLACEHOLDERS.apiBaseUrl}</code></div></div><aside class="home-static-panel" aria-label="API relay status"><div class="home-static-panel-head"><span>${BRAND_DOMAIN}</span><span class="home-static-live">ONLINE</span></div><div class="home-static-route"><div class="home-static-node"><strong>you</strong>rest</div><div class="home-static-line"></div><div class="home-static-node"><strong>AI</strong>build</div></div><div class="home-static-rtt"><span>${esc(copy.rtt)}</span><b>-- ms</b></div></aside></section>${sections}</div><footer class="home-static-footer">${esc(copy.footer)}<nav class="home-static-links" aria-label="Public links"><a href="/codex-cli">Codex CLI</a><a href="/claude-code">Claude Code</a><a href="/openai-compatible-api">OpenAI API</a><a href="/model-plaza">Models</a><a href="/security">Security</a></nav></footer></main></div>`
   if (!includeAlternate) return documentMarkup
   const alternateLocale: HomeLocale = locale === 'zh' ? 'en' : 'zh'

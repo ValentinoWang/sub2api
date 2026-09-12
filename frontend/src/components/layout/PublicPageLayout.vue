@@ -1,5 +1,10 @@
 <template>
-  <div class="pub-root relative flex min-h-screen flex-col text-gray-900 dark:text-white">
+  <AppLayout v-if="useAccountLayout">
+    <div class="account-public-content mx-auto" :class="{ 'account-public-wide': isWideSurface }" data-testid="account-public-content">
+      <slot />
+    </div>
+  </AppLayout>
+  <div v-else class="pub-root relative flex min-h-screen flex-col text-gray-900 dark:text-white">
     <header class="pub-header sticky top-0 z-30 px-4 py-3 sm:px-6">
       <nav class="pub-nav mx-auto flex max-w-7xl items-center justify-between gap-3 px-0">
         <router-link to="/home" class="flex min-w-0 items-center gap-3">
@@ -45,6 +50,8 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores'
+import { useAuthStore } from '@/stores/auth'
+import AppLayout from './AppLayout.vue'
 import BrandWordmark from '@/components/common/BrandWordmark.vue'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
@@ -54,6 +61,13 @@ import { sanitizeUrl } from '@/utils/url'
 const { t } = useI18n()
 const route = useRoute()
 const appStore = useAppStore()
+const authStore = useAuthStore()
+const useAccountLayout = computed(() => authStore.isAuthenticated && (
+  route.path === PUBLIC_PAGES.experiences ||
+  route.path.startsWith('/experiences/') ||
+  route.path.startsWith('/error-experiences/') ||
+  [PUBLIC_PAGES.codex, PUBLIC_PAGES.claudeCode, PUBLIC_PAGES.openaiCompat].some(path => path === route.path)
+))
 
 const siteName = computed(() => resolveBrandName(appStore.cachedPublicSettings?.site_name || appStore.siteName))
 const siteLogo = computed(() =>
@@ -61,6 +75,8 @@ const siteLogo = computed(() =>
 )
 const widePublicPaths: ReadonlySet<string> = new Set([
   PUBLIC_PAGES.experiences,
+  PUBLIC_PAGES.wslCodexTutorial,
+  PUBLIC_PAGES.wslCodexTroubleshooting,
   PUBLIC_PAGES.codex,
   PUBLIC_PAGES.claudeCode,
   PUBLIC_PAGES.openaiCompat,
@@ -82,6 +98,8 @@ const navLinks = computed(() => [
 </script>
 
 <style scoped>
+.account-public-content { min-width: 0; max-width: 48rem; }
+.account-public-wide { max-width: 76rem; }
 .pub-root {
   background: #f4f7f6;
 }

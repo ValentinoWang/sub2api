@@ -81,11 +81,24 @@ function injectPublicSettings(backendUrl: string): Plugin {
 export default defineConfig(({ mode }) => {
   // 加载环境变量
   const env = loadEnv(mode, process.cwd(), '')
-  const backendUrl = env.VITE_DEV_PROXY_TARGET || 'http://localhost:8080'
-  const devPort = Number(env.VITE_DEV_PORT || 3000)
+  const backendUrl = env.VITE_DEV_PROXY_TARGET || 'http://127.0.0.1:8080'
+  const devPort = 4174
+  if (env.VITE_DEV_PORT && env.VITE_DEV_PORT !== String(devPort)) {
+    throw new Error('Sub2API 前端端口固定为 4174，请移除其他 VITE_DEV_PORT 设置。')
+  }
 
   return {
     plugins: [
+      {
+        name: 'fixed-local-port',
+        apply: 'serve',
+        configResolved(config) {
+          const server = config.isPreview ? config.preview : config.server
+          if (server.port !== devPort || !server.strictPort) {
+            throw new Error('Sub2API 前端端口固定为 4174，且必须启用 strictPort；不能通过启动参数改用其他端口。')
+          }
+        }
+      },
       vue(),
       checker({
         vueTsc: true
@@ -157,8 +170,9 @@ export default defineConfig(({ mode }) => {
     }
   },
     server: {
-      host: '0.0.0.0',
+      host: '127.0.0.1',
       port: devPort,
+      strictPort: true,
       proxy: {
         '/health': {
           target: backendUrl,
@@ -177,6 +191,11 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true
         }
       }
+    },
+    preview: {
+      host: '127.0.0.1',
+      port: devPort,
+      strictPort: true
     }
   }
 })

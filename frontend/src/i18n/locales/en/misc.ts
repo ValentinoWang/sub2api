@@ -2,8 +2,8 @@ export default {
   experiences: {
     nav: 'Experience Sharing',
     kicker: 'Experience Sharing',
-    featuredTitle: 'Keep reusable troubleshooting experience close',
-    featuredDescription: 'Clear boundaries, checks, and recovery paths from real incidents, ready for the next similar issue.',
+    featuredTitle: 'Having trouble with Codex or Claude Code?',
+    featuredDescription: 'Find answers here, one problem at a time.',
     browseAll: 'Browse all experiences',
     indexTitle: 'AI Experience Sharing',
     indexDescription: 'Troubleshooting and practical experience for real usage. Each entry records its scope and observation date.',
@@ -43,7 +43,6 @@ export default {
 
   // Version Badge
   version: {
-    publicRelease: 'Product {release} · Technical v{technical}',
     currentVersion: 'Current Version',
     latestVersion: 'Latest Version',
     upToDate: "You're running the latest version.",
@@ -87,16 +86,25 @@ export default {
   // Recharge / Subscription Page
   purchase: {
     title: 'Recharge / Subscription',
-    description: 'Recharge balance or purchase subscription via the embedded page',
+    description: 'Buy a recharge code, then return here to redeem it.',
     openInNewTab: 'Open in new tab',
     notEnabledTitle: 'Feature not enabled',
     notEnabledDesc: 'The administrator has not enabled the recharge/subscription entry. Please contact admin.',
     notConfiguredTitle: 'Recharge / Subscription URL not configured',
     notConfiguredDesc:
       'The administrator enabled the entry but has not configured a recharge/subscription URL. Please contact admin.',
-    fulfillmentTitle: 'Redeem a Liandong Store code',
-    fulfillmentDescription: 'Bought a one-time code from the Liandong Store? Enter it on the redeem page to receive the balance or subscription immediately. Checkout is for direct payment; codes are for store fulfillment.',
-    goToRedeem: 'Open redeem page'
+    storeTitle: 'Recharge balance',
+    storeChannel: 'Liandong recharge code',
+    onlineChannel: 'Online payment',
+    buyStep: 'Buy a recharge code',
+    buyDescription: 'Choose an amount in Liandong Store, pay, then return here with the code.',
+    buyInStore: 'Recharge in Liandong Store',
+    storeUnavailable: 'Purchases are currently unavailable. Contact the administrator, or redeem a code you already have using this form.',
+    redeemStep: 'Enter the recharge code',
+    codePlaceholder: 'Paste the code from your store order',
+    confirmRedeem: 'Redeem code',
+    credited: '${amount} credited',
+    refreshWarning: 'Your code was redeemed, but the balance could not refresh. Reload this page to check it. You do not need to redeem again.'
   },
 
   ldxpToolkit: {
@@ -104,6 +112,20 @@ export default {
     navLabel: 'Liandong Store',
     title: 'Liandong Store Toolkit',
     description: 'Manage fixed product mappings, remote inventory previews, and controlled restock jobs.',
+    restock: {
+      title: 'Automatic restock',
+      description: 'When enabled, restock uses the saved target stock for each product. Check the mappings and target stock below before enabling; unsaved edits do not apply.',
+      enable: 'Enable automatic restock',
+      disable: 'Disable automatic restock',
+      running: 'Restock in progress',
+      unknown: 'Status unknown',
+      configurationRequired: 'Complete and save the merchant configuration and product mappings before enabling automatic restock.',
+      enabledSuccess: 'Automatic restock enabled',
+      disabledSuccess: 'Automatic restock disabled',
+      updateFailed: 'Failed to update automatic restock',
+      readbackFailed: 'The current automatic restock state could not be confirmed. Refresh to check it.',
+      notConfirmed: 'The persisted automatic restock state differs from the request. Refresh to check it.',
+    },
     runtime: {
       title: 'Runtime',
       description: 'Check the LDXP toolkit installation and fixed server data directory.',

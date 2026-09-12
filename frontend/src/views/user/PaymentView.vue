@@ -1,31 +1,41 @@
 <template>
   <AppLayout>
     <div class="mx-auto max-w-4xl space-y-6">
+      <div v-if="!loading && tabs.length > 1 && paymentPhase === 'select' && !selectedPlan" class="flex space-x-1 rounded-xl bg-gray-100 p-1 dark:bg-dark-800">
+        <button v-for="tab in tabs" :key="tab.key"
+          class="flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
+          :class="activeTab === tab.key ? 'bg-white text-gray-900 shadow dark:bg-dark-700 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'"
+          @click="activeTab = tab.key">{{ tab.label }}</button>
+      </div>
+      <div
+        v-if="!loading && paymentPhase === 'select' && !selectedPlan && activeTab === 'recharge' && rechargeChannels.length > 1"
+        class="mx-auto flex w-full max-w-2xl items-center gap-1 rounded-xl bg-gray-100 p-1 dark:bg-dark-800"
+        data-testid="recharge-channel-selector"
+      >
+        <button
+          v-for="channel in rechargeChannels"
+          :key="channel.key"
+          type="button"
+          class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+          :class="activeRechargeChannel === channel.key
+            ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
+            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
+          :data-testid="`recharge-channel-${channel.key}`"
+          @click="selectedRechargeChannel = channel.key"
+        >
+          <Icon :name="channel.icon" size="sm" />
+          <span class="truncate">{{ channel.label }}</span>
+        </button>
+      </div>
+      <KeepAlive>
+        <LiandongRechargePanel
+          v-if="paymentPhase === 'select' && !selectedPlan && activeTab === 'recharge' && activeRechargeChannel === 'store'"
+        />
+      </KeepAlive>
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
       </div>
       <template v-else>
-        <!-- Tab Switcher (hide during payment and subscription confirm) -->
-        <div v-if="tabs.length > 1 && paymentPhase === 'select' && !selectedPlan" class="flex space-x-1 rounded-xl bg-gray-100 p-1 dark:bg-dark-800">
-          <button v-for="tab in tabs" :key="tab.key"
-            class="flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
-            :class="activeTab === tab.key ? 'bg-white text-gray-900 shadow dark:bg-dark-700 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'"
-          @click="activeTab = tab.key">{{ tab.label }}</button>
-        </div>
-        <div
-          v-if="paymentPhase === 'select' && !selectedPlan"
-          class="flex flex-col gap-3 rounded-xl border border-primary-200 bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-900/20 sm:flex-row sm:items-center sm:justify-between"
-          data-testid="purchase-redeem-link"
-        >
-          <div class="min-w-0">
-            <p class="text-sm font-semibold text-primary-900 dark:text-primary-100">{{ t('purchase.fulfillmentTitle') }}</p>
-            <p class="mt-1 text-xs leading-relaxed text-primary-800/80 dark:text-primary-200/80">{{ t('purchase.fulfillmentDescription') }}</p>
-          </div>
-          <router-link to="/redeem" class="btn btn-secondary btn-sm shrink-0">
-            <Icon name="gift" size="sm" />
-            <span>{{ t('purchase.goToRedeem') }}</span>
-          </router-link>
-        </div>
         <!-- Payment in progress (shared by recharge and subscription) -->
         <template v-if="paymentPhase === 'paying'">
           <PaymentStatusPanel
@@ -48,17 +58,13 @@
         <!-- Tab content (select phase) -->
         <template v-else>
           <!-- Top-up Tab -->
-          <template v-if="activeTab === 'recharge'">
+          <template v-if="activeTab === 'recharge' && activeRechargeChannel === 'online' && onlineRechargeAvailable">
             <!-- Recharge Account Card -->
             <div class="card p-5">
               <p class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ t('payment.rechargeAccount') }}</p>
               <p class="mt-1 text-base font-semibold text-gray-900 dark:text-white">{{ user?.username || '' }}</p>
               <p class="mt-0.5 text-sm font-medium text-green-600 dark:text-green-400">{{ t('payment.currentBalance') }}: {{ user?.balance?.toFixed(2) || '0.00' }}</p>
             </div>
-            <div v-if="enabledMethods.length === 0" class="card py-16 text-center">
-              <p class="text-gray-500 dark:text-gray-400">{{ t('payment.notAvailable') }}</p>
-            </div>
-            <template v-else>
             <div class="card p-6">
               <AmountInput
                 v-model="amount"
@@ -123,7 +129,6 @@
               </span>
               <span v-else>{{ t('payment.createOrder') }} {{ formatSelectedPaymentAmount(totalAmount) }}</span>
             </button>
-            </template>
           </template>
           <!-- Subscribe Tab -->
           <template v-else-if="activeTab === 'subscription'">
@@ -304,6 +309,7 @@ import { isMobileDevice } from '@/utils/device'
 import { hasPeakRate, formatPeakRateWindow, serverTimezoneLabel, type PeakRateFields } from '@/utils/peak-rate'
 import type { SubscriptionPlan, CheckoutInfoResponse, CreateOrderResult, OrderType } from '@/types/payment'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import LiandongRechargePanel from '@/components/payment/LiandongRechargePanel.vue'
 import AmountInput from '@/components/payment/AmountInput.vue'
 import PaymentMethodSelector from '@/components/payment/PaymentMethodSelector.vue'
 import { METHOD_ORDER, getPaymentPopupFeatures, isBuiltInAlipayMethod, isBuiltInWxpayMethod } from '@/components/payment/providerConfig'
@@ -386,6 +392,8 @@ const submitting = ref(false)
 const errorMessage = ref('')
 const errorHintMessage = ref('')
 const activeTab = ref<'recharge' | 'subscription'>('recharge')
+type RechargeChannel = 'store' | 'online'
+const selectedRechargeChannel = ref<RechargeChannel>('store')
 const amount = ref<number | null>(null)
 const selectedMethod = ref('')
 const selectedPlan = ref<SubscriptionPlan | null>(null)
@@ -572,15 +580,38 @@ const renderedHelpText = computed(() => DOMPurify.sanitize(
   marked.parse(checkout.value.help_text || '', { async: false, gfm: true, breaks: false }),
 ))
 
+const visibleMethods = computed(() => getVisibleMethods(checkout.value.methods))
+const enabledMethods = computed(() => Object.keys(visibleMethods.value))
+const liandongRechargeAvailable = computed(() => appStore.cachedPublicSettings?.purchase_subscription_enabled === true)
+const onlineRechargeAvailable = computed(() =>
+  appStore.cachedPublicSettings?.payment_enabled !== false
+    && !checkout.value.balance_disabled
+    && enabledMethods.value.length > 0
+)
+const rechargeChannels = computed<Array<{ key: RechargeChannel; label: string; icon: 'gift' | 'creditCard' }>>(() => {
+  const channels: Array<{ key: RechargeChannel; label: string; icon: 'gift' | 'creditCard' }> = []
+  if (liandongRechargeAvailable.value) {
+    channels.push({ key: 'store', label: t('purchase.storeChannel'), icon: 'gift' })
+  }
+  if (onlineRechargeAvailable.value) {
+    channels.push({ key: 'online', label: t('purchase.onlineChannel'), icon: 'creditCard' })
+  }
+  return channels
+})
+const activeRechargeChannel = computed<RechargeChannel>(() => {
+  if (selectedRechargeChannel.value === 'store' && liandongRechargeAvailable.value) return 'store'
+  if (selectedRechargeChannel.value === 'online' && onlineRechargeAvailable.value) return 'online'
+  return liandongRechargeAvailable.value ? 'store' : 'online'
+})
+const rechargeAvailable = computed(() => liandongRechargeAvailable.value || onlineRechargeAvailable.value)
+
 const tabs = computed(() => {
   const result: { key: 'recharge' | 'subscription'; label: string }[] = []
-  if (!checkout.value.balance_disabled) result.push({ key: 'recharge', label: t('payment.tabTopUp') })
+  if (rechargeAvailable.value) result.push({ key: 'recharge', label: t('payment.tabTopUp') })
   result.push({ key: 'subscription', label: t('payment.tabSubscribe') })
   return result
 })
 
-const visibleMethods = computed(() => getVisibleMethods(checkout.value.methods))
-const enabledMethods = computed(() => Object.keys(visibleMethods.value))
 const validAmount = computed(() => amount.value ?? 0)
 const balanceRechargeMultiplier = computed(() => {
   const multiplier = checkout.value.balance_recharge_multiplier
@@ -1164,7 +1195,18 @@ async function resumeWechatPaymentFromQuery() {
 }
 
 onMounted(async () => {
+  if (appStore.cachedPublicSettings?.payment_enabled === false) {
+    removeRecoverySnapshot()
+    if (route.query.tab === 'subscription') activeTab.value = 'subscription'
+    loading.value = false
+    subscriptionStore.fetchActiveSubscriptions().catch(() => {})
+    return
+  }
+
   try {
+    if (route.query.channel === 'online' || hasWechatResumeQuery(route.query)) {
+      selectedRechargeChannel.value = 'online'
+    }
     const res = await paymentAPI.getCheckoutInfo()
     checkout.value = res.data
     if (enabledMethods.value.length) {
@@ -1190,6 +1232,7 @@ onMounted(async () => {
         { resumeToken: routeResumeToken },
       )
       if (restored) {
+        selectedRechargeChannel.value = 'online'
         paymentState.value = restored
         paymentPhase.value = 'paying'
         const restoredMethod = normalizeVisibleMethod(restored.paymentType)
@@ -1202,7 +1245,7 @@ onMounted(async () => {
       }
     }
     await resumeWechatPaymentFromQuery()
-    if (checkout.value.balance_disabled) {
+    if (!rechargeAvailable.value) {
       activeTab.value = 'subscription'
     }
     // Handle renewal navigation: ?tab=subscription&group=123

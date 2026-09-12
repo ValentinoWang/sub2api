@@ -43,7 +43,7 @@ const route = useRoute()
 const sidebarCollapsed = computed(() => appStore.sidebarCollapsed)
 const isAdmin = computed(() => authStore.user?.role === 'admin')
 const usesUserBrandShell = computed(
-  () => route.meta.requiresAuth === true && route.meta.requiresAdmin !== true
+  () => (route.meta.requiresAuth === true || authStore.isAuthenticated) && route.meta.requiresAdmin !== true
 )
 
 const { replayTour } = useOnboardingTour({

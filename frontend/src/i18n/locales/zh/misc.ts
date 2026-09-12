@@ -2,8 +2,8 @@ export default {
   experiences: {
     nav: '经验分享',
     kicker: '经验分享',
-    featuredTitle: '把可复用的排障经验留在这里',
-    featuredDescription: '从真实问题中整理出明确边界、检查顺序与恢复方法，帮助下一次更快定位。',
+    featuredTitle: 'Codex / Claude Code 遇到问题了？',
+    featuredDescription: '没关系，来这里寻找答案。',
     browseAll: '查看全部经验',
     indexTitle: 'AI 使用经验分享',
     indexDescription: '收录面向真实使用场景的排障与实践经验。每篇内容都会注明适用范围和历史观察时间。',
@@ -43,7 +43,6 @@ export default {
 
   // Version Badge
   version: {
-    publicRelease: '产品 {release} · 技术 v{technical}',
     currentVersion: '当前版本',
     latestVersion: '最新版本',
     upToDate: '已是最新版本',
@@ -86,15 +85,24 @@ export default {
   // Recharge / Subscription Page
   purchase: {
     title: '充值/订阅',
-    description: '通过内嵌页面完成充值/订阅',
+    description: '购买充值码，返回本页兑换到账。',
     openInNewTab: '新窗口打开',
     notEnabledTitle: '该功能未开启',
     notEnabledDesc: '管理员暂未开启充值/订阅入口，请联系管理员。',
     notConfiguredTitle: '充值/订阅链接未配置',
     notConfiguredDesc: '管理员已开启入口，但尚未配置充值/订阅链接，请联系管理员。',
-    fulfillmentTitle: '链动小铺兑换',
-    fulfillmentDescription: '已通过链动小铺购买一次性兑换码？在这里输入兑换码，余额或订阅会即时到账。在线支付适合直接充值，兑换码适合小铺订单发货。',
-    goToRedeem: '前往兑换码'
+    storeTitle: '充值余额',
+    storeChannel: '联动小铺充值码',
+    onlineChannel: '在线支付',
+    buyStep: '购买充值码',
+    buyDescription: '在联动小铺选择金额并付款，收到兑换码后返回本页。',
+    buyInStore: '前往联动小铺充值',
+    storeUnavailable: '购买入口暂未开放，请联系管理员。已有充值码可在本页兑换。',
+    redeemStep: '输入兑换码',
+    codePlaceholder: '粘贴小铺订单中的兑换码',
+    confirmRedeem: '兑换到账',
+    credited: '已到账 ${amount}',
+    refreshWarning: '兑换已成功，余额信息暂未刷新。请刷新页面查看，无需再次兑换。'
   },
 
   ldxpToolkit: {
@@ -102,6 +110,20 @@ export default {
     navLabel: '链动小铺',
     title: '链动小铺工具',
     description: '管理固定商品映射、远程库存预览和受控补货任务。',
+    restock: {
+      title: '自动补货',
+      description: '启用后会按已保存的商品目标库存自动补货。启用前请核对下方商品映射和目标库存；未保存的编辑不会生效。',
+      enable: '启用自动补货',
+      disable: '停用自动补货',
+      running: '正在执行补货',
+      unknown: '状态未知',
+      configurationRequired: '请先完成并保存商户配置和商品映射，再启用自动补货。',
+      enabledSuccess: '自动补货已启用',
+      disabledSuccess: '自动补货已停用',
+      updateFailed: '自动补货设置更新失败',
+      readbackFailed: '无法确认当前自动补货状态，请刷新后核对。',
+      notConfirmed: '读回的自动补货状态与请求不一致，请刷新后核对。',
+    },
     runtime: {
       title: '运行时',
       description: '检查服务器上的 LDXP 工具包安装状态和固定数据目录。',

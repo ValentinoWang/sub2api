@@ -7,6 +7,7 @@ const {
   installOrRepair,
   getStatus,
   updateConfig,
+  setRestockEnabled,
   testConnection,
   listGoods,
   previewJob,
@@ -21,6 +22,7 @@ const {
   installOrRepair: vi.fn(),
   getStatus: vi.fn(),
   updateConfig: vi.fn(),
+  setRestockEnabled: vi.fn(),
   testConnection: vi.fn(),
   listGoods: vi.fn(),
   previewJob: vi.fn(),
@@ -41,6 +43,7 @@ vi.mock('@/api/liandongToolkit', () => ({
     installOrRepair,
     getStatus,
     updateConfig,
+    setRestockEnabled,
     testConnection,
     listGoods,
     previewJob,
@@ -85,6 +88,7 @@ const baseStatus = () => ({
   merchant_token_configured: true,
   code_secret_configured: true,
   running: false,
+  enabled: false,
   pending_batch: false,
   products: [
     {
@@ -139,6 +143,7 @@ describe('LiandongToolkitView', () => {
     installOrRepair.mockReset().mockResolvedValue(baseInstallation)
     getStatus.mockReset().mockResolvedValue(baseStatus())
     updateConfig.mockReset().mockImplementation(async () => baseStatus())
+    setRestockEnabled.mockReset().mockResolvedValue({ ...baseStatus(), enabled: true })
     testConnection.mockReset().mockResolvedValue({ ok: true, configured: true, reachable: true, read_only: true })
     listGoods.mockReset().mockResolvedValue([])
     previewJob.mockReset().mockResolvedValue([])
@@ -148,6 +153,84 @@ describe('LiandongToolkitView', () => {
     exportJob.mockReset().mockResolvedValue(new Blob(['safe export']))
     showError.mockReset()
     showSuccess.mockReset()
+  })
+
+  it('reads back persisted enablement and prevents duplicate submissions until confirmed', async () => {
+    const wrapper = mountView()
+    await flushPromises()
+    let resolveWrite!: (value: unknown) => void
+    setRestockEnabled.mockImplementationOnce(() => new Promise(resolve => { resolveWrite = resolve }))
+    getStatus.mockResolvedValueOnce({ ...baseStatus(), enabled: true, running: true })
+    const toggle = wrapper.get('[data-testid="toggle-auto-restock"]')
+    await toggle.trigger('click')
+    await toggle.trigger('click')
+    expect(setRestockEnabled).toHaveBeenCalledTimes(1)
+    expect(setRestockEnabled).toHaveBeenCalledWith(true)
+    expect(toggle.attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[data-testid="auto-restock-status"]').text()).toContain('common.disabled')
+    expect(showSuccess).not.toHaveBeenCalled()
+    resolveWrite({ ...baseStatus(), enabled: true })
+    await flushPromises()
+    expect(getStatus).toHaveBeenCalledTimes(2)
+    expect(wrapper.get('[data-testid="auto-restock-status"]').text()).toContain('common.enabled')
+    expect(wrapper.get('[data-testid="auto-restock-running"]').text()).toContain('restock.running')
+    expect(showSuccess).toHaveBeenCalledWith('ldxpToolkit.restock.enabledSuccess')
+  })
+
+  it.each([false, undefined])('blocks enabling when configuration readiness is %s', async configured => {
+    getStatus.mockResolvedValue({ ...baseStatus(), configured })
+    const wrapper = mountView()
+    await flushPromises()
+    const toggle = wrapper.get('[data-testid="toggle-auto-restock"]')
+    expect(toggle.attributes('disabled')).toBeDefined()
+    await toggle.trigger('click')
+    expect(setRestockEnabled).not.toHaveBeenCalled()
+  })
+
+  it('permits disabling even when configuration is unavailable and a cycle is running', async () => {
+    getStatus.mockResolvedValueOnce({ ...baseStatus(), enabled: true, configured: false, running: true })
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-testid="toggle-auto-restock"]').trigger('click')
+    await flushPromises()
+    expect(setRestockEnabled).toHaveBeenCalledWith(false)
+    expect(wrapper.get('[data-testid="auto-restock-status"]').text()).toContain('common.disabled')
+    expect(showSuccess).toHaveBeenCalledWith('ldxpToolkit.restock.disabledSuccess')
+  })
+
+  it('does not claim success when the write succeeds but status readback fails', async () => {
+    const wrapper = mountView()
+    await flushPromises()
+    getStatus.mockRejectedValueOnce({ status: 503, message: 'status unavailable' })
+    await wrapper.get('[data-testid="toggle-auto-restock"]').trigger('click')
+    await flushPromises()
+    expect(showSuccess).not.toHaveBeenCalled()
+    expect(wrapper.get('[data-testid="auto-restock-status"]').text()).toContain('restock.unknown')
+    expect(wrapper.get('[data-testid="auto-restock-error"]').text()).toContain('restock.readbackFailed')
+    expect(wrapper.text()).toContain('status unavailable')
+    expect(wrapper.get('[data-testid="toggle-auto-restock"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('reports a persisted value that disagrees with the requested value', async () => {
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-testid="toggle-auto-restock"]').trigger('click')
+    await flushPromises()
+    expect(showSuccess).not.toHaveBeenCalled()
+    expect(wrapper.get('[data-testid="auto-restock-status"]').text()).toContain('common.disabled')
+    expect(wrapper.get('[data-testid="auto-restock-error"]').text()).toContain('restock.notConfirmed')
+  })
+
+  it('reconciles an ambiguous write failure without showing a false success', async () => {
+    const wrapper = mountView()
+    await flushPromises()
+    setRestockEnabled.mockRejectedValueOnce({ status: 500, message: 'write response lost' })
+    getStatus.mockResolvedValueOnce({ ...baseStatus(), enabled: true })
+    await wrapper.get('[data-testid="toggle-auto-restock"]').trigger('click')
+    await flushPromises()
+    expect(showSuccess).not.toHaveBeenCalled()
+    expect(wrapper.get('[data-testid="auto-restock-error"]').text()).toContain('write response lost')
+    expect(wrapper.get('[data-testid="auto-restock-status"]').text()).toContain('common.enabled')
   })
 
   it('renders an unavailable runtime without claiming installation', async () => {

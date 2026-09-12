@@ -1,5 +1,9 @@
 export default {
   dashboard: {
+    loadFailed: '仪表盘数据加载失败，请重试。',
+    refreshFailed: '刷新失败，当前保留上次加载的数据。',
+    retry: '重试',
+
     title: '仪表盘',
     welcomeMessage: '欢迎回来！这是您账户的概览。',
     balance: '余额',

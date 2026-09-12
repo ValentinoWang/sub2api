@@ -83,3 +83,7 @@ deploy/redis_data/
 .claude/
 issues/
 CLAUDE.md
+
+# Operational evidence and human acceptance records are not runtime inputs.
+/agents-results/
+/acceptance/

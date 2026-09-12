@@ -7,11 +7,15 @@
       </a>
       <p class="brand-tagline"><span>歇一会儿，</span><span>让 AI 接着干。</span></p>
       <p class="brand-subline">rest 是你的，build 交给 AI。</p>
-      <p class="brand-service">rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p>
+      <p class="brand-service">{{ BRAND_SERVICE_DESCRIPTION }}</p>
       <a class="brand-domain" href="https://ai.rest2build.lol/">ai.rest2build.lol</a>
     </div>
   </section>
 </template>
+
+<script setup lang="ts">
+import { BRAND_SERVICE_DESCRIPTION } from '@/constants/brand'
+</script>
 
 <style scoped>
 .brand-statement {

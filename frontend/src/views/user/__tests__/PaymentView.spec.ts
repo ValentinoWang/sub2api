@@ -4,6 +4,7 @@ import PaymentView from '../PaymentView.vue'
 import { PAYMENT_RECOVERY_STORAGE_KEY } from '@/components/payment/paymentFlow'
 import { formatPaymentAmount } from '@/components/payment/currency'
 import AmountInput from '@/components/payment/AmountInput.vue'
+import LiandongRechargePanel from '@/components/payment/LiandongRechargePanel.vue'
 import SubscriptionPlanCard from '@/components/payment/SubscriptionPlanCard.vue'
 import en from '@/i18n/locales/en'
 import zh from '@/i18n/locales/zh'
@@ -26,7 +27,7 @@ const showWarning = vi.hoisted(() => vi.fn())
 const getCheckoutInfo = vi.hoisted(() => vi.fn())
 const bridgeInvoke = vi.hoisted(() => vi.fn())
 const translate = vi.hoisted(() => vi.fn((key: string) => key))
-const cachedPublicSettings = vi.hoisted(() => ({ value: {} as Record<string, string> }))
+const cachedPublicSettings = vi.hoisted(() => ({ value: {} as Record<string, unknown> }))
 
 vi.mock('vue-router', async () => {
   const actual = await vi.importActual<typeof import('vue-router')>('vue-router')
@@ -358,6 +359,87 @@ describe('PaymentView subscription plan grid', () => {
       'sm:grid-cols-2',
       'lg:grid-cols-3',
     ]))
+  })
+})
+
+describe('PaymentView recharge channels', () => {
+  beforeEach(() => {
+    routeState.path = '/purchase'
+    routeState.query = {}
+    window.localStorage.clear()
+    getCheckoutInfo.mockReset()
+  })
+
+  async function mountRecharge(checkout: Partial<CheckoutInfoResponse> = {}) {
+    getCheckoutInfo.mockResolvedValue(checkoutInfoFixture(checkout))
+    const wrapper = shallowMount(PaymentView, {
+      global: {
+        stubs: {
+          KeepAlive: false,
+          AppLayout: { template: '<div><slot /></div>' },
+          Teleport: true,
+          Transition: false,
+        },
+      },
+    })
+    await flushPromises()
+    return wrapper
+  }
+
+  it('shows only the store flow when native payment is disabled', async () => {
+    cachedPublicSettings.value = {
+      payment_enabled: false,
+      purchase_subscription_enabled: true,
+      purchase_subscription_url: 'https://shop.example.com/recharge',
+    }
+    const wrapper = await mountRecharge()
+
+    expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(true)
+    expect(wrapper.findComponent(AmountInput).exists()).toBe(false)
+    expect(wrapper.find('[data-testid="recharge-channel-selector"]').exists()).toBe(false)
+    expect(getCheckoutInfo).not.toHaveBeenCalled()
+  })
+
+  it('keeps the redemption panel when the buyer link is withdrawn', async () => {
+    cachedPublicSettings.value = {
+      payment_enabled: false,
+      purchase_subscription_enabled: true,
+      purchase_subscription_url: '',
+    }
+    const wrapper = await mountRecharge()
+    expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(true)
+    expect(wrapper.findComponent(AmountInput).exists()).toBe(false)
+    expect(getCheckoutInfo).not.toHaveBeenCalled()
+  })
+
+  it('shows only native payment when the store channel is disabled', async () => {
+    cachedPublicSettings.value = {
+      payment_enabled: true,
+      purchase_subscription_enabled: false,
+    }
+    const wrapper = await mountRecharge()
+
+    expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(false)
+    expect(wrapper.findComponent(AmountInput).exists()).toBe(true)
+    expect(wrapper.find('[data-testid="recharge-channel-selector"]').exists()).toBe(false)
+  })
+
+  it('uses an explicit selector and renders only the selected channel when both are enabled', async () => {
+    cachedPublicSettings.value = {
+      payment_enabled: true,
+      purchase_subscription_enabled: true,
+      purchase_subscription_url: 'https://shop.example.com/recharge',
+    }
+    const wrapper = await mountRecharge()
+
+    expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(true)
+    expect(wrapper.findComponent(AmountInput).exists()).toBe(false)
+    const storePanel = wrapper.getComponent(LiandongRechargePanel).vm
+    await wrapper.get('[data-testid="recharge-channel-online"]').trigger('click')
+    expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(false)
+    expect(wrapper.findComponent(AmountInput).exists()).toBe(true)
+    await wrapper.get('[data-testid="recharge-channel-store"]').trigger('click')
+    expect(wrapper.getComponent(LiandongRechargePanel).vm).toBe(storePanel)
   })
 })
 

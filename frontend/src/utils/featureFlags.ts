@@ -158,6 +158,13 @@ export function makeSidebarFlag(flag: FeatureFlagDefinition): () => boolean {
   return () => isFeatureFlagEnabled(flag)
 }
 
+/** The purchase hub is available when either native payment or the store channel is enabled. */
+export function isPurchaseRouteEnabled(): boolean {
+  const settings = useAppStore().cachedPublicSettings
+  if (!settings) return true
+  return settings.payment_enabled !== false || settings.purchase_subscription_enabled === true
+}
+
 /** True when channel monitor feature flag is enabled. */
 export function isChannelMonitorRouteEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlags.channelMonitor)

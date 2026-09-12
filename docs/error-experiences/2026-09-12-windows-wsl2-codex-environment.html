@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ERR-003 · Windows 11 + WSL2 中的 Codex 环境排查 · rest2build</title>
+  <style>
+    :root{color-scheme:light;font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;color:#22302b;background:#f4f7f6}*{box-sizing:border-box}body{margin:0}a{color:#0f766e;text-underline-offset:3px}header{border-bottom:1px solid #d7e1dd;background:#fff}.topbar,.wrap{width:min(1120px,calc(100% - 40px));margin:auto}.topbar{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:64px}.brand{display:flex;align-items:center;gap:10px;color:#173c2e;font-weight:800;text-decoration:none}.brand img{width:34px;height:34px}.topbar nav{display:flex;flex-wrap:wrap;gap:16px;font-size:13px}main{padding:36px 0 64px}.article{overflow:hidden;border:1px solid #d6e0dc;border-radius:8px;background:#fff;box-shadow:0 20px 42px -38px rgba(15,23,42,.45)}.crumb{display:flex;flex-wrap:wrap;gap:7px;padding:16px 32px 0;color:#6b7a74;font-size:12px}.intro{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:32px;align-items:end;padding:34px 32px;border-bottom:1px solid #d6e0dc;background:#eef7f3}.kicker,.step{margin:0 0 9px;color:#0f766e;font:700 12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}.intro h1{margin:0;font-size:34px;line-height:1.35;letter-spacing:0}.subtitle{margin:13px 0 0;color:#4d6058;font-size:17px;line-height:1.65}.meta{margin:14px 0 0;color:#6b7a74;font-size:12px}.state{margin:0;border-left:2px solid #0f766e;padding-left:15px;font-size:13px;line-height:1.65}.section{padding:32px;border-bottom:1px solid #d6e0dc}.section:last-child{border:0}.section h2{margin:0 0 16px;font-size:22px}.section h3{margin:28px 0 12px;font-size:18px}.section p,.section li{color:#465750;line-height:1.75}.notice,.scope{border-left:3px solid #0f766e;background:#f0f7f4;padding:13px 15px;font-size:14px}.prompt{background:#f5f9f7}.heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.heading h2{margin:0}.copy{display:inline-flex;align-items:center;border:1px solid #0f766e;border-radius:5px;background:#0f766e;padding:9px 12px;color:#fff;font-weight:750}.copy:focus-visible,a:focus-visible{outline:3px solid #38bdf8;outline-offset:3px}textarea{display:block;width:100%;min-height:430px;margin-top:16px;resize:vertical;border:1px solid #b8cac2;border-radius:5px;background:#fff;padding:16px;color:#1f2937;font:13px/1.85 ui-monospace,SFMono-Regular,Menlo,monospace}.copy-status{min-height:22px;margin-bottom:0!important;color:#0f766e!important;font-size:12px}.explanation+.explanation{margin-top:30px;border-top:1px solid #dde5e1}.explanation+.explanation h3{padding-top:28px}.table-scroll{overflow-x:auto;margin:18px 0;border:1px solid #d5dfda}table{width:100%;min-width:680px;border-collapse:collapse;font-size:13px}th{padding:12px;text-align:left;background:#edf3f0;color:#51615b}td{padding:12px;vertical-align:top;border-top:1px solid #d5dfda;color:#465750;line-height:1.65}td:first-child{font-weight:700}.commands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.command{border:1px solid #cedbd5;background:#f8fbfa}.command strong{display:block;padding:11px 14px;color:#0f766e;font-size:13px}.command pre{overflow:auto;margin:0;border-block:1px solid #cedbd5;background:#101916;padding:15px;color:#e8f2ed;font:13px/1.75 ui-monospace,SFMono-Regular,Menlo,monospace}.command p{margin:0;padding:12px 14px;font-size:13px}.references{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}.references a{border:1px solid #9db7ad;border-radius:5px;padding:9px 11px;font-size:13px;font-weight:700;text-decoration:none}.brand-footer{border-top:1px solid #c9ddd0;background:#edf7f0;padding:64px 20px 30px;text-align:center}.brand-footer .wordmark{display:inline-flex;align-items:center;gap:12px;color:#143b2a;font-size:34px;font-weight:800;text-decoration:none}.wordmark img{width:46px;height:46px}.tagline{margin:28px 0 10px;color:#143b2a;font-size:44px;font-weight:800}.subline{font-size:19px}.service{max-width:760px;margin:22px auto;line-height:1.85}.domain{font:700 17px ui-monospace,SFMono-Regular,Menlo,monospace}@media(max-width:760px){.topbar,.wrap{width:min(100% - 24px,1120px)}.topbar{align-items:flex-start;flex-direction:column;padding:12px 0}.intro{grid-template-columns:1fr}.crumb{padding:14px 20px 0}.intro,.section{padding:25px 20px}.intro h1{font-size:28px}.commands{grid-template-columns:1fr}.heading .copy{font-size:0}.heading .copy::after{content:"复制";font-size:13px}textarea{min-height:520px;padding:13px;font-size:12px}.references{flex-direction:column}.references a{text-align:center}.tagline{font-size:30px}.service{text-align:left}}
+  </style>
+</head>
+<body>
+  <header><div class="topbar"><a class="brand" href="../../frontend/public/logo.svg"><img src="../../frontend/public/logo.svg" alt=""><span>rest2build · 经验分享</span></a><nav aria-label="文章导航"><a href="README.md">经验目录</a><a href="#codex-help">Codex 帮你处理</a><a href="#human">原因与经验</a></nav></div></header>
+  <main><div class="wrap"><article class="article" id="case">
+    <nav class="crumb" aria-label="经验分享路径"><a href="README.md">经验分享</a><span>/</span><span>故障排查</span><span>/</span><span>ERR-003</span></nav>
+    <section class="intro"><div><p class="kicker">故障排查 / ERR-003</p><h1>Windows 11 + WSL2 里 Codex 装好了却不能正常使用，怎么排查？</h1><p class="subtitle">先确定命令到底在哪一层运行，再处理安装、路径与连接问题</p><p class="meta">适用：Codex CLI 使用者 · Windows 11 + WSL2 · 更新：2026-09-12</p></div><p class="state"><strong>内容状态</strong><br>排查边界已整理<br><small>真实 Windows / WSL2 实操待验证</small></p></section>
+    <section class="section"><p class="step">01</p><h2>情况说明</h2><p>你已经在 Windows 11 上打开 Ubuntu，也安装过 Codex，但终端仍提示找不到命令，或者同一条命令在 PowerShell 和 WSL 中得到不同结果。还有一种常见表现是：Codex 可以启动，项目却一直很慢、权限异常，或者 Windows 能联网而 WSL 中登录和请求失败。</p><p>这些现象往往不是同一个故障。Windows、WSL2 发行版、WSL 内的 Codex、工作目录和网络连接是五个连续环节。先确认故障停在哪一层，比反复重装更有效。</p><h3>本文适合这些情况</h3><ul><li>在 PowerShell 能看到某个命令，进入 Ubuntu 后却提示 <code>command not found</code>。</li><li>不确定当前窗口到底是 PowerShell、CMD 还是 WSL Shell。</li><li><code>codex --version</code> 有输出，但不知道运行的是 Windows 侧还是 WSL 侧的程序。</li><li>项目位于 <code>/mnt/c/Users/...</code>，出现速度慢、权限、大小写或软链接异常。</li><li>Windows 浏览器能访问本站，WSL 内却出现 DNS、证书、代理或连接超时。</li></ul><p class="notice"><strong>本文只处理本机 Windows / WSL2 / Codex CLI 环境。</strong>它不涉及让 Codex 编写前端页面，也不要求你登录、重启或修改中转站服务器。</p></section>
+    <section class="section prompt" id="codex-help"><div class="heading"><div><p class="step">02</p><h2>Codex 帮你处理</h2></div><button class="copy" type="button" data-copy="prompt">复制提示词</button></div><p>把下面的完整提示词发给能操作你这台电脑的 Codex。它会先标明命令应该在哪个终端执行，再从只读检查开始。</p><textarea id="prompt" readonly aria-label="可直接发给 Codex 的 Windows 11 与 WSL2 排障提示词">我在 Windows 11 + WSL2 中使用 Codex CLI，现在遇到以下一种或多种情况：终端里找不到 codex；运行到的版本或安装位置不对；同一条命令在 PowerShell 和 Ubuntu 中结果不同；项目位于 /mnt/c 后速度慢、权限或软链接异常；Windows 能访问网络，但 WSL 中 Codex 登录或请求失败。我的目标是先判断问题属于 Windows、WSL2、Codex 安装、工作目录还是网络配置，再做最小修复，让 Codex 能从 WSL 中稳定启动并完成一次最小交互。
+
+请把我当作普通使用者。我可以操作自己的 Windows、WSL 发行版和 Codex 客户端，但没有中转站服务器、Docker 或管理员后台权限。不要要求我发送完整 API Key、认证文件或私人对话；命令输出中如果出现用户名、目录、令牌或代理凭证，请先提醒我脱敏。
+
+请先只读诊断，并明确告诉我每条命令应该在“Windows PowerShell”还是“WSL 的 Ubuntu Shell”中执行，不要把两种终端的命令混在同一个代码块里。
+
+第一步，在 Windows PowerShell 中检查 WSL2 本身：
+- 运行 wsl --status 和 wsl -l -v，确认目标发行版存在、状态正常且 VERSION 为 2；
+- 如果 WSL 未安装、发行版无法启动或版本不是 2，先说明现状和影响，再给出微软当前官方文档对应的最小处理步骤；
+- 不要删除、注销或重装发行版，不要执行 wsl --unregister，除非我另行明确授权并已有可验证备份。
+
+第二步，在 WSL 的 Ubuntu Shell 中确认当前环境：
+- 检查 echo $WSL_DISTRO_NAME、pwd、uname -a 和 printf '%s\n' "$HOME"；
+- 判断我是否误在 PowerShell/CMD 中执行 Linux 命令，或者虽然打开了 WSL，却仍在 /mnt/c/... 的 Windows 挂载目录工作；
+- 如果工作目录在 /mnt/c，只说明它可能带来的文件 I/O、权限、大小写和软链接差异。先检查仓库是否有未提交内容和大文件，再给出迁移到 ~/code/... 的安全计划，不直接移动、覆盖或删除原目录。
+
+第三步，确认 WSL 实际运行哪一个 Codex：
+- 运行 command -v codex、type -a codex 和 codex --version，并检查解析出的路径属于 WSL 还是 Windows 挂载路径；
+- 只在确认 WSL 中缺少 Codex 或当前安装损坏后，才参考 Codex 当前官方安装说明进行安装或修复；不要同时混用多个安装方式，也不要把 Windows 侧可执行文件手工复制进 WSL；
+- 保留现有 Codex 配置、登录状态、memories、任务历史、skills、MCP 和项目 trust。不要通过删除整个 ~/.codex 来解决 command not found 或网络问题。
+
+第四步，核对配置和网络边界：
+- 确认当前进程读取的是 WSL 用户目录下的配置，不把 Windows 与 WSL 的 HOME、PATH、代理变量或认证状态当作自动共享；
+- 只显示 Base URL 的协议、主机和必要路径，Key 只报告“已配置/未配置”，不要打印值；
+- 分别检查 DNS、TLS、代理变量和目标入口的可达性。Windows 浏览器可访问不等于 WSL 一定继承相同代理；收到 401/403 说明已经到达某个 HTTP 服务，但仍需核对地址、认证和权限；超时、DNS 或证书错误应保留脱敏错误正文；
+- 不要登录、重启或修改中转站服务器，不要更改账号、密钥、上游路由或计费配置。任何可能产生费用的模型请求先征得我同意，只做一次简短验证，不循环重试。
+
+定位后，只执行与根因直接相关、可恢复的本机修复。修复完成后请分别报告：
+1. WSL 发行版和版本是否正确；
+2. 当前 Shell、HOME 和工作目录属于哪一侧；
+3. command -v codex 的实际路径与版本；
+4. 配置和网络检查通过到哪一层；
+5. Codex 是否能从 WSL 启动，以及最小交互是否实际完成；
+6. 哪些项目没有验证，是否需要我操作或联系站点管理员。
+
+不要把“安装命令执行完”“路径里出现 codex”或“HTTP 有响应”单独当作恢复成功。遇到缺少权限、工具或信息时，说明具体阻塞和下一步，不虚构已修复。</textarea><p class="copy-status" role="status" aria-live="polite"></p></section>
+    <section class="section" id="human"><p class="step">03</p><h2>给人看的：原因、证据与经验</h2>
+      <section class="explanation"><h3>先把问题放回正确的一层</h3><div class="table-scroll"><table><thead><tr><th>检查层</th><th>它决定什么</th><th>失败时常见表现</th></tr></thead><tbody><tr><td>Windows 与 WSL2</td><td>发行版能否启动，是否实际运行 WSL2</td><td>Ubuntu 打不开、发行版不存在、版本仍为 1</td></tr><tr><td>当前 Shell</td><td>命令由 PowerShell 还是 Linux Shell 解释</td><td><code>$HOME</code>、路径和安装命令行为不一致</td></tr><tr><td>Codex 可执行文件</td><td>当前命令实际运行哪一份 Codex</td><td>找不到命令、版本不对、调用 Windows 挂载路径</td></tr><tr><td>HOME 与工作目录</td><td>配置从哪里读取，项目使用哪套文件语义</td><td>登录状态不同、配置不生效、权限或软链接异常</td></tr><tr><td>WSL 网络</td><td>DNS、TLS、代理和 API 入口能否连通</td><td>Windows 可访问，WSL 中超时或认证失败</td></tr></tbody></table></div></section>
+      <section class="explanation"><h3>PowerShell 和 WSL Shell 各自检查什么？</h3><p>两组命令不能混着运行。PowerShell 管理 WSL 发行版；Ubuntu Shell 检查 Linux 环境本身。</p><div class="commands"><div class="command"><strong>Windows PowerShell</strong><pre><code>wsl --status
+wsl -l -v</code></pre><p>目标发行版应存在，并在 VERSION 列显示 2。不要通过删除或注销发行版来试错。</p></div><div class="command"><strong>WSL 的 Ubuntu Shell</strong><pre><code>echo "$WSL_DISTRO_NAME"
+pwd
+uname -a
+printf '%s\n' "$HOME"</code></pre><p>应看到发行版名称、Linux 内核和 WSL 用户的 HOME。语法不能解释时先确认是否开错终端。</p></div></div></section>
+      <section class="explanation"><h3>“安装过 Codex”不等于 WSL 正在运行它</h3><p>Windows 和 WSL 有各自的用户目录与 PATH。应在 WSL 中运行 <code>command -v codex</code>、<code>type -a codex</code> 和 <code>codex --version</code>，先确认路径和版本，再决定是否安装或修复。不要为解决 command not found 删除整个 <code>~/.codex</code>。</p></section>
+      <section class="explanation"><h3>为什么工作目录在 /mnt/c 时更容易出问题？</h3><p>/mnt/c 可以使用，但文件 I/O、权限位、大小写、文件监听和软链接行为可能与 WSL 自己的 Linux 文件系统不同。新的仓库通常放在 ~/code/项目名。已有仓库迁移前要确认未提交修改和未跟踪文件，并保留原目录直到校验完成。</p></section>
+      <section class="explanation"><h3>Windows 能联网，为什么 WSL 仍可能失败？</h3><p>Windows 浏览器使用的代理、证书或登录状态不一定自动传给 Ubuntu Shell。DNS 失败说明还没到 HTTP 服务；401/403 说明到达了某个服务，但地址、认证或权限仍需核对；请求成功只证明这一次最小链路。</p></section>
+      <section class="explanation"><h3>怎样才算恢复？</h3><ul><li>目标发行版运行在 WSL2，当前窗口能识别为 Linux Shell。</li><li>Codex 路径属于预期的 WSL 安装位置，版本可读取。</li><li>当前 HOME 和工作目录位于哪一侧已经明确。</li><li>DNS、TLS、代理和认证通过到哪一层有清楚证据。</li><li>Codex 能从 WSL 启动，并在费用授权后完成一次简短交互。</li></ul><p>联系站点管理员时提供系统、发行版、WSL 与 Codex 版本、发生时间、脱敏错误和请求标识，不发送完整 API Key、认证文件或私人对话。</p></section>
+      <p class="scope">本文从原 Windows 11 + WSL2 教程中提炼环境排障部分，并补齐诊断边界。页面结构、分类、提示词复制和响应式布局可在本地验证；真实 Windows 11 / WSL2 命令执行与初学者理解仍需人工实操。</p><div class="references"><a href="https://learn.chatgpt.com/docs/windows/wsl">Codex WSL 官方文档</a><a href="2026-09-12-windows-wsl2-codex-environment.md">查看文字版</a><a href="#case">返回本篇开头</a></div>
+    </section>
+  </article></div></main>
+  <footer class="brand-footer"><div class="wrap"><a class="wordmark" href="https://ai.rest2build.lol/"><img src="../../frontend/public/logo.svg" alt=""><span>rest2build</span></a><p class="tagline">歇一会儿，让 AI 接着干。</p><p class="subline">rest 是你的，build 交给 AI。</p><p class="service">rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务。公益 Skills 帮你完成配置与重复操作，AI 使用经验帮助定位和恢复问题，Harness 工程将任务拆解、复核与验收融入团队开发流程。</p><a class="domain" href="https://ai.rest2build.lol/">ai.rest2build.lol</a></div></footer>
+  <script>
+    document.querySelector('[data-copy]').addEventListener('click', async function () {
+      const field = document.getElementById('prompt');
+      const status = document.querySelector('.copy-status');
+      try {
+        await navigator.clipboard.writeText(field.value);
+        this.textContent = '已复制';
+        status.textContent = '提示词已复制';
+      } catch {
+        field.focus();
+        field.select();
+        status.textContent = '自动复制未成功，提示词已选中，可手动复制';
+      }
+    });
+  </script>
+</body>
+</html>

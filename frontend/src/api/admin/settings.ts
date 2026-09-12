@@ -650,6 +650,8 @@ export interface SystemSettings {
 
   // Payment configuration
   payment_enabled: boolean;
+  purchase_subscription_enabled?: boolean;
+  purchase_subscription_url?: string;
   risk_control_enabled: boolean;
 
   // Cyber session block
@@ -748,6 +750,8 @@ export interface SystemSettings {
 }
 
 export interface UpdateSettingsRequest {
+  purchase_subscription_enabled?: boolean;
+  purchase_subscription_url?: string;
   registration_enabled?: boolean;
   email_verify_enabled?: boolean;
   registration_email_suffix_whitelist?: string[];

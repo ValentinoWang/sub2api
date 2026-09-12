@@ -155,6 +155,8 @@ docs/error-experiences/*
 !docs/error-experiences/README.md
 !docs/error-experiences/index.html
 !docs/error-experiences/2026-09-06-codex-astra-visibility.md
+!docs/error-experiences/2026-09-12-windows-wsl2-codex-environment.md
+!docs/error-experiences/2026-09-12-windows-wsl2-codex-environment.html
 !docs/legal/
 !docs/legal/*.md
 !docs/screenshots/

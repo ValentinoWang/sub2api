@@ -7,6 +7,7 @@
 
 export const BRAND_NAME = 'rest2build'
 export const BRAND_DOMAIN = 'ai.rest2build.lol'
+export const BRAND_SERVICE_DESCRIPTION = 'rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务。公益 Skills 帮你完成配置与重复操作，AI 使用经验帮助定位和恢复问题，Harness 工程将任务拆解、复核与验收融入团队开发流程。'
 
 /** Public-facing lab name used on marketplace listings and the verify page. */
 export const BRAND_LAB_NAME = 'Rest2Build AI 接入实验室'
@@ -21,6 +22,8 @@ export const PUBLIC_PAGES = {
   claudeCode: '/claude-code',
   openaiCompat: '/openai-compatible-api',
   experiences: '/experiences',
+  wslCodexTutorial: '/experiences/windows-11-wsl-codex-frontend',
+  wslCodexTroubleshooting: '/error-experiences/windows-11-wsl2-codex-environment',
   errorExperience: '/error-experiences/gpt-6-astra-not-visible',
   publicBenefit: '/public-benefit',
   business: '/business-invoice',

@@ -199,6 +199,7 @@ export type LiandongOperationContext =
   | 'installation'
   | 'status'
   | 'configuration'
+  | 'enablement'
   | 'connection'
   | 'goods'
   | 'preview'
@@ -234,6 +235,11 @@ export async function installOrRepair(): Promise<LiandongInstallationResponse> {
 
 export async function getStatus(): Promise<LiandongStatus> {
   const { data } = await apiClient.get<LiandongStatus>(`${LIANDONG_TOOLKIT_BASE_PATH}/status`)
+  return data
+}
+
+export async function setRestockEnabled(enabled: boolean): Promise<LiandongStatus> {
+  const { data } = await apiClient.post<LiandongStatus>('/admin/liandong/restock/enable', { enabled })
   return data
 }
 
@@ -292,6 +298,7 @@ export const liandongToolkitAPI = {
   installOrRepair,
   install: installOrRepair,
   getStatus,
+  setRestockEnabled,
   updateConfig,
   testConnection,
   listGoods,

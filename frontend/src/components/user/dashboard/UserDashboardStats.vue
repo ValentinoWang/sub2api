@@ -1,6 +1,6 @@
 <template>
   <!-- Row 1: Core Stats -->
-  <div class="dashboard-metrics" :class="{ 'dashboard-metrics-simple': isSimple }">
+  <div class="dashboard-metrics" :aria-hidden="!stats" :class="{ 'dashboard-metrics-simple': isSimple, 'dashboard-metrics-pending': !stats }">
     <!-- Balance -->
     <div v-if="!isSimple" class="dashboard-panel dashboard-metric dashboard-metric-balance">
       <div class="flex items-center gap-3">
@@ -68,7 +68,7 @@
   </div>
 
   <!-- Row 2: Token Stats -->
-  <div class="dashboard-metrics">
+  <div class="dashboard-metrics" :class="{ 'dashboard-metrics-pending': !stats }" :aria-hidden="!stats">
     <!-- Today Tokens -->
     <div class="dashboard-panel dashboard-metric">
       <div class="flex items-center gap-3">
@@ -133,7 +133,7 @@
   </div>
 
   <!-- Row 3: Per-platform breakdown -->
-  <section v-if="!isSimple && platformCards.length > 0" class="dashboard-platforms">
+  <section v-if="stats && !isSimple && platformCards.length > 0" class="dashboard-platforms">
     <div class="dashboard-section-header mb-4">
       <h2 class="dashboard-section-heading text-gray-900 dark:text-white">{{ t('dashboard.platformBreakdown') }}</h2>
       <span class="text-xs text-gray-500 dark:text-gray-400">
@@ -240,7 +240,7 @@ interface FusedPlatformCard {
 }
 
 const props = defineProps<{
-  stats: UserStatsType
+  stats: UserStatsType | null
   balance: number
   isSimple: boolean
   platformQuotas?: PlatformQuotaItem[] | null
@@ -406,6 +406,24 @@ const formatDuration = (ms: number) => ms >= 1000 ? `${(ms / 1000).toFixed(2)}s`
   min-width: 0;
   padding: 20px 16px;
   font-variant-numeric: tabular-nums;
+}
+
+/* Use the real card geometry while data is unavailable, without exposing zero values. */
+.dashboard-metrics-pending .dashboard-metric {
+  position: relative;
+}
+
+.dashboard-metrics-pending .dashboard-metric > div {
+  visibility: hidden;
+}
+
+.dashboard-metrics-pending .dashboard-metric::after {
+  content: '';
+  position: absolute;
+  inset: 20px 16px;
+  border-radius: 6px;
+  background: var(--dashboard-border);
+  opacity: 0.4;
 }
 
 .dashboard-metric > div {
