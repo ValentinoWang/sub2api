@@ -397,6 +397,21 @@ describe('PaymentView recharge channels', () => {
     expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(true)
     expect(wrapper.findComponent(AmountInput).exists()).toBe(false)
     expect(wrapper.find('[data-testid="recharge-channel-selector"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('payment.tabSubscribe')
+    expect(getCheckoutInfo).not.toHaveBeenCalled()
+  })
+
+  it('keeps a stale subscription link in the available store flow when native payment is disabled', async () => {
+    cachedPublicSettings.value = {
+      payment_enabled: false,
+      purchase_subscription_enabled: true,
+      purchase_subscription_url: 'https://shop.example.com/recharge',
+    }
+    routeState.query = { tab: 'subscription' }
+    const wrapper = await mountRecharge()
+    expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(true)
+    expect(wrapper.findComponent(AmountInput).exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('payment.tabSubscribe')
     expect(getCheckoutInfo).not.toHaveBeenCalled()
   })
 

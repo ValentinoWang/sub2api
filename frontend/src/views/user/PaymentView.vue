@@ -608,7 +608,9 @@ const rechargeAvailable = computed(() => liandongRechargeAvailable.value || onli
 const tabs = computed(() => {
   const result: { key: 'recharge' | 'subscription'; label: string }[] = []
   if (rechargeAvailable.value) result.push({ key: 'recharge', label: t('payment.tabTopUp') })
-  result.push({ key: 'subscription', label: t('payment.tabSubscribe') })
+  if (appStore.cachedPublicSettings?.payment_enabled !== false) {
+    result.push({ key: 'subscription', label: t('payment.tabSubscribe') })
+  }
   return result
 })
 
@@ -1197,7 +1199,7 @@ async function resumeWechatPaymentFromQuery() {
 onMounted(async () => {
   if (appStore.cachedPublicSettings?.payment_enabled === false) {
     removeRecoverySnapshot()
-    if (route.query.tab === 'subscription') activeTab.value = 'subscription'
+    activeTab.value = 'recharge'
     loading.value = false
     subscriptionStore.fetchActiveSubscriptions().catch(() => {})
     return
