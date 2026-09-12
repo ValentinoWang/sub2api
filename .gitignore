@@ -120,6 +120,9 @@ backend/.installed
 tests
 !deploy/tests/
 !deploy/tests/**
+!tools/quality/tests/
+!tools/quality/tests/**
+**/__pycache__/
 CLAUDE.md
 .claude
 scripts
@@ -135,6 +138,7 @@ deploy/docker-compose.override.yml
 .gocache/
 vite.config.js
 docs/*
+!docs/COMMERCE_RELEASE.md
 !docs/ui-preview/
 !docs/ui-preview/**
 !docs/PAYMENT.md

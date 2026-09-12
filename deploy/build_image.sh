@@ -7,7 +7,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SOURCE_REF="${1:-HEAD}"
 COMMIT="$(git -C "${REPO_ROOT}" rev-parse --verify "${SOURCE_REF}^{commit}")"
 VERSION="$(git -C "${REPO_ROOT}" show "${COMMIT}:backend/cmd/server/VERSION" | tr -d '\r\n')"
-if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ ! "${VERSION}" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))?$ ]]; then
     echo "Invalid technical version: ${VERSION}" >&2
     exit 1
 fi

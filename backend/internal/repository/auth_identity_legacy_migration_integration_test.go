@@ -939,9 +939,35 @@ CREATE TABLE IF NOT EXISTS user_external_identities (
 	require.NoError(t, err)
 }
 
+func TestAuthIdentityLegacyFixtureCleanupPreservesMembershipAudit(t *testing.T) {
+	tx := testTx(t)
+	ctx := context.Background()
+	prepareLegacyExternalIdentitiesTable(t, tx, ctx)
+
+	userID := insertMembershipMigrationUser(t, tx, ctx)
+	orderID := insertMembershipMigrationOrder(t, tx, ctx, userID, "validation", 0, "created")
+	_, err := tx.ExecContext(ctx, `
+INSERT INTO membership_events (id, order_id, action, actor)
+VALUES ($1, $1, 'created', 'auth-fixture-isolation-test')`, orderID)
+	require.NoError(t, err)
+
+	truncateAuthIdentityLegacyFixtureTables(t, tx, ctx)
+
+	var retained int
+	require.NoError(t, tx.QueryRowContext(ctx, `
+SELECT COUNT(*)
+FROM membership_events event
+JOIN membership_orders membership_order ON membership_order.id = event.order_id
+JOIN users ON users.id = membership_order.user_id
+WHERE event.id = $1 AND users.id = $2 AND event.action = 'created'`, orderID, userID).Scan(&retained))
+	require.Equal(t, 1, retained, "auth fixture cleanup must preserve unrelated users, orders, and audit events")
+}
+
 func truncateAuthIdentityLegacyFixtureTables(t *testing.T, tx *sql.Tx, ctx context.Context) {
 	t.Helper()
 
+	// The transaction rolls back the fixture. Keep users and unrelated audit
+	// tables intact; cascading from users would reach append-only audit events.
 	_, err := tx.ExecContext(ctx, `
 TRUNCATE TABLE
 	auth_identity_channels,
@@ -949,11 +975,8 @@ TRUNCATE TABLE
 	pending_auth_sessions,
 	auth_identities,
 	auth_identity_migration_reports,
-	user_provider_default_grants,
-	user_avatars,
-	user_external_identities,
-	users
-RESTART IDENTITY CASCADE;
+	user_external_identities
+RESTART IDENTITY;
 `)
 	require.NoError(t, err)
 }

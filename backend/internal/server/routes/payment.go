@@ -117,10 +117,13 @@ func RegisterPaymentRoutes(
 		liandong.Use(middleware.AdminComplianceGuard(settingService))
 		{
 			liandong.GET("/status", adminPaymentHandler.GetLiandongRestockStatus)
+			liandong.GET("/parity", adminPaymentHandler.GetLiandongCommerceParity)
 			liandong.PUT("/config", adminPaymentHandler.UpdateLiandongRestockConfig)
 			liandong.PUT("/policies", adminPaymentHandler.UpdateLiandongRestockPolicies)
 			liandong.POST("/run", adminPaymentHandler.RunLiandongRestockNow)
 			liandong.POST("/enable", adminPaymentHandler.SetLiandongRestockEnabled)
+			liandong.POST("/refunds/prepare", adminPaymentHandler.PrepareLiandongUnusedCodeRefund)
+			liandong.POST("/refunds/confirm", adminPaymentHandler.ConfirmLiandongUnusedCodeRefund)
 		}
 	}
 }

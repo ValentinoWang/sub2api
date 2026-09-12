@@ -111,6 +111,64 @@ def iter_vulns(data: dict):
                 yield name, severity, advisory_id, title
 
 
+def validate_report(data: object, audit_exit_code: int | None = None) -> None:
+    """Reject incomplete reports before exception matching can discard any finding."""
+    if not isinstance(data, dict) or data.get("error"):
+        raise ValueError("audit must be a vulnerability report, not an error response")
+    formats = [name for name in ("advisories", "vulnerabilities") if name in data]
+    if len(formats) != 1 or not isinstance(data[formats[0]], dict):
+        raise ValueError("audit must contain exactly one supported findings object")
+    metadata = data.get("metadata")
+    counts = metadata.get("vulnerabilities") if isinstance(metadata, dict) else None
+    severities = ("info", "low", "moderate", "high", "critical")
+    if not isinstance(counts, dict):
+        raise ValueError("audit is missing vulnerability counts")
+    for severity in severities:
+        count = counts.get(severity)
+        if type(count) is not int or count < 0:
+            raise ValueError(f"invalid vulnerability count for {severity}")
+    if "total" in counts and (type(counts["total"]) is not int or
+                              counts["total"] != sum(counts[s] for s in severities)):
+        raise ValueError("total vulnerability count is inconsistent")
+    observed = dict.fromkeys(severities, 0)
+    report_format = formats[0]
+    findings = data[report_format]
+    for key, finding in findings.items():
+        if not isinstance(finding, dict):
+            raise ValueError(f"invalid finding: {key}")
+        severity = finding.get("severity")
+        if severity not in severities:
+            raise ValueError(f"invalid severity for finding: {key}")
+        name = (finding.get("module_name") or finding.get("name")) if report_format == "advisories" else key
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError(f"finding is missing package name: {key}")
+        observed[severity] += 1
+        if report_format == "advisories":
+            if not normalize_advisory(pick_advisory_id(finding)):
+                raise ValueError(f"finding is missing advisory identity: {name}")
+        else:
+            via = finding.get("via")
+            if not isinstance(via, list) or not via:
+                raise ValueError(f"finding is missing advisory details: {name}")
+            for item in via:
+                if isinstance(item, str):
+                    if not item.strip() or item not in findings:
+                        raise ValueError(f"unresolved advisory dependency: {name}")
+                elif isinstance(item, dict):
+                    identity = (item.get("github_advisory_id") or item.get("url") or
+                                item.get("source") or item.get("title") or item.get("name"))
+                    if not normalize_advisory(identity):
+                        raise ValueError(f"finding is missing advisory identity: {name}")
+                else:
+                    raise ValueError(f"invalid advisory details: {name}")
+    if observed != {severity: counts[severity] for severity in severities}:
+        raise ValueError("vulnerability counts do not match finding details")
+    if audit_exit_code is not None:
+        expected = 1 if counts["high"] + counts["critical"] else 0
+        if audit_exit_code != expected:
+            raise ValueError("pnpm audit exit status does not match high/critical findings")
+
+
 def normalize_severity(severity: str) -> str:
     # 统一大小写，避免比较失败。
     return (severity or "").strip().lower()
@@ -143,10 +201,16 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--audit", required=True)
     parser.add_argument("--exceptions", required=True)
+    parser.add_argument("--audit-exit-code", type=int)
     args = parser.parse_args()
 
-    with open(args.audit, "r", encoding="utf-8") as handle:
-        audit = json.load(handle)
+    try:
+        with open(args.audit, "r", encoding="utf-8") as handle:
+            audit = json.load(handle)
+        validate_report(audit, args.audit_exit_code)
+    except (OSError, ValueError, TypeError) as error:
+        sys.stderr.write(f"Invalid audit report: {error}\n")
+        return 1
 
     # 读取异常清单并建立索引，便于快速匹配包名 + advisory。
     exceptions = parse_exceptions(args.exceptions)
