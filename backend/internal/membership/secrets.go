@@ -97,7 +97,8 @@ func (k *Keyring) Fingerprint(purpose, text string) string {
 		return ""
 	}
 	mac := hmac.New(sha256.New, k.IdentityKey)
-	mac.Write([]byte(purpose + "\x00" + text))
+	// hash.Hash.Write always succeeds; retain the purpose separator bytes.
+	_, _ = mac.Write([]byte(purpose + "\x00" + text))
 	return hex.EncodeToString(mac.Sum(nil))
 }
 

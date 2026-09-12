@@ -408,7 +408,7 @@ func normalizeLiandongProducts(products []LiandongRestockProduct) []LiandongRest
 
 func (s *LiandongRestockService) loadState(ctx context.Context) (*LiandongRestockState, error) {
 	if s.settingRepo == nil {
-		return nil, errors.New("Liandong settings storage is unavailable")
+		return nil, errors.New("liandong settings storage is unavailable")
 	}
 	state := &LiandongRestockState{Products: s.configuredProducts()}
 	raw, err := s.settingRepo.GetValue(ctx, liandongRestockStateKey)
@@ -600,10 +600,10 @@ func (s *LiandongRestockService) UpdateConfiguration(ctx context.Context, input 
 
 func validateLiandongConfiguration(token, secret string, products []LiandongRestockProduct) ([]LiandongRestockProduct, error) {
 	if strings.TrimSpace(token) == "" {
-		return nil, errors.New("Liandong merchant token is required")
+		return nil, errors.New("liandong merchant token is required")
 	}
 	if len(secret) < 32 {
-		return nil, errors.New("Liandong code secret must contain at least 32 characters")
+		return nil, errors.New("liandong code secret must contain at least 32 characters")
 	}
 	if len(products) == 0 || len(products) > 20 {
 		return nil, errors.New("configure between 1 and 20 Liandong products")
@@ -737,7 +737,7 @@ func (s *LiandongRestockService) UpdatePolicies(ctx context.Context, updates []L
 
 func (s *LiandongRestockService) SetEnabled(ctx context.Context, enabled bool) (*LiandongRestockStatus, error) {
 	if enabled && !s.configured() {
-		return nil, errors.New("Liandong auto restock is not fully configured")
+		return nil, errors.New("liandong auto restock is not fully configured")
 	}
 	if !enabled {
 		s.mu.Lock()
@@ -817,7 +817,7 @@ func (s *LiandongRestockService) fulfillPendingBatch(ctx context.Context, state 
 		return err
 	}
 	if len(segments) != len(liandongSegmentRanges(len(codes))) {
-		return errors.New("Liandong batch segment accounting is incomplete")
+		return errors.New("liandong batch segment accounting is incomplete")
 	}
 	for _, segment := range segments {
 		if segment.Status == liandongSegmentStatusUploaded {
@@ -829,11 +829,11 @@ func (s *LiandongRestockService) fulfillPendingBatch(ctx context.Context, state 
 		start := segment.Offset
 		end := start + segment.CodeCount
 		if start < 0 || end > len(codes) || start >= end {
-			return errors.New("Liandong batch segment range is invalid")
+			return errors.New("liandong batch segment range is invalid")
 		}
 		segmentCodes := codes[start:end]
 		if liandongCodesDigest(segmentCodes) != segment.CodeSHA256 {
-			return errors.New("Liandong batch segment hash does not match deterministic codes")
+			return errors.New("liandong batch segment hash does not match deterministic codes")
 		}
 		if segment.Status == liandongSegmentStatusPending || segment.Status == liandongSegmentStatusFailed {
 			if err := s.ensureLiandongCodes(ctx, batch, segmentCodes); err != nil {
@@ -875,6 +875,10 @@ func (s *LiandongRestockService) fulfillPendingBatch(ctx context.Context, state 
 	var remoteStockAfter *int
 	if stock, fetchErr := s.fetchUnsoldStock(ctx, batch.GoodsID); fetchErr == nil {
 		remoteStockAfter = &stock
+	}
+	if remoteStockAfter == nil || batch.RemoteStockBefore == nil ||
+		int64(*remoteStockAfter) != int64(*batch.RemoteStockBefore)+int64(batch.Count) {
+		return s.latchLiandongStockDiscrepancy(state, remoteStockAfter)
 	}
 	if err := s.markBatchUploadedObserved(ctx, batch.BatchID, remoteStockAfter); err != nil {
 		state.ReconciliationRequired = true
@@ -946,7 +950,7 @@ func (s *LiandongRestockService) persistProductMappings(ctx context.Context, pro
 
 func (s *LiandongRestockService) recordBatchPending(ctx context.Context, batch *liandongRestockPendingBatch, codes []string) error {
 	if batch == nil || batch.BatchID == "" {
-		return errors.New("Liandong batch is required")
+		return errors.New("liandong batch is required")
 	}
 	if len(codes) == 0 || len(codes) > liandongMaxTargetStock {
 		return errors.New("invalid Liandong batch code count")
@@ -980,7 +984,7 @@ func (s *LiandongRestockService) recordBatchPending(ctx context.Context, batch *
 		}
 		if existing, ok := s.memoryBatches[batchCopy.BatchID]; ok {
 			if existing.CodeSHA256 != codeDigest || existing.Batch.Count != len(codes) || existing.Batch.MappingKey != batchCopy.MappingKey {
-				return errors.New("Liandong pending batch snapshot does not match deterministic codes")
+				return errors.New("liandong pending batch snapshot does not match deterministic codes")
 			}
 			return nil
 		}
@@ -1089,7 +1093,7 @@ func (s *LiandongRestockService) markBatchUploadedObserved(ctx context.Context, 
 
 func (s *LiandongRestockService) markBatchFailed(ctx context.Context, batchID string, runErr error) error {
 	if runErr == nil {
-		return errors.New("Liandong batch failure requires an error")
+		return errors.New("liandong batch failure requires an error")
 	}
 	errorText := liandongSafeErrorText(runErr)
 	if s.db == nil {
@@ -1114,7 +1118,7 @@ func (s *LiandongRestockService) markBatchFailed(ctx context.Context, batchID st
 
 func (s *LiandongRestockService) markBatchNeedsReconciliation(ctx context.Context, batchID string, runErr error) error {
 	if runErr == nil {
-		return errors.New("Liandong reconciliation state requires an error")
+		return errors.New("liandong reconciliation state requires an error")
 	}
 	errorText := liandongSafeErrorText(runErr)
 	if s.db == nil {
@@ -1136,14 +1140,14 @@ func (s *LiandongRestockService) markBatchNeedsReconciliation(ctx context.Contex
 
 func (s *LiandongRestockService) loadLiandongBatchStatus(ctx context.Context, batchID string) (string, error) {
 	if strings.TrimSpace(batchID) == "" {
-		return "", errors.New("Liandong batch ID is required")
+		return "", errors.New("liandong batch ID is required")
 	}
 	if s.db == nil {
 		s.memoryMu.Lock()
 		defer s.memoryMu.Unlock()
 		batch, ok := s.memoryBatches[batchID]
 		if !ok {
-			return "", errors.New("Liandong batch not found")
+			return "", errors.New("liandong batch not found")
 		}
 		return batch.Status, nil
 	}
@@ -1157,7 +1161,7 @@ func (s *LiandongRestockService) loadLiandongBatchStatus(ctx context.Context, ba
 
 func (s *LiandongRestockService) markLiandongBatchAndSegmentsNeedsReconciliation(batchID string, segmentNos []int, runErr error) error {
 	if runErr == nil {
-		return errors.New("Liandong reconciliation state requires an error")
+		return errors.New("liandong reconciliation state requires an error")
 	}
 	recoveryCtx, cancelRecovery := liandongRecoveryContext()
 	defer cancelRecovery()
@@ -1239,7 +1243,7 @@ func (s *LiandongRestockService) loadBatchStatuses(ctx context.Context, limit in
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	result := make([]LiandongRestockBatchStatus, 0, limit)
 	for rows.Next() {
 		var batch LiandongRestockBatchStatus
@@ -1312,7 +1316,7 @@ func (s *LiandongRestockService) post(ctx context.Context, path string, payload 
 	if err != nil {
 		return nil, &LiandongRemoteOutcomeUnknownError{Err: err}
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	isUpload := path == "/merchantApi/GoodsCardStorage/add"
 	limited := io.LimitReader(resp.Body, 2<<20)
 	responseBody, err := io.ReadAll(limited)
@@ -1327,7 +1331,7 @@ func (s *LiandongRestockService) post(ctx context.Context, path string, payload 
 	}
 	var result liandongAPIResponse
 	if err := json.Unmarshal(responseBody, &result); err != nil {
-		return nil, &LiandongRemoteOutcomeUnknownError{Err: errors.New("Liandong returned an invalid response")}
+		return nil, &LiandongRemoteOutcomeUnknownError{Err: errors.New("liandong returned an invalid response")}
 	}
 	if result.Code != 1 {
 		if isUpload {
@@ -1350,17 +1354,17 @@ func (s *LiandongRestockService) fetchUnsoldStock(ctx context.Context, goodsID i
 		return 0, err
 	}
 	var data struct {
-		Total int `json:"total"`
+		Total *int `json:"total"`
 	}
-	if err := json.Unmarshal(result.Data, &data); err != nil || data.Total < 0 {
-		return 0, errors.New("Liandong returned invalid inventory data")
+	if err := json.Unmarshal(result.Data, &data); err != nil || data.Total == nil || *data.Total < 0 {
+		return 0, errors.New("liandong returned invalid inventory data")
 	}
-	return data.Total, nil
+	return *data.Total, nil
 }
 
 func (s *LiandongRestockService) uploadCodes(ctx context.Context, goodsID int64, codes []string) error {
 	if len(codes) == 0 || len(codes) > liandongSegmentSize {
-		return fmt.Errorf("Liandong upload segment must contain between 1 and %d codes", liandongSegmentSize)
+		return fmt.Errorf("liandong upload segment must contain between 1 and %d codes", liandongSegmentSize)
 	}
 	_, err := s.post(ctx, "/merchantApi/GoodsCardStorage/add", map[string]any{
 		"goods_id":      goodsID,

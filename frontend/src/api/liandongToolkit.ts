@@ -97,6 +97,36 @@ export interface LiandongBatchStatus {
   updated_at?: string
 }
 
+export interface LiandongInventoryReport {
+  reconciliation_required: boolean
+  observed_at: string
+  rows: Array<{
+    goods_id: number
+    local: null | {
+      batches: number
+      allocated_codes: number
+      created_codes: number
+      unused_codes: number
+      used_codes: number
+      disabled_codes: number
+      other_codes: number
+      missing_codes: number
+    }
+    merchant_unsold: number | null
+    quantity_delta: number | null
+    identity_verified: boolean
+    comparison: string
+    local_error?: string
+    merchant_error?: string
+    observed_at: string
+  }>
+}
+
+export async function getInventory(): Promise<LiandongInventoryReport> {
+  const { data } = await apiClient.get<LiandongInventoryReport>('/admin/liandong/restock/inventory')
+  return data
+}
+
 export interface LiandongConfigUpdate {
   merchant_token: string
   generate_code_secret?: boolean
@@ -298,6 +328,7 @@ export const liandongToolkitAPI = {
   installOrRepair,
   install: installOrRepair,
   getStatus,
+  getInventory,
   setRestockEnabled,
   updateConfig,
   testConnection,

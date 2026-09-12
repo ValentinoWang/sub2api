@@ -76,7 +76,7 @@ func (b *HTTPBrowser) Execute(ctx context.Context, input BrowserInput) (BrowserR
 	if err != nil {
 		return BrowserResult{}, ErrReview
 	}
-	defer res.Body.Close()
+	defer closeResource(res.Body)
 	if res.StatusCode != http.StatusOK {
 		return BrowserResult{}, ErrReview
 	}

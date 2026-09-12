@@ -47,10 +47,10 @@ const (
 )
 
 var (
-	ErrLiandongJobNotFound         = errors.New("Liandong restock job not found")
-	ErrLiandongRunBusy             = errors.New("Liandong restock already has an active cycle")
-	ErrLiandongNeedsReconciliation = errors.New("Liandong remote write needs reconciliation before retry")
-	ErrLiandongJobNotResumable     = errors.New("Liandong restock job is not resumable")
+	ErrLiandongJobNotFound         = errors.New("liandong restock job not found")
+	ErrLiandongRunBusy             = errors.New("liandong restock already has an active cycle")
+	ErrLiandongNeedsReconciliation = errors.New("liandong remote write needs reconciliation before retry")
+	ErrLiandongJobNotResumable     = errors.New("liandong restock job is not resumable")
 )
 
 // LiandongRestockMappingSnapshot is the immutable product mapping attached to
@@ -374,14 +374,14 @@ func validateLiandongCodeSet(codes []string) error {
 	seen := make(map[string]struct{}, len(codes))
 	for _, code := range codes {
 		if len(code) != liandongCodeLength {
-			return fmt.Errorf("Liandong redeem code must contain exactly %d characters", liandongCodeLength)
+			return fmt.Errorf("liandong redeem code must contain exactly %d characters", liandongCodeLength)
 		}
 		hasDigit := false
 		hasLower := false
 		hasUpper := false
 		for i := 0; i < len(code); i++ {
 			if strings.IndexByte(liandongCodeAlphabet, code[i]) < 0 {
-				return errors.New("Liandong redeem code contains a non-alphanumeric character")
+				return errors.New("liandong redeem code contains a non-alphanumeric character")
 			}
 			switch {
 			case strings.IndexByte(liandongCodeDigits, code[i]) >= 0:
@@ -393,7 +393,7 @@ func validateLiandongCodeSet(codes []string) error {
 			}
 		}
 		if !hasDigit || !hasLower || !hasUpper {
-			return errors.New("Liandong redeem code must include a digit, lowercase letter, and uppercase letter")
+			return errors.New("liandong redeem code must include a digit, lowercase letter, and uppercase letter")
 		}
 		if _, exists := seen[code]; exists {
 			return errors.New("duplicate Liandong redeem code in batch")
@@ -431,12 +431,12 @@ func (s *LiandongRestockService) deriveCodesChecked(batch *liandongRestockPendin
 	secret := append([]byte(nil), s.codeSecret...)
 	s.configMu.RUnlock()
 	if batch.CodeSecretDigest != "" && batch.CodeSecretDigest != liandongCodeSecretDigest(secret) {
-		return nil, errors.New("Liandong code derivation metadata no longer matches the configured secret")
+		return nil, errors.New("liandong code derivation metadata no longer matches the configured secret")
 	}
 	codes := make([]string, batch.Count)
 	for i := 0; i < batch.Count; i++ {
 		mac := hmac.New(sha256.New, secret)
-		_, _ = mac.Write([]byte(fmt.Sprintf("%s:%d", batch.BatchID, i)))
+		_, _ = fmt.Fprintf(mac, "%s:%d", batch.BatchID, i)
 		digest := mac.Sum(nil)
 		var code [liandongCodeLength]byte
 		for j := range code {
@@ -453,14 +453,6 @@ func (s *LiandongRestockService) deriveCodesChecked(batch *liandongRestockPendin
 		return nil, err
 	}
 	return codes, nil
-}
-
-func (s *LiandongRestockService) deriveCodes(batch *liandongRestockPendingBatch) []string {
-	codes, err := s.deriveCodesChecked(batch)
-	if err != nil {
-		return nil
-	}
-	return codes
 }
 
 func isLiandongOutcomeUnknown(err error) bool {
@@ -518,7 +510,7 @@ func liandongBoundedContext(parent context.Context) (context.Context, context.Ca
 
 func (s *LiandongRestockService) ensureLiandongCodes(ctx context.Context, batch *liandongRestockPendingBatch, codes []string) error {
 	if s.redeem == nil {
-		return errors.New("Liandong redeem storage is unavailable")
+		return errors.New("liandong redeem storage is unavailable")
 	}
 	missing := make([]string, 0, len(codes))
 	for _, code := range codes {
@@ -545,7 +537,7 @@ func (s *LiandongRestockService) ensureLiandongCodes(ctx context.Context, batch 
 	return nil
 }
 
-func (s *LiandongRestockService) loadLiandongSegmentStatuses(ctx context.Context, batchID string) ([]LiandongRestockSegmentStatus, error) {
+func (s *LiandongRestockService) loadLiandongSegmentStatuses(ctx context.Context, batchID string) (_ []LiandongRestockSegmentStatus, err error) {
 	if s.db == nil {
 		s.memoryMu.Lock()
 		defer s.memoryMu.Unlock()
@@ -565,7 +557,7 @@ func (s *LiandongRestockService) loadLiandongSegmentStatuses(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 	result := make([]LiandongRestockSegmentStatus, 0)
 	for rows.Next() {
 		var segment LiandongRestockSegmentStatus
@@ -590,7 +582,7 @@ func (s *LiandongRestockService) loadLiandongSegmentStatuses(ctx context.Context
 
 func (s *LiandongRestockService) updateLiandongSegmentStatus(ctx context.Context, batchID string, segmentNo int, status string, runErr error, acknowledged bool) error {
 	if status == "" {
-		return errors.New("Liandong segment status is required")
+		return errors.New("liandong segment status is required")
 	}
 	errorText := ""
 	if runErr != nil {
@@ -618,7 +610,7 @@ func (s *LiandongRestockService) updateLiandongSegmentStatus(ctx context.Context
 			}
 			return nil
 		}
-		return errors.New("Liandong segment not found")
+		return errors.New("liandong segment not found")
 	}
 	query := `
 		UPDATE liandong_restock_segments
@@ -695,10 +687,10 @@ func liandongSelectedGoods(products []LiandongRestockProduct, selected []int64) 
 			return nil, nil, errors.New("selected Liandong goods IDs must be positive")
 		}
 		if _, ok := known[goodsID]; !ok {
-			return nil, nil, fmt.Errorf("Liandong goods ID %d is not configured", goodsID)
+			return nil, nil, fmt.Errorf("liandong goods ID %d is not configured", goodsID)
 		}
 		if _, duplicate := result[goodsID]; duplicate {
-			return nil, nil, fmt.Errorf("Liandong goods ID %d was selected more than once", goodsID)
+			return nil, nil, fmt.Errorf("liandong goods ID %d was selected more than once", goodsID)
 		}
 		result[goodsID] = struct{}{}
 		ordered = append(ordered, goodsID)
@@ -708,7 +700,7 @@ func liandongSelectedGoods(products []LiandongRestockProduct, selected []int64) 
 
 func (s *LiandongRestockService) Preview(ctx context.Context, selectedGoods []int64) (*LiandongRestockPreview, error) {
 	if s.settingRepo == nil {
-		return nil, errors.New("Liandong settings storage is unavailable")
+		return nil, errors.New("liandong settings storage is unavailable")
 	}
 	s.stateMu.Lock()
 	defer s.stateMu.Unlock()
@@ -794,7 +786,7 @@ func (s *LiandongRestockService) runLiandongCycle(parent context.Context, force 
 	if s.db != nil {
 		releaseLease, leaseAcquired, leaseErr := tryAcquireDBAdvisoryLockWithError(ctx, s.db, hashAdvisoryLockID(liandongRestockLeaseKey))
 		if leaseErr != nil {
-			return nil, errors.New("Liandong restock execution lease is unavailable")
+			return nil, errors.New("liandong restock execution lease is unavailable")
 		}
 		if !leaseAcquired {
 			return nil, ErrLiandongRunBusy
@@ -812,7 +804,7 @@ func (s *LiandongRestockService) runLiandongCycle(parent context.Context, force 
 		return &liandongCycleResult{}, nil
 	}
 	if !s.configured() {
-		return nil, errors.New("Liandong auto restock is not fully configured")
+		return nil, errors.New("liandong auto restock is not fully configured")
 	}
 	if state.ReconciliationRequired {
 		return nil, fmt.Errorf("%w: durable recovery is required before another cycle", ErrLiandongNeedsReconciliation)
@@ -953,10 +945,10 @@ func visibleLiandongProducts(products []LiandongRestockProduct) []LiandongRestoc
 
 func (s *LiandongRestockService) StartManualJob(ctx context.Context, selectedGoods []int64) (*LiandongRestockJobSummary, error) {
 	if s.settingRepo == nil {
-		return nil, errors.New("Liandong settings storage is unavailable")
+		return nil, errors.New("liandong settings storage is unavailable")
 	}
 	if !s.configured() {
-		return nil, errors.New("Liandong auto restock is not fully configured")
+		return nil, errors.New("liandong auto restock is not fully configured")
 	}
 	s.stateMu.Lock()
 	state, err := s.loadState(ctx)
@@ -1016,7 +1008,7 @@ func (s *LiandongRestockService) reserveLiandongManualJob(jobID string) (context
 	s.admissionMu.Lock()
 	defer s.admissionMu.Unlock()
 	if s.stopped {
-		return nil, errors.New("Liandong restock service is stopping")
+		return nil, errors.New("liandong restock service is stopping")
 	}
 	s.mu.Lock()
 	running := s.running
@@ -1034,7 +1026,7 @@ func (s *LiandongRestockService) reserveLiandongManualJob(jobID string) (context
 		s.manualContext, s.manualCancel = context.WithCancel(parent)
 	}
 	if s.manualContext.Err() != nil {
-		return nil, errors.New("Liandong restock service is stopping")
+		return nil, errors.New("liandong restock service is stopping")
 	}
 	if s.manualJobs == nil {
 		s.manualJobs = make(map[string]struct{})
@@ -1084,7 +1076,7 @@ func (s *LiandongRestockService) executeLiandongJob(ctx context.Context, job *Li
 		return nil, err
 	}
 	if job.CodeSecretDigest != "" && job.CodeSecretDigest != s.currentLiandongCodeSecretDigest() {
-		runErr := errors.New("Liandong job derivation metadata no longer matches the configured secret")
+		runErr := errors.New("liandong job derivation metadata no longer matches the configured secret")
 		job.Error = liandongSafeErrorText(runErr)
 		job.Status = LiandongRestockJobFailed
 		job.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
@@ -1105,7 +1097,7 @@ func (s *LiandongRestockService) executeLiandongJob(ctx context.Context, job *Li
 		job.TotalUploaded = countUploadedBatchCodes(job.Batches)
 	}
 	if runErr == nil && !liandongJobHasTerminalProductResults(job) {
-		runErr = errors.New("Liandong job did not account for every selected product")
+		runErr = errors.New("liandong job did not account for every selected product")
 	}
 	job.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
 	if runErr != nil {
@@ -1261,7 +1253,7 @@ func scanLiandongJob(row liandongJobScanner) (*LiandongRestockJobSummary, error)
 	return &job, nil
 }
 
-func (s *LiandongRestockService) loadLiandongJobs(ctx context.Context, limit int) ([]LiandongRestockJobSummary, error) {
+func (s *LiandongRestockService) loadLiandongJobs(ctx context.Context, limit int) (_ []LiandongRestockJobSummary, err error) {
 	if limit < 1 || limit > 100 {
 		limit = 20
 	}
@@ -1289,7 +1281,7 @@ func (s *LiandongRestockService) loadLiandongJobs(ctx context.Context, limit int
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 	jobs := make([]LiandongRestockJobSummary, 0, limit)
 	for rows.Next() {
 		job, scanErr := scanLiandongJob(rows)
@@ -1333,7 +1325,7 @@ func (s *LiandongRestockService) hasOpenLiandongJob(ctx context.Context) (bool, 
 
 func (s *LiandongRestockService) ResumeJob(ctx context.Context, id string) (*LiandongRestockJobSummary, error) {
 	if !s.configured() {
-		return nil, errors.New("Liandong auto restock is not fully configured")
+		return nil, errors.New("liandong auto restock is not fully configured")
 	}
 	job, err := s.GetJob(ctx, id)
 	if err != nil {
@@ -1383,31 +1375,31 @@ func (s *LiandongRestockService) ExportJob(ctx context.Context, id string) (*Lia
 		return nil, err
 	}
 	if job.Status != LiandongRestockJobCompleted {
-		return nil, errors.New("Liandong restock export requires a durably completed job")
+		return nil, errors.New("liandong restock export requires a durably completed job")
 	}
 	if !liandongJobHasTerminalProductResults(job) {
-		return nil, errors.New("Liandong restock export requires every selected product to be accounted for")
+		return nil, errors.New("liandong restock export requires every selected product to be accounted for")
 	}
 	batches, err := s.loadJobBatchSnapshots(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	var content bytes.Buffer
+	var content []byte
 	codeCount := 0
 	for _, batch := range batches {
 		if batch.Status != liandongBatchStatusUploaded || batch.CodeSecretDigest == "" {
-			return nil, errors.New("Liandong restock export requires durably uploaded batches with pinned derivation metadata")
+			return nil, errors.New("liandong restock export requires durably uploaded batches with pinned derivation metadata")
 		}
 		segments, segmentErr := s.loadLiandongSegmentStatuses(ctx, batch.BatchID)
 		if segmentErr != nil {
 			return nil, segmentErr
 		}
 		if len(segments) != len(liandongSegmentRanges(batch.Count)) {
-			return nil, errors.New("Liandong restock export segment accounting is incomplete")
+			return nil, errors.New("liandong restock export segment accounting is incomplete")
 		}
 		for _, segment := range segments {
 			if segment.Status != liandongSegmentStatusUploaded {
-				return nil, errors.New("Liandong restock export requires every segment to be uploaded")
+				return nil, errors.New("liandong restock export requires every segment to be uploaded")
 			}
 		}
 		codes, deriveErr := s.deriveCodesChecked(&batch)
@@ -1415,8 +1407,8 @@ func (s *LiandongRestockService) ExportJob(ctx context.Context, id string) (*Lia
 			return nil, deriveErr
 		}
 		for _, code := range codes {
-			content.WriteString(code)
-			content.WriteByte('\n')
+			content = append(content, code...)
+			content = append(content, '\n')
 		}
 		codeCount += len(codes)
 	}
@@ -1424,7 +1416,7 @@ func (s *LiandongRestockService) ExportJob(ctx context.Context, id string) (*Lia
 		Filename:    "liandong-restock-" + id + ".txt",
 		ContentType: "text/plain; charset=utf-8",
 		CodeCount:   codeCount,
-		Reader:      io.NopCloser(bytes.NewReader(content.Bytes())),
+		Reader:      io.NopCloser(bytes.NewReader(content)),
 	}, nil
 }
 
@@ -1484,7 +1476,7 @@ func (v *sqlNullTime) Scan(value any) error {
 
 func (s *LiandongRestockService) persistLiandongJob(ctx context.Context, job *LiandongRestockJobSummary) error {
 	if job == nil {
-		return errors.New("Liandong job is required")
+		return errors.New("liandong job is required")
 	}
 	jobCopy := cloneLiandongJobSummary(job)
 	if jobCopy.Error != "" {
@@ -1559,7 +1551,7 @@ func (s *LiandongRestockService) batchStatusesForJob(ctx context.Context, jobID 
 	return result
 }
 
-func (s *LiandongRestockService) loadJobBatchSnapshots(ctx context.Context, jobID string) ([]liandongRestockPendingBatch, error) {
+func (s *LiandongRestockService) loadJobBatchSnapshots(ctx context.Context, jobID string) (_ []liandongRestockPendingBatch, err error) {
 	if s.db == nil {
 		s.memoryMu.Lock()
 		defer s.memoryMu.Unlock()
@@ -1581,7 +1573,7 @@ func (s *LiandongRestockService) loadJobBatchSnapshots(ctx context.Context, jobI
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 	result := make([]liandongRestockPendingBatch, 0)
 	for rows.Next() {
 		var batch liandongRestockPendingBatch

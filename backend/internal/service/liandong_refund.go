@@ -12,10 +12,10 @@ import (
 
 var (
 	ErrLiandongRefundInvalid     = errors.New("invalid Liandong refund request")
-	ErrLiandongRefundConflict    = errors.New("Liandong refund identity conflicts with an existing reservation")
-	ErrLiandongRefundUnavailable = errors.New("Liandong refund storage is unavailable")
-	ErrLiandongRefundNotEligible = errors.New("Liandong code is not eligible for an unused-rights refund")
-	ErrLiandongRefundNotFound    = errors.New("Liandong refund reservation not found")
+	ErrLiandongRefundConflict    = errors.New("liandong refund identity conflicts with an existing reservation")
+	ErrLiandongRefundUnavailable = errors.New("liandong refund storage is unavailable")
+	ErrLiandongRefundNotEligible = errors.New("liandong code is not eligible for an unused-rights refund")
+	ErrLiandongRefundNotFound    = errors.New("liandong refund reservation not found")
 )
 
 type LiandongRefundPrepareRequest struct {

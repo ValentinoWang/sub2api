@@ -210,12 +210,14 @@ func TestLiandongRestockUploadFailureNeedsReconciliation(t *testing.T) {
 
 func TestLiandongRestockPreviewAndManualJobRemainOperationallySeparate(t *testing.T) {
 	var uploadCount atomic.Int32
+	stock := &liandongMerchantStockFixture{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/merchantApi/goodsCardStorage/list":
-			_, _ = io.WriteString(w, `{"code":1,"data":{"total":0}}`)
+			stock.writeTotal(t, w, r)
 		case "/merchantApi/GoodsCardStorage/add":
+			stock.add(t, r)
 			uploadCount.Add(1)
 			_, _ = io.WriteString(w, `{"code":1,"data":{}}`)
 		default:
@@ -261,7 +263,7 @@ func TestLiandongRestockPreviewAndManualJobRemainOperationallySeparate(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer export.Reader.Close()
+	defer func() { _ = export.Reader.Close() }()
 	content, err := io.ReadAll(export.Reader)
 	if err != nil {
 		t.Fatal(err)
@@ -282,6 +284,7 @@ func TestLiandongRestockPreviewAndManualJobRemainOperationallySeparate(t *testin
 }
 
 func TestLiandongManualJobOutlivesRequestContext(t *testing.T) {
+	stock := &liandongMerchantStockFixture{}
 	requestStarted := make(chan struct{})
 	var requestStartedOnce sync.Once
 	releaseRequest := make(chan struct{})
@@ -292,10 +295,11 @@ func TestLiandongManualJobOutlivesRequestContext(t *testing.T) {
 			requestStartedOnce.Do(func() { close(requestStarted) })
 			select {
 			case <-releaseRequest:
-				_, _ = io.WriteString(w, `{"code":1,"data":{"total":0}}`)
+				stock.writeTotal(t, w, r)
 			case <-r.Context().Done():
 			}
 		case "/merchantApi/GoodsCardStorage/add":
+			stock.add(t, r)
 			_, _ = io.WriteString(w, `{"code":1,"data":{}}`)
 		default:
 			http.NotFound(w, r)
@@ -522,7 +526,7 @@ func TestLiandongSuccessfulUploadWithLocalAckFailureNeedsReconciliation(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	var uploadCount atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -598,18 +602,14 @@ func TestLiandongSuccessfulUploadWithLocalAckFailureNeedsReconciliation(t *testi
 
 func TestLiandongManualResumeContinuesSavedMultiProductPlan(t *testing.T) {
 	var uploadCount atomic.Int32
+	stock := &liandongMerchantStockFixture{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/merchantApi/goodsCardStorage/list":
-			_, _ = io.WriteString(w, `{"code":1,"data":{"total":0}}`)
+			stock.writeTotal(t, w, r)
 		case "/merchantApi/GoodsCardStorage/add":
-			var body struct {
-				GoodsID int64 `json:"goods_id"`
-			}
-			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-				t.Error(err)
-			}
+			stock.add(t, r)
 			uploadCount.Add(1)
 			_, _ = io.WriteString(w, `{"code":1,"data":{}}`)
 		default:
@@ -707,12 +707,14 @@ func TestLiandongStopWorkerWaitsForAutomaticCycleAndClosesAdmission(t *testing.T
 }
 
 func TestLiandongStaleRunningJobCanBeResumed(t *testing.T) {
+	stock := &liandongMerchantStockFixture{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/merchantApi/goodsCardStorage/list":
-			_, _ = io.WriteString(w, `{"code":1,"data":{"total":0}}`)
+			stock.writeTotal(t, w, r)
 		case "/merchantApi/GoodsCardStorage/add":
+			stock.add(t, r)
 			_, _ = io.WriteString(w, `{"code":1,"data":{}}`)
 		default:
 			http.NotFound(w, r)

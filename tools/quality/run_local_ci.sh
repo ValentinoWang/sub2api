@@ -154,7 +154,7 @@ run_stage local-ci-guards python3 tools/quality/test_local_ci.py
 run_stage commerce-parity-guards python3 -m unittest discover -s tools/quality/tests
 run_stage backend-unit make -C backend test-unit
 run_stage backend-integration make -C backend test-integration
-run_stage backend-lint bash -c 'cd backend && golangci-lint run --timeout=30m --concurrency=2 ./...'
+run_stage backend-lint bash -c 'cd backend && golangci-lint run --timeout=30m --concurrency=2 --max-issues-per-linter=0 --max-same-issues=0 ./...'
 run_stage frontend-lint pnpm --dir frontend run lint:check
 run_stage frontend-typecheck pnpm --dir frontend run typecheck
 run_stage frontend-tests pnpm --dir frontend exec vitest run --maxWorkers=2 --minWorkers=1

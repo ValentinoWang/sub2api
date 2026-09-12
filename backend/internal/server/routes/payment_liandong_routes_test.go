@@ -51,6 +51,7 @@ func TestLiandongRestockRoutesRequireAdminAuthentication(t *testing.T) {
 		path   string
 	}{
 		{http.MethodGet, "/api/v1/admin/liandong/restock/status"},
+		{http.MethodGet, "/api/v1/admin/liandong/restock/inventory"},
 		{http.MethodGet, "/api/v1/admin/liandong/restock/parity"},
 		{http.MethodPut, "/api/v1/admin/liandong/restock/config"},
 		{http.MethodPut, "/api/v1/admin/liandong/restock/policies"},

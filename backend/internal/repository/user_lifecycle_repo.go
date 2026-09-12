@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/service"
@@ -45,7 +46,7 @@ WHERE u.deleted_at IS NULL
 ORDER BY u.id
 LIMIT $4`
 
-func (r *userLifecycleRepository) ListWelcomeCandidates(ctx context.Context, event string, since time.Time, limit int) ([]service.LifecycleCandidate, error) {
+func (r *userLifecycleRepository) ListWelcomeCandidates(ctx context.Context, event string, since time.Time, limit int) (_ []service.LifecycleCandidate, err error) {
 	if r == nil || r.db == nil {
 		return nil, nil
 	}
@@ -53,7 +54,7 @@ func (r *userLifecycleRepository) ListWelcomeCandidates(ctx context.Context, eve
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 	var out []service.LifecycleCandidate
 	for rows.Next() {
 		var c service.LifecycleCandidate
@@ -65,7 +66,7 @@ func (r *userLifecycleRepository) ListWelcomeCandidates(ctx context.Context, eve
 	return out, rows.Err()
 }
 
-func (r *userLifecycleRepository) ListInactiveCandidates(ctx context.Context, event string, createdBefore, inactiveBefore time.Time, limit int) ([]service.LifecycleCandidate, error) {
+func (r *userLifecycleRepository) ListInactiveCandidates(ctx context.Context, event string, createdBefore, inactiveBefore time.Time, limit int) (_ []service.LifecycleCandidate, err error) {
 	if r == nil || r.db == nil {
 		return nil, nil
 	}
@@ -73,7 +74,7 @@ func (r *userLifecycleRepository) ListInactiveCandidates(ctx context.Context, ev
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 	var out []service.LifecycleCandidate
 	for rows.Next() {
 		var c service.LifecycleCandidate

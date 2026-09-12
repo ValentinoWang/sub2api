@@ -218,7 +218,7 @@ func liandongToolkitValidVersion(value string) bool {
 	for index, character := range value {
 		if (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') ||
 			(character >= '0' && character <= '9') || character == '.' || character == '_' || character == '+' || character == '-' {
-			if index == 0 && !(character >= 'a' && character <= 'z') && !(character >= 'A' && character <= 'Z') && !(character >= '0' && character <= '9') {
+			if index == 0 && (character < 'a' || character > 'z') && (character < 'A' || character > 'Z') && (character < '0' || character > '9') {
 				return false
 			}
 			continue

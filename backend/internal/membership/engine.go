@@ -55,7 +55,7 @@ func (e *Engine) transaction(ctx context.Context, fn func(*sql.Tx) error) error 
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer rollbackTx(tx)
 	if err = fn(tx); err != nil {
 		return publicError(err)
 	}
@@ -85,7 +85,7 @@ func (e *Engine) Products(ctx context.Context) ([]Product, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer closeResource(rows)
 	out := []Product{}
 	ready := e.Ready(ctx) == nil && e.PaymentsEnabled
 	for rows.Next() {
@@ -193,9 +193,10 @@ func parseCredential(input CredentialInput) (Credential, error) {
 		return Credential{}, ErrConsent
 	}
 	c := Credential{Mode: input.Mode, Value: strings.TrimSpace(input.Value), AccountID: strings.ToLower(strings.TrimSpace(input.AccountID))}
-	if c.Mode == "account_id" {
+	switch c.Mode {
+	case "account_id":
 		c.AccountID = strings.ToLower(c.Value)
-	} else if c.Mode == "session" {
+	case "session":
 		var session struct {
 			AccessToken string `json:"accessToken"`
 			Account     struct {
@@ -210,14 +211,14 @@ func parseCredential(input CredentialInput) (Credential, error) {
 			return Credential{}, ErrInvalid
 		}
 		c.AccountID = embedded
-	} else {
+	default:
 		return Credential{}, ErrInvalid
 	}
 	if len(c.AccountID) < 8 || len(c.AccountID) > 128 {
 		return Credential{}, ErrInvalid
 	}
 	for _, r := range c.AccountID {
-		if !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '-' || r == '_') {
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' && r != '_' {
 			return Credential{}, ErrInvalid
 		}
 	}
@@ -309,7 +310,7 @@ func (e *Engine) Orders(ctx context.Context, userID int64, admin bool) ([]Order,
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer closeResource(rows)
 	out := []Order{}
 	for rows.Next() {
 		o, err := scanOrder(rows)
@@ -329,7 +330,7 @@ func (e *Engine) Order(ctx context.Context, userID int64, id string, admin bool)
 	if err != nil {
 		return o, err
 	}
-	defer rows.Close()
+	defer closeResource(rows)
 	o.Events = []Event{}
 	for rows.Next() {
 		var ev Event
@@ -381,13 +382,13 @@ func (e *Engine) ExportAudit(ctx context.Context) error {
 	for rows.Next() {
 		var v entry
 		if err = rows.Scan(&v.id, &v.raw); err != nil {
-			rows.Close()
+			closeResource(rows)
 			return err
 		}
 		entries = append(entries, v)
 	}
 	err = rows.Err()
-	rows.Close()
+	closeResource(rows)
 	if err != nil {
 		return err
 	}
@@ -420,7 +421,7 @@ func (e *Engine) ExpireOrders(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		defer rows.Close()
+		defer closeResource(rows)
 		for rows.Next() {
 			var order expired
 			if err := rows.Scan(&order.id, &order.ref); err != nil {

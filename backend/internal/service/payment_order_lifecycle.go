@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -348,7 +349,7 @@ func (s *PaymentService) ReconcilePendingPaymentOrders(ctx context.Context) (int
 // the corresponding reservation transition. Failed gateway creation is always
 // treated as uncertain because a provider may have accepted the request before
 // the local caller observed its error.
-func (s *PaymentService) ReconcileMembershipPaymentRecoveries(ctx context.Context) (int, error) {
+func (s *PaymentService) ReconcileMembershipPaymentRecoveries(ctx context.Context) (_ int, err error) {
 	if s == nil || s.membership == nil || s.membership.DB == nil {
 		return 0, nil
 	}
@@ -363,7 +364,7 @@ func (s *PaymentService) ReconcileMembershipPaymentRecoveries(ctx context.Contex
 	if err != nil {
 		return 0, fmt.Errorf("query membership payment recoveries: %w", err)
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 
 	type candidate struct {
 		paymentID int64

@@ -287,6 +287,58 @@
         </div>
       </section>
 
+      <section class="card p-5 md:p-6" data-testid="inventory-comparison-section">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('ldxpToolkit.inventory.title') }}</h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('ldxpToolkit.inventory.description') }}</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" type="button" :disabled="loadingInventory" data-testid="refresh-inventory" @click="loadInventory">
+            {{ t(loadingInventory ? 'common.loading' : 'common.refresh') }}
+          </button>
+        </div>
+        <p class="mt-3 text-sm text-amber-700 dark:text-amber-300" data-testid="inventory-identity-boundary">{{ t('ldxpToolkit.inventory.identityUnknown') }}</p>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ t('ldxpToolkit.inventory.soldUnredeemed') }}</p>
+        <p v-if="inventoryError" class="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">{{ inventoryError }}</p>
+        <p v-if="inventory?.reconciliation_required" class="mt-3 text-sm text-red-600 dark:text-red-400" role="alert" data-testid="inventory-latched">{{ t('ldxpToolkit.inventory.latched') }}</p>
+        <div v-if="inventory" class="mt-4 overflow-x-auto">
+          <table class="w-full min-w-[1080px] text-sm" data-testid="inventory-comparison-table">
+            <thead><tr class="text-left text-xs text-gray-500 dark:text-gray-400">
+              <th class="px-3 py-2">{{ t('ldxpToolkit.mapping.goodsId') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.inventory.batches') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.inventory.allocated') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.inventory.created') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.inventory.unused') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.inventory.used') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.inventory.disabled') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.inventory.other') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.inventory.missing') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.goods.unsoldStock') }}</th>
+              <th class="px-3 py-2">{{ t('ldxpToolkit.inventory.delta') }}</th>
+            </tr></thead>
+            <tbody>
+              <tr v-for="row in inventory.rows" :key="row.goods_id" class="border-t border-gray-100 dark:border-dark-800" :data-testid="`inventory-row-${row.goods_id}`">
+                <td class="px-3 py-3 font-mono">{{ row.goods_id }}</td>
+                <td class="px-3 py-3">{{ row.local?.batches ?? '-' }}</td>
+                <td class="px-3 py-3">{{ row.local?.allocated_codes ?? '-' }}</td>
+                <td class="px-3 py-3">{{ row.local?.created_codes ?? '-' }}</td>
+                <td class="px-3 py-3">{{ row.local?.unused_codes ?? '-' }}</td>
+                <td class="px-3 py-3">{{ row.local?.used_codes ?? '-' }}</td>
+                <td class="px-3 py-3">{{ row.local?.disabled_codes ?? '-' }}</td>
+                <td class="px-3 py-3">{{ row.local?.other_codes ?? '-' }}</td>
+                <td class="px-3 py-3" :class="row.local?.missing_codes ? 'text-red-600 dark:text-red-400' : ''">{{ row.local?.missing_codes ?? '-' }}</td>
+                <td class="px-3 py-3" :data-testid="`inventory-merchant-${row.goods_id}`">{{ row.merchant_unsold ?? '-' }}</td>
+                <td class="px-3 py-3" :class="row.quantity_delta ? 'text-amber-700 dark:text-amber-300' : ''" :data-testid="`inventory-delta-${row.goods_id}`">{{ row.quantity_delta ?? '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-for="row in inventory.rows.filter(item => item.local_error || item.merchant_error)" :key="`unavailable-${row.goods_id}`" class="mt-2 text-sm text-amber-700 dark:text-amber-300">{{ row.goods_id }} · {{ t('ldxpToolkit.inventory.observationUnavailable') }}</p>
+          <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">{{ t('ldxpToolkit.inventory.observedAt') }}: {{ formatDate(inventory.observed_at) }}</p>
+          <p v-if="!inventory.rows.length" class="mt-3 text-sm text-gray-500 dark:text-gray-400">{{ t('ldxpToolkit.mapping.empty') }}</p>
+        </div>
+        <p v-else-if="!loadingInventory && !inventoryError" class="mt-3 text-sm text-gray-500 dark:text-gray-400">{{ t('ldxpToolkit.inventory.refreshHint') }}</p>
+      </section>
+
       <!-- Preview and run -->
       <section class="card p-5 md:p-6" data-testid="preview-section">
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -424,7 +476,15 @@
                 <td class="px-3 py-3">{{ row.type === 'job' ? t('ldxpToolkit.history.job') : t('ldxpToolkit.history.batch') }}</td>
                 <td class="px-3 py-3 font-mono">{{ row.goodsId || '-' }}</td>
                 <td class="px-3 py-3">{{ row.count ?? '-' }}</td>
-                <td class="px-3 py-3"><span class="badge" :class="jobStatusClass(row.status)">{{ jobStatusLabel(row.status) }}</span></td>
+                <td class="px-3 py-3">
+                  <span class="badge" :class="jobStatusClass(row.status)">{{ jobStatusLabel(row.status) }}</span>
+                  <p v-if="row.type === 'batch'" class="mt-2 text-xs text-gray-500 dark:text-gray-400" :data-testid="`batch-stock-${row.displayId}`">
+                    {{ t('ldxpToolkit.inventory.before') }} {{ row.stockBefore ?? '-' }} ·
+                    {{ t('ldxpToolkit.inventory.expectedAfter') }} {{ row.stockExpected ?? '-' }} ·
+                    {{ t('ldxpToolkit.inventory.observedAfter') }} {{ row.stockAfter ?? '-' }} ·
+                    {{ t('ldxpToolkit.inventory.postDelta') }} {{ row.stockDelta ?? '-' }}
+                  </p>
+                </td>
                 <td class="px-3 py-3 text-xs text-gray-500 dark:text-gray-400">{{ formatDate(row.updatedAt || row.createdAt) }}</td>
                 <td class="px-3 py-3">
                   <button v-if="canExportHistoryRow(row)" type="button" class="btn btn-secondary btn-xs" :disabled="exportingJobId === row.jobId" :title="t('ldxpToolkit.history.export')" :data-testid="`export-job-${row.jobId}`" @click="downloadJobExport(row.jobId)">
@@ -481,10 +541,29 @@ import {
   type LiandongProductMapping,
   type LiandongRemoteGood,
   type LiandongStatus,
+  type LiandongInventoryReport,
 } from '@/api/liandongToolkit'
 
 const { t } = useI18n()
 const appStore = useAppStore()
+const inventory = ref<LiandongInventoryReport | null>(null)
+const loadingInventory = ref(false)
+const inventoryError = ref('')
+
+async function loadInventory(): Promise<void> {
+  loadingInventory.value = true
+  inventoryError.value = ''
+  inventory.value = null
+  try {
+    const report = await liandongToolkitAPI.getInventory()
+    if (!Array.isArray(report.rows) || typeof report.reconciliation_required !== 'boolean') throw new Error('invalid inventory response')
+    inventory.value = report
+  } catch {
+    inventoryError.value = t('ldxpToolkit.inventory.loadFailed')
+  } finally {
+    loadingInventory.value = false
+  }
+}
 
 type ErrorRecord = LiandongApplicationError
 type SelectionMode = 'all' | 'selected'
@@ -506,6 +585,10 @@ type HistoryRow = {
   jobId?: string
   goodsId?: number
   count?: number
+  stockBefore?: number | null
+  stockExpected?: number
+  stockAfter?: number | null
+  stockDelta?: number
   status: string
   exportAvailable?: boolean
   createdAt?: string
@@ -1388,6 +1471,8 @@ async function resumeActiveJob(): Promise<void> {
 }
 
 function historyRowsFromBatch(batch: LiandongBatchStatus, index: number): HistoryRow {
+  const expected = batch.remote_stock_before != null && batch.code_count != null
+    ? batch.remote_stock_before + batch.code_count : undefined
   return {
     key: `batch:${batch.batch_id || index}`,
     type: 'batch',
@@ -1395,6 +1480,10 @@ function historyRowsFromBatch(batch: LiandongBatchStatus, index: number): Histor
     jobId: batch.job_id,
     goodsId: batch.goods_id,
     count: batch.code_count,
+    stockBefore: batch.remote_stock_before,
+    stockExpected: expected,
+    stockAfter: batch.remote_stock_after,
+    stockDelta: expected !== undefined && batch.remote_stock_after != null ? batch.remote_stock_after - expected : undefined,
     status: batch.status,
     createdAt: batch.created_at,
     updatedAt: batch.updated_at || batch.uploaded_at,

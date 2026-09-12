@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -179,7 +180,12 @@ func (s *ProxySubscriptionService) fetchOnce(ctx context.Context, sourceURL *url
 	if err != nil {
 		return nil, isRetryableProxySubscriptionFetchError(err), err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			// Closing a response must not reinterpret an already-applied controller operation.
+			slog.Warn("proxy subscription response body close failed")
+		}
+	}()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, isRetryableProxySubscriptionStatus(resp.StatusCode), fmt.Errorf("subscription server returned HTTP %d", resp.StatusCode)
 	}
@@ -462,7 +468,12 @@ func (s *ProxySubscriptionService) reloadMihomo(ctx context.Context, secret stri
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			// Closing a response must not reinterpret an already-applied controller operation.
+			slog.Warn("proxy subscription response body close failed")
+		}
+	}()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("mihomo controller returned HTTP %d", resp.StatusCode)
 	}

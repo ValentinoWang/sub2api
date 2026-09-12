@@ -108,6 +108,17 @@ export default {
   },
 
   ldxpToolkit: {
+    inventory: {
+      title: 'Inventory quantity comparison',
+      description: 'Compare local batch and code counts with merchant unsold stock. Registered codes include pending generation. Difference = locally usable unused codes minus merchant unsold stock.',
+      identityUnknown: 'The merchant endpoint proves quantity only, not individual card identity. Equal quantities do not mean reconciled inventory.',
+      soldUnredeemed: 'Sold but unredeemed codes remain locally unused. A difference alone does not prove lost cards or justify restocking. Disabled rights do not prove a merchant refund.',
+      latched: 'Reconciliation is still required. Refreshing quantities cannot clear the block; generation and upload retries remain blocked.',
+      batches: 'Local batches', allocated: 'Registered codes', created: 'Created codes', unused: 'Usable unused', used: 'Redeemed', disabled: 'Disabled', other: 'Expired or other', missing: 'Missing locally', delta: 'Quantity difference',
+      observedAt: 'Observation started', observationUnavailable: 'Some counts could not be observed; unknown values are shown as a dash.',
+      refreshHint: 'Refresh to perform a read-only quantity comparison.', loadFailed: 'Inventory comparison is unavailable. Please retry later.',
+      before: 'Before upload', expectedAfter: 'Expected after', observedAfter: 'Observed after', postDelta: 'Observed minus expected',
+    },
     tools: 'Tools',
     navLabel: 'Liandong Store',
     title: 'Liandong Store Toolkit',

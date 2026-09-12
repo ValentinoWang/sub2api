@@ -36,7 +36,7 @@ func EvaluatePluginCompatibility(manifest PluginManifest, host PluginHostInfo) P
 	}
 	result.Compatible = true
 	for _, tested := range manifest.Requires.TestedSub2APIVersions {
-		if normalizeSemver(tested) == normalizeSemver(host.Version) {
+		if normalizeSub2APIVersion(tested) == normalizeSub2APIVersion(host.Version) {
 			result.Tested = true
 			break
 		}
@@ -65,8 +65,31 @@ func normalizeSemver(version string) string {
 	return v
 }
 
+// Fork revisions precede their pending upstream release. Keep this separate from
+// plugin package version validation: X.Y.Z.N is not a SemVer package version.
+func normalizeSub2APIVersion(version string) string {
+	if normalized := normalizeSemver(version); normalized != "" {
+		return normalized
+	}
+	parts := strings.Split(strings.TrimPrefix(strings.TrimSpace(version), "v"), ".")
+	if len(parts) != 4 {
+		return ""
+	}
+	for _, part := range parts {
+		if part == "" {
+			return ""
+		}
+		for _, digit := range part {
+			if digit < '0' || digit > '9' {
+				return ""
+			}
+		}
+	}
+	return normalizeSemver(strings.Join(parts[:3], ".") + "-fork." + parts[3])
+}
+
 func matchesSemverRange(version, expression string) bool {
-	v := normalizeSemver(version)
+	v := normalizeSub2APIVersion(version)
 	if v == "" {
 		return false
 	}
@@ -84,7 +107,7 @@ func matchesSemverRange(version, expression string) bool {
 				break
 			}
 		}
-		bound := normalizeSemver(raw)
+		bound := normalizeSub2APIVersion(raw)
 		if bound == "" {
 			return false
 		}

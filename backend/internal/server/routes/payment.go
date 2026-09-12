@@ -117,6 +117,7 @@ func RegisterPaymentRoutes(
 		liandong.Use(middleware.AdminComplianceGuard(settingService))
 		{
 			liandong.GET("/status", adminPaymentHandler.GetLiandongRestockStatus)
+			liandong.GET("/inventory", adminPaymentHandler.GetLiandongInventory)
 			liandong.GET("/parity", adminPaymentHandler.GetLiandongCommerceParity)
 			liandong.PUT("/config", adminPaymentHandler.UpdateLiandongRestockConfig)
 			liandong.PUT("/policies", adminPaymentHandler.UpdateLiandongRestockPolicies)

@@ -712,7 +712,7 @@ func (s *PaymentService) abortMembershipRefund(ctx context.Context, p *RefundPla
 // ReconcileMembershipRefundFinalizations retries the local membership commit
 // after a gateway refund was durably recorded. FinalizeRefund is idempotent,
 // so completed rows are harmless and rows left in refund_pending converge.
-func (s *PaymentService) ReconcileMembershipRefundFinalizations(ctx context.Context) (int, error) {
+func (s *PaymentService) ReconcileMembershipRefundFinalizations(ctx context.Context) (_ int, err error) {
 	if s == nil || s.membership == nil || s.membership.DB == nil {
 		return 0, nil
 	}
@@ -727,7 +727,7 @@ func (s *PaymentService) ReconcileMembershipRefundFinalizations(ctx context.Cont
 	if err != nil {
 		return 0, fmt.Errorf("query refunded membership orders: %w", err)
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 	var paymentIDs []int64
 	for rows.Next() {
 		var paymentID int64
@@ -752,7 +752,7 @@ func (s *PaymentService) ReconcileMembershipRefundFinalizations(ctx context.Cont
 
 // ReconcileMembershipRefundAborts retries the local refund abort after a
 // provider refund failed but the membership transaction was unavailable.
-func (s *PaymentService) ReconcileMembershipRefundAborts(ctx context.Context) (int, error) {
+func (s *PaymentService) ReconcileMembershipRefundAborts(ctx context.Context) (_ int, err error) {
 	if s == nil || s.membership == nil || s.membership.DB == nil {
 		return 0, nil
 	}
@@ -767,7 +767,7 @@ func (s *PaymentService) ReconcileMembershipRefundAborts(ctx context.Context) (i
 	if err != nil {
 		return 0, fmt.Errorf("query membership refund aborts: %w", err)
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 	var paymentIDs []int64
 	for rows.Next() {
 		var paymentID int64
@@ -793,7 +793,7 @@ func (s *PaymentService) ReconcileMembershipRefundAborts(ctx context.Context) (i
 // ReconcileMembershipRefunding recovers the crash window after a membership
 // refund was claimed locally but before its provider result was recorded. It
 // only queries the provider; it must never submit another refund.
-func (s *PaymentService) ReconcileMembershipRefunding(ctx context.Context) (int, error) {
+func (s *PaymentService) ReconcileMembershipRefunding(ctx context.Context) (_ int, err error) {
 	if s == nil || s.entClient == nil || s.membership == nil || s.membership.DB == nil {
 		return 0, nil
 	}
@@ -808,7 +808,7 @@ func (s *PaymentService) ReconcileMembershipRefunding(ctx context.Context) (int,
 	if err != nil {
 		return 0, fmt.Errorf("query interrupted membership refunds: %w", err)
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 	var paymentIDs []int64
 	for rows.Next() {
 		var paymentID int64

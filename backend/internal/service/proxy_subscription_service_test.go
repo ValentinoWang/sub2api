@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -130,8 +131,10 @@ func TestRenderProxySubscriptionMihomoConfig(t *testing.T) {
 	require.Len(t, config["proxies"], 3)
 	require.Len(t, config["listeners"], 3)
 
-	listeners := config["listeners"].([]any)
-	first := listeners[0].(map[string]any)
+	listeners, ok := config["listeners"].([]any)
+	require.True(t, ok)
+	first, ok := listeners[0].(map[string]any)
+	require.True(t, ok)
 	require.Equal(t, 22000, first["port"])
 	require.Equal(t, "0.0.0.0", first["listen"])
 }
@@ -164,6 +167,9 @@ func TestRenderedProxySubscriptionConfigAcceptedByMihomo(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "config.yaml")
 	require.NoError(t, os.WriteFile(configPath, raw, 0o600))
+	bin, err = validatedMihomoTestBinary(bin)
+	require.NoError(t, err)
+	// #nosec G702 -- MIHOMO_BIN is selected by the test operator and resolved to a regular executable by validatedMihomoTestBinary; no subscription value controls the program, and no shell is used.
 	output, err := exec.Command(bin, "-t", "-d", dir, "-f", configPath).CombinedOutput()
 	require.NoError(t, err, "mihomo rejected generated config: %s", output)
 }
@@ -203,8 +209,56 @@ func TestRenderedProxySubscriptionFixtureAcceptedByMihomo(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "config.yaml")
 	require.NoError(t, os.WriteFile(configPath, config, 0o600))
+	bin, err = validatedMihomoTestBinary(bin)
+	require.NoError(t, err)
+	// #nosec G702 -- MIHOMO_BIN is selected by the test operator and resolved to a regular executable by validatedMihomoTestBinary; no subscription value controls the program, and no shell is used.
 	output, err := exec.Command(bin, "-t", "-d", dir, "-f", configPath).CombinedOutput()
 	require.NoError(t, err, "mihomo rejected fixture config: %s", output)
+}
+
+// MIHOMO_BIN is an operator-selected integration-test executable, not subscription
+// content. Resolve it before execution; config paths remain separate argv values.
+func validatedMihomoTestBinary(value string) (string, error) {
+	resolved, err := exec.LookPath(value)
+	if err != nil {
+		return "", err
+	}
+	absolute, err := filepath.Abs(resolved)
+	if err != nil {
+		return "", err
+	}
+	canonical, err := filepath.EvalSymlinks(absolute)
+	if err != nil {
+		return "", err
+	}
+	info, err := os.Stat(canonical)
+	if err != nil {
+		return "", err
+	}
+	if !info.Mode().IsRegular() || (runtime.GOOS != "windows" && info.Mode().Perm()&0o111 == 0) {
+		return "", errors.New("mihomo test binary must be a regular executable file")
+	}
+	return canonical, nil
+}
+
+func TestValidatedMihomoTestBinaryRejectsCommandTextAndNonExecutableFiles(t *testing.T) {
+	dir := t.TempDir()
+	_, err := validatedMihomoTestBinary(dir)
+	require.Error(t, err)
+	_, err = validatedMihomoTestBinary(filepath.Join(dir, "missing") + "; echo unsafe")
+	require.Error(t, err)
+	program := filepath.Join(dir, "mihomo")
+	require.NoError(t, os.WriteFile(program, []byte("fixture"), 0o600))
+	if runtime.GOOS != "windows" {
+		_, err = validatedMihomoTestBinary(program)
+		require.Error(t, err)
+		require.NoError(t, os.Chmod(program, 0o700))
+		resolved, err := validatedMihomoTestBinary(program)
+		require.NoError(t, err)
+		expected, err := filepath.EvalSymlinks(program)
+		require.NoError(t, err)
+		require.Equal(t, expected, resolved)
+	}
 }
 
 func proxySubscriptionTestState(t *testing.T) *proxySubscriptionRuntimeState {

@@ -109,7 +109,8 @@ func allRouteSource(t *testing.T) string {
 		}
 		content, err := os.ReadFile(entry)
 		require.NoError(t, err)
-		builder.Write(content)
+		_, err = builder.Write(content)
+		require.NoError(t, err)
 	}
 	return builder.String()
 }

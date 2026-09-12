@@ -6,6 +6,7 @@ const {
   getInstallation,
   installOrRepair,
   getStatus,
+  getInventory,
   updateConfig,
   setRestockEnabled,
   testConnection,
@@ -21,6 +22,7 @@ const {
   getInstallation: vi.fn(),
   installOrRepair: vi.fn(),
   getStatus: vi.fn(),
+  getInventory: vi.fn(),
   updateConfig: vi.fn(),
   setRestockEnabled: vi.fn(),
   testConnection: vi.fn(),
@@ -42,6 +44,7 @@ vi.mock('@/api/liandongToolkit', () => ({
     getInstallation,
     installOrRepair,
     getStatus,
+    getInventory,
     updateConfig,
     setRestockEnabled,
     testConnection,
@@ -142,6 +145,7 @@ describe('LiandongToolkitView', () => {
     getInstallation.mockReset().mockResolvedValue(baseInstallation)
     installOrRepair.mockReset().mockResolvedValue(baseInstallation)
     getStatus.mockReset().mockResolvedValue(baseStatus())
+    getInventory.mockReset()
     updateConfig.mockReset().mockImplementation(async () => baseStatus())
     setRestockEnabled.mockReset().mockResolvedValue({ ...baseStatus(), enabled: true })
     testConnection.mockReset().mockResolvedValue({ ok: true, configured: true, reachable: true, read_only: true })
@@ -153,6 +157,63 @@ describe('LiandongToolkitView', () => {
     exportJob.mockReset().mockResolvedValue(new Blob(['safe export']))
     showError.mockReset()
     showSuccess.mockReset()
+  })
+
+  it('shows real local and merchant quantity observations without clearing reconciliation', async () => {
+    getInventory.mockResolvedValue({ reconciliation_required: true, observed_at: '2026-09-13T00:00:00Z', rows: [{
+      goods_id: 42, local: { batches: 2, allocated_codes: 9, created_codes: 8, unused_codes: 5, used_codes: 2, disabled_codes: 1, other_codes: 0, missing_codes: 1 },
+      merchant_unsold: 3, quantity_delta: 2, identity_verified: false, comparison: 'quantity_difference_identity_unknown', observed_at: '2026-09-13T00:00:00Z',
+    }] })
+    const wrapper = mountView()
+    await flushPromises()
+    expect(getInventory).not.toHaveBeenCalled()
+    await wrapper.get('[data-testid="refresh-inventory"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[data-testid="inventory-merchant-42"]').text()).toBe('3')
+    expect(wrapper.get('[data-testid="inventory-delta-42"]').text()).toBe('2')
+    expect(wrapper.get('[data-testid="inventory-latched"]').text()).toContain('ldxpToolkit.inventory.latched')
+    expect(wrapper.get('[data-testid="inventory-identity-boundary"]').text()).toContain('ldxpToolkit.inventory.identityUnknown')
+    expect(wrapper.text()).toContain('ldxpToolkit.inventory.soldUnredeemed')
+    expect(setRestockEnabled).not.toHaveBeenCalled()
+    expect(runJob).not.toHaveBeenCalled()
+  })
+
+  it('renders unknown merchant counts as unknown and equal counts without a reconciliation claim', async () => {
+    const row = { goods_id: 42, local: null, merchant_unsold: null, quantity_delta: null, identity_verified: false, comparison: 'unknown', merchant_error: 'merchant_inventory_unavailable' }
+    getInventory.mockResolvedValue({ reconciliation_required: false, observed_at: '', rows: [row] })
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-testid="refresh-inventory"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[data-testid="inventory-merchant-42"]').text()).toBe('-')
+    expect(wrapper.get('[data-testid="inventory-delta-42"]').text()).toBe('-')
+    getInventory.mockResolvedValue({ reconciliation_required: false, observed_at: '', rows: [{ ...row, merchant_unsold: 0, quantity_delta: 0, merchant_error: undefined }] })
+    await wrapper.get('[data-testid="refresh-inventory"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[data-testid="inventory-delta-42"]').text()).toBe('0')
+    expect(wrapper.get('[data-testid="inventory-identity-boundary"]').text()).toContain('identityUnknown')
+  })
+
+  it('shows batch baseline, expected upload stock and observed discrepancy', async () => {
+    getStatus.mockResolvedValue({ ...baseStatus(), batches: [{ batch_id: 'batch-delta', goods_id: 42, code_count: 5, remote_stock_before: 2, remote_stock_after: 6, status: 'needs_reconciliation' }] })
+    const wrapper = mountView()
+    await flushPromises()
+    const text = wrapper.get('[data-testid="batch-stock-batch-delta"]').text()
+    expect(text).toContain('ldxpToolkit.inventory.before 2')
+    expect(text).toContain('ldxpToolkit.inventory.expectedAfter 7')
+    expect(text).toContain('ldxpToolkit.inventory.observedAfter 6')
+    expect(text).toContain('ldxpToolkit.inventory.postDelta -1')
+  })
+
+  it('does not retain stale inventory or expose raw responses on refresh failure', async () => {
+    getInventory.mockRejectedValue(new Error('private merchant token fixture'))
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-testid="refresh-inventory"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('ldxpToolkit.inventory.loadFailed')
+    expect(wrapper.text()).not.toContain('private merchant token fixture')
+    expect(wrapper.find('[data-testid="inventory-comparison-table"]').exists()).toBe(false)
   })
 
   it('reads back persisted enablement and prevents duplicate submissions until confirmed', async () => {

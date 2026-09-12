@@ -1,7 +1,6 @@
 package service
 
 import (
-	"bytes"
 	"net/http"
 	"strings"
 
@@ -191,8 +190,8 @@ func DropStaleCompactionTriggers(body []byte) ([]byte, bool, error) {
 		return body, false, nil
 	}
 	items := input.Array()
-	var rebuilt bytes.Buffer
-	rebuilt.WriteByte('[')
+	var rebuilt []byte
+	rebuilt = append(rebuilt, '[')
 	kept := 0
 	removed := false
 	for index, item := range items {
@@ -201,16 +200,16 @@ func DropStaleCompactionTriggers(body []byte) ([]byte, bool, error) {
 			continue
 		}
 		if kept > 0 {
-			rebuilt.WriteByte(',')
+			rebuilt = append(rebuilt, ',')
 		}
-		rebuilt.WriteString(item.Raw)
+		rebuilt = append(rebuilt, item.Raw...)
 		kept++
 	}
-	rebuilt.WriteByte(']')
+	rebuilt = append(rebuilt, ']')
 	if !removed {
 		return body, false, nil
 	}
-	normalized, err := sjson.SetRawBytes(body, "input", rebuilt.Bytes())
+	normalized, err := sjson.SetRawBytes(body, "input", rebuilt)
 	if err != nil {
 		return nil, false, err
 	}

@@ -73,7 +73,7 @@ func (e *Engine) RunOne(ctx context.Context, channel string) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer closeResource(conn)
 	var locked bool
 	if err = conn.QueryRowContext(ctx, `SELECT pg_try_advisory_lock(hashtextextended($1,0))`, "membership:"+channel).Scan(&locked); err != nil {
 		return err
@@ -81,7 +81,11 @@ func (e *Engine) RunOne(ctx context.Context, channel string) error {
 	if !locked {
 		return nil
 	}
-	defer conn.ExecContext(context.Background(), `SELECT pg_advisory_unlock(hashtextextended($1,0))`, "membership:"+channel)
+	defer func() {
+		if _, err := conn.ExecContext(context.Background(), `SELECT pg_advisory_unlock(hashtextextended($1,0))`, "membership:"+channel); err != nil {
+			log.Printf("membership cleanup error operation=advisory_unlock code=MEMBERSHIP_CLEANUP_ERROR")
+		}
+	}()
 	var w work
 	w.Lease = uuid.NewString()
 	err = e.transaction(ctx, func(tx *sql.Tx) error {
@@ -258,9 +262,10 @@ func (e *Engine) finish(ctx context.Context, w work, attempt string, result Brow
 			}
 		}
 		cdkState := "submitted"
-		if state == "succeeded" {
+		switch state {
+		case "succeeded":
 			cdkState = "spent"
-		} else if state == "review_required" || state == "failed" {
+		case "review_required", "failed":
 			cdkState = "uncertain"
 		}
 		if result.NotSubmitted {
@@ -310,13 +315,13 @@ func (e *Engine) CleanupCredentials(ctx context.Context) error {
 	for rows.Next() {
 		var i item
 		if err = rows.Scan(&i.id, &i.ref); err != nil {
-			rows.Close()
+			closeResource(rows)
 			return err
 		}
 		items = append(items, i)
 	}
 	err = rows.Err()
-	rows.Close()
+	closeResource(rows)
 	if err != nil {
 		return err
 	}
@@ -339,7 +344,7 @@ func (e *Engine) SendNotifications(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer closeResource(conn)
 	var locked bool
 	if err = conn.QueryRowContext(ctx, `SELECT pg_try_advisory_lock(hashtextextended('membership:notifications',0))`).Scan(&locked); err != nil {
 		return err
@@ -347,7 +352,11 @@ func (e *Engine) SendNotifications(ctx context.Context) error {
 	if !locked {
 		return nil
 	}
-	defer conn.ExecContext(context.Background(), `SELECT pg_advisory_unlock(hashtextextended('membership:notifications',0))`)
+	defer func() {
+		if _, err := conn.ExecContext(context.Background(), `SELECT pg_advisory_unlock(hashtextextended('membership:notifications',0))`); err != nil {
+			log.Printf("membership cleanup error operation=notification_unlock code=MEMBERSHIP_CLEANUP_ERROR")
+		}
+	}()
 	rows, err := e.DB.QueryContext(ctx, `SELECT n.event_id,n.order_id,o.user_id,ev.state FROM membership_notifications n JOIN membership_orders o ON o.id=n.order_id JOIN membership_events ev ON ev.id=n.event_id WHERE n.sent_at IS NULL AND n.next_run_at<=now() AND n.attempts<5 ORDER BY n.next_run_at LIMIT 20`)
 	if err != nil {
 		return err
@@ -360,13 +369,13 @@ func (e *Engine) SendNotifications(ctx context.Context) error {
 	for rows.Next() {
 		var i item
 		if err = rows.Scan(&i.id, &i.order, &i.user, &i.state); err != nil {
-			rows.Close()
+			closeResource(rows)
 			return err
 		}
 		items = append(items, i)
 	}
 	err = rows.Err()
-	rows.Close()
+	closeResource(rows)
 	if err != nil {
 		return err
 	}

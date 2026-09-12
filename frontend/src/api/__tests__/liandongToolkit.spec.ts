@@ -15,6 +15,7 @@ import {
   getInstallation,
   getJob,
   getStatus,
+  getInventory,
   installOrRepair,
   isLiandongTerminalJob,
   listGoods,
@@ -86,6 +87,15 @@ describe('liandongToolkitAPI', () => {
     get.mockResolvedValueOnce({ data: blob })
     await exportJob('job/42')
     expect(get).toHaveBeenCalledWith('/admin/tools/ldxp/jobs/job%2F42/export', { responseType: 'blob' })
+  })
+
+  it('reads inventory comparison through the dedicated read-only route', async () => {
+    const report = { rows: [], reconciliation_required: true, observed_at: '2026-09-13T00:00:00Z' }
+    get.mockResolvedValueOnce({ data: report })
+    await expect(getInventory()).resolves.toEqual(report)
+    expect(get).toHaveBeenCalledWith('/admin/liandong/restock/inventory')
+    expect(post).not.toHaveBeenCalled()
+    expect(put).not.toHaveBeenCalled()
   })
 
   it('treats only an explicitly completed job as terminal', () => {

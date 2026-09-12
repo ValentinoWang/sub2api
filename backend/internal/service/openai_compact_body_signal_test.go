@@ -116,3 +116,15 @@ func TestWebSocketCompatibilityNormalizesTriggerAfterPairedOutputCleanup(t *test
 	require.Equal(t, "message", items[2].Get("type").String())
 	require.Equal(t, "compaction_trigger", items[3].Get("type").String())
 }
+
+func TestDropStaleCompactionTriggersPreservesRawPayloadAndFinalTrigger(t *testing.T) {
+	body := []byte(`{"model":"fixture","input":[{"type":"compaction_trigger"},{"type":"message","sequence":9007199254740993,"content":"keep"},{"type":"compaction_trigger"}]}`)
+	normalized, changed, err := DropStaleCompactionTriggers(body)
+	require.NoError(t, err)
+	require.True(t, changed)
+	require.Equal(t, `{"model":"fixture","input":[{"type":"message","sequence":9007199254740993,"content":"keep"},{"type":"compaction_trigger"}]}`, string(normalized))
+	replayed, changed, err := DropStaleCompactionTriggers(normalized)
+	require.NoError(t, err)
+	require.False(t, changed)
+	require.Equal(t, normalized, replayed)
+}

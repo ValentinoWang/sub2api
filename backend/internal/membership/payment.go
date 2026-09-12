@@ -103,7 +103,7 @@ func (e *Engine) ConsumePaymentRedirectTicket(ctx context.Context, ticket string
 	if err != nil {
 		return "", err
 	}
-	defer tx.Rollback()
+	defer rollbackTx(tx)
 	var membershipOrderID string
 	var paymentOrderID, userID int64
 	if err = tx.QueryRowContext(ctx, `UPDATE membership_payment_redirect_tickets

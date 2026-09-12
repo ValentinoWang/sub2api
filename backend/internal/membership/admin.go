@@ -283,7 +283,7 @@ func (e *Engine) AdminOverview(ctx context.Context) (AdminOverview, error) {
 	if err != nil {
 		return AdminOverview{}, err
 	}
-	defer rows.Close()
+	defer closeResource(rows)
 	ledger := map[string]int64{}
 	for rows.Next() {
 		var kind string

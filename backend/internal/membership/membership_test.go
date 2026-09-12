@@ -17,6 +17,20 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
+func closeMockDB(t *testing.T, db *sql.DB, mock sqlmock.Sqlmock) {
+	t.Helper()
+	// Workers reserve a connection while transactions use another pool slot.
+	for range db.Stats().OpenConnections {
+		mock.ExpectClose()
+	}
+	if err := db.Close(); err != nil {
+		t.Errorf("close mock database: %v", err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("mock database cleanup expectations: %v", err)
+	}
+}
+
 type fakeVault struct {
 	values  map[string]Credential
 	deletes []string
@@ -154,7 +168,7 @@ func TestCreatePaymentRedirectTicketStoresOnlyDigestAndFailsWithoutEntropy(t *te
 	if err != nil {
 		t.Fatalf("sqlmock.New() error = %v", err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db, redirectTicketRandom: func(raw []byte) (int, error) {
 		for i := range raw {
 			raw[i] = 7
@@ -190,7 +204,7 @@ func TestReissuePaymentRedirectTicketResolvesBoundPendingPayment(t *testing.T) {
 	if err != nil {
 		t.Fatalf("sqlmock.New() error = %v", err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db, redirectTicketRandom: func(raw []byte) (int, error) {
 		for i := range raw {
 			raw[i] = 8
@@ -229,7 +243,7 @@ func TestReissuePaymentRedirectTicketRejectsUnusableBindings(t *testing.T) {
 			if err != nil {
 				t.Fatalf("sqlmock.New() error = %v", err)
 			}
-			defer db.Close()
+			defer closeMockDB(t, db, mock)
 			engine := &Engine{DB: db}
 			mock.ExpectQuery("SELECT l.payment_order_id").
 				WithArgs("membership-order-1", int64(42)).
@@ -254,7 +268,7 @@ func TestReissuePaymentRedirectTicketRecoversAfterInitialTicketInsertFailure(t *
 	if err != nil {
 		t.Fatalf("sqlmock.New() error = %v", err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db, redirectTicketRandom: func(raw []byte) (int, error) {
 		for i := range raw {
 			raw[i] = 9
@@ -344,7 +358,7 @@ func TestPutCredentialRejectsActiveTargetAndRemovesNewSecret(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	vault := &fakeVault{}
 	engine := &Engine{DB: db, Keys: testKeyring(t), Vault: vault, Browser: &scriptedBrowser{}, Audit: fakeAudit{}, Enabled: true}
 
@@ -373,7 +387,7 @@ func TestRequestRefundFreezesTask(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db}
 
 	mock.ExpectBegin()
@@ -450,7 +464,7 @@ func TestRecoverPaymentCreationReleasesOnlyKnownAbsentGatewayCreate(t *testing.T
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer db.Close()
+			defer closeMockDB(t, db, mock)
 			engine := &Engine{DB: db}
 
 			mock.ExpectBegin()
@@ -494,7 +508,7 @@ func assertConfirmPaymentSettlesExpiredOrderToManualReview(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db}
 
 	mock.ExpectBegin()
@@ -522,7 +536,7 @@ func TestConfirmPaymentAlreadyPaidIsIdempotentAndDoesNotCreateTask(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db}
 
 	mock.ExpectBegin()
@@ -554,7 +568,7 @@ func TestConfirmPaymentSettlesLateSuccessToManualReviewWithoutTask(t *testing.T)
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer db.Close()
+			defer closeMockDB(t, db, mock)
 			engine := &Engine{DB: db}
 
 			mock.ExpectBegin()
@@ -590,7 +604,7 @@ func TestConfirmPaymentSettlesReleasedOrderWithoutCouponToManualReview(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db}
 
 	mock.ExpectBegin()
@@ -617,7 +631,7 @@ func TestConfirmPaymentDuplicateManualReviewCallbackDoesNotRecountCoupon(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db}
 
 	mock.ExpectBegin()
@@ -640,7 +654,7 @@ func TestAbortRefundRestoresPaidAndFreezesCanceledTask(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db}
 
 	mock.ExpectBegin()
@@ -665,7 +679,7 @@ func TestExpireOrdersReturnsStockCouponAndCredential(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	vault := &fakeVault{values: map[string]Credential{"credential-1": {Mode: "account_id", Value: "target_12", AccountID: "target_12"}}}
 	engine := &Engine{DB: db, Vault: vault}
 
@@ -694,7 +708,7 @@ func TestExportIntentRequiresDurableObjectKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	engine := &Engine{DB: db, Audit: emptyAudit{}}
 	mock.ExpectQuery("SELECT id,row_to_json\\(ev\\)::text FROM membership_events").WithArgs("attempt-1").WillReturnRows(sqlmock.NewRows([]string{"id", "raw"}).AddRow("event-1", `{}`))
 
@@ -716,7 +730,7 @@ func TestRunOneUsesStableLeaseOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	keys := testKeyring(t)
 	ciphertext, err := keys.Encrypt("cdk:cdk-earliest", "code")
 	if err != nil {
@@ -755,7 +769,7 @@ func TestRunOnePausedQueuedTasksCannotLease(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer db.Close()
+			defer closeMockDB(t, db, mock)
 			browser := &scriptedBrowser{}
 			engine := &Engine{DB: db, Keys: testKeyring(t), Vault: &fakeVault{}, Browser: browser, Audit: fakeAudit{}, Enabled: true}
 
@@ -785,7 +799,7 @@ func TestRunOnePausedBeforeSubmitCannotRecharge(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer db.Close()
+			defer closeMockDB(t, db, mock)
 			keys := testKeyring(t)
 			ciphertext, err := keys.Encrypt("cdk:cdk-1", "code")
 			if err != nil {
@@ -834,7 +848,7 @@ func TestRunOneUnpausedValidationAndPaidCustomerCanSubmit(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer db.Close()
+			defer closeMockDB(t, db, mock)
 			keys := testKeyring(t)
 			ciphertext, err := keys.Encrypt("cdk:cdk-1", "code")
 			if err != nil {
@@ -889,7 +903,7 @@ func TestRunOneRestartsSubmittedPausedProductWithQueryOnly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	keys := testKeyring(t)
 	ciphertext, err := keys.Encrypt("cdk:cdk-1", "code")
 	if err != nil {
@@ -926,7 +940,7 @@ func TestRunOneEscalatesThirdQueryFailureToReview(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer closeMockDB(t, db, mock)
 	keys := testKeyring(t)
 	ciphertext, err := keys.Encrypt("cdk:cdk-1", "code")
 	if err != nil {

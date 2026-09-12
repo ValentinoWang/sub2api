@@ -106,6 +106,17 @@ export default {
   },
 
   ldxpToolkit: {
+    inventory: {
+      title: '库存数量核对',
+      description: '读取本地批次及兑换码数量，与商户当前未售库存并列核对。登记数包含尚未生成的计划码；差额 = 本地可用未兑换码 − 商户未售库存。',
+      identityUnknown: '商户接口只证明数量，尚不能核实每张卡的身份；数量相同也不代表已对账。',
+      soldUnredeemed: '已售出但尚未兑换的码仍计入本地未兑换数量，因此差额不能直接当作丢码或自动补货依据。停用数表示本地权益状态，不代表平台退款到账。',
+      latched: '该渠道仍待对账。刷新数量不会解除阻塞；核对完成前禁止继续生成或重试上传。',
+      batches: '本地批次', allocated: '批次登记码数', created: '实际生成', unused: '本地可用未兑换', used: '已兑换', disabled: '已停用', other: '过期或其他', missing: '未找到本地码', delta: '数量差额',
+      observedAt: '本次观察开始时间', observationUnavailable: '部分数量未能读取，未知值以“—”表示。',
+      refreshHint: '点击刷新进行一次只读数量核对。', loadFailed: '库存核对暂不可用，请稍后重试。',
+      before: '上传前', expectedAfter: '预期上传后', observedAfter: '观察上传后', postDelta: '观察 − 预期',
+    },
     tools: '工具',
     navLabel: '链动小铺',
     title: '链动小铺工具',

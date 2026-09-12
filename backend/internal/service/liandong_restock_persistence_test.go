@@ -18,7 +18,11 @@ import (
 func TestLiandongRestockPersistsProductMappingAtomically(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		mock.ExpectClose()
+		require.NoError(t, db.Close())
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
 	svc := &LiandongRestockService{db: db}
 	product := LiandongRestockProduct{CNYAmount: 20, USDCredit: 2.78, GoodsID: 42, GrantType: "balance", ExternalURL: "https://ldxp.cn/goods/42", Version: 1, Enabled: true}
 	keyInput := "balance:42:20:2.78000000:https://ldxp.cn/goods/42:1"
@@ -36,7 +40,11 @@ func TestLiandongRestockPersistsProductMappingAtomically(t *testing.T) {
 func TestLiandongRestockPersistsBatchLifecycleAndReadsStatus(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		mock.ExpectClose()
+		require.NoError(t, db.Close())
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
 	svc := &LiandongRestockService{db: db}
 	created := "2026-09-06T10:00:00Z"
 	batch := &liandongRestockPendingBatch{BatchID: "batch-1", GoodsID: 42, CNYAmount: 20, USDCredit: 2.78, Count: 2, CreatedAt: created}
@@ -76,7 +84,11 @@ func TestLiandongRestockPersistsBatchLifecycleAndReadsStatus(t *testing.T) {
 func TestLiandongRestockExportJobReadsNumericBatchAmount(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		mock.ExpectClose()
+		require.NoError(t, db.Close())
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
 	service := &LiandongRestockService{db: db, codeSecret: []byte("01234567890123456789012345678901")}
 	createdAt := time.Date(2026, 9, 6, 10, 0, 0, 0, time.UTC)
 	updatedAt := createdAt.Add(time.Minute)
@@ -116,7 +128,7 @@ func TestLiandongRestockExportJobReadsNumericBatchAmount(t *testing.T) {
 
 	export, err := service.ExportJob(context.Background(), jobID)
 	require.NoError(t, err)
-	defer export.Reader.Close()
+	t.Cleanup(func() { require.NoError(t, export.Reader.Close()) })
 	content, err := io.ReadAll(export.Reader)
 	require.NoError(t, err)
 	lines := bytesSplitNonEmpty(content)
@@ -129,7 +141,11 @@ func TestLiandongRestockExportJobReadsNumericBatchAmount(t *testing.T) {
 func TestLiandongTerminalJobPersistenceFallsBackToRecoverableState(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		mock.ExpectClose()
+		require.NoError(t, db.Close())
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
 	service := &LiandongRestockService{db: db}
 	job := &LiandongRestockJobSummary{
 		JobID: "terminal-failure", Status: LiandongRestockJobCompleted,

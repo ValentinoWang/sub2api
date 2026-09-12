@@ -22,7 +22,11 @@ func TestLiandongRefundRequiresDurableStorageAndExplicitMerchantReference(t *tes
 func TestLiandongRefundRollsBackAndRedactsStorageFailure(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		mock.ExpectClose()
+		require.NoError(t, db.Close())
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
 	svc := &LiandongRestockService{db: db}
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta("SELECT pg_advisory_xact_lock")).WillReturnError(errors.New("driver error code-secret-canary"))
