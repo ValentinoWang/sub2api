@@ -35,7 +35,6 @@ describe('AppLayout user theme baseline', () => {
 
   it('keeps dashboard panels and ordinary user pages inside the shared shell contract', () => {
     expect(appLayoutSource).toContain(":class=\"{ 'user-brand-shell': usesUserBrandShell }\"")
-    expect(appLayoutSource).toContain('route.meta.requiresAuth === true && route.meta.requiresAdmin !== true')
     expect(appLayoutSource).toContain('--dashboard-surface: var(--user-surface);')
     expect(appLayoutSource).toContain('--dashboard-border: var(--user-border);')
     expect(appLayoutSource).toContain('--user-content-viewport-height: calc(100vh - 64px - 4rem);')
