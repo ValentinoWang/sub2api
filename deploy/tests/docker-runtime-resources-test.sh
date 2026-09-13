@@ -23,6 +23,14 @@ assert_count() {
   [ "$actual" -eq "$expected" ] || fail "$file has $actual occurrences of '$line', expected $expected"
 }
 
+assert_absent() {
+  file=$1
+  text=$2
+  if grep -Fq "$text" "$file"; then
+    fail "$file still contains retired runtime content: $text"
+  fi
+}
+
 test -s backend/resources/model-pricing/model_prices_and_context_window.json || \
   fail 'fallback pricing data is missing or empty'
 
@@ -31,10 +39,8 @@ assert_line deploy/Dockerfile 'COPY --from=backend-builder --chown=sub2api:sub2a
 assert_count .goreleaser.yaml '      - backend/resources' 4
 assert_count .goreleaser.simple.yaml '      - backend/resources' 1
 
-grep -Fq '"sha256":"%s"}\n' Dockerfile || \
-  fail 'Dockerfile must terminate the LDXP release manifest with a real newline'
-if grep -Fq '"sha256":"%s"}\\n' Dockerfile; then
-  fail 'Dockerfile writes a literal backslash-n trailer to the LDXP release manifest'
-fi
+assert_absent Dockerfile 'AS ldxp-toolkit-builder'
+assert_absent Dockerfile 'LIANDONG_TOOLKIT_ASSET_PATH='
+assert_absent Dockerfile '/app/ldxp-toolkit-assets/'
 
 printf 'docker runtime resources test passed\n'
