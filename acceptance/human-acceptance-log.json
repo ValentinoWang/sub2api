@@ -1,7 +1,25 @@
 {
   "blocking_entries": [],
   "generated_at": null,
-  "non_blocking_entries": [],
+  "non_blocking_entries": [
+    {
+      "blocking": false,
+      "checklist_path": "acceptance/human/2026-W37/未-2026-09-13-chrome-restock-products/checklist.md",
+      "estimated_minutes": null,
+      "handoff_path": null,
+      "invalidation_keys": [],
+      "latest_run": null,
+      "loop_name": "chrome-restock-products",
+      "ready_at": null,
+      "release_slice": null,
+      "required_role": null,
+      "scope_hints": [],
+      "status": "PREPARING",
+      "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
+      "task_id": "chrome-restock-products",
+      "workspace": "acceptance/human/2026-W37/2026-09-13-chrome-restock-products"
+    }
+  ],
   "schema_version": 1,
-  "source_facts_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  "source_facts_sha256": "13ae6edb755d331de8b4b6bd84b7e091fc0c9e6133c752741be450e91c38c2cd"
 }

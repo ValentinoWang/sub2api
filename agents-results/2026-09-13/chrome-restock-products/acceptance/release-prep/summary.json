@@ -1,0 +1,32 @@
+{
+  "status": "OFFLINE_PREPARATION_VERIFIED",
+  "created_at": "2026-09-13T08:50:51.750339+00:00",
+  "tests": {
+    "count": 9,
+    "exit_code": 0
+  },
+  "syntax": {
+    "files": 7,
+    "passed": true
+  },
+  "scope": {
+    "real_credentials_read": false,
+    "docker_invoked": false,
+    "network_api_called": false,
+    "build_executed": false,
+    "candidate_generated": false,
+    "production_deployed": false,
+    "human_acceptance": false
+  },
+  "production_execution_requires_user_confirmation": true,
+  "prior_simulation_failure": "Initial test fixture used macOS /var alias; fixture resolved to canonical /private path, no release guard changed.",
+  "sha256": {
+    "backup_app.py": "63b8786f79cf6ebfe4f66a6ee69a1fb8b90416a02bacdddec8a692e500b728dd",
+    "make_candidate.py": "4090922b29affa452098ee091e84f757734f153aab8eb26ad55fbe14e621e2cb",
+    "release_api.py": "8c470ab718f7aa44f67e588bdc65e249cdc9995273598fa5544732ac269a845a",
+    "release_common.py": "f0dee7fe8b0fce3a9a87213cc44bdd88e57b07323804ba3fd45dd2fbd696d6bd",
+    "replace_app.py": "c8d9dc4b286960d78e89f58bea271355cec40988cfc066e6f82a9ab871f6bc5a",
+    "rollback_app.py": "3749b8f8e19aa7a531c96733651509fded0ce25903ca46fb23f5c437ae383c8c",
+    "tests/test_release_helpers.py": "0a3966c0a594d97bc882e94fa624d343387c18c7e41b4abb71dfbe9e5ba022ac"
+  }
+}

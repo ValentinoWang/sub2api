@@ -213,6 +213,13 @@ export interface LoginAgreementDocument {
   content_md: string
 }
 
+export interface LiandongRechargeProduct {
+  goods_id: number
+  cny_amount: number
+  usd_credit: number
+  external_url: string
+}
+
 export interface PublicSettings {
   registration_enabled: boolean
   email_verify_enabled: boolean

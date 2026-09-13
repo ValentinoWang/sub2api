@@ -169,6 +169,7 @@ docs/screenshots/*
 .serena/
 .codex/
 frontend/coverage/
+frontend/public/assets/ldxp-browser-extension.zip
 aicodex
 output/
 .codegraph/

@@ -3,7 +3,7 @@
 本文件由验收事实确定性生成，禁止手工修改。人工验收集中在机器开发完成后的独立末端阶段；入队不会打断中间开发。
 
 - 事实时间：-
-- 来源事实 SHA-256：e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+- 来源事实 SHA-256：13ae6edb755d331de8b4b6bd84b7e091fc0c9e6133c752741be450e91c38c2cd
 - 生成命令：`manage_acceptance_artifacts.py log --project-root <project-root>`
 
 ## 阻塞发布项
@@ -62,7 +62,7 @@
 
 | 时间 | 任务 | 业务闭环 | 角色 | 分钟 | 清单 | 最新记录 |
 | --- | --- | --- | --- | ---: | --- | --- |
-| - | - | - | - | - | - | - |
+| - | chrome-restock-products | chrome-restock-products | - | - | acceptance/human/2026-W37/未-2026-09-13-chrome-restock-products/checklist.md | - |
 
 ### 已通过
 

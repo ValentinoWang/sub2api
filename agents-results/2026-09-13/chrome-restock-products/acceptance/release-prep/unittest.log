@@ -1,0 +1,14 @@
+test_candidate_rejects_short_commit_and_wrong_tag (test_release_helpers.ReleaseTests) ... ok
+test_candidate_success_keeps_new_image_and_exact_migrations (test_release_helpers.ReleaseTests) ... ok
+test_exact_migration_delta_preserves_retired_rows (test_release_helpers.ReleaseTests) ... ok
+test_failed_recovery_readback_does_not_archive_maintenance (test_release_helpers.ReleaseTests) ... ok
+test_missing_migration_rolls_back_application_and_environment (test_release_helpers.ReleaseTests) ... ok
+test_receipt_rejects_stale_wrong_environment_and_candidate (test_release_helpers.ReleaseTests) ... ok
+test_recovery_archives_only_after_confirmed_publication (test_release_helpers.ReleaseTests) ... ok
+test_recovery_refuses_without_functional_acceptance (test_release_helpers.ReleaseTests) ... ok
+test_tampered_backup_stops_before_container_command (test_release_helpers.ReleaseTests) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.117s
+
+OK

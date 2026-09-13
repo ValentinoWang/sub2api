@@ -1,0 +1,57 @@
+{
+  "status": "PARTIAL",
+  "credit_rule": "CNY face value equals USD credit; merchant fees excluded",
+  "products": [
+    {
+      "environment": "prod",
+      "goods_id": 874782,
+      "buyer_url": "https://wzyp.cn/item/x6uqgh",
+      "title": "5元额度",
+      "cny_amount": 5,
+      "state": "existing_sale",
+      "inventory_verified_in_prior_manual_flow": true
+    },
+    {
+      "environment": "dev",
+      "goods_id": 874783,
+      "buyer_url": "https://wzyp.cn/item/e8yrh4",
+      "title": "【测试专用】5元额度",
+      "cny_amount": 5,
+      "state": "warehouse",
+      "inventory_verified_in_prior_manual_flow": true
+    },
+    {
+      "environment": "prod",
+      "goods_id": 875299,
+      "buyer_url": "https://wzyp.cn/item/zjeij8",
+      "title": "10元额度",
+      "cny_amount": 10,
+      "state": "warehouse",
+      "observed_stock": 0
+    },
+    {
+      "environment": "prod",
+      "title": "20元额度",
+      "cny_amount": 20,
+      "state": "creation_success_toast_seen_readback_pending"
+    }
+  ],
+  "remaining_denominations": [
+    50,
+    100
+  ],
+  "old_unverified_stock": "Excluded; do not use whole-store link or import the previous OC-code inventory",
+  "browser_verification": "Blocked by repeated debugger-unattached / timeout; no new extension installation or restock performed",
+  "runtime_before": {
+    "dev": {
+      "version": "0.2.4.2",
+      "purchase_enabled": true,
+      "legacy_url": "https://wzyp.cn/item/e8yrh4"
+    },
+    "prod": {
+      "version": "0.2.4.2",
+      "purchase_enabled": true,
+      "legacy_url": "https://wzyp.cn/item/x6uqgh"
+    }
+  }
+}

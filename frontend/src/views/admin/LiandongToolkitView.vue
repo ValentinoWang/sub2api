@@ -32,6 +32,8 @@
         <p class="mt-1">{{ t('ldxpToolkit.connection.reauthorizeHint') }}</p>
       </div>
 
+      <ChromeRestockPanel />
+
       <!-- Runtime -->
       <section class="card p-5 md:p-6" data-testid="runtime-section">
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -523,6 +525,7 @@
 </template>
 
 <script setup lang="ts">
+import ChromeRestockPanel from '@/components/admin/liandong/ChromeRestockPanel.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores'
