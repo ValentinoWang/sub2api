@@ -157,7 +157,7 @@ func validateBrowserProducts(products []LiandongBrowserProduct) error {
 	for i := range products {
 		p := &products[i]
 		u, e := url.Parse(p.ExternalURL)
-		if p.GoodsID <= 0 || p.CNYAmount <= 0 || p.CNYAmount > 10000 || p.USDCredit != float64(p.CNYAmount) || p.TargetStock < 1 || p.TargetStock > 100 || p.BatchSize < 1 || p.BatchSize > 20 || seen[p.GoodsID] || amounts[p.CNYAmount] || e != nil || u.Scheme != "https" || u.User != nil || u.Port() != "" || !(u.Hostname() == "ldxp.cn" || strings.HasSuffix(u.Hostname(), ".ldxp.cn") || (u.Hostname() == "wzyp.cn" && strings.HasPrefix(u.Path, "/item/"))) {
+		if p.GoodsID <= 0 || p.CNYAmount <= 0 || p.CNYAmount > 10000 || p.USDCredit != float64(p.CNYAmount) || p.TargetStock < 1 || p.TargetStock > 100 || p.BatchSize < 1 || p.BatchSize > 20 || seen[p.GoodsID] || amounts[p.CNYAmount] || e != nil || u.Scheme != "https" || u.User != nil || u.Port() != "" || (u.Hostname() != "ldxp.cn" && !strings.HasSuffix(u.Hostname(), ".ldxp.cn") && (u.Hostname() != "wzyp.cn" || !strings.HasPrefix(u.Path, "/item/"))) {
 			return errBrowserInvalid
 		}
 		seen[p.GoodsID] = true
