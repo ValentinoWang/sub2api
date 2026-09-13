@@ -5,10 +5,69 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestLiandongSessionLateAuthenticationFailureUsesCredentialGeneration(t *testing.T) {
+	for _, probe := range []string{"inventory", "goods"} {
+		for _, replacement := range []string{"replacement-test-token", "test-token", ""} {
+			t.Run(probe+"/"+replacement, func(t *testing.T) {
+				entered, release := make(chan struct{}), make(chan struct{})
+				var first atomic.Bool
+				var releaseOnce sync.Once
+				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					if first.CompareAndSwap(false, true) {
+						close(entered)
+						select {
+						case <-release:
+							w.WriteHeader(http.StatusUnauthorized)
+						case <-r.Context().Done():
+						}
+						return
+					}
+					_, _ = w.Write([]byte(`{"code":1,"data":{"total":3,"records":[]}}`))
+				}))
+				defer server.Close()
+				defer releaseOnce.Do(func() { close(release) })
+				svc, _, _ := newLiandongTestService(server.URL)
+				defer svc.StopWorker()
+				svc.encryptor = liandongTestEncryptor{}
+				svc.products[0].TargetStock = 3
+				ctx := context.Background()
+				requestDone := make(chan error, 1)
+				go func() {
+					if probe == "inventory" {
+						_, err := svc.Inventory(ctx)
+						requestDone <- err
+					} else {
+						_, err := svc.ListGoods(ctx)
+						requestDone <- err
+					}
+				}()
+				<-entered
+				_, err := svc.UpdateConfiguration(ctx, LiandongRestockConfigurationUpdate{MerchantToken: replacement, Products: svc.products})
+				require.NoError(t, err)
+				if replacement != "" {
+					verified, err := svc.TestConfiguration(ctx)
+					require.NoError(t, err)
+					require.True(t, verified.Reachable)
+				}
+				_, err = svc.SetEnabled(ctx, true)
+				require.NoError(t, err)
+				releaseOnce.Do(func() { close(release) })
+				require.ErrorIs(t, <-requestDone, ErrLiandongSessionVerificationRequired)
+				state, err := svc.loadState(ctx)
+				require.NoError(t, err)
+				require.Equal(t, replacement != "", state.Enabled, "only explicitly saved and reverified credentials supersede an old request")
+				require.Equal(t, replacement == "", state.SessionVerificationRequired)
+			})
+		}
+	}
+}
 
 func TestLiandongSessionAuthenticationFailurePersistsPause(t *testing.T) {
 	for _, statusCode := range []int{http.StatusUnauthorized, http.StatusForbidden} {

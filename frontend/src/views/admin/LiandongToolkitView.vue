@@ -656,6 +656,7 @@ const currentJob = ref<LiandongJob | null>(null)
 const pendingJob = ref<LiandongJob | null>(null)
 const exportingJobId = ref('')
 let previewRequestSequence = 0
+let activePreviewRequestSequence = 0
 
 function errorRecord(error: unknown): ErrorRecord {
   if (typeof error !== 'object' || error === null) return {}
@@ -1392,6 +1393,7 @@ async function runPreview(): Promise<void> {
   }
   const snapshot = createPreviewSnapshot(requestedGoods)
   const requestSequence = ++previewRequestSequence
+  activePreviewRequestSequence = requestSequence
   previewLoading.value = true
   previewError.value = ''
   jobError.value = ''
@@ -1416,8 +1418,10 @@ async function runPreview(): Promise<void> {
     previewSnapshot.value = snapshot
   } catch (error) {
     if (requestSequence === previewRequestSequence) previewError.value = operationError(error, t('ldxpToolkit.preview.previewFailed'), 'preview')
+    await loadStatus()
   } finally {
-    if (requestSequence === previewRequestSequence) previewLoading.value = false
+    // Status refresh and edited inputs invalidate the preview, but the request still owns its loading state.
+    if (requestSequence === activePreviewRequestSequence) previewLoading.value = false
   }
 }
 

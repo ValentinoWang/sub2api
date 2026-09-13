@@ -144,16 +144,17 @@ type liandongRedeemStore interface {
 }
 
 type LiandongRestockService struct {
-	settingRepo SettingRepository
-	redeem      liandongRedeemStore
-	encryptor   SecretEncryptor
-	db          *sql.DB
-	baseURL     string
-	token       string
-	codeSecret  []byte
-	products    []LiandongRestockProduct
-	interval    time.Duration
-	httpClient  *http.Client
+	settingRepo          SettingRepository
+	redeem               liandongRedeemStore
+	encryptor            SecretEncryptor
+	db                   *sql.DB
+	baseURL              string
+	token                string
+	credentialGeneration uint64
+	codeSecret           []byte
+	products             []LiandongRestockProduct
+	interval             time.Duration
+	httpClient           *http.Client
 
 	configMu       sync.RWMutex
 	mu             sync.Mutex
@@ -375,14 +376,17 @@ func (s *LiandongRestockService) loadStoredConfig(ctx context.Context) error {
 	if err := json.Unmarshal([]byte(plaintext), &stored); err != nil {
 		return fmt.Errorf("decode Liandong restock configuration: %w", err)
 	}
-	s.applyStoredConfig(stored)
+	s.applyStoredConfig(stored, true)
 	return nil
 }
 
-func (s *LiandongRestockService) applyStoredConfig(stored liandongRestockStoredConfig) {
+func (s *LiandongRestockService) applyStoredConfig(stored liandongRestockStoredConfig, credentialUpdated bool) {
 	s.configMu.Lock()
 	defer s.configMu.Unlock()
 	s.token = strings.TrimSpace(stored.MerchantToken)
+	if credentialUpdated {
+		s.credentialGeneration++
+	}
 	s.codeSecret = []byte(stored.CodeSecret)
 	s.products = normalizeStoredLiandongProducts(stored.Products)
 }
@@ -620,7 +624,7 @@ func (s *LiandongRestockService) UpdateConfiguration(ctx context.Context, input 
 	if err := s.settingRepo.Set(ctx, liandongRestockConfigKey, ciphertext); err != nil {
 		return nil, err
 	}
-	s.applyStoredConfig(stored)
+	s.applyStoredConfig(stored, strings.TrimSpace(input.MerchantToken) != "")
 	state.Products = s.mergePolicies(state.Products)
 	if err := s.saveState(ctx, state); err != nil {
 		return nil, err
@@ -813,6 +817,15 @@ func (s *LiandongRestockService) RunOnce(parent context.Context, force bool) err
 func (s *LiandongRestockService) recordLiandongSessionFailure(runErr error) error {
 	s.stateMu.Lock()
 	defer s.stateMu.Unlock()
+	var sessionFailure *liandongSessionFailure
+	if errors.As(runErr, &sessionFailure) {
+		s.configMu.RLock()
+		currentGeneration := s.credentialGeneration
+		s.configMu.RUnlock()
+		if sessionFailure.credentialGeneration != currentGeneration {
+			return runErr
+		}
+	}
 	ctx, cancel := liandongRecoveryContext()
 	defer cancel()
 	state, err := s.loadState(ctx)
@@ -1355,6 +1368,21 @@ type liandongAPIResponse struct {
 	Data json.RawMessage `json:"data"`
 }
 
+// The generation belongs to this process's in-flight requests. It prevents a
+// delayed rejection from revoking a credential saved and verified meanwhile,
+// including when an operator saves the same credential again.
+type liandongSessionFailure struct {
+	credentialGeneration uint64
+}
+
+func (e *liandongSessionFailure) Error() string {
+	return ErrLiandongSessionVerificationRequired.Message
+}
+
+func (e *liandongSessionFailure) Unwrap() error {
+	return ErrLiandongSessionVerificationRequired
+}
+
 func (s *LiandongRestockService) post(ctx context.Context, path string, payload any) (*liandongAPIResponse, error) {
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -1363,6 +1391,7 @@ func (s *LiandongRestockService) post(ctx context.Context, path string, payload 
 	s.configMu.RLock()
 	baseURL := s.baseURL
 	token := s.token
+	credentialGeneration := s.credentialGeneration
 	s.configMu.RUnlock()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, baseURL+path, bytes.NewReader(body))
 	if err != nil {
@@ -1377,10 +1406,11 @@ func (s *LiandongRestockService) post(ctx context.Context, path string, payload 
 	defer func() { _ = resp.Body.Close() }()
 	isUpload := path == "/merchantApi/GoodsCardStorage/add"
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		sessionFailure := &liandongSessionFailure{credentialGeneration: credentialGeneration}
 		if isUpload {
-			return nil, &LiandongRemoteOutcomeUnknownError{Err: ErrLiandongSessionVerificationRequired}
+			return nil, &LiandongRemoteOutcomeUnknownError{Err: sessionFailure}
 		}
-		return nil, ErrLiandongSessionVerificationRequired
+		return nil, sessionFailure
 	}
 	limited := io.LimitReader(resp.Body, 2<<20)
 	responseBody, err := io.ReadAll(limited)

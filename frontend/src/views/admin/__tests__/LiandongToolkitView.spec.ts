@@ -212,6 +212,45 @@ describe('LiandongToolkitView', () => {
     expect(setRestockEnabled).not.toHaveBeenCalled()
   })
 
+  it('reads back an authorization pause after preview failure and finishes loading', async () => {
+    getStatus.mockResolvedValueOnce({ ...baseStatus(), enabled: true })
+      .mockResolvedValue({ ...baseStatus(), session_verification_required: true })
+    previewJob.mockRejectedValue({ status: 409, reason: 'LDXP_SESSION_VERIFICATION_REQUIRED' })
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-testid="preview-button"]').trigger('click')
+    await flushPromises()
+
+    expect(getStatus).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('[data-testid="session-verification-required"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="auto-restock-status"]').text()).toContain('common.disabled')
+    expect(wrapper.get('[data-testid="toggle-auto-restock"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[data-testid="run-button"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[data-testid="preview-button"]').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('[data-testid="preview-section"]').text()).toContain('LDXP_SESSION_VERIFICATION_REQUIRED')
+    expect(runJob).not.toHaveBeenCalled()
+  })
+
+  it('refreshes an authorization pause even after the preview inputs change', async () => {
+    let rejectPreview!: (reason: unknown) => void
+    previewJob.mockImplementation(() => new Promise((_resolve, reject) => { rejectPreview = reject }))
+    getStatus.mockResolvedValueOnce({ ...baseStatus(), enabled: true })
+      .mockResolvedValue({ ...baseStatus(), session_verification_required: true })
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-testid="preview-button"]').trigger('click')
+    await wrapper.get('[id="ldxp-target-42"]').setValue('40000')
+    rejectPreview({ status: 409, reason: 'LDXP_SESSION_VERIFICATION_REQUIRED' })
+    await flushPromises()
+
+    expect(getStatus).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('[data-testid="session-verification-required"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="preview-table"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="preview-button"]').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('[data-testid="run-button"]').attributes('disabled')).toBeDefined()
+    expect(runJob).not.toHaveBeenCalled()
+  })
+
   it('does not claim verification success when the persisted hold remains', async () => {
     getStatus.mockResolvedValue({ ...baseStatus(), session_verification_required: true })
     const wrapper = mountView()
