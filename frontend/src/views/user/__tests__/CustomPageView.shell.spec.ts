@@ -13,7 +13,7 @@ describe('CustomPageView user shell integration', () => {
     expect(componentSource).toContain(
       'height: var(--user-content-viewport-height, calc(100vh - 64px - 4rem));'
     )
-    expect(componentSource).toContain(':global(.user-brand-shell) .custom-page-card')
+    expect(componentSource).toContain('.user-brand-shell .custom-page-card')
     expect(componentSource).toContain('background-color: var(--user-surface);')
     expect(componentSource).toContain('background-color: var(--user-canvas);')
     expect(componentSource).toContain('border-color: var(--user-border);')

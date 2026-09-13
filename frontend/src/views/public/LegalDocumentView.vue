@@ -193,7 +193,7 @@ onMounted(async () => {
     radial-gradient(1000px 500px at 50% -10%, rgba(20, 184, 166, 0.14), transparent 60%), #f6f9fc;
 }
 
-:global(.dark) .legal-page {
+.dark .legal-page {
   background:
     radial-gradient(1000px 500px at 50% -10%, rgba(20, 184, 166, 0.18), transparent 60%), #050b14;
 }

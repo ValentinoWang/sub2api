@@ -50,26 +50,26 @@ onUnmounted(() => {
   height: var(--user-content-viewport-height, calc(100vh - 64px - 4rem));
 }
 
-:global(.user-brand-shell) .table-page-layout {
+.user-brand-shell .table-page-layout {
   color: var(--user-foreground);
 }
 
-:global(.user-brand-shell) .table-page-layout:not(.mobile-mode) .table-scroll-container {
+.user-brand-shell .table-page-layout:not(.mobile-mode) .table-scroll-container {
   background-color: var(--user-surface);
   border-color: var(--user-border);
   border-radius: 8px;
 }
 
-:global(.user-brand-shell) .table-scroll-container :deep(thead) {
+.user-brand-shell .table-scroll-container :deep(thead) {
   background-color: var(--user-canvas);
 }
 
-:global(.user-brand-shell) .table-scroll-container :deep(th) {
+.user-brand-shell .table-scroll-container :deep(th) {
   color: var(--user-muted);
   border-color: var(--user-border);
 }
 
-:global(.user-brand-shell) .table-scroll-container :deep(td) {
+.user-brand-shell .table-scroll-container :deep(td) {
   color: var(--user-foreground);
   border-color: var(--user-border);
 }
@@ -120,7 +120,7 @@ onUnmounted(() => {
   @apply h-auto overflow-visible border-none shadow-none bg-transparent;
 }
 
-:global(.user-brand-shell) .table-page-layout.mobile-mode .table-scroll-container {
+.user-brand-shell .table-page-layout.mobile-mode .table-scroll-container {
   background-color: transparent;
   border-width: 0;
   box-shadow: none;

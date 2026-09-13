@@ -708,7 +708,7 @@ export default {
         enabledPaymentTypesHint: 'Disabling a provider will also disable its instances.',
         ldxpSalesChannel: {
           title: 'Liandong Store Sales Channel',
-          description: 'Manage fixed product mappings, redemption-code inventory, and restock jobs. This is an independent sales channel, not a payment provider, and remains available when payments are disabled.',
+          description: 'Map products and authorize the Chrome extension to maintain inventory. This is an independent sales channel, not a payment provider, and remains available when payments are disabled.',
           openToolkit: 'Open Liandong Store tools',
           buyerEnabled: 'Show purchase entry to users',
           buyerUrl: 'Store or recharge product URL',

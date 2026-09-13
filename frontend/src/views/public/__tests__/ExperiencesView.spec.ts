@@ -28,8 +28,8 @@ describe('ExperiencesView', () => {
       }
     })
 
-    expect(wrapper.text()).toContain('GPT-6 已接入，为什么 Codex 仍然看不见？')
-    expect(wrapper.findAll('.experience-card')).toHaveLength(7)
+    expect(wrapper.text()).toContain('中转站已有新模型，为什么 Codex 看不到？')
+    expect(wrapper.findAll('.experience-card')).toHaveLength(9)
     expect(wrapper.findAll('.experience-filter')).toHaveLength(5)
     expect(wrapper.get('[data-experience-id="codex-cli"]').find('.experience-card-topic').text()).toBe('接入主题')
     expect(wrapper.get('[data-experience-id="codex-cli"]').find('.experience-card-audience-label').text()).toBe('experiences.appliesTo')
@@ -44,7 +44,7 @@ describe('ExperiencesView', () => {
 
     await wrapper.get('[data-category-filter="connectionConfiguration"]').trigger('click')
     await flushPromises()
-    expect(wrapper.findAll('.experience-card')).toHaveLength(4)
+    expect(wrapper.findAll('.experience-card')).toHaveLength(5)
     expect(router.currentRoute.value.query.category).toBe('connectionConfiguration')
     expect(router.currentRoute.value.query.source).toBe('home')
 

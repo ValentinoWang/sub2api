@@ -16,7 +16,7 @@ COMMIT="$(git rev-parse HEAD)"
 TREE="$(git rev-parse HEAD^{tree})"
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 SNAPSHOT=""
-STAGES=(source-preflight snapshot toolchain frozen-install acceptance-layout deploy-guards version-guards local-ci-guards commerce-parity-guards backend-unit backend-integration backend-lint frontend-lint frontend-typecheck frontend-tests frontend-build backend-security frontend-security)
+STAGES=(source-preflight snapshot toolchain frozen-install acceptance-layout deploy-guards version-guards local-ci-guards commerce-parity-guards browser-extension-tests backend-unit backend-integration backend-lint frontend-lint frontend-typecheck frontend-tests frontend-build backend-security frontend-security)
 
 finish() {
   local code=$?
@@ -152,6 +152,7 @@ run_stage deploy-guards deploy_guards
 run_stage version-guards python3 tools/quality/test_version_scripts.py
 run_stage local-ci-guards python3 tools/quality/test_local_ci.py
 run_stage commerce-parity-guards python3 -m unittest discover -s tools/quality/tests
+run_stage browser-extension-tests node --test tools/ldxp-browser-extension/test/*.test.js
 run_stage backend-unit make -C backend test-unit
 run_stage backend-integration make -C backend test-integration
 run_stage backend-lint bash -c 'cd backend && golangci-lint run --timeout=30m --concurrency=2 --max-issues-per-linter=0 --max-same-issues=0 ./...'

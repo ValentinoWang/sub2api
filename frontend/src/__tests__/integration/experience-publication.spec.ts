@@ -10,6 +10,8 @@ describe('public experience publication', () => {
   const errorExperience = getExperienceById('gpt-6-astra-not-visible')!
   const wslTutorial = getExperienceById('windows-11-wsl-codex-frontend')!
   const wslTroubleshooting = getExperienceById('windows-11-wsl2-codex-environment')!
+  const claudePermissions = getExperienceById('claude-code-bypass-permissions')!
+  const claudeFable = getExperienceById('claude-code-fable-5-1-not-visible')!
 
   it('keeps the formal home first paint linked natively to the experience index and article', () => {
     const html = renderHomePage(baseHTML, 'zh', 'default')
@@ -72,6 +74,20 @@ describe('public experience publication', () => {
     expect(article?.body).toContain('command -v codex')
     expect(article?.body).toContain('真实 Windows 11 / WSL2 命令执行与初学者理解仍待人工实操')
     expect(article?.body).not.toContain('让 Codex 为自己的项目增加一个')
+  })
+
+  it('pre-renders both Claude Code experiences in problem then solution order', () => {
+    for (const experience of [claudePermissions, claudeFable]) {
+      const article = buildPrerenderPages().find((page) => page.route === experience.route)
+
+      expect(article).toBeDefined()
+      expect(article?.body).toContain('<h2>问题说明</h2>')
+      expect(article?.body).toContain('<h2>解决方案</h2>')
+      expect(article?.body.indexOf('<h2>问题说明</h2>')).toBeLessThan(article?.body.indexOf('<h2>解决方案</h2>') ?? -1)
+      expect(article?.body).toContain(experience.prompt)
+    }
+    expect(buildPrerenderPages().find((page) => page.route === claudeFable.route)?.body).toContain('CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1')
+    expect(buildPrerenderPages().find((page) => page.route === claudePermissions.route)?.body).toContain('claude --permission-mode manual')
   })
 
   it('keeps every static experience handoff resolvable by the public Vue router', () => {

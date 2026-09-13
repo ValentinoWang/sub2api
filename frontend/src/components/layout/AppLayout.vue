@@ -82,7 +82,7 @@ defineExpose({ replayTour })
   color: var(--user-foreground);
 }
 
-:global(.dark) .app-layout.user-brand-shell {
+.dark .app-layout.user-brand-shell {
   --user-canvas: #050b14;
   --user-grid-line: rgba(148, 163, 184, 0.08);
   --user-surface: rgba(10, 18, 32, 0.6);

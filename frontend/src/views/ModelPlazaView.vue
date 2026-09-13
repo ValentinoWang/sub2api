@@ -57,7 +57,7 @@ onMounted(async () => {
     radial-gradient(1200px 600px at 50% -10%, rgba(20, 184, 166, 0.14), transparent 60%), #f6f9fc;
 }
 
-:global(.dark) .model-plaza-page {
+.dark .model-plaza-page {
   background:
     radial-gradient(1200px 600px at 50% -10%, rgba(20, 184, 166, 0.18), transparent 60%), #050b14;
 }

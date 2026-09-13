@@ -14,7 +14,7 @@ import (
 func TestRegisterLiandongToolRoutesRequiresAdminAuthentication(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
-	handler := adminhandler.NewLiandongToolkitHandler(nil, nil)
+	handler := adminhandler.NewLiandongToolkitHandler(nil)
 	adminAuth := servermiddleware.AdminAuthMiddleware(func(c *gin.Context) {
 		if c.GetHeader("Authorization") == "" {
 			servermiddleware.AbortWithError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Authorization required")
@@ -29,17 +29,11 @@ func TestRegisterLiandongToolRoutesRequiresAdminAuthentication(t *testing.T) {
 		method string
 		path   string
 	}{
-		{http.MethodGet, "/api/v1/admin/tools/ldxp/installation"},
-		{http.MethodPost, "/api/v1/admin/tools/ldxp/installation"},
-		{http.MethodGet, "/api/v1/admin/tools/ldxp/status"},
-		{http.MethodPut, "/api/v1/admin/tools/ldxp/config"},
-		{http.MethodPost, "/api/v1/admin/tools/ldxp/config/test"},
-		{http.MethodGet, "/api/v1/admin/tools/ldxp/goods"},
-		{http.MethodPost, "/api/v1/admin/tools/ldxp/jobs/preview"},
-		{http.MethodPost, "/api/v1/admin/tools/ldxp/jobs/run"},
-		{http.MethodGet, "/api/v1/admin/tools/ldxp/jobs/job-1"},
-		{http.MethodPost, "/api/v1/admin/tools/ldxp/jobs/job-1/resume"},
-		{http.MethodGet, "/api/v1/admin/tools/ldxp/jobs/job-1/export"},
+		{http.MethodGet, "/api/v1/admin/tools/ldxp/browser/status"},
+		{http.MethodPut, "/api/v1/admin/tools/ldxp/browser/config"},
+		{http.MethodPost, "/api/v1/admin/tools/ldxp/browser/devices"},
+		{http.MethodDelete, "/api/v1/admin/tools/ldxp/browser/devices/id"},
+		{http.MethodPost, "/api/v1/admin/tools/ldxp/browser/resume"},
 	}
 	for _, endpoint := range endpoints {
 		t.Run(endpoint.method+" "+endpoint.path, func(t *testing.T) {
@@ -64,7 +58,7 @@ func TestRegisterLiandongToolRoutesAppliesAuthAuditAndComplianceChain(t *testing
 	})
 	RegisterLiandongToolRoutes(
 		router.Group("/api/v1"),
-		adminhandler.NewLiandongToolkitHandler(nil, nil),
+		adminhandler.NewLiandongToolkitHandler(nil),
 		adminAuth,
 		auditLog,
 		nil,
@@ -72,8 +66,8 @@ func TestRegisterLiandongToolRoutesAppliesAuthAuditAndComplianceChain(t *testing
 	)
 
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/v1/admin/tools/ldxp/installation", nil))
-	require.Equal(t, http.StatusOK, recorder.Code)
+	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/v1/admin/tools/ldxp/browser/status", nil))
+	require.Equal(t, http.StatusServiceUnavailable, recorder.Code)
 	require.Equal(t, 1, auditCalls)
 }
 
@@ -92,7 +86,7 @@ func TestRegisterLiandongToolRoutesAuditsBeforeDegradedSideEffectRejection(t *te
 	})
 	RegisterLiandongToolRoutes(
 		router.Group("/api/v1"),
-		adminhandler.NewLiandongToolkitHandler(nil, nil),
+		adminhandler.NewLiandongToolkitHandler(nil),
 		adminAuth,
 		auditLog,
 		nil,
@@ -100,9 +94,23 @@ func TestRegisterLiandongToolRoutesAuditsBeforeDegradedSideEffectRejection(t *te
 	)
 
 	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodPost, "/api/v1/admin/tools/ldxp/installation", nil)
+	request := httptest.NewRequest(http.MethodPost, "/api/v1/admin/tools/ldxp/browser/devices", nil)
 	router.ServeHTTP(recorder, request)
 
 	require.Equal(t, http.StatusServiceUnavailable, recorder.Code)
 	require.Equal(t, 1, auditCalls)
+}
+
+func TestRegisterLiandongToolRoutesRemovesServerToolOperations(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	auth := servermiddleware.AdminAuthMiddleware(func(c *gin.Context) { c.Next() })
+	RegisterLiandongToolRoutes(router.Group("/api/v1"), adminhandler.NewLiandongToolkitHandler(nil), auth, nil, nil, nil)
+	for _, path := range []string{"installation", "status", "config", "config/test", "goods", "jobs/preview", "jobs/run", "jobs/id", "jobs/id/resume", "jobs/id/export"} {
+		for _, method := range []string{http.MethodGet, http.MethodPost, http.MethodPut} {
+			recorder := httptest.NewRecorder()
+			router.ServeHTTP(recorder, httptest.NewRequest(method, "/api/v1/admin/tools/ldxp/"+path, nil))
+			require.Equal(t, http.StatusNotFound, recorder.Code, method+" "+path)
+		}
+	}
 }

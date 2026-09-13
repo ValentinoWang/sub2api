@@ -27,7 +27,7 @@ describe('ErrorExperienceView', () => {
   it('renders one complete experience with the prompt-first order and company footer', () => {
     const wrapper = mountExperience()
 
-    expect(wrapper.find('h1').text()).toBe('GPT-6 已接入，为什么 Codex 仍然看不见？')
+    expect(wrapper.find('h1').text()).toBe('中转站已有新模型，为什么 Codex 看不到？')
     expect(wrapper.findAll('h2').map((heading) => heading.text()).slice(0, 3)).toEqual([
       '情况说明',
       'Codex 帮你处理',
@@ -35,7 +35,7 @@ describe('ErrorExperienceView', () => {
     ])
     expect(wrapper.find('.brand-tagline').text()).toBe('歇一会儿，让 AI 接着干。')
     expect(wrapper.find('.brand-service').text()).toContain('面向 Codex、Claude Code 等工具的 AI 模型接入与账号充值服务')
-    expect(wrapper.find('.experience-breadcrumb').text()).toContain('GPT-6 已接入，为什么 Codex 仍然看不见？')
+    expect(wrapper.find('.experience-breadcrumb').text()).toContain('中转站已有新模型，为什么 Codex 看不到？')
   })
 
   it('copies the full Codex prompt', async () => {

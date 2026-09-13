@@ -25,6 +25,8 @@ export const PUBLIC_PAGES = {
   wslCodexTutorial: '/experiences/windows-11-wsl-codex-frontend',
   wslCodexTroubleshooting: '/error-experiences/windows-11-wsl2-codex-environment',
   errorExperience: '/error-experiences/gpt-6-astra-not-visible',
+  claudeCodeBypassPermissions: '/error-experiences/claude-code-bypass-permissions',
+  claudeCodeFableNotVisible: '/error-experiences/claude-code-fable-5-1-not-visible',
   publicBenefit: '/public-benefit',
   business: '/business-invoice',
   security: '/security',

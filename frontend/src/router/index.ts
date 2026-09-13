@@ -95,8 +95,28 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/public/ErrorExperienceView.vue'),
     meta: {
       requiresAuth: false,
-      title: 'GPT-6 已接入，为什么 Codex 仍然看不见？',
+      title: '中转站已有新模型，为什么 Codex 看不到？',
       titleKey: 'experiences.gpt6Title'
+    }
+  },
+  {
+    path: '/error-experiences/claude-code-bypass-permissions',
+    name: 'ClaudeCodeBypassPermissions',
+    component: () => import('@/views/public/ClaudeCodeExperienceView.vue'),
+    props: { experienceId: 'claude-code-bypass-permissions', caseNumber: 'ERR-004' },
+    meta: {
+      requiresAuth: false,
+      title: 'Claude Code 每次执行都要确认，怎样默认跳过？'
+    }
+  },
+  {
+    path: '/error-experiences/claude-code-fable-5-1-not-visible',
+    name: 'ClaudeCodeFableNotVisible',
+    component: () => import('@/views/public/ClaudeCodeExperienceView.vue'),
+    props: { experienceId: 'claude-code-fable-5-1-not-visible', caseNumber: 'ERR-005' },
+    meta: {
+      requiresAuth: false,
+      title: '中转站已有新模型，为什么 Claude Code 看不到？'
     }
   },
   {
@@ -875,7 +895,7 @@ let authInitialized = false
 const navigationLoading = useNavigationLoadingState()
 // 延迟初始化预加载，传入 router 实例
 let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
-const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/experiences', '/error-experiences/gpt-6-astra-not-visible', '/error-experiences/codex-session-migration', '/error-experiences/windows-11-wsl2-codex-environment']
+const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/experiences', '/error-experiences/gpt-6-astra-not-visible', '/error-experiences/claude-code-bypass-permissions', '/error-experiences/claude-code-fable-5-1-not-visible', '/error-experiences/codex-session-migration', '/error-experiences/windows-11-wsl2-codex-environment']
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
   '/auth/linuxdo/callback',

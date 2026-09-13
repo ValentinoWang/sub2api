@@ -36,6 +36,16 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ai.rest2build.lol/error-experiences/claude-code-bypass-permissions</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ai.rest2build.lol/error-experiences/claude-code-fable-5-1-not-visible</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ai.rest2build.lol/openai-compatible-api</loc>
     <lastmod>2026-09-04</lastmod>
     <changefreq>weekly</changefreq>

@@ -702,9 +702,9 @@ export default {
         enabledPaymentTypes: '启用的服务商',
         enabledPaymentTypesHint: '禁用服务商将同时禁用对应的实例。',
         ldxpSalesChannel: {
-          title: '链动小铺销售渠道',
-          description: '管理固定商品映射、兑换码库存与补货任务。它是独立销售渠道，不属于支付服务商，关闭支付总开关后仍可使用。',
-          openToolkit: '打开链动小铺工具',
+          title: '联动小铺销售渠道',
+          description: '配对商品并授权 Chrome 插件维持库存。它是独立销售渠道，不属于支付服务商，关闭支付总开关后仍可使用。',
+          openToolkit: '商品与补货配置',
           buyerEnabled: '显示用户购买入口',
           buyerUrl: '店铺或充值商品链接',
           buyerHint: '用户从充值页打开此链接，购买后返回同一页输入兑换码到账。请填写公开的买家链接。',

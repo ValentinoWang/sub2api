@@ -461,30 +461,30 @@ onUnmounted(() => {
   height: var(--user-content-viewport-height, calc(100vh - 64px - 4rem));
 }
 
-:global(.user-brand-shell) .custom-page-layout {
+.user-brand-shell .custom-page-layout {
   color: var(--user-foreground);
 }
 
-:global(.user-brand-shell) .custom-page-card {
+.user-brand-shell .custom-page-card {
   background-color: var(--user-surface);
   border-color: var(--user-border);
   border-radius: 8px;
   color: var(--user-foreground);
 }
 
-:global(.user-brand-shell) .custom-page-state-icon {
+.user-brand-shell .custom-page-state-icon {
   background-color: var(--user-hover);
 }
 
-:global(.user-brand-shell) .custom-page-state-icon-mark {
+.user-brand-shell .custom-page-state-icon-mark {
   color: var(--user-muted);
 }
 
-:global(.user-brand-shell) .custom-page-state-title {
+.user-brand-shell .custom-page-state-title {
   color: var(--user-foreground);
 }
 
-:global(.user-brand-shell) .custom-page-state-description {
+.user-brand-shell .custom-page-state-description {
   color: var(--user-muted);
 }
 
@@ -496,7 +496,7 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-:global(.user-brand-shell) .toc-sidebar {
+.user-brand-shell .toc-sidebar {
   background-color: var(--user-canvas);
   border-color: var(--user-border);
 }
@@ -518,7 +518,7 @@ onUnmounted(() => {
   @apply flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-dark-600;
 }
 
-:global(.user-brand-shell) .toc-header {
+.user-brand-shell .toc-header {
   border-color: var(--user-border);
 }
 
@@ -526,7 +526,7 @@ onUnmounted(() => {
   @apply text-sm font-semibold text-gray-700 dark:text-dark-200;
 }
 
-:global(.user-brand-shell) .toc-title {
+.user-brand-shell .toc-title {
   color: var(--user-foreground);
 }
 
@@ -534,11 +534,11 @@ onUnmounted(() => {
   @apply p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-dark-200 hover:bg-gray-200 dark:hover:bg-dark-600 transition-colors;
 }
 
-:global(.user-brand-shell) .toc-close-btn {
+.user-brand-shell .toc-close-btn {
   color: var(--user-muted);
 }
 
-:global(.user-brand-shell) .toc-close-btn:hover {
+.user-brand-shell .toc-close-btn:hover {
   color: var(--user-foreground);
   background-color: var(--user-hover);
 }
@@ -552,11 +552,11 @@ onUnmounted(() => {
   @apply text-gray-600 dark:text-dark-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-dark-600;
 }
 
-:global(.user-brand-shell) .toc-item {
+.user-brand-shell .toc-item {
   color: var(--user-muted);
 }
 
-:global(.user-brand-shell) .toc-item:hover {
+.user-brand-shell .toc-item:hover {
   color: var(--user-foreground);
   background-color: var(--user-hover);
 }
@@ -565,7 +565,7 @@ onUnmounted(() => {
   @apply text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 font-medium;
 }
 
-:global(.user-brand-shell) .toc-item.toc-active {
+.user-brand-shell .toc-item.toc-active {
   background-color: var(--user-hover);
 }
 
@@ -581,13 +581,13 @@ onUnmounted(() => {
   @apply shadow-sm transition-colors cursor-pointer;
 }
 
-:global(.user-brand-shell) .toc-toggle-btn {
+.user-brand-shell .toc-toggle-btn {
   color: var(--user-foreground);
   background-color: var(--user-surface);
   border-color: var(--user-border);
 }
 
-:global(.user-brand-shell) .toc-toggle-btn:hover {
+.user-brand-shell .toc-toggle-btn:hover {
   background-color: var(--user-hover);
 }
 
@@ -598,7 +598,7 @@ onUnmounted(() => {
   @apply p-0;
 }
 
-:global(.user-brand-shell) .custom-embed-shell {
+.user-brand-shell .custom-embed-shell {
   background: var(--user-canvas);
   border-radius: 8px;
 }
@@ -608,7 +608,7 @@ onUnmounted(() => {
   @apply shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-dark-800/80;
 }
 
-:global(.user-brand-shell) .custom-open-fab {
+.user-brand-shell .custom-open-fab {
   color: var(--user-foreground);
   background-color: var(--user-surface);
   border-color: var(--user-border);

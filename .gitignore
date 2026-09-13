@@ -161,6 +161,10 @@ docs/error-experiences/*
 !docs/error-experiences/2026-09-06-codex-astra-visibility.md
 !docs/error-experiences/2026-09-12-windows-wsl2-codex-environment.md
 !docs/error-experiences/2026-09-12-windows-wsl2-codex-environment.html
+!docs/error-experiences/2026-09-13-claude-code-bypass-permissions.md
+!docs/error-experiences/2026-09-13-claude-code-bypass-permissions.html
+!docs/error-experiences/2026-09-13-claude-code-fable-5-1-not-visible.md
+!docs/error-experiences/2026-09-13-claude-code-fable-5-1-not-visible.html
 !docs/legal/
 !docs/legal/*.md
 !docs/screenshots/
@@ -182,3 +186,6 @@ output/
 # must be committed deliberately or archived outside this repository.
 !/agents-results/
 !/agents-results/**
+
+# Generated Chrome restock extension package
+frontend/public/assets/ldxp-browser-extension.zip

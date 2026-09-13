@@ -798,6 +798,13 @@ func (s *LiandongRestockService) runLiandongCycle(parent context.Context, force 
 			return nil, ErrLiandongRunBusy
 		}
 		defer releaseLease()
+		var browserMode bool
+		if err := s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM liandong_browser_config)`).Scan(&browserMode); err != nil {
+			return nil, err
+		}
+		if browserMode {
+			return nil, errBrowserPaused
+		}
 	}
 
 	s.stateMu.Lock()

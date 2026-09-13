@@ -1,4 +1,4 @@
-# ERR-001 · GPT-6 已接入，为什么 Codex 仍然看不见？
+# ERR-001 · 中转站已有新模型，为什么 Codex 看不到？
 
 > 错误经验 · 解决你使用codex或者claudecode的最后一公里
 

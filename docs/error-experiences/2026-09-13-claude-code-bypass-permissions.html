@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Claude Code 每次执行都要确认，怎样默认跳过？ · rest2build</title>
+  <style>
+    :root{color-scheme:light;--ink:#18332b;--muted:#52615c;--line:#d6e0dc;--brand:#0f766e;--soft:#f3f8f6;--warn:#fff7ed}*{box-sizing:border-box}body{margin:0;background:#f4f7f6;color:var(--ink);font:16px/1.75 system-ui,-apple-system,"Noto Sans SC",sans-serif}a{color:var(--brand)}header,main,footer{width:min(880px,calc(100% - 32px));margin:auto}.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0}.brand{display:flex;align-items:center;gap:10px;color:var(--ink);font-weight:800;text-decoration:none}.brand img{width:34px;height:34px}.back{font-size:14px}.article{overflow:hidden;border:1px solid var(--line);border-radius:8px;background:#fff}.intro,.section{padding:34px 40px}.intro{background:#f8fbfa;border-bottom:1px solid var(--line)}.eyebrow,.step{margin:0 0 10px;color:var(--brand);font:700 12px ui-monospace,monospace}h1{margin:0;font-size:34px;line-height:1.35;letter-spacing:0}h2{margin:0 0 16px;font-size:23px}h3{margin:28px 0 12px;font-size:18px}.meta{color:var(--muted);font-size:13px}.section{border-bottom:1px solid var(--line)}.solution{background:var(--soft)}code{overflow-wrap:anywhere;border-radius:4px;background:#e8f1ed;padding:2px 5px}.warning{border-left:4px solid #b45309;background:var(--warn);padding:14px 16px;color:#7c2d12}.prompt-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.copy{border:0;border-radius:5px;background:var(--brand);padding:10px 14px;color:#fff;font-weight:700;cursor:pointer}.prompt{width:100%;min-height:440px;margin-top:14px;resize:vertical;border:1px solid #b8cac1;border-radius:5px;background:#fff;padding:16px;font:13px/1.85 ui-monospace,monospace}.status{min-height:24px;margin:7px 0 0;color:var(--brand);font-size:13px}footer{padding:64px 16px 36px;text-align:center}.footer-brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);font-size:30px;font-weight:800;text-decoration:none}.footer-brand img{width:42px;height:42px}.tagline{font-size:32px;font-weight:800}.service{max-width:720px;margin:16px auto;color:var(--muted)}@media(max-width:640px){header,main,footer{width:min(100% - 20px,880px)}.intro,.section{padding:24px 20px}h1{font-size:27px}.prompt-head{align-items:flex-start}.prompt{min-height:520px;padding:12px;font-size:12px}.tagline{font-size:27px}.service{text-align:left}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="../../frontend/public/index.html"><img src="../../frontend/public/logo.svg" alt=""><span>rest2build</span></a><a class="back" href="index.html">返回经验分享</a></header>
+  <main>
+    <article class="article">
+      <section class="intro"><p class="eyebrow">Claude Code 使用经验 / ERR-004</p><h1>Claude Code 每次执行都要确认，怎样默认跳过？</h1><p class="meta">适用：可信的本机开发环境 · 更新：2026-09-13</p></section>
+      <section class="section"><p class="step">01</p><h2>问题说明</h2><p>Claude Code 在读取文件、修改代码或运行命令前反复要求确认，连续开发经常被打断。目标是在可信的本机项目中默认跳过逐项确认，同时保留恢复普通确认模式的入口。</p><p class="warning"><strong>风险提示：</strong>跳过确认后，Claude Code 可以直接执行文件修改和命令。陌生仓库、未经审查的脚本、生产凭证目录或范围不明确的任务，应继续使用普通确认模式。</p></section>
+      <section class="section solution"><p class="step">02</p><h2>解决方案</h2><ol><li>保留现有用户配置，把 <code>permissions.defaultMode</code> 设置为 <code>bypassPermissions</code>。</li><li>把 <code>skipDangerousModePermissionPrompt</code> 设置为 <code>true</code>。</li><li>关闭旧会话并启动新会话验证。需要单次恢复确认模式时，使用 <code>claude --permission-mode manual</code>。</li></ol><div class="prompt-head"><h3>让 Codex 帮你处理</h3><button class="copy" type="button" data-copy="prompt">复制提示词</button></div><textarea id="prompt" class="prompt" readonly>请帮我检查并配置这台电脑上的 Claude Code，让它启动后默认不再逐项弹出工具权限确认。
+
+先确认操作系统、Claude Code 实际版本、启动命令，以及当前生效的用户级配置文件位置。只读取完成任务所需的字段；API Key、认证令牌和完整认证文件不得输出。若配置里已有自定义 API 地址、模型、环境变量、Hooks、MCP 或其他权限规则，必须原样保留。
+
+在确认配置格式受当前 Claude Code 版本支持后，只做与本问题相关的最小修改：将 permissions.defaultMode 设为 bypassPermissions，并将 skipDangerousModePermissionPrompt 设为 true。修改前先建立可恢复备份；不要用一份简化示例覆盖整个配置文件，也不要删除其他字段。
+
+请明确提醒我：该模式允许 Claude Code 在没有逐项确认的情况下执行文件修改和命令，风险高于普通确认模式，只适合我信任的本机项目与指令。不要因此扩大任务范围，不要修改系统权限、服务器、账号、密钥或项目数据。
+
+修改后验证 JSON 或配置语法，并启动一个新的 Claude Code 会话确认默认权限模式。不要仅凭文件中出现字段就宣布成功。不要执行破坏性测试，也不要发送会产生费用的模型请求；如果必须由我关闭旧会话或重启终端，请说明原因和最短步骤。
+
+同时告诉我单次恢复确认模式的入口：claude --permission-mode manual。最后只报告脱敏结果、修改文件、验证结论、风险和恢复方式；若当前版本不支持这些字段，保留原配置并报告准确错误，不要猜测其他开关。</textarea><p class="status" role="status" aria-live="polite"></p></section>
+      <section class="section"><p class="step">03</p><h2>原因、验证与注意事项</h2><h3>为什么两个设置都需要？</h3><p><code>defaultMode</code> 决定新会话采用的默认权限模式；启动确认开关决定进入高权限模式时是否再次提醒。只改其中一个，体验可能仍然包含确认步骤。</p><h3>怎样确认已经生效？</h3><p>验证配置语法后，启动一个全新会话，用只读操作和普通项目命令确认。不要用删除文件、修改系统设置或访问生产数据来测试。</p><h3>边界</h3><p>跳过确认只改变交互方式，不扩大任务授权。遇到范围不清楚的操作，仍应停下来确认。</p></section>
+    </article>
+  </main>
+  <footer><a class="footer-brand" href="https://ai.rest2build.lol/"><img src="../../frontend/public/logo.svg" alt=""><span>rest2build</span></a><p class="tagline">歇一会儿，让 AI 接着干。</p><p>rest 是你的，build 交给 AI。</p><p class="service">rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></footer>
+  <script>document.querySelector('[data-copy]').addEventListener('click',async event=>{const button=event.currentTarget;const field=document.getElementById(button.dataset.copy);const status=button.closest('.solution').querySelector('.status');try{await navigator.clipboard.writeText(field.value);button.textContent='已复制';status.textContent='提示词已复制'}catch{field.focus();field.select();status.textContent='自动复制未成功，提示词已选中，可手动复制'}})</script>
+</body>
+</html>

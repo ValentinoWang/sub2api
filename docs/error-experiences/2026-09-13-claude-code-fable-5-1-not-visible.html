@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>中转站已有新模型，为什么 Claude Code 看不到？ · rest2build</title>
+  <style>
+    :root{color-scheme:light;--ink:#18332b;--muted:#52615c;--line:#d6e0dc;--brand:#0f766e;--soft:#f3f8f6}*{box-sizing:border-box}body{margin:0;background:#f4f7f6;color:var(--ink);font:16px/1.75 system-ui,-apple-system,"Noto Sans SC",sans-serif}a{color:var(--brand)}header,main,footer{width:min(880px,calc(100% - 32px));margin:auto}.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0}.brand{display:flex;align-items:center;gap:10px;color:var(--ink);font-weight:800;text-decoration:none}.brand img{width:34px;height:34px}.back{font-size:14px}.article{overflow:hidden;border:1px solid var(--line);border-radius:8px;background:#fff}.intro,.section{padding:34px 40px}.intro{background:#f8fbfa;border-bottom:1px solid var(--line)}.eyebrow,.step{margin:0 0 10px;color:var(--brand);font:700 12px ui-monospace,monospace}h1{margin:0;font-size:34px;line-height:1.35;letter-spacing:0}h2{margin:0 0 16px;font-size:23px}h3{margin:28px 0 12px;font-size:18px}.meta{color:var(--muted);font-size:13px}.section{border-bottom:1px solid var(--line)}.solution{background:var(--soft)}code{overflow-wrap:anywhere;border-radius:4px;background:#e8f1ed;padding:2px 5px}.note{border-left:4px solid var(--brand);padding-left:15px}.prompt-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.copy{border:0;border-radius:5px;background:var(--brand);padding:10px 14px;color:#fff;font-weight:700;cursor:pointer}.prompt{width:100%;min-height:500px;margin-top:14px;resize:vertical;border:1px solid #b8cac1;border-radius:5px;background:#fff;padding:16px;font:13px/1.85 ui-monospace,monospace}.status{min-height:24px;margin:7px 0 0;color:var(--brand);font-size:13px}footer{padding:64px 16px 36px;text-align:center}.footer-brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);font-size:30px;font-weight:800;text-decoration:none}.footer-brand img{width:42px;height:42px}.tagline{font-size:32px;font-weight:800}.service{max-width:720px;margin:16px auto;color:var(--muted)}@media(max-width:640px){header,main,footer{width:min(100% - 20px,880px)}.intro,.section{padding:24px 20px}h1{font-size:27px}.prompt-head{align-items:flex-start}.prompt{min-height:600px;padding:12px;font-size:12px}.tagline{font-size:27px}.service{text-align:left}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="../../frontend/public/index.html"><img src="../../frontend/public/logo.svg" alt=""><span>rest2build</span></a><a class="back" href="index.html">返回经验分享</a></header>
+  <main>
+    <article class="article">
+      <section class="intro"><p class="eyebrow">Claude Code 使用经验 / ERR-005</p><h1>中转站已有新模型，为什么 Claude Code 看不到？</h1><p class="meta">适用：自定义 Anthropic 兼容网关 · 更新：2026-09-13</p></section>
+      <section class="section"><p class="step">01</p><h2>问题说明</h2><p>中转站已经提供最新模型，但 Claude Code 的 <code>/model</code> 仍只显示内置模型。下面以 Fable 5.1（模型 ID：<code>claude-fable-5-1</code>）为例说明。</p><p>模型 ID 被客户端接受、网关目录列出模型、列表可见和实际请求成功，是四个不同结果。目录有模型，不代表客户端已经主动读取该目录。</p></section>
+      <section class="section solution"><p class="step">02</p><h2>解决方案</h2><ol><li>确认实际网关的 <code>/v1/models</code> 向自己的凭证返回 <code>claude-fable-5-1</code>。</li><li>在用户级 <code>settings.json</code> 的 <code>env</code> 中加入 <code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1</code>，其他地址、认证和设置保持不变。</li><li>关闭旧会话，重新启动 Claude Code，再打开 <code>/model</code> 确认 Fable 5.1 出现并可选。</li></ol><div class="prompt-head"><h3>让 Codex 帮你处理</h3><button class="copy" type="button" data-copy="prompt">复制提示词</button></div><textarea id="prompt" class="prompt" readonly>我通过一个兼容 Anthropic 接口的自定义中转站使用 Claude Code。中转站已经提供最新模型，但 Claude Code 的 /model 列表里看不到。下面以 Fable 5.1（模型 ID：claude-fable-5-1）为例，请在我的电脑上定位并修复客户端模型发现问题。
+
+先确认 Claude Code 实际版本、启动方式和用户级配置文件位置。只检查必要配置；API Key、认证令牌、完整 Base URL 查询参数和认证文件不得输出。保留现有自定义 API 地址、认证、模型、权限、Hooks、MCP 与其他环境变量，不要用示例配置覆盖整个文件。
+
+请把以下四层分开验证：
+1. 当前 Claude Code 是否认识 claude-fable-5-1 这个模型 ID；
+2. 当前实际连接的中转站 /v1/models 是否向我的凭证返回该模型；
+3. Claude Code 是否启用了网关模型发现；
+4. 新会话是否在 /model 中显示并能选中 Fable 5.1。
+
+如果前两层通过但模型列表仍缺失，请在用户级 settings.json 的 env 中加入 CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1。修改前先建立可恢复备份，只增补该字段，不删除或打印现有敏感值。随后结束旧会话、启动新会话并重新打开 /model 验证；旧进程不一定会热加载环境配置。
+
+默认只验证目录、列表和选中状态，不发送真实模型生成请求。请明确说明“模型可见”不等于“实际请求成功”。若我另行同意做最小请求，只执行一次短请求并报告脱敏状态，不循环重试。
+
+最后分别报告：客户端版本、模型目录是否含 claude-fable-5-1、发现开关是否生效、/model 是否显示、是否实际选中、是否执行过生成请求。若仍未显示，保留客户端错误和脱敏目录响应，判断应继续检查本机版本/配置还是联系中转站管理员。</textarea><p class="status" role="status" aria-live="polite"></p></section>
+      <section class="section"><p class="step">03</p><h2>原因、验证与注意事项</h2><h3>为什么网关有模型，列表却没有？</h3><p>Claude Code 默认可能只显示自己的内置模型目录。启用网关模型发现后，客户端才会读取自定义接入地址提供的模型列表。旧会话不一定热加载用户级环境设置，因此修改后要用新会话验证。</p><h3>怎样确认已经生效？</h3><ul><li>网关目录包含目标模型，只证明该 ID 已公布。</li><li><code>/model</code> 显示并选中 Fable 5.1，证明发现与选择状态正确。</li><li>只有实际发送并完成一次请求，才能证明生成链路可用。</li></ul><p class="note">目录、列表和选择验证不需要产生模型请求费用。没有明确授权时，停在“可见并可选”，不要写成“请求成功”。</p></section>
+    </article>
+  </main>
+  <footer><a class="footer-brand" href="https://ai.rest2build.lol/"><img src="../../frontend/public/logo.svg" alt=""><span>rest2build</span></a><p class="tagline">歇一会儿，让 AI 接着干。</p><p>rest 是你的，build 交给 AI。</p><p class="service">rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></footer>
+  <script>document.querySelector('[data-copy]').addEventListener('click',async event=>{const button=event.currentTarget;const field=document.getElementById(button.dataset.copy);const status=button.closest('.solution').querySelector('.status');try{await navigator.clipboard.writeText(field.value);button.textContent='已复制';status.textContent='提示词已复制'}catch{field.focus();field.select();status.textContent='自动复制未成功，提示词已选中，可手动复制'}})</script>
+</body>
+</html>

@@ -137,6 +137,32 @@ function wslCodexTroubleshootingHTML(): string {
     <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>${esc(BRAND_SERVICE_DESCRIPTION)}</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
 }
 
+function claudeCodeExperienceHTML(
+  id: 'claude-code-bypass-permissions' | 'claude-code-fable-5-1-not-visible',
+  caseNumber: 'ERR-004' | 'ERR-005'
+): string {
+  const experience = getExperienceById(id)
+  if (!experience) throw new Error(`[prerender] Claude Code experience ${id} is missing`)
+
+  const permissionsCase = id === 'claude-code-bypass-permissions'
+  const problem = permissionsCase
+    ? `<p>Claude Code 在读取文件、修改代码或运行命令前反复要求确认，连续开发经常被打断。目标是在可信的本机项目中默认跳过逐项确认，同时保留恢复普通确认模式的入口。</p><p><strong>风险提示：</strong>跳过确认后，Claude Code 可以直接执行文件修改和命令。只应在可信仓库和清楚的任务范围内使用。</p>`
+    : `<p>中转站已经提供最新模型，但 Claude Code 的 <code>/model</code> 仍只显示内置模型。下面以 Fable 5.1（模型 ID：<code>claude-fable-5-1</code>）为例说明。</p><p>模型 ID 被客户端接受、网关目录列出模型、列表可见和实际请求成功，是四个不同结果。</p>`
+  const solution = permissionsCase
+    ? `<ol><li>保留现有配置，把 <code>permissions.defaultMode</code> 设置为 <code>bypassPermissions</code>。</li><li>把 <code>skipDangerousModePermissionPrompt</code> 设置为 <code>true</code>。</li><li>重启会话验证；临时恢复确认模式时使用 <code>claude --permission-mode manual</code>。</li></ol>`
+    : `<ol><li>确认实际网关的 <code>/v1/models</code> 返回 <code>claude-fable-5-1</code>。</li><li>在用户级 <code>settings.json</code> 的 <code>env</code> 中加入 <code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1</code>，其他配置保持不变。</li><li>重启 Claude Code，在 <code>/model</code> 中确认 Fable 5.1 出现并可选。</li></ol>`
+  const explanation = permissionsCase
+    ? `<h3>原因与验证</h3><p>默认权限模式和启动确认是两个独立设置。配置语法通过后，必须启动新会话，用只读操作和普通项目命令验证；不要用破坏性命令测试。</p><h3>注意事项</h3><p>陌生仓库、未经审查的脚本、生产凭证目录或范围不明确的任务，应使用普通确认模式。跳过确认不扩大任务授权范围。</p>`
+    : `<h3>原因与验证</h3><p>Claude Code 默认可能只显示内置目录。启用网关模型发现后，客户端才会读取自定义接入地址提供的模型列表。</p><ul><li>目录含模型：只证明网关公布了该 ID。</li><li><code>/model</code> 可见并选中：证明客户端发现与选择已生效。</li><li>实际请求完成：才证明生成链路可用。</li></ul><p>目录、列表和选择验证不需要产生模型请求费用。</p>`
+
+  return `<nav aria-label="经验分享路径"><a href="/home">首页</a> / <a href="/experiences">经验分享</a> / Claude Code 使用经验 / ${caseNumber}</nav>
+    <p>${caseNumber} · 适用：${esc(experience.applicableTo)} · 更新：${esc(experience.updatedAt)}</p>
+    <section><h2>问题说明</h2>${problem}</section>
+    <section><h2>解决方案</h2>${solution}<h3>让 Codex 帮你处理</h3><pre style="white-space:pre-wrap">${esc(experience.prompt)}</pre></section>
+    <section><h2>原因、验证与注意事项</h2>${explanation}</section>
+    <section><h2>rest2build</h2><p><strong>歇一会儿，让 AI 接着干。</strong></p><p>rest 是你的，build 交给 AI。</p><p>${esc(BRAND_SERVICE_DESCRIPTION)}</p><p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></p></section>`
+}
+
 function experiencesIndexHTML(): string {
   const copy = zhMisc.experiences
   const entries = experiences.map((experience) => {
@@ -178,6 +204,16 @@ export function buildPrerenderPages(): PrerenderPage[] {
       id: 'gpt-6-astra-not-visible',
       description: 'Codex 桌面中 GPT-6-Astra 不可见时，区分中转站支持、客户端模型目录与当前任务选择的公开排障经验。',
       body: errorExperienceHTML()
+    },
+    {
+      id: 'claude-code-bypass-permissions',
+      description: 'Claude Code 默认跳过重复权限确认的配置方法、风险边界与普通确认模式恢复入口。',
+      body: claudeCodeExperienceHTML('claude-code-bypass-permissions', 'ERR-004')
+    },
+    {
+      id: 'claude-code-fable-5-1-not-visible',
+      description: 'Claude Code 通过自定义网关使用 Fable 5.1 时，开启网关模型发现并验证模型列表的公开经验。',
+      body: claudeCodeExperienceHTML('claude-code-fable-5-1-not-visible', 'ERR-005')
     }
   ].map(({ id, description, body }) => {
     const experience = getExperienceById(id)

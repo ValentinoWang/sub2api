@@ -2,11 +2,13 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import zh from '@/i18n/locales/zh'
 import LiandongRechargePanel from '../LiandongRechargePanel.vue'
+import type { LiandongRechargeProduct } from '@/types'
 
 const mocks = vi.hoisted(() => ({
-  redeem: vi.fn(), refreshUser: vi.fn(), refreshSubscriptions: vi.fn(), fetchSettings: vi.fn(),
-  settings: { purchase_subscription_enabled: true, purchase_subscription_url: 'https://shop.example.com/recharge?goods=123' }
+  getProducts: vi.fn(), redeem: vi.fn(), refreshUser: vi.fn(), refreshSubscriptions: vi.fn(), fetchSettings: vi.fn(),
+  settings: { purchase_subscription_enabled: true, purchase_subscription_url: 'https://shop.example.com/recharge?goods=123', liandong_recharge_products: [] as LiandongRechargeProduct[] }
 }))
+vi.mock('@/api/liandongBrowser', () => ({ getLiandongProducts: mocks.getProducts }))
 vi.mock('@/api/redeem', () => ({ redeemAPI: { redeem: mocks.redeem } }))
 vi.mock('@/stores/auth', () => ({ useAuthStore: () => ({ user: { balance: 3 }, refreshUser: mocks.refreshUser }) }))
 vi.mock('@/stores/app', () => ({ useAppStore: () => ({ cachedPublicSettings: mocks.settings, fetchPublicSettings: mocks.fetchSettings }) }))
@@ -25,6 +27,8 @@ function render() {
 describe('Liandong purchase and same-page redemption', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.getProducts.mockRejectedValue({ status: 404 })
+    mocks.settings.liandong_recharge_products = []
     mocks.settings.purchase_subscription_enabled = true
     mocks.settings.purchase_subscription_url = 'https://shop.example.com/recharge?goods=123'
     mocks.fetchSettings.mockResolvedValue(mocks.settings)
@@ -44,6 +48,54 @@ describe('Liandong purchase and same-page redemption', () => {
     expect(wrapper.find('a[href="/redeem"]').exists()).toBe(false)
     expect(mocks.redeem).not.toHaveBeenCalled()
     expect(mocks.fetchSettings).toHaveBeenCalledWith(true)
+  })
+
+  it('pairs each configured denomination with its own buyer URL and server credit', async () => {
+    mocks.settings.liandong_recharge_products = [
+      { goods_id: 101, cny_amount: 5, usd_credit: 5, external_url: 'https://shop.example.com/buy/101' },
+      { goods_id: 202, cny_amount: 20, usd_credit: 20, external_url: 'https://shop.example.com/buy/202' },
+    ]
+    mocks.getProducts.mockResolvedValue(mocks.settings.liandong_recharge_products)
+    const wrapper = render()
+    await flushPromises()
+    expect(wrapper.get('[data-testid="liandong-buy"]').attributes('href')).toBe('https://shop.example.com/buy/101')
+    await wrapper.get('[data-testid="liandong-product-202"]').trigger('click')
+    expect(wrapper.get('[data-testid="liandong-buy"]').attributes('href')).toBe('https://shop.example.com/buy/202')
+    expect(wrapper.get('[data-testid="liandong-product-202"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.text()).toContain('20元额度')
+    expect(wrapper.text()).toContain('支付 ¥20.00 · 到账 $20.00')
+    expect(wrapper.find('a[href="https://shop.example.com/recharge?goods=123"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('10元额度')
+  })
+
+  it('does not fall back to the old link when the public catalog is empty', async () => {
+    mocks.getProducts.mockResolvedValue([])
+    const wrapper = render()
+    await flushPromises()
+    expect(wrapper.find('[data-testid="liandong-products"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="liandong-buy"]').exists()).toBe(false)
+    expect(wrapper.find('form').exists()).toBe(true)
+  })
+
+  it('keeps redemption available without opening an old buyer link when the catalog fails', async () => {
+    mocks.getProducts.mockRejectedValueOnce({ status: 503 })
+    const wrapper = render()
+    await flushPromises()
+    expect(wrapper.find('[data-testid="liandong-buy"]').exists()).toBe(false)
+    expect(wrapper.find('form').exists()).toBe(true)
+  })
+
+  it('rejects malformed catalog products without blocking redemption', async () => {
+    mocks.settings.purchase_subscription_url = ''
+    mocks.settings.liandong_recharge_products = [
+      { goods_id: 101, cny_amount: 5, usd_credit: 5, external_url: 'javascript:alert(1)' },
+      { goods_id: 102, cny_amount: -5, usd_credit: 5, external_url: 'https://shop.example.com/buy/102' },
+    ]
+    mocks.getProducts.mockResolvedValue(mocks.settings.liandong_recharge_products)
+    const wrapper = render()
+    await flushPromises()
+    expect(wrapper.find('[data-testid="liandong-buy"]').exists()).toBe(false)
+    expect(wrapper.find('form').exists()).toBe(true)
   })
 
   it('redeems the trimmed code and displays the amount returned by the server', async () => {

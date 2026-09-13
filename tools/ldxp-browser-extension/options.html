@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="ui.css">
+  <title>自动维持库存 · 小铺补货助手</title>
+</head>
+<body class="options">
+  <header>
+    <p class="eyebrow">小铺补货助手</p>
+    <h1>自动维持库存</h1>
+    <p>配对商品，设置库存数量。卖出后自动补足，不用逐项检查和开始。</p>
+  </header>
+  <main>
+    <section class="operation-guide" aria-labelledby="operation-title">
+      <h2 id="operation-title">只需设置一次</h2>
+      <p>首次填写两站的补货凭据，读取商品后默认全选。设置每种额度要保持的库存，点击「保存并自动补货」；插件会自动核对商品和库存，分批补足缺口。</p>
+      <div class="guide-actions"><a class="guide-link secondary" href="https://www.ldxp.cn/merchant/goods/list?is_proxy=0" target="_blank" rel="noopener noreferrer">打开并登录小铺商户页</a></div>
+      <p class="help">Chrome 在线且小铺商户页保持登录时，每分钟检查一次。首次补足 999 张需要多轮上传；登录失效或库存异常时暂停并显示原因。</p>
+    </section>
+    <details class="setup-guide">
+      <summary>安装、更新与配置文件位置</summary>
+      <p>插件源码、两站地址配置和使用说明统一放在项目目录：</p>
+      <code id="project-directory"></code>
+      <p><strong>config.js</strong> 保存两个站点的地址与管理入口，<strong>README.md</strong> 保存完整说明。Chrome「加载已解压的扩展程序」选择上述目录，直接维护这一份源码。</p>
+      <p>更新后看不到「只需设置一次」：在 Chrome 地址栏输入 <strong>chrome://extensions</strong>，确认加载的是上面的项目目录，点击该扩展的重新加载按钮，再关闭旧绑定页并重新打开。</p>
+      <p class="help">设备凭据是以 ldxpd_ 开头的补货专用密钥，只保存在当前 Chrome 扩展中；不填写管理员密钥或小铺登录 Token。本地使用测试商品，生产使用正式商品。</p>
+      <details class="install-note"><summary>如果之前从桌面目录加载了插件</summary><p class="help">更换加载目录可能生成另一个扩展身份，旧凭据与绑定不会自动迁移。切换时先暂停旧扩展补货，在项目目录这份插件中重新保存两站绑定。以后更新项目代码，在 Chrome 扩展管理页重新加载，再重开本页即可。</p></details>
+    </details>
+    <form id="form" class="binding-form">
+      <div class="target-setting">
+        <label for="stock-target">每种额度保持的未售库存</label>
+        <div class="target-input"><input id="stock-target" name="target_stock" type="number" min="1" max="999" step="1" required value="999"><span>张</span></div>
+        <p class="help">同一数量应用到下方全部选中商品。本地、生产分别生成各自的兑换码。</p>
+      </div>
+      <div class="setup-toolbar">
+        <p class="help">先读取并配对商品，默认全选可用额度。</p>
+        <button type="button" id="inspect-all" class="secondary">读取两个站点的商品</button>
+      </div>
+      <div id="sites" class="site-grid"></div>
+      <div class="save-bar">
+        <div><strong id="selection-summary">尚未选择额度</strong><p class="help">自动核对并补足选中商品；未选中的已有商品保持原设置。</p></div>
+        <button type="submit" disabled>保存并自动补货</button><button type="button" id="pause-all" class="secondary">暂停全部</button>
+      </div>
+      <p id="feedback" role="status" aria-live="polite"></p>
+    </form>
+    <div class="setup-toolbar section-title"><h2>库存与运行状态</h2><span id="binding-count" class="badge">0 个额度</span></div>
+    <div id="bindings" class="bound-sites"></div>
+    <p class="help">低于目标时分批补足，达到目标后只检查。配对、授权或上传结果无法核实时自动暂停；两个站点须使用不同的小铺商品。</p>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

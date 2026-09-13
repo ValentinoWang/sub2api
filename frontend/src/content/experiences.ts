@@ -99,6 +99,34 @@ export const wsl2CodexEnvironmentPrompt = `我在 Windows 11 + WSL2 中使用 Co
 
 不要把“安装命令执行完”“路径里出现 codex”或“HTTP 有响应”单独当作恢复成功。遇到缺少权限、工具或信息时，说明具体阻塞和下一步，不虚构已修复。`
 
+export const claudeCodeBypassPermissionsPrompt = `请帮我检查并配置这台电脑上的 Claude Code，让它启动后默认不再逐项弹出工具权限确认。
+
+先确认操作系统、Claude Code 实际版本、启动命令，以及当前生效的用户级配置文件位置。只读取完成任务所需的字段；API Key、认证令牌和完整认证文件不得输出。若配置里已有自定义 API 地址、模型、环境变量、Hooks、MCP 或其他权限规则，必须原样保留。
+
+在确认配置格式受当前 Claude Code 版本支持后，只做与本问题相关的最小修改：将 permissions.defaultMode 设为 bypassPermissions，并将 skipDangerousModePermissionPrompt 设为 true。修改前先建立可恢复备份；不要用一份简化示例覆盖整个配置文件，也不要删除其他字段。
+
+请明确提醒我：该模式允许 Claude Code 在没有逐项确认的情况下执行文件修改和命令，风险高于普通确认模式，只适合我信任的本机项目与指令。不要因此扩大任务范围，不要修改系统权限、服务器、账号、密钥或项目数据。
+
+修改后验证 JSON 或配置语法，并启动一个新的 Claude Code 会话确认默认权限模式。不要仅凭文件中出现字段就宣布成功。不要执行破坏性测试，也不要发送会产生费用的模型请求；如果必须由我关闭旧会话或重启终端，请说明原因和最短步骤。
+
+同时告诉我单次恢复确认模式的入口：claude --permission-mode manual。最后只报告脱敏结果、修改文件、验证结论、风险和恢复方式；若当前版本不支持这些字段，保留原配置并报告准确错误，不要猜测其他开关。`
+
+export const claudeCodeFableNotVisiblePrompt = `我通过一个兼容 Anthropic 接口的自定义中转站使用 Claude Code。中转站已经提供最新模型，但 Claude Code 的 /model 列表里看不到。下面以 Fable 5.1（模型 ID：claude-fable-5-1）为例，请在我的电脑上定位并修复客户端模型发现问题。
+
+先确认 Claude Code 实际版本、启动方式和用户级配置文件位置。只检查必要配置；API Key、认证令牌、完整 Base URL 查询参数和认证文件不得输出。保留现有自定义 API 地址、认证、模型、权限、Hooks、MCP 与其他环境变量，不要用示例配置覆盖整个文件。
+
+请把以下四层分开验证：
+1. 当前 Claude Code 是否认识 claude-fable-5-1 这个模型 ID；
+2. 当前实际连接的中转站 /v1/models 是否向我的凭证返回该模型；
+3. Claude Code 是否启用了网关模型发现；
+4. 新会话是否在 /model 中显示并能选中 Fable 5.1。
+
+如果前两层通过但模型列表仍缺失，请在用户级 settings.json 的 env 中加入 CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1。修改前先建立可恢复备份，只增补该字段，不删除或打印现有敏感值。随后结束旧会话、启动新会话并重新打开 /model 验证；旧进程不一定会热加载环境配置。
+
+默认只验证目录、列表和选中状态，不发送真实模型生成请求。请明确说明“模型可见”不等于“实际请求成功”。若我另行同意做最小请求，只执行一次短请求并报告脱敏状态，不循环重试。
+
+最后分别报告：客户端版本、模型目录是否含 claude-fable-5-1、发现开关是否生效、/model 是否显示、是否实际选中、是否执行过生成请求。若仍未显示，保留客户端错误和脱敏目录响应，判断应继续检查本机版本/配置还是联系中转站管理员。`
+
 export const experiences: ExperienceContent[] = [
   {
     id: 'windows-11-wsl-codex-frontend',
@@ -190,13 +218,41 @@ export const experiences: ExperienceContent[] = [
     route: '/error-experiences/gpt-6-astra-not-visible',
     routeName: 'ErrorExperienceGpt6AstraNotVisible',
     icon: 'sparkles',
-    title: 'GPT-6 已接入，为什么 Codex 仍然看不见？',
+    title: '中转站已有新模型，为什么 Codex 看不到？',
     summary: '把服务可调用、客户端可见和任务选中分开检查，避免把模型目录、桌面版本或旧任务状态误判为同一个问题。',
     series: 'Codex 使用错误说明',
     subtitle: '解决你使用 Codex 或 Claude Code 的最后一公里',
     applicableTo: 'Codex 桌面使用者 · 历史案例环境：macOS',
     updatedAt: '2026-09-06',
     prompt: gpt6AstraNotVisiblePrompt,
+  },
+  {
+    id: 'claude-code-bypass-permissions',
+    category: 'connectionConfiguration',
+    route: PUBLIC_PAGES.claudeCodeBypassPermissions,
+    routeName: 'ClaudeCodeBypassPermissions',
+    icon: 'terminal',
+    title: 'Claude Code 每次执行都要确认，怎样默认跳过？',
+    summary: '保留现有接入配置，只调整用户级权限模式，并说明高风险边界与单次恢复确认方式。',
+    series: 'Claude Code 使用经验',
+    subtitle: '减少重复确认之前，先把权限范围和恢复入口说清楚',
+    applicableTo: 'Claude Code 使用者 · 信任的本机开发环境',
+    updatedAt: '2026-09-13',
+    prompt: claudeCodeBypassPermissionsPrompt,
+  },
+  {
+    id: 'claude-code-fable-5-1-not-visible',
+    category: 'modelsUsage',
+    route: PUBLIC_PAGES.claudeCodeFableNotVisible,
+    routeName: 'ClaudeCodeFableNotVisible',
+    icon: 'sparkles',
+    title: '中转站已有新模型，为什么 Claude Code 看不到？',
+    summary: '以 Fable 5.1 为例，分开检查模型 ID、网关目录与客户端发现开关，让 /model 读取中转站提供的模型列表。',
+    series: 'Claude Code 使用经验',
+    subtitle: '以 Fable 5.1 为例：目录里有模型，还需要让客户端主动发现并刷新列表',
+    applicableTo: 'Claude Code 使用者 · 自定义 Anthropic 兼容网关',
+    updatedAt: '2026-09-13',
+    prompt: claudeCodeFableNotVisiblePrompt,
   },
 ]
 

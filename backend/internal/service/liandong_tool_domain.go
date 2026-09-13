@@ -374,5 +374,3 @@ func liandongToolkitBooleanField(row map[string]any, keys ...string) (bool, bool
 	}
 	return false, false
 }
-
-var _ LiandongToolkitService = (*LiandongRestockService)(nil)

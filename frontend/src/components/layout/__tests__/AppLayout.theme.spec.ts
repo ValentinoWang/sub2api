@@ -21,7 +21,7 @@ describe('AppLayout user theme baseline', () => {
     const homeLight = ruleBody(homeViewSource, /\.home-root\s*\{([\s\S]*?)\n\}/)
     const homeDark = ruleBody(homeViewSource, /\.dark \.home-root\s*\{([\s\S]*?)\n\}/)
     const layoutLight = ruleBody(appLayoutSource, /\.app-layout\.user-brand-shell\s*\{([\s\S]*?)\n\}/)
-    const layoutDark = ruleBody(appLayoutSource, /:global\(\.dark\) \.app-layout\.user-brand-shell\s*\{([\s\S]*?)\n\}/)
+    const layoutDark = ruleBody(appLayoutSource, /\.dark \.app-layout\.user-brand-shell\s*\{([\s\S]*?)\n\}/)
 
     expect(variableValue(layoutLight, '--user-canvas')).toBe(variableValue(homeLight, '--home-bg'))
     expect(variableValue(layoutLight, '--user-grid-line')).toBe(variableValue(homeLight, '--home-line'))

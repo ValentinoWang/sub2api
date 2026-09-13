@@ -4,18 +4,20 @@
 
 面向中转站使用者的客户端接入与排障帮助。以完整问题登记可复用的错误经验模块，每个模块对应一个编号、一张卡片和一份案例文档，说明如何识别问题、交给 Codex 处理、自查恢复结果及联系管理员。
 
-当前登记 3 个模块：“切换接入后，为什么 Codex 旧对话无法继续？”、“GPT-6 已接入，为什么 Codex 仍然看不见？”与“Windows 11 + WSL2 里 Codex 装好了却不能正常使用，怎么排查？”。
+当前登记 5 个模块。每个模块先说明问题，再给出解决方案和可直接交给 Codex 的提示词。
 
 - [HTML 卡片预览](index.html)
-- [ERR-001 · GPT-6 已接入，为什么 Codex 仍然看不见？](2026-09-06-codex-astra-visibility.md)
+- [ERR-001 · 中转站已有新模型，为什么 Codex 看不到？](2026-09-06-codex-astra-visibility.md)
 - [ERR-002 · 切换接入后，为什么 Codex 旧对话无法继续？](2026-09-08-codex-session-migration.md)
 - [ERR-003 · Windows 11 + WSL2 里 Codex 装好了却不能正常使用，怎么排查？](2026-09-12-windows-wsl2-codex-environment.md) · [HTML 预览](2026-09-12-windows-wsl2-codex-environment.html)
+- [ERR-004 · Claude Code 每次执行都要确认，怎样默认跳过？](2026-09-13-claude-code-bypass-permissions.md) · [HTML 预览](2026-09-13-claude-code-bypass-permissions.html)
+- [ERR-005 · 中转站已有新模型，为什么 Claude Code 看不到？](2026-09-13-claude-code-fable-5-1-not-visible.md) · [HTML 预览](2026-09-13-claude-code-fable-5-1-not-visible.html)
 
-记录时间：2026-09-06 13:27（Asia/Shanghai）。本目录是项目经验文档与独立静态预览，不是生产路由，也不是 SSOT 开发契约。尚未提交、推送或部署到线上。
+本目录是项目经验文档与独立静态预览，不是生产发布或人工验收记录。
 
 新增案例应保留编号、文章更新时间、适用客户端、历史证据来源与未验证边界。正文不是内部开发日记：不展示聊天引语、私人验收反馈、对话时间线、作者的内部配置与操作流水账。不要保存密钥、账户标识或私有对话原文。
 
-写作顺序固定为：**情况说明 → Codex 帮你处理（可直接发送的提示词）→ 给人看的原因、证据与经验**。完整复盘结构置于第三部分，不得让读者先理解长文才能使用提示词。
+写作顺序固定为：**问题说明 → 解决方案（含可直接发送给 Codex 的提示词）→ 原因、验证与注意事项**。完整复盘结构置于第三部分，不得让读者先理解长文才能使用提示词。
 
 写作 Skill：[sub2api-error-experience](../../skills/sub2api-error-experience/SKILL.md)，可通过 `$sub2api-error-experience` 调用。项目自动发现入口为 `.agents/skills/sub2api-error-experience`。
 
