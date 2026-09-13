@@ -9,6 +9,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
@@ -436,24 +437,69 @@ func TestTokenRefreshService_BoundsPerProviderConcurrency(t *testing.T) {
 	require.Equal(t, int64(2), refresher.maxActive.Load())
 }
 
-func TestTokenRefreshRateGate_ReservesSpacedSlotsAndHonorsCancellation(t *testing.T) {
-	const interval = 25 * time.Millisecond
-	gate := newTokenRefreshRateGateWithInterval(interval)
-	base := time.Unix(1_700_000_000, 0)
+func TestTokenRefreshRateGate_SpacesAdmissionsAndHonorsCancellation(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		const interval = 25 * time.Millisecond
+		gate := newTokenRefreshRateGateWithInterval(interval)
+		base := time.Now()
+		for i := range 3 {
+			require.NoError(t, gate.wait(context.Background()))
+			require.Equal(t, base.Add(time.Duration(i)*interval), time.Now())
+		}
+		time.Sleep(time.Second)
+		jumped := time.Now()
+		require.NoError(t, gate.wait(context.Background()))
+		require.Equal(t, jumped, time.Now(), "an idle gate should not retain stale delay")
 
-	require.Equal(t, base, gate.reserveSlot(base))
-	require.Equal(t, base.Add(interval), gate.reserveSlot(base))
-	require.Equal(t, base.Add(2*interval), gate.reserveSlot(base))
-	jumped := base.Add(time.Second)
-	require.Equal(t, jumped, gate.reserveSlot(jumped), "an idle gate should not retain stale delay")
+		cancelGate := newTokenRefreshRateGateWithInterval(time.Hour)
+		require.NoError(t, cancelGate.wait(context.Background()), "the first slot is immediately available")
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		started := time.Now()
+		require.ErrorIs(t, cancelGate.wait(ctx), context.Canceled)
+		require.Less(t, time.Since(started), 100*time.Millisecond, "cancellation must not wait for the reserved slot")
+		require.Equal(t, started.Add(time.Hour), cancelGate.next, "cancellation must not consume an admission")
+		idleGate := newTokenRefreshRateGateWithInterval(interval)
+		require.ErrorIs(t, idleGate.wait(ctx), context.Canceled)
+		require.True(t, idleGate.next.IsZero(), "an already-canceled caller must not consume an idle gate's admission")
+	})
+}
 
-	cancelGate := newTokenRefreshRateGateWithInterval(time.Hour)
-	require.NoError(t, cancelGate.wait(context.Background()), "the first slot is immediately available")
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-	started := time.Now()
-	require.ErrorIs(t, cancelGate.wait(ctx), context.Canceled)
-	require.Less(t, time.Since(started), 100*time.Millisecond, "cancellation must not wait for the reserved slot")
+// delayedRateWakeContext holds a waiter after its timer is created to model a
+// scheduler pause that lets multiple rate deadlines expire before dispatch.
+type delayedRateWakeContext struct {
+	context.Context
+	resume <-chan struct{}
+}
+
+func (c delayedRateWakeContext) Done() <-chan struct{} {
+	<-c.resume
+	return c.Context.Done()
+}
+
+func TestTokenRefreshRateGate_ExpiredTimersRecheckActualAdmission(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		const interval = 50 * time.Millisecond
+		gate := newTokenRefreshRateGateWithInterval(interval)
+		require.NoError(t, gate.wait(context.Background()))
+		resume := make(chan struct{})
+		starts := make(chan time.Time, 2)
+		for range 2 {
+			go func() {
+				ctx := delayedRateWakeContext{Context: context.Background(), resume: resume}
+				if err := gate.wait(ctx); err != nil {
+					t.Error(err)
+				}
+				starts <- time.Now()
+			}()
+		}
+		synctest.Wait()
+		time.Sleep(3 * interval)
+		close(resume)
+		first, second := <-starts, <-starts
+		require.GreaterOrEqual(t, second.Sub(first), interval,
+			"expired rate timers must not admit upstream attempts together after a scheduler pause")
+	})
 }
 
 func TestTokenRefreshService_RetriesAcquireRateSlotPerAttempt(t *testing.T) {
@@ -506,14 +552,18 @@ func TestTokenRefreshService_ProcessProviderAccountsLegacyNilReleaseGateIsSafe(t
 }
 
 func TestTokenRefreshService_ProviderRateGateIsSharedAcrossRuns(t *testing.T) {
-	svc := &TokenRefreshService{cfg: &config.TokenRefreshConfig{ProviderQPS: 40}}
-	first := svc.providerRateGate(PlatformGrok)
-	second := svc.providerRateGate(PlatformGrok)
-	require.Same(t, first, second, "background cycles and reconciliation must share the process-local provider limiter")
+	synctest.Test(t, func(t *testing.T) {
+		svc := &TokenRefreshService{cfg: &config.TokenRefreshConfig{ProviderQPS: 40}}
+		first := svc.providerRateGate(PlatformGrok)
+		second := svc.providerRateGate(PlatformGrok)
+		require.Same(t, first, second, "background cycles and reconciliation must share the process-local provider limiter")
 
-	base := time.Unix(1_700_000_000, 0)
-	require.Equal(t, base, first.reserveSlot(base))
-	require.Equal(t, base.Add(25*time.Millisecond), second.reserveSlot(base))
+		base := time.Now()
+		require.NoError(t, first.wait(context.Background()))
+		require.Equal(t, base, time.Now())
+		require.NoError(t, second.wait(context.Background()))
+		require.Equal(t, base.Add(25*time.Millisecond), time.Now())
+	})
 }
 
 func TestTokenRefreshService_ProviderConcurrencyGateIsSharedAcrossBackgroundAndConcurrentAdminReconciliation(t *testing.T) {
@@ -631,27 +681,12 @@ func TestTokenRefreshService_SaturatedProviderPreservesConcurrencyAndActualQPSSt
 	require.Len(t, starts, attemptCount)
 	configuredSpacing := time.Second / time.Duration(providerQPS)
 
-	// The floor is a tenth of the configured spacing, not spacing minus a few
-	// milliseconds. Each start timestamp is taken after the rate gate releases
-	// the goroutine, so scheduler delay can compress one observed gap without
-	// the gate having done anything wrong: this assertion failed on a loaded
-	// machine at 13ms and again at 37ms against a 40ms floor, both times with
-	// the gate pacing correctly.
-	//
-	// A tenth still separates the two cases by a wide margin. Measured with
-	// providerQPS=20 (50ms spacing), 8 attempts, providerConcurrency=2:
-	//
-	//	gate at 50ms  -> minimum observed gap 49.97ms
-	//	gate at 0     -> minimum observed gap 22µs
-	//
-	// So an unpaced gate lands three orders of magnitude below the 5ms floor
-	// and is still caught, while jitter on a busy machine has room to move.
-	//
-	// Do not swap this for an assertion on the total span of the starts: the
-	// span is dominated by how long each attempt takes under
-	// providerConcurrency, not by the gate. Same measurement — 471ms paced
-	// against 241ms unpaced — so a span check passes with the gate disabled and
-	// tests nothing.
+	// These timestamps are recorded after admission, so scheduling between the
+	// gate and the refresher can compress an observed gap. Keep the burst floor
+	// here; ExpiredTimersRecheckActualAdmission separately verifies the complete
+	// configured interval at admission, including delayed timer dispatch.
+	// Total runtime cannot replace per-start checks because upstream duration
+	// and provider concurrency also contribute to the span.
 	minimumObservedSpacing := configuredSpacing / 10
 	actualMinimumSpacing := starts[1].Sub(starts[0])
 	for i := 1; i < len(starts); i++ {

@@ -326,39 +326,39 @@ func newTokenRefreshRateGate(qps int) *tokenRefreshRateGate {
 }
 
 // newTokenRefreshRateGateWithInterval is a narrow duration seam used to test
-// slot reservation and cancellation without waiting on production-scale QPS.
+// admission spacing and cancellation without waiting on production-scale QPS.
 func newTokenRefreshRateGateWithInterval(interval time.Duration) *tokenRefreshRateGate {
 	return &tokenRefreshRateGate{interval: interval}
-}
-
-func (g *tokenRefreshRateGate) reserveSlot(now time.Time) time.Time {
-	g.mu.Lock()
-	defer g.mu.Unlock()
-	if g.next.Before(now) {
-		g.next = now
-	}
-	slot := g.next
-	g.next = g.next.Add(g.interval)
-	return slot
 }
 
 func (g *tokenRefreshRateGate) wait(ctx context.Context) error {
 	if g == nil || g.interval <= 0 {
 		return nil
 	}
-	slot := g.reserveSlot(time.Now())
+	for {
+		g.mu.Lock()
+		if err := ctx.Err(); err != nil {
+			g.mu.Unlock()
+			return err
+		}
+		now := time.Now()
+		wait := g.next.Sub(now)
+		if wait <= 0 {
+			g.next = now.Add(g.interval)
+			g.mu.Unlock()
+			return nil
+		}
+		g.mu.Unlock()
 
-	wait := time.Until(slot)
-	if wait <= 0 {
-		return nil
-	}
-	timer := time.NewTimer(wait)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
+		timer := time.NewTimer(wait)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+		}
+		// A scheduler pause may expire several timers together. Recheck the
+		// last actual admission instead of releasing stale reservations in a burst.
 	}
 }
 
