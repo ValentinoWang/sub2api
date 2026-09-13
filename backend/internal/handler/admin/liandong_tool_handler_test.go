@@ -208,6 +208,17 @@ func TestLiandongToolkitHandlerMapsDomainErrorsToStableResponses(t *testing.T) {
 		configure func(*liandongToolkitHandlerServiceStub, error)
 	}{
 		{
+			name:   "session verification required",
+			status: http.StatusConflict,
+			reason: "LDXP_SESSION_VERIFICATION_REQUIRED",
+			method: http.MethodPost,
+			path:   "/jobs/run",
+			body:   `{"selected_goods":[42]}`,
+			configure: func(stub *liandongToolkitHandlerServiceStub, err error) {
+				stub.startJobErr = err
+			},
+		},
+		{
 			name:   "job not found",
 			status: http.StatusNotFound,
 			reason: "LDXP_JOB_NOT_FOUND",
@@ -282,6 +293,8 @@ func TestLiandongToolkitHandlerMapsDomainErrorsToStableResponses(t *testing.T) {
 
 func domainErrorForLiandongToolkitTest(reason string) error {
 	switch reason {
+	case "LDXP_SESSION_VERIFICATION_REQUIRED":
+		return service.ErrLiandongSessionVerificationRequired
 	case "LDXP_JOB_NOT_FOUND":
 		return service.ErrLiandongJobNotFound
 	case "LDXP_RUN_BUSY":

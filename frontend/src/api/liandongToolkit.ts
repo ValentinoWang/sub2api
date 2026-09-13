@@ -67,6 +67,7 @@ export interface LiandongStatus {
   payment_readiness?: string
   configured?: boolean
   merchant_token_configured?: boolean
+  session_verification_required?: boolean
   code_secret_configured?: boolean
   enabled?: boolean
   running?: boolean

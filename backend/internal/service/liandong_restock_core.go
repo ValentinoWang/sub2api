@@ -468,6 +468,9 @@ func liandongSafeErrorText(err error) string {
 	if err == nil {
 		return ""
 	}
+	if errors.Is(err, ErrLiandongSessionVerificationRequired) {
+		return ErrLiandongSessionVerificationRequired.Message
+	}
 	var remoteFailure *LiandongRemoteFailureError
 	if errors.As(err, &remoteFailure) {
 		if remoteFailure.StatusCode > 0 {
@@ -727,6 +730,9 @@ func (s *LiandongRestockService) Preview(ctx context.Context, selectedGoods []in
 		}
 		stock, fetchErr := s.fetchUnsoldStock(ctx, goodsID)
 		if fetchErr != nil {
+			if errors.Is(fetchErr, ErrLiandongSessionVerificationRequired) {
+				return nil, s.recordRunError(ctx, state, fetchErr)
+			}
 			return nil, fetchErr
 		}
 		planned, planErr := liandongPlanAddition(stock, target)
@@ -802,6 +808,9 @@ func (s *LiandongRestockService) runLiandongCycle(parent context.Context, force 
 	}
 	if !force && !state.Enabled {
 		return &liandongCycleResult{}, nil
+	}
+	if state.SessionVerificationRequired {
+		return nil, ErrLiandongSessionVerificationRequired
 	}
 	if !s.configured() {
 		return nil, errors.New("liandong auto restock is not fully configured")
@@ -955,6 +964,9 @@ func (s *LiandongRestockService) StartManualJob(ctx context.Context, selectedGoo
 	s.stateMu.Unlock()
 	if err != nil {
 		return nil, err
+	}
+	if state.SessionVerificationRequired {
+		return nil, ErrLiandongSessionVerificationRequired
 	}
 	if state.ReconciliationRequired {
 		return nil, ErrLiandongNeedsReconciliation
@@ -1339,6 +1351,15 @@ func (s *LiandongRestockService) ResumeJob(ctx context.Context, id string) (*Lia
 	}
 	if job.Status == LiandongRestockJobRunning && !liandongJobLeaseExpired(job) {
 		return job, ErrLiandongRunBusy
+	}
+	s.stateMu.Lock()
+	state, err := s.loadState(ctx)
+	s.stateMu.Unlock()
+	if err != nil {
+		return nil, err
+	}
+	if state.SessionVerificationRequired {
+		return job, ErrLiandongSessionVerificationRequired
 	}
 	if job.Status == LiandongRestockJobRunning {
 		job.Status = LiandongRestockJobFailed

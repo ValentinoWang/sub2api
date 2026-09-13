@@ -13,12 +13,14 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
+	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 )
 
@@ -29,6 +31,8 @@ const (
 	liandongPersistenceTimeout  = 5 * time.Second
 	liandongRunningLeaseTimeout = 2 * time.Minute
 )
+
+var ErrLiandongSessionVerificationRequired = infraerrors.Conflict("LDXP_SESSION_VERIFICATION_REQUIRED", "LDXP 登录授权需要重新验证，自动补货已暂停；请重新登录并保存授权，完成连接验证与库存核对后手动启用")
 
 type LiandongRestockProduct struct {
 	CNYAmount    int     `json:"cny_amount"`
@@ -65,30 +69,32 @@ type liandongRestockPendingBatch struct {
 }
 
 type LiandongRestockState struct {
-	Enabled                bool                         `json:"enabled"`
-	Products               []LiandongRestockProduct     `json:"products"`
-	LastRunAt              string                       `json:"last_run_at,omitempty"`
-	LastError              string                       `json:"last_error,omitempty"`
-	PendingBatch           *liandongRestockPendingBatch `json:"pending_batch,omitempty"`
-	ReconciliationRequired bool                         `json:"reconciliation_required,omitempty"`
+	Enabled                     bool                         `json:"enabled"`
+	Products                    []LiandongRestockProduct     `json:"products"`
+	LastRunAt                   string                       `json:"last_run_at,omitempty"`
+	LastError                   string                       `json:"last_error,omitempty"`
+	PendingBatch                *liandongRestockPendingBatch `json:"pending_batch,omitempty"`
+	ReconciliationRequired      bool                         `json:"reconciliation_required,omitempty"`
+	SessionVerificationRequired bool                         `json:"session_verification_required,omitempty"`
 }
 
 type LiandongRestockStatus struct {
-	IntegrationMode         string                       `json:"integration_mode"`
-	PaymentReadiness        string                       `json:"payment_readiness"`
-	Configured              bool                         `json:"configured"`
-	MerchantTokenConfigured bool                         `json:"merchant_token_configured"`
-	CodeSecretConfigured    bool                         `json:"code_secret_configured"`
-	Enabled                 bool                         `json:"enabled"`
-	Running                 bool                         `json:"running"`
-	IntervalSeconds         int                          `json:"interval_seconds"`
-	LastRunAt               string                       `json:"last_run_at,omitempty"`
-	LastError               string                       `json:"last_error,omitempty"`
-	PendingBatch            bool                         `json:"pending_batch"`
-	Products                []LiandongRestockProduct     `json:"products"`
-	Batches                 []LiandongRestockBatchStatus `json:"batches,omitempty"`
-	CurrentJob              *LiandongRestockJobSummary   `json:"current_job,omitempty"`
-	Jobs                    []LiandongRestockJobSummary  `json:"jobs,omitempty"`
+	IntegrationMode             string                       `json:"integration_mode"`
+	PaymentReadiness            string                       `json:"payment_readiness"`
+	Configured                  bool                         `json:"configured"`
+	MerchantTokenConfigured     bool                         `json:"merchant_token_configured"`
+	CodeSecretConfigured        bool                         `json:"code_secret_configured"`
+	Enabled                     bool                         `json:"enabled"`
+	SessionVerificationRequired bool                         `json:"session_verification_required"`
+	Running                     bool                         `json:"running"`
+	IntervalSeconds             int                          `json:"interval_seconds"`
+	LastRunAt                   string                       `json:"last_run_at,omitempty"`
+	LastError                   string                       `json:"last_error,omitempty"`
+	PendingBatch                bool                         `json:"pending_batch"`
+	Products                    []LiandongRestockProduct     `json:"products"`
+	Batches                     []LiandongRestockBatchStatus `json:"batches,omitempty"`
+	CurrentJob                  *LiandongRestockJobSummary   `json:"current_job,omitempty"`
+	Jobs                        []LiandongRestockJobSummary  `json:"jobs,omitempty"`
 }
 
 // LiandongRestockBatchStatus is a non-secret operational summary of a restock batch.
@@ -426,6 +432,10 @@ func (s *LiandongRestockService) loadState(ctx context.Context) (*LiandongRestoc
 	if state.LastError != "" {
 		state.LastError = "Liandong restock operation failed"
 	}
+	if state.SessionVerificationRequired {
+		state.Enabled = false
+		state.LastError = ErrLiandongSessionVerificationRequired.Message
+	}
 	for i := range state.Products {
 		if state.Products[i].LastError != "" {
 			state.Products[i].LastError = "Liandong restock operation failed"
@@ -472,6 +482,10 @@ func (s *LiandongRestockService) mergePolicies(saved []LiandongRestockProduct) [
 }
 
 func (s *LiandongRestockService) saveState(ctx context.Context, state *LiandongRestockState) error {
+	if state.SessionVerificationRequired {
+		state.Enabled = false
+		state.LastError = ErrLiandongSessionVerificationRequired.Message
+	}
 	raw, err := json.Marshal(state)
 	if err != nil {
 		return err
@@ -504,21 +518,22 @@ func (s *LiandongRestockService) Status(ctx context.Context) (*LiandongRestockSt
 		return nil, err
 	}
 	return &LiandongRestockStatus{
-		IntegrationMode:         "sales_channel",
-		PaymentReadiness:        "NOT_READY",
-		Configured:              s.configured(),
-		MerchantTokenConfigured: merchantTokenConfigured,
-		CodeSecretConfigured:    codeSecretConfigured,
-		Enabled:                 state.Enabled,
-		Running:                 running,
-		IntervalSeconds:         intervalSeconds,
-		LastRunAt:               state.LastRunAt,
-		LastError:               state.LastError,
-		PendingBatch:            state.PendingBatch != nil,
-		Products:                state.Products,
-		Batches:                 batches,
-		CurrentJob:              currentLiandongJob(jobs),
-		Jobs:                    jobs,
+		IntegrationMode:             "sales_channel",
+		PaymentReadiness:            "NOT_READY",
+		Configured:                  s.configured(),
+		MerchantTokenConfigured:     merchantTokenConfigured,
+		CodeSecretConfigured:        codeSecretConfigured,
+		Enabled:                     state.Enabled,
+		SessionVerificationRequired: state.SessionVerificationRequired,
+		Running:                     running,
+		IntervalSeconds:             intervalSeconds,
+		LastRunAt:                   state.LastRunAt,
+		LastError:                   state.LastError,
+		PendingBatch:                state.PendingBatch != nil,
+		Products:                    state.Products,
+		Batches:                     batches,
+		CurrentJob:                  currentLiandongJob(jobs),
+		Jobs:                        jobs,
 	}, nil
 }
 
@@ -543,12 +558,13 @@ func (s *LiandongRestockService) UpdateConfiguration(ctx context.Context, input 
 	if state.Enabled {
 		return nil, errors.New("stop auto restock before changing configuration")
 	}
-	if state.PendingBatch != nil {
+	credentialRecovery := state.SessionVerificationRequired && strings.TrimSpace(input.MerchantToken) != "" && !input.GenerateCodeSecret
+	if state.PendingBatch != nil && !credentialRecovery {
 		return nil, errors.New("resolve the pending batch before changing configuration")
 	}
 	if open, err := s.hasOpenLiandongJob(ctx); err != nil {
 		return nil, err
-	} else if open {
+	} else if open && !credentialRecovery {
 		return nil, errors.New("resolve the existing Liandong job before changing configuration")
 	}
 
@@ -570,6 +586,11 @@ func (s *LiandongRestockService) UpdateConfiguration(ctx context.Context, input 
 	if err != nil {
 		return nil, err
 	}
+	if credentialRecovery {
+		if !slices.Equal(normalizeLiandongProducts(state.Products), products) {
+			return nil, errors.New("only the login authorization may change during session recovery")
+		}
+	}
 	if err := s.persistProductMappings(ctx, products); err != nil {
 		return nil, fmt.Errorf("persist Liandong product mappings: %w", err)
 	}
@@ -586,6 +607,15 @@ func (s *LiandongRestockService) UpdateConfiguration(ctx context.Context, input 
 	ciphertext, err := s.encryptor.Encrypt(string(plaintext))
 	if err != nil {
 		return nil, fmt.Errorf("encrypt Liandong restock configuration: %w", err)
+	}
+	// Persist the verification gate before the credential so an interrupted save
+	// cannot leave a replacement credential eligible for an unchecked manual run.
+	if strings.TrimSpace(input.MerchantToken) != "" {
+		state.SessionVerificationRequired = true
+		state.Enabled = false
+		if err := s.saveState(ctx, state); err != nil {
+			return nil, err
+		}
 	}
 	if err := s.settingRepo.Set(ctx, liandongRestockConfigKey, ciphertext); err != nil {
 		return nil, err
@@ -662,18 +692,19 @@ func (s *LiandongRestockService) statusWithState(state *LiandongRestockState) (*
 	s.mu.Unlock()
 	s.configMu.RLock()
 	status := &LiandongRestockStatus{
-		IntegrationMode:         "sales_channel",
-		PaymentReadiness:        "NOT_READY",
-		Configured:              s.configuredLocked(),
-		MerchantTokenConfigured: strings.TrimSpace(s.token) != "",
-		CodeSecretConfigured:    len(s.codeSecret) >= 32,
-		Enabled:                 state.Enabled,
-		Running:                 running,
-		IntervalSeconds:         int(s.interval.Seconds()),
-		LastRunAt:               state.LastRunAt,
-		LastError:               state.LastError,
-		PendingBatch:            state.PendingBatch != nil,
-		Products:                visibleLiandongProducts(state.Products),
+		IntegrationMode:             "sales_channel",
+		PaymentReadiness:            "NOT_READY",
+		Configured:                  s.configuredLocked(),
+		MerchantTokenConfigured:     strings.TrimSpace(s.token) != "",
+		CodeSecretConfigured:        len(s.codeSecret) >= 32,
+		Enabled:                     state.Enabled,
+		SessionVerificationRequired: state.SessionVerificationRequired,
+		Running:                     running,
+		IntervalSeconds:             int(s.interval.Seconds()),
+		LastRunAt:                   state.LastRunAt,
+		LastError:                   state.LastError,
+		PendingBatch:                state.PendingBatch != nil,
+		Products:                    visibleLiandongProducts(state.Products),
 	}
 	s.configMu.RUnlock()
 	if batches, err := s.loadBatchStatuses(context.Background(), 20); err == nil {
@@ -752,6 +783,14 @@ func (s *LiandongRestockService) SetEnabled(ctx context.Context, enabled bool) (
 		s.stateMu.Unlock()
 		return nil, err
 	}
+	if enabled && state.SessionVerificationRequired {
+		s.stateMu.Unlock()
+		return nil, ErrLiandongSessionVerificationRequired
+	}
+	if enabled && state.ReconciliationRequired {
+		s.stateMu.Unlock()
+		return nil, ErrLiandongNeedsReconciliation
+	}
 	state.Enabled = enabled
 	if err := s.saveState(ctx, state); err != nil {
 		s.stateMu.Unlock()
@@ -769,7 +808,25 @@ func (s *LiandongRestockService) RunOnce(parent context.Context, force bool) err
 	return err
 }
 
+// Read-only callers do not hold stateMu while requesting merchant inventory.
+// Reload under the lock so a failed request cannot overwrite a newer batch.
+func (s *LiandongRestockService) recordLiandongSessionFailure(runErr error) error {
+	s.stateMu.Lock()
+	defer s.stateMu.Unlock()
+	ctx, cancel := liandongRecoveryContext()
+	defer cancel()
+	state, err := s.loadState(ctx)
+	if err != nil {
+		return errors.Join(runErr, err)
+	}
+	return s.recordRunError(ctx, state, runErr)
+}
+
 func (s *LiandongRestockService) recordRunError(ctx context.Context, state *LiandongRestockState, runErr error) error {
+	if errors.Is(runErr, ErrLiandongSessionVerificationRequired) {
+		state.SessionVerificationRequired = true
+		state.Enabled = false
+	}
 	state.LastRunAt = time.Now().UTC().Format(time.RFC3339)
 	state.LastError = liandongSafeErrorText(runErr)
 	persistCtx, cancelPersist := liandongRecoveryContext()
@@ -850,9 +907,9 @@ func (s *LiandongRestockService) fulfillPendingBatch(ctx context.Context, state 
 				persistErr := s.markLiandongBatchAndSegmentsNeedsReconciliation(batch.BatchID, []int{segment.SegmentNo}, err)
 				reconciliationErr := fmt.Errorf("%w: batch %s segment %d", ErrLiandongNeedsReconciliation, batch.BatchID, segment.SegmentNo)
 				if persistErr != nil {
-					return fmt.Errorf("%w: reconciliation persistence failed", reconciliationErr)
+					return errors.Join(fmt.Errorf("%w: reconciliation persistence failed", reconciliationErr), err)
 				}
-				return reconciliationErr
+				return errors.Join(reconciliationErr, err)
 			}
 			if markErr := s.markLiandongSegmentFailed(ctx, batch.BatchID, segment.SegmentNo, err); markErr != nil {
 				return markErr
@@ -873,12 +930,13 @@ func (s *LiandongRestockService) fulfillPendingBatch(ctx context.Context, state 
 	}
 
 	var remoteStockAfter *int
-	if stock, fetchErr := s.fetchUnsoldStock(ctx, batch.GoodsID); fetchErr == nil {
+	stock, fetchErr := s.fetchUnsoldStock(ctx, batch.GoodsID)
+	if fetchErr == nil {
 		remoteStockAfter = &stock
 	}
 	if remoteStockAfter == nil || batch.RemoteStockBefore == nil ||
 		int64(*remoteStockAfter) != int64(*batch.RemoteStockBefore)+int64(batch.Count) {
-		return s.latchLiandongStockDiscrepancy(state, remoteStockAfter)
+		return errors.Join(s.latchLiandongStockDiscrepancy(state, remoteStockAfter), fetchErr)
 	}
 	if err := s.markBatchUploadedObserved(ctx, batch.BatchID, remoteStockAfter); err != nil {
 		state.ReconciliationRequired = true
@@ -1318,6 +1376,12 @@ func (s *LiandongRestockService) post(ctx context.Context, path string, payload 
 	}
 	defer func() { _ = resp.Body.Close() }()
 	isUpload := path == "/merchantApi/GoodsCardStorage/add"
+	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		if isUpload {
+			return nil, &LiandongRemoteOutcomeUnknownError{Err: ErrLiandongSessionVerificationRequired}
+		}
+		return nil, ErrLiandongSessionVerificationRequired
+	}
 	limited := io.LimitReader(resp.Body, 2<<20)
 	responseBody, err := io.ReadAll(limited)
 	if err != nil {

@@ -89,6 +89,7 @@ const baseInstallation = {
 const baseStatus = () => ({
   configured: true,
   merchant_token_configured: true,
+  session_verification_required: false,
   code_secret_configured: true,
   running: false,
   enabled: false,
@@ -157,6 +158,70 @@ describe('LiandongToolkitView', () => {
     exportJob.mockReset().mockResolvedValue(new Blob(['safe export']))
     showError.mockReset()
     showSuccess.mockReset()
+  })
+
+  it.each([true, undefined])('blocks enable, run, and resume when session verification is %s', async verificationRequired => {
+    getStatus.mockResolvedValue({
+      ...baseStatus(), session_verification_required: verificationRequired,
+      current_job: { job_id: 'job-failed', status: 'failed', selected_goods: [42] },
+    })
+    previewJob.mockResolvedValue({ products: [previewItem()] })
+    const wrapper = mountView()
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="session-verification-required"]').exists()).toBe(verificationRequired === true)
+    expect(wrapper.get('[data-testid="toggle-auto-restock"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('[data-testid="resume-job"]').exists()).toBe(false)
+    await wrapper.get('[data-testid="preview-button"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[data-testid="run-button"]').attributes('disabled')).toBeDefined()
+    expect(runJob).not.toHaveBeenCalled()
+    expect(setRestockEnabled).not.toHaveBeenCalled()
+  })
+
+  it('keeps updated credentials paused until verified and requires manual enablement', async () => {
+    updateConfig.mockResolvedValue({ ...baseStatus(), session_verification_required: true })
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-testid="merchant-token-input"]').setValue('new-web-session-fixture')
+    await wrapper.get('[data-testid="save-config"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="session-verification-required"]').text()).toContain('ldxpToolkit.connection.reauthorizeHint')
+    expect(wrapper.get('[data-testid="toggle-auto-restock"]').attributes('disabled')).toBeDefined()
+    await wrapper.get('[data-testid="test-connection"]').trigger('click')
+    await flushPromises()
+
+    expect(getStatus).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('[data-testid="session-verification-required"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="auto-restock-status"]').text()).toContain('common.disabled')
+    expect(wrapper.get('[data-testid="toggle-auto-restock"]').attributes('disabled')).toBeUndefined()
+    expect(setRestockEnabled).not.toHaveBeenCalled()
+    expect(runJob).not.toHaveBeenCalled()
+  })
+
+  it('reads back the pause after an expired-session response without exposing credentials', async () => {
+    getStatus.mockResolvedValueOnce(baseStatus()).mockResolvedValue({ ...baseStatus(), session_verification_required: true })
+    testConnection.mockRejectedValue({ status: 409, reason: 'LDXP_SESSION_VERIFICATION_REQUIRED' })
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-testid="test-connection"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[data-testid="session-verification-required"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="toggle-auto-restock"]').attributes('disabled')).toBeDefined()
+    expect(setRestockEnabled).not.toHaveBeenCalled()
+  })
+
+  it('does not claim verification success when the persisted hold remains', async () => {
+    getStatus.mockResolvedValue({ ...baseStatus(), session_verification_required: true })
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.get('[data-testid="test-connection"]').trigger('click')
+    await flushPromises()
+    const feedback = wrapper.get('[data-testid="connection-section"] [role="status"]')
+    expect(feedback.text()).toContain('ldxpToolkit.connection.verificationUnconfirmed')
+    expect(feedback.classes()).toContain('text-red-600')
+    expect(wrapper.get('[data-testid="toggle-auto-restock"]').attributes('disabled')).toBeDefined()
   })
 
   it('shows real local and merchant quantity observations without clearing reconciliation', async () => {

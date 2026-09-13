@@ -27,6 +27,11 @@
         </button>
       </div>
 
+      <div v-if="status?.session_verification_required" class="rounded-lg bg-amber-50 p-4 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-200" role="alert" data-testid="session-verification-required">
+        <p class="font-semibold">{{ t('ldxpToolkit.connection.verificationRequired') }}</p>
+        <p class="mt-1">{{ t('ldxpToolkit.connection.reauthorizeHint') }}</p>
+      </div>
+
       <!-- Runtime -->
       <section class="card p-5 md:p-6" data-testid="runtime-section">
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -158,7 +163,7 @@
             <span>{{ statusError }}</span>
           </div>
         </div>
-        <div v-else-if="loadingStatus" class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</div>
+        <div v-else-if="loadingStatus && !status" class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</div>
         <div v-else class="mt-5 space-y-5">
           <div class="max-w-xl">
             <label class="input-label" for="ldxp-merchant-token">{{ t('ldxpToolkit.connection.merchantToken') }}</label>
@@ -558,8 +563,10 @@ async function loadInventory(): Promise<void> {
     const report = await liandongToolkitAPI.getInventory()
     if (!Array.isArray(report.rows) || typeof report.reconciliation_required !== 'boolean') throw new Error('invalid inventory response')
     inventory.value = report
+    await loadStatus()
   } catch {
     inventoryError.value = t('ldxpToolkit.inventory.loadFailed')
+    await loadStatus()
   } finally {
     loadingInventory.value = false
   }
@@ -621,7 +628,7 @@ const loadingStatus = ref(false)
 const savingRestock = ref(false)
 const restockError = ref('')
 const canToggleRestock = computed(() => !loadingStatus.value && !savingRestock.value && !savingConfig.value &&
-  !statusError.value && (status.value?.enabled === true || (status.value?.enabled === false && status.value.configured === true)))
+  !statusError.value && (status.value?.enabled === true || (status.value?.enabled === false && status.value.configured === true && status.value.session_verification_required === false)))
 const merchantToken = ref('')
 const products = ref<LiandongProductMapping[]>([])
 const savingConfig = ref(false)
@@ -1032,6 +1039,12 @@ async function testMerchantConnection(): Promise<void> {
       connectionFeedbackType.value = 'error'
       const code = result.read_only !== true ? 'LDXP_MERCHANT_NOT_READ_ONLY' : 'LDXP_MERCHANT_VALIDATION_FAILED'
       connectionFeedback.value = `${redactDisplayText(result.message || t('ldxpToolkit.connection.testFailed'))} [connection:${code}]`
+      await loadStatus()
+      return
+    }
+    if (!await loadStatus() || status.value?.session_verification_required !== false) {
+      connectionFeedbackType.value = 'error'
+      connectionFeedback.value = t('ldxpToolkit.connection.verificationUnconfirmed')
       return
     }
     connectionFeedbackType.value = 'success'
@@ -1039,6 +1052,7 @@ async function testMerchantConnection(): Promise<void> {
   } catch (error) {
     connectionFeedbackType.value = 'error'
     connectionFeedback.value = operationError(error, t('ldxpToolkit.connection.testFailed'), 'connection')
+    await loadStatus()
   } finally {
     merchantToken.value = ''
     testingConnection.value = false
@@ -1058,6 +1072,7 @@ async function syncRemoteGoods(): Promise<void> {
   } catch (error) {
     remoteGoods.value = []
     goodsError.value = operationError(error, t('ldxpToolkit.goods.syncFailed'), 'goods')
+    await loadStatus()
   } finally {
     loadingGoods.value = false
   }
@@ -1111,6 +1126,7 @@ const configurationVersion = computed(() => JSON.stringify({
   configured: status.value?.configured ?? null,
   merchant_token_configured: status.value?.merchant_token_configured ?? null,
   code_secret_configured: status.value?.code_secret_configured ?? null,
+  session_verification_required: status.value?.session_verification_required ?? null,
   running: status.value?.running ?? null,
 }))
 const activeJob = computed(() => currentJob.value || pendingJob.value)
@@ -1119,6 +1135,7 @@ const statusReadyForRun = computed(() => {
   return current?.configured === true &&
     current.merchant_token_configured === true &&
     current.code_secret_configured === true &&
+    current.session_verification_required === false &&
     current.running === false
 })
 const hasValidConfiguration = computed(() => products.value.length > 0 && products.value.every(isConfiguredProduct))
@@ -1425,6 +1442,7 @@ async function confirmRun(): Promise<void> {
     await loadStatus()
   } catch (error) {
     jobError.value = operationError(error, t('ldxpToolkit.preview.runFailed'), 'run')
+    await loadStatus()
   } finally {
     runningJob.value = false
   }
@@ -1465,6 +1483,7 @@ async function resumeActiveJob(): Promise<void> {
     await loadStatus()
   } catch (error) {
     jobError.value = operationError(error, t('ldxpToolkit.preview.resumeFailed'), 'resume')
+    await loadStatus()
   } finally {
     resumingJob.value = false
   }

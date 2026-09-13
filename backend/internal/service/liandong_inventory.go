@@ -60,6 +60,9 @@ func (s *LiandongRestockService) Inventory(ctx context.Context) (*LiandongInvent
 		if s.configured() {
 			stock, fetchErr := s.fetchUnsoldStock(ctx, product.GoodsID)
 			if fetchErr != nil {
+				if errors.Is(fetchErr, ErrLiandongSessionVerificationRequired) {
+					return nil, s.recordLiandongSessionFailure(fetchErr)
+				}
 				row.MerchantError = "merchant_inventory_unavailable"
 			} else {
 				row.MerchantUnsold = &stock

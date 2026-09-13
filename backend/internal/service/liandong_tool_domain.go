@@ -39,13 +39,53 @@ func (s *LiandongRestockService) TestConfiguration(ctx context.Context) (*Liando
 		result.Message = "LDXP merchant connectivity client is unavailable"
 		return result, nil
 	}
+	s.stateMu.Lock()
+	defer s.stateMu.Unlock()
+	var state *LiandongRestockState
+	if s.settingRepo != nil {
+		var err error
+		state, err = s.loadState(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	failedProbe := func(probeErr error) (*LiandongToolkitConnectivityResult, error) {
+		result.Message = "LDXP merchant connectivity check failed"
+		if errors.Is(probeErr, ErrLiandongSessionVerificationRequired) {
+			result.Message = ErrLiandongSessionVerificationRequired.Message
+			if state != nil {
+				if err := s.recordRunError(ctx, state, probeErr); err != probeErr {
+					return nil, err
+				}
+			}
+		}
+		return result, nil
+	}
 	if _, err := s.post(ctx, liandongToolkitGoodsPath, map[string]any{
 		"current":  1,
 		"pageSize": 1,
 		"is_proxy": 0,
 	}); err != nil {
-		result.Message = "LDXP merchant connectivity check failed"
-		return result, nil
+		return failedProbe(err)
+	}
+	if state != nil && state.SessionVerificationRequired {
+		for i := range state.Products {
+			stock, err := s.fetchUnsoldStock(ctx, state.Products[i].GoodsID)
+			if err != nil {
+				return failedProbe(err)
+			}
+			state.Products[i].CurrentStock = &stock
+			state.Products[i].LastError = ""
+		}
+		state.SessionVerificationRequired = false
+		state.Enabled = false
+		state.LastError = ""
+		if state.ReconciliationRequired {
+			state.LastError = liandongSafeErrorText(ErrLiandongNeedsReconciliation)
+		}
+		if err := s.saveState(ctx, state); err != nil {
+			return nil, err
+		}
 	}
 	result.Reachable = true
 	result.Message = "LDXP merchant connectivity check succeeded"
@@ -77,6 +117,9 @@ func (s *LiandongRestockService) ListGoods(ctx context.Context) (*LiandongToolki
 			"is_proxy": 0,
 		})
 		if err != nil {
+			if errors.Is(err, ErrLiandongSessionVerificationRequired) && s.settingRepo != nil {
+				err = s.recordLiandongSessionFailure(err)
+			}
 			return nil, err
 		}
 		parsed, err := parseLiandongToolkitGoodsPage(result.Data)

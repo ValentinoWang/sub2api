@@ -111,3 +111,15 @@ func TestLiandongAdminHandlerPropagatesRunFailure(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, rec.Code)
 	require.Contains(t, rec.Body.String(), `"code":500`)
 }
+
+func TestLiandongAdminEnableReturnsSessionVerificationConflict(t *testing.T) {
+	stub := &liandongHandlerStub{statusErr: service.ErrLiandongSessionVerificationRequired}
+	router := newLiandongHandlerTestRouter(NewPaymentHandler(nil, nil, stub))
+	request := httptest.NewRequest(http.MethodPost, "/enable", strings.NewReader(`{"enabled":true}`))
+	request.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+	require.Equal(t, http.StatusConflict, recorder.Code)
+	require.Contains(t, recorder.Body.String(), `"reason":"LDXP_SESSION_VERIFICATION_REQUIRED"`)
+	require.Contains(t, recorder.Body.String(), "重新登录")
+}
