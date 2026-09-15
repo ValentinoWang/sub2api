@@ -1,0 +1,56 @@
+{
+  "version": "openai-plans-2026-09-16",
+  "checked_at": "2026-09-16T00:00:00+08:00",
+  "valid_until": "2026-09-17T00:00:00+08:00",
+  "scope": "Reference subscription facts, not acquisition invoices or model-specific capacity",
+  "evidence": [
+    {
+      "url": "https://help.openai.com/en/articles/6950777-what-is",
+      "kind": "official_search_snapshot",
+      "finding": "Plus $20/month; API billed separately"
+    },
+    {
+      "url": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro/",
+      "kind": "official_search_snapshot",
+      "finding": "Pro $100=5x, $200=20x; new Pro20x signups/upgrades paused from 2026-09-10; existing renewals unaffected"
+    },
+    {
+      "url": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
+      "kind": "older_direct_read",
+      "finding": "Direct cached representation omits pause; do not interpret omission as pause lifted"
+    }
+  ],
+  "plans": [
+    {
+      "id": "plus",
+      "label": "Plus",
+      "reference_monthly_usd": "20",
+      "advertised_usage_multiplier": "1",
+      "new_purchase_status": "available_reference",
+      "renewal_status": "available_reference",
+      "measured_weekly_capacity": null,
+      "model_capabilities": "ACCOUNT_VERIFICATION_REQUIRED"
+    },
+    {
+      "id": "pro5x",
+      "label": "Pro 5x",
+      "reference_monthly_usd": "100",
+      "advertised_usage_multiplier": "5",
+      "new_purchase_status": "available_reference",
+      "renewal_status": "available_reference",
+      "measured_weekly_capacity": null,
+      "model_capabilities": "ACCOUNT_VERIFICATION_REQUIRED"
+    },
+    {
+      "id": "pro20x",
+      "label": "Pro 20x",
+      "reference_monthly_usd": "200",
+      "advertised_usage_multiplier": "20",
+      "new_purchase_status": "paused",
+      "renewal_status": "existing_subscribers_only",
+      "pause_effective": "2026-09-10",
+      "measured_weekly_capacity": null,
+      "model_capabilities": "ACCOUNT_VERIFICATION_REQUIRED"
+    }
+  ]
+}
