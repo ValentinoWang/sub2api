@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "retrieved_on": "2026-09-16",
+  "acquisition": "Curated extraction from web retrieval, NOT an end-to-end run of the delivered crawler",
+  "base_commit": "507a820c6792782ac07f9962a06c6224ce6cba70",
+  "radar": {
+    "source": "https://codexradar.com/en/",
+    "source_updated_label": "8月9日19:49更新",
+    "status": "STALE_SOURCE_SNAPSHOT",
+    "weekly_reference_usd": {"20x Pro": 1649.72, "5x Pro": 412.43, "Plus": 82.49},
+    "basis": {"20x Pro": "Distributed Radar", "5x Pro": "site-derived estimate", "Plus": "site-derived estimate"},
+    "model_specific_weekly_capacity": {"gpt-6-astra": null, "gpt-5.6-sol": null},
+    "seven_day_average": null,
+    "two_month_history": {"start_inclusive": "2026-07-16", "end_exclusive": "2026-09-16", "complete": false, "weekly_event_mean": null},
+    "all_history_reset_count": 32,
+    "reference_price_version": null,
+    "warning": "The 32 events have no verified two-month coverage; 7d quota is not a seven-day average. Do not sum model valuations or treat card grants as full refills."
+  },
+  "official_subscription_reference_usd_month": {"Pro20x": 200, "Pro5x": 100, "Plus": 20},
+  "subscription_sources": ["https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro", "https://help.openai.com/en/articles/6950777-what-is-chatgpt-plus"],
+  "official_api_reference_per_million": {
+    "source": "https://developers.openai.com/api/docs/models/compare",
+    "gpt-6-astra": {"input": 10, "cached_input": 1, "output": 50},
+    "gpt-5.6-sol": {"input": 4, "cached_input": 0.4, "output": 20}
+  },
+  "market_candidates": [
+    {"source": "https://openrouter.ai/openai/gpt-5.6-sol-20260709", "via": "search-index provider table", "model": "gpt-5.6-sol", "provider": "OpenAI", "input_per_million": 2, "output_per_million": 10, "cache_read_per_million": 0.2, "promotion": "50% off", "published_latency_p50_seconds": 4.98, "published_throughput_p50_tps": 42, "published_uptime_percent": 98.83, "verified_local_probe": false, "usable_for_auto_decision": false},
+    {"source": "https://openrouter.ai/openai/gpt-5.6-sol-20260709", "via": "search-index provider table", "model": "gpt-5.6-sol", "provider": "OpenAI Flex", "input_per_million": 1, "output_per_million": 5, "cache_read_per_million": 0.1, "promotion": "50% off", "published_latency_p50_seconds": 9.47, "published_throughput_p50_tps": 56, "published_uptime_percent": 99.69, "verified_local_probe": false, "usable_for_auto_decision": false}
+  ],
+  "market_conflict": "A direct parsed fetch of that Sol page shows $5/$30 while its indexed provider table shows promotional $2/$10 and Flex $1/$5. Snapshot versions conflict; not a verified executable quote. Provider-published latency is not our path TTFT.",
+  "private_observations": {"purchase_cost": null, "quota_history": null, "server_invoice": null, "server_traffic": null, "status": "NOT_CONNECTED"},
+  "forecast": {"posterior": null, "status": "BLOCKED_MISSING_OWN_OBSERVATIONS"}
+}
