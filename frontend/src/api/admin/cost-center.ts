@@ -62,3 +62,50 @@ export async function compareCostTiers(input: CostComparisonInput): Promise<Cost
   const { data } = await apiClient.post<CostComparisonResult>('/admin/cost-center/compare', input)
   return data
 }
+
+
+export interface CostPurchase {
+  reference: string
+  supplier: string
+  asset: string
+  tier: CostTier | 'unallocated'
+  kind: 'subscription' | 'server' | 'traffic' | 'labor' | 'other'
+  currency: string
+  amount: string
+  paid_at: string
+  service_start: string
+  service_end: string
+  evidence: 'invoice' | 'manual' | 'synthetic'
+  evidence_ref: string
+}
+export interface CostDelivery {
+  reference: string; asset: string; tier: CostTier; model: string; unit: string
+  quantity: string; period_start: string; period_end: string
+  evidence: 'invoice' | 'manual' | 'synthetic'
+}
+export type LedgerCommand =
+  | { kind: 'purchase'; purchase: CostPurchase }
+  | { kind: 'delivery'; delivery: CostDelivery }
+  | { kind: 'allocate'; allocation: { purchase_id: string; parts: Array<{ tier: CostTier; weight: string }> } }
+  | { kind: 'void'; void: { target_id: string; expected_hash: string; reason: string } }
+export interface LedgerEvent {
+  id: string; sequence: number; idempotency_key: string; request_hash: string
+  actor_id: number; recorded_at: string; command: LedgerCommand
+}
+export interface LedgerSummary {
+  currency: string; start: string; end: string; as_of: string; status: string; warnings: string[]
+  rows: Array<{ tier: string; cash_paid: string; period_expense: string; recognized_expense: string
+    remaining_service_value: string; delivered: string; recorded_scope_unit_cost: string | null }>
+}
+export async function getCostLedgerHealth(): Promise<{ status: string; event_count: number }> {
+  const { data } = await apiClient.get('/admin/cost-center/ledger/health'); return data
+}
+export async function listCostLedgerEvents(after = 0): Promise<{ items: LedgerEvent[]; next_after: number | null; total: number }> {
+  const { data } = await apiClient.get('/admin/cost-center/ledger/events', { params: { after, limit: 50 } }); return data
+}
+export async function appendCostLedger(command: LedgerCommand, idempotencyKey: string): Promise<{ event: LedgerEvent; replayed: boolean }> {
+  const { data } = await apiClient.post('/admin/cost-center/ledger/commands', command, { headers: { 'Idempotency-Key': idempotencyKey } }); return data
+}
+export async function getCostLedgerSummary(params: Record<string, string>): Promise<LedgerSummary> {
+  const { data } = await apiClient.get('/admin/cost-center/ledger/summary', { params }); return data
+}

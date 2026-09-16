@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import { registerCostCenterRoute } from './router/cost-center'
 import i18n, { initI18n } from './i18n'
 import { useAppStore } from '@/stores/app'
 import { updateFavicon } from '@/utils/branding'
@@ -51,6 +52,7 @@ async function bootstrap() {
 
   await initI18n()
 
+  registerCostCenterRoute(router)
   app.use(router)
   app.use(i18n)
 

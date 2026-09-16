@@ -6,12 +6,14 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
 	"github.com/Wei-Shaw/sub2api/internal/handler"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/websearch"
 	middleware2 "github.com/Wei-Shaw/sub2api/internal/server/middleware"
+	"github.com/Wei-Shaw/sub2api/internal/server/routes"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -87,7 +89,9 @@ func ProvideRouter(
 		service.SetWebSearchManager(websearch.NewManager(configs, redisClient))
 	})
 
-	return SetupRouter(r, handlers, jwtAuth, optionalJWTAuth, adminAuth, apiKeyAuth, auditLog, stepUpAuth, apiKeyService, subscriptionService, opsService, settingService, compositeResolver, cfg, redisClient)
+	SetupRouter(r, handlers, jwtAuth, optionalJWTAuth, adminAuth, apiKeyAuth, auditLog, stepUpAuth, apiKeyService, subscriptionService, opsService, settingService, compositeResolver, cfg, redisClient)
+	routes.RegisterCostCenterRoutes(r.Group("/api/v1"), adminAuth, auditLog, settingService, middleware2.NewPanelRateLimiter(redisClient, settingService), os.Getenv("SUB2API_COST_LEDGER_DSN"))
+	return r
 }
 
 func configureTrustedProxies(r *gin.Engine, cfg config.ServerConfig) {

@@ -5,11 +5,16 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"strings"
 )
 
 // HTTPHandler must be mounted behind the existing admin middleware. Nil authorization denies all.
 // The callback is useful for unit testing; the Gin adapter confirms prior admin middleware execution.
-type HTTPHandler struct{ Authorize func(*http.Request) bool }
+type HTTPHandler struct {
+	Authorize func(*http.Request) bool
+	Actor     func(*http.Request) int64
+	Ledger    *Ledger
+}
 
 func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -25,6 +30,10 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.Authorize == nil || !h.Authorize(r) {
 		reply(401, nil, "admin authorization required")
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/api/v1/admin/cost-center/ledger/") {
+		h.serveLedger(w, r)
 		return
 	}
 	switch r.URL.Path {

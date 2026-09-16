@@ -3,12 +3,14 @@
     <div class="cost-center">
       <header>
         <p class="eyebrow">PLUS / PRO 5X / PRO 20X</p>
-        <h1>{{ zh ? '三档成本比较' : 'Three-tier cost comparison' }}</h1>
+        <h1>{{ zh ? '成本工作台' : 'Cost workbench' }}</h1>
         <p>{{ zh ? '同一工作负载、同一账期、同一币种。参考月费不是实际采购账。' : 'One workload, billing period and currency. Reference fees are not procurement invoices.' }}</p>
       </header>
-      <p class="notice">{{ zh ? '只读计算器：不会购买、升级、兑换额度或修改售价。生产采购账与额度事件尚未连接。' : 'Calculator only: no purchases, upgrades, credit redemption or price changes. Production ledgers are not connected.' }}</p>
+      <p class="notice">{{ zh ? '采购记录与三档情景分开。这里不执行购买、充值、额度重置或售价调整。' : 'Keep procurement records separate from tier scenarios. No purchases, recharge, quota reset or price changes.' }}</p>
       <p v-if="catalog" class="hint">{{ zh ? '目录核查时间：' : 'Catalog checked: ' }}{{ catalog.checked_at }} · {{ zh ? '新购资料有效至：' : 'New-purchase facts valid until: ' }}{{ catalog.valid_until }}</p>
       <p v-if="error" role="alert" class="error">{{ error }}</p>
+      <CostLedgerPanel />
+      <details class="comparison-details"><summary>{{ zh ? '展开三档情景比较（独立假设，不替代采购账）' : 'Three-tier scenarios (independent assumptions)' }}</summary>
       <form @submit.prevent="calculate">
         <div class="fields">
           <label>{{ zh ? '用途' : 'Purpose' }}<select v-model="input.purpose"><option value="existing">{{ zh ? '已有账号成本' : 'Existing accounts' }}</option><option value="new_purchase">{{ zh ? '新购可得性情景' : 'New-purchase scenario' }}</option></select></label>
@@ -42,6 +44,7 @@
         </tbody></table></div>
         <p class="hint">{{ zh ? '这些结果不证明短时窗口、并发、延迟及实际授权可用；不能据此直接开售。' : 'This does not establish short-window, concurrency, latency or authorization feasibility.' }}</p>
       </section>
+      </details>
     </div>
   </AppLayout>
 </template>
@@ -50,6 +53,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import CostLedgerPanel from './components/CostLedgerPanel.vue'
 import { compareCostTiers, getCostCatalog } from '@/api/admin/cost-center'
 import type { CostCatalog, CostComparisonInput, CostComparisonResult, CostTier } from '@/api/admin/cost-center'
 const { locale } = useI18n()
