@@ -1,4 +1,4 @@
-//go:build linux
+//go:build linux || darwin
 
 package costing
 
@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// FileLedgerStore is a Linux-only local acceptance adapter. Production uses Postgres.
+// FileLedgerStore is a Unix local acceptance adapter. Production uses Postgres.
 // The directory must be private and dedicated; no symlinks, multiprocess writes use flock.
 type FileLedgerStore struct{ Path string }
 

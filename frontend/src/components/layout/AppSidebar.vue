@@ -190,6 +190,7 @@
 <script setup lang="ts">
 import { computed, h, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { costCenterSections } from '@/router/cost-center'
 import { useI18n } from 'vue-i18n'
 import { useAdminSettingsStore, useAppStore, useAuthStore, useOnboardingStore } from '@/stores'
 import VersionBadge from '@/components/common/VersionBadge.vue'
@@ -784,6 +785,17 @@ const customMenuItemsForAdmin = computed(() => {
 const adminNavItems = computed((): NavItem[] => {
   const baseItems: NavItem[] = [
     { path: '/admin/dashboard', label: t('nav.dashboard'), icon: DashboardIcon },
+    {
+      path: '/admin/cost-center',
+      label: t('nav.costCenter'),
+      icon: PriceTagIcon,
+      expandOnly: true,
+      children: costCenterSections.map(section => ({
+        path: section.path,
+        label: t(section.titleKey),
+        icon: PriceTagIcon
+      }))
+    },
     { path: '/admin/ops', label: t('nav.ops'), icon: ChartIcon, featureFlag: flagOpsMonitoring },
     {
       path: '/admin/tools',

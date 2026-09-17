@@ -14,6 +14,11 @@ type HTTPHandler struct {
 	Authorize func(*http.Request) bool
 	Actor     func(*http.Request) int64
 	Ledger    *Ledger
+	Source    *SQLSource
+	Quota     *QuotaStore
+	Radar     *RadarService
+	Snapshots *SourceSnapshotStore
+	Traffic   *TrafficSampleStore
 }
 
 func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +41,23 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveLedger(w, r)
 		return
 	}
+	if strings.HasPrefix(r.URL.Path, "/api/v1/admin/cost-center/analysis/") || strings.HasPrefix(r.URL.Path, "/api/v1/admin/cost-center/source/") {
+		h.serveAnalysis(w, r)
+		return
+	}
 	switch r.URL.Path {
+	case "/api/v1/admin/cost-center/reference/radar":
+		if r.Method != "GET" {
+			w.Header().Set("Allow", "GET")
+			reply(405, nil, "GET required")
+			return
+		}
+		snapshot, err := h.Radar.Get(r.Context())
+		if err != nil {
+			reply(503, nil, "RADAR_REFERENCE_UNAVAILABLE")
+			return
+		}
+		reply(200, snapshot, "success")
 	case "/api/v1/admin/cost-center/catalog":
 		if r.Method != "GET" {
 			w.Header().Set("Allow", "GET")

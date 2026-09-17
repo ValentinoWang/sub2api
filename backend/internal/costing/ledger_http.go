@@ -65,6 +65,12 @@ func (h HTTPHandler) serveLedger(w http.ResponseWriter, r *http.Request) {
 			ledgerReply(w, 400, nil, "INVALID_OR_OVERSIZED_COMMAND")
 			return
 		}
+		if c.AccountInterval != nil {
+			if e := h.Source.AccountExists(r.Context(), c.AccountInterval.AccountID); e != nil {
+				ledgerError(w, e)
+				return
+			}
+		}
 		result, e := h.Ledger.Append(r.Context(), h.Actor(r), r.Header.Get("Idempotency-Key"), c)
 		if e != nil {
 			ledgerError(w, e)

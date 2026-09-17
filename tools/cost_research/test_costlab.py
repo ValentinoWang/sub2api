@@ -1,6 +1,7 @@
 import datetime as dt
 from decimal import Decimal
 import unittest
+import costlab
 from costlab import radar_parse, vnstat_parse, traffic_cost, reset_gain, seven_day_mean, two_month_rate, private_projection, forecast
 
 
@@ -74,5 +75,14 @@ class CostTests(unittest.TestCase):
         self.assertEqual(x['event_rate_posterior_mean_per_week'], 1)
         cfg['own_exposure_complete'] = False
         with self.assertRaises(ValueError): forecast(cfg)
+
+
+
+class RobotsPolicyRegression(unittest.TestCase):
+    def test_html_fallback_is_not_an_allow_all_policy(self):
+        from unittest.mock import patch
+        with patch('costlab.get', return_value=b'<!doctype html><html>Landing page</html>'):
+            with self.assertRaisesRegex(ValueError, 'not a valid crawler policy'):
+                costlab.check_robots('https://codexradar.com/en/')
 
 if __name__ == '__main__': unittest.main()

@@ -1,3 +1,4 @@
+import type { NativeCommand, PrepaidReport } from './cost-center-native'
 import { apiClient } from '../client'
 
 export type CostTier = 'plus' | 'pro5x' | 'pro20x'
@@ -83,7 +84,7 @@ export interface CostDelivery {
   quantity: string; period_start: string; period_end: string
   evidence: 'invoice' | 'manual' | 'synthetic'
 }
-export type LedgerCommand =
+export type LedgerCommand = NativeCommand
   | { kind: 'purchase'; purchase: CostPurchase }
   | { kind: 'delivery'; delivery: CostDelivery }
   | { kind: 'allocate'; allocation: { purchase_id: string; parts: Array<{ tier: CostTier; weight: string }> } }
@@ -93,6 +94,8 @@ export interface LedgerEvent {
   actor_id: number; recorded_at: string; command: LedgerCommand
 }
 export interface LedgerSummary {
+  prepaid?: PrepaidReport
+
   currency: string; start: string; end: string; as_of: string; status: string; warnings: string[]
   rows: Array<{ tier: string; cash_paid: string; period_expense: string; recognized_expense: string
     remaining_service_value: string; delivered: string; recorded_scope_unit_cost: string | null }>

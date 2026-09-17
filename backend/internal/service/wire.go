@@ -8,6 +8,7 @@ import (
 
 	dbent "github.com/Wei-Shaw/sub2api/ent"
 	"github.com/Wei-Shaw/sub2api/internal/config"
+	"github.com/Wei-Shaw/sub2api/internal/costing"
 	"github.com/Wei-Shaw/sub2api/internal/payment"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/antigravity"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
@@ -224,6 +225,18 @@ func ProvideOpenAIQuotaService(
 ) *OpenAIQuotaService {
 	service := NewOpenAIQuotaService(accountRepo, proxyRepo, tokenProvider, privacyClientFactory)
 	service.agentIdentityWS = openAIGatewayService
+	if dsn := os.Getenv("SUB2API_COST_LEDGER_DSN"); dsn != "" {
+		store := &costing.QuotaStore{Open: func() (*sql.DB, func(), error) {
+			db, err := sql.Open("postgres", dsn)
+			if err != nil {
+				return nil, nil, err
+			}
+			db.SetMaxOpenConns(1)
+			db.SetMaxIdleConns(0)
+			return db, func() { _ = db.Close() }, nil
+		}}
+		service.costQuotaObserver = store.Record
+	}
 	return service
 }
 

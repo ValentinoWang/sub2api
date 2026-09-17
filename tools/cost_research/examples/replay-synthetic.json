@@ -1,0 +1,16 @@
+{
+  "pool": "synthetic-pool",
+  "model": "synthetic-model",
+  "price_version": "synthetic-v1",
+  "start": "2026-09-01T00:00:00Z",
+  "end": "2026-09-02T00:00:00Z",
+  "coverage_complete": true,
+  "windows": [
+    {"id": "5h", "capacity": "10", "remaining": "10", "duration_seconds": 18000, "reset_at": "2026-09-01T05:00:00Z"},
+    {"id": "7d", "capacity": "100", "remaining": "100", "duration_seconds": 604800, "reset_at": "2026-09-08T00:00:00Z"}
+  ],
+  "actions": [
+    {"id": "first", "at": "2026-09-01T01:00:00Z", "kind": "demand", "amount": "12"},
+    {"id": "second", "at": "2026-09-01T05:00:00Z", "kind": "demand", "amount": "10"}
+  ]
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Real loopback HTTP and restart acceptance for the native Go ledger (Linux file adapter)."""
+"""Real loopback HTTP and restart acceptance for the native Go ledger (Unix file adapter)."""
 from concurrent.futures import ThreadPoolExecutor
 import json
 import os
@@ -122,7 +122,7 @@ def run(root: Path) -> dict:
             cutoff = urllib.parse.quote(allocation_event['recorded_at'], safe='')
             check('historical_knowledge_cutoff_replay', request(scope + '&as_of=' + cutoff)[1]['data']['rows'] == report['data']['rows'])
             check('original_records_retained', request('health')[1]['data']['event_count'] == 10)
-            return {'status': 'PASS', 'implementation': 'real Go process + HTTP + Linux file store',
+            return {'status': 'PASS', 'implementation': 'real Go process + HTTP + Unix file store',
                     'checks': results, 'synthetic_report': report['data'],
                     'not_covered': ['PostgreSQL execution', 'Vue compilation/render', 'whole Sub2API application build', 'production data'],
                     'credentials_saved': False}

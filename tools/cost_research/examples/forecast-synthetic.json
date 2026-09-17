@@ -1,0 +1,13 @@
+{
+  "own_exposure_complete": true,
+  "weekly_reference_capacity": 1000,
+  "billing_days": 30,
+  "cash_and_allocated_cost": 200,
+  "prior_event_shape": 1,
+  "prior_exposure_weeks": 1,
+  "own_observed_weeks": 4,
+  "own_event_count": 4,
+  "verified_net_refill_fractions": [0.2, 0.4, 0.6, 0.8],
+  "useful_utilization": 0.5,
+  "seed": 7
+}

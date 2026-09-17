@@ -65,11 +65,17 @@ type Void struct {
 	Reason       string `json:"reason"`
 }
 type LedgerCommand struct {
-	Kind       string      `json:"kind"`
-	Purchase   *Purchase   `json:"purchase,omitempty"`
-	Delivery   *Delivery   `json:"delivery,omitempty"`
-	Allocation *Allocation `json:"allocation,omitempty"`
-	Void       *Void       `json:"void,omitempty"`
+	Kind            string           `json:"kind"`
+	Purchase        *Purchase        `json:"purchase,omitempty"`
+	Delivery        *Delivery        `json:"delivery,omitempty"`
+	Allocation      *Allocation      `json:"allocation,omitempty"`
+	Void            *Void            `json:"void,omitempty"`
+	CreditLot       *CreditLot       `json:"credit_lot,omitempty"`
+	CreditUse       *CreditUse       `json:"credit_use,omitempty"`
+	AccountInterval *AccountInterval `json:"account_interval,omitempty"`
+	Traffic         *TrafficInput    `json:"traffic,omitempty"`
+	Replay          *ReplayInput     `json:"replay,omitempty"`
+	Forecast        *ForecastInput   `json:"forecast,omitempty"`
 }
 type LedgerEvent struct {
 	ID          string        `json:"id"`
@@ -135,6 +141,7 @@ func (c LedgerCommand) Validate() error {
 	if c.Void != nil {
 		count++
 	}
+	count += c.extensionCount()
 	if count != 1 {
 		return invalid("exactly one payload is required")
 	}
@@ -187,7 +194,7 @@ func (c LedgerCommand) Validate() error {
 			return invalid("void requires target, expected hash and reason")
 		}
 	default:
-		return invalid("unknown command kind")
+		return c.validateExtension()
 	}
 	return nil
 }
@@ -208,6 +215,9 @@ func activeEvents(events []LedgerEvent, cutoff time.Time) map[string]LedgerEvent
 }
 func validateAgainst(events []LedgerEvent, c LedgerCommand, now time.Time) error {
 	active := activeEvents(events, now)
+	if err := validateExtensionAgainst(active, c, now); err != nil {
+		return err
+	}
 	switch c.Kind {
 	case "purchase":
 		for _, e := range active {
@@ -349,6 +359,7 @@ type LedgerSummary struct {
 	EventCount int           `json:"event_count"`
 	Warnings   []string      `json:"warnings"`
 	Status     string        `json:"status"`
+	Prepaid    *CreditReport `json:"prepaid"`
 }
 
 func seconds(d time.Duration) *big.Rat { return new(big.Rat).SetInt64(int64(d)) }
@@ -393,6 +404,11 @@ func (l *Ledger) Summary(ctx context.Context, q SummaryQuery) (LedgerSummary, er
 		return out, err
 	}
 	active := activeEvents(events, at)
+	credit, err := creditReport(active, q)
+	if err != nil {
+		return out, err
+	}
+	out.Prepaid = &credit
 	cutoff := b
 	if at.Before(cutoff) {
 		cutoff = at
@@ -462,8 +478,17 @@ func (l *Ledger) Summary(ctx context.Context, q SummaryQuery) (LedgerSummary, er
 			}
 		}
 	}
+	for tier, cost := range credit.exactCosts {
+		m[tier].recognized.Add(m[tier].recognized, cost)
+		m[tier].expense.Add(m[tier].expense, cost)
+	}
+	for _, warning := range credit.warnings {
+		warnings[warning] = true
+	}
+
 	for _, tier := range []string{"plus", "pro5x", "pro20x", "unallocated"} {
 		v := m[tier]
+
 		row := TierSummary{Tier: tier, CashPaid: v.cash.FloatString(6), PeriodExpense: v.expense.FloatString(6), RecognizedExpense: v.recognized.FloatString(6), RemainingServiceValue: v.remaining.FloatString(6), Delivered: v.delivered.FloatString(6)}
 		if v.delivered.Sign() > 0 && v.recognized.Sign() > 0 && !warnings["OTHER_CURRENCIES_EXCLUDED"] && !warnings["OTHER_WORKLOAD_DELIVERIES_EXCLUDED"] && !warnings["CROSS_BOUNDARY_DELIVERY_NOT_PRORATED"] && m["unallocated"].recognized.Sign() == 0 {
 			row.UnitCost = str(new(big.Rat).Quo(v.recognized, v.delivered), 6)

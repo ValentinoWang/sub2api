@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/Wei-Shaw/sub2api/internal/costing"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -121,6 +122,7 @@ type OpenAIQuotaService struct {
 	privacyClientFactory PrivacyClientFactory
 	agentIdentityTaskMu  sync.Mutex
 	agentIdentityWS      agentIdentityWSConnectionInvalidator
+	costQuotaObserver    func(context.Context, costing.QuotaObservation) error
 }
 
 // NewOpenAIQuotaService constructs a quota service. token provider is required —
@@ -210,6 +212,7 @@ func (s *OpenAIQuotaService) QueryUsage(ctx context.Context, accountID int64) (*
 			payload.RateLimitResetCredits.AvailableCount = details.AvailableCreditCount
 		}
 	}
+	s.observeCostQuota(ctx, accountID, &payload, "snapshot")
 	return &payload, nil
 }
 
@@ -233,12 +236,16 @@ func (s *OpenAIQuotaService) CachePostResetSnapshot(ctx context.Context, account
 	if usage == nil {
 		return s.cacheResetCreditsSnapshot(ctx, accountID, nil, nil)
 	}
-	return s.cacheResetCreditsSnapshot(
+	err := s.cacheResetCreditsSnapshot(
 		ctx,
 		accountID,
 		usage.RateLimitResetCredits,
 		buildOpenAIAutoResetUsageUpdates(usage, time.Now()),
 	)
+	if err == nil {
+		s.observeCostQuota(ctx, accountID, usage, "after_reset")
+	}
+	return err
 }
 
 func (s *OpenAIQuotaService) cacheResetCreditsSnapshot(ctx context.Context, accountID int64, credits *OpenAIRateLimitResetCredits, updates map[string]any) error {

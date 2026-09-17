@@ -163,9 +163,21 @@ export default {
     }
   },
 
+  costCenter: {
+    accountingDescription: 'Review recorded expenses, completed deliveries and unit cost for a billing period.',
+    purchasesDescription: 'Record paid purchases, allocate shared expenses and add completed deliveries.',
+    ledgerDescription: 'Review ledger entries and their details, and append voids to correct booking mistakes.',
+    comparisonDescription: 'Compare Plus, Pro 5x and Pro 20x under the same assumptions. Scenarios do not write to the ledger.'
+  },
+
   // Navigation
   nav: {
     dashboard: 'Dashboard',
+    costCenter: 'Cost Workbench',
+    costAccounting: 'Cost Accounting',
+    costPurchases: 'Purchases and Entries',
+    costLedger: 'Ledger Records',
+    costComparison: 'Three-Tier Comparison',
     announcements: 'Announcements',
     apiKeys: 'API Keys',
     batchImage: 'Batch Images',

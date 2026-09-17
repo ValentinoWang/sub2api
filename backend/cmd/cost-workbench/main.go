@@ -1,4 +1,4 @@
-//go:build linux
+//go:build linux || darwin
 
 // Local acceptance server for the same native ledger API. Never a production auth replacement.
 package main

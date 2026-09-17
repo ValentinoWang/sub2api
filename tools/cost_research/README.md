@@ -1,6 +1,8 @@
-# 成本研究工具（只读原型）
+# 成本研究与本地原生接入
 
-基于 `dev@507a820c6792782ac07f9962a06c6224ce6cba70`。本目录没有重置、充值、注册、下单、改价或数据库写入接口。生产业务代码未修改。
+`costlab.py` 与 `capture_radar.py` 提供参考资料研究原型；`start_local_native.py` 启动原生 Go 成本开发服务并初始化独立 PostgreSQL 成本库。真实账号与用量来源只读，不执行购买、充值、用卡或改价。
+
+本地页面、原生功能、操作说明和验收边界见 [本地原生成本工作台](../../docs/cost-workbench/LOCAL_NATIVE.md)。
 
 ## 运行
 
@@ -32,7 +34,7 @@ python tools/cost_research/costlab.py market --model openai/gpt-5.6-sol --output
 
 ## 当前交付边界
 
-`public_snapshot.json` 是通过网页检索获得后整理的公开初步信息，不冒充本地脚本端到端采集结果。当前执行环境不能解析外网域名，因而没有完成联网采集、生产后台验证或真实服务器采样。匿名浏览器捕获器也未做线上验收。
+`public_snapshot.json` 是通过网页检索获得后整理的公开初步信息，不冒充本地脚本端到端采集结果。当前原生入口已验证 Radar 公开页面读取及独立成本库保存。原型爬取仍要求有效 robots 策略；robots.txt 返回 HTML 时拒绝将其视为允许采集。没有完成真实服务器 vnStat 采样或上游重置操作验收。
 
 静态解析器仅把已明确标注的档位周额度提升为字段；GPT-6 分模型额度、七天平均、两个月事件率没有证据时保持 null。动态页面的 JSON 被捕获为候选证据，仍需校验字段、来源日期、档位、预算池及价格版本后接入，不能随便找一个数字叫额度。没有编造未公开的历史 API 或调用验证码绕过。
 
@@ -60,6 +62,6 @@ python tools/cost_research/costlab.py market --model openai/gpt-5.6-sol --output
 python tools/cost_research/costlab.py forecast --config /tmp/cost-private/config.json --output /tmp/cost-private/forecast.json
 ```
 
-算法实现为 Gamma-Poisson 事件数后验预测 + 净增比例 Bayesian bootstrap。基础容量、利用率暂为条件输入，所以输出是条件情景区间，不包含全部不确定性，也不是已发生账单。完整容量回归、自然窗口重放、事件挂钩和管理员页面后端仍在设计文档中，未冒充已实现。
+算法实现为 Gamma-Poisson 事件数后验预测 + 净增比例 Bayesian bootstrap。基础容量、利用率暂为条件输入，所以输出是条件情景区间，不包含全部不确定性，也不是已发生账单。原生 Go 的双窗口回放、观察留存与页面后端已经实现，具体边界以原生说明和当前机器记录为准；完整容量校准、真实上游重置验收和自动定价不由这个 Python 预测器证明。
 
 复用现有后台额度查询可能刷新本地显示缓存/有效令牌，这是原业务 GET 的行为；本工具不主动兑换重置卡。原有自动重置若已开启，其既有任务不在本研究工具控制范围内。

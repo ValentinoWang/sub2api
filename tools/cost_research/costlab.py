@@ -49,7 +49,10 @@ def check_robots(url: str) -> None:
     robots_url = f'{p.scheme}://{p.netloc}/robots.txt'
     # Fail closed, including an unavailable robots policy. A site-provided export is an alternative.
     policy = robotparser.RobotFileParser()
-    policy.parse(get(robots_url).decode('utf-8', errors='replace').splitlines())
+    policy_text = get(robots_url).decode('utf-8', errors='replace')
+    if re.search(r'<(?:!doctype\s+html|html)\b', policy_text[:2048], re.I):
+        raise ValueError('robots.txt returned HTML, not a valid crawler policy')
+    policy.parse(policy_text.splitlines())
     if not policy.can_fetch(UA, url):
         raise ValueError('Public page collection is not allowed by robots policy')
 
