@@ -1564,6 +1564,15 @@ export default {
         estimatedTotalCostTooltip: 'Estimated total cost at 100% utilization, based on current window cost and utilization'
       },
       openaiQuotaReset: {
+        checkingHistory: 'Checking recent use…',
+        lastUsedAt: 'Latest credit use in upstream history: {time}',
+        autoRecentUse: 'A reset credit was used within 10 minutes. Automatic use is paused and will be checked again.',
+        autoHistoryUnknown: 'Recent credit use cannot be verified. Automatic use is paused.',
+        recentUseWarning: 'This upstream account used {count} reset credit(s) in the last 10 minutes, most recently at {time}. Continuing will spend another credit.',
+        historyClear: 'As of {time}, upstream history shows no credit use in the last 10 minutes. This will be checked again on submission.',
+        historyUnknown: 'Recent credit use could not be verified. This does not mean no one used a credit. Retry later, or continue knowing another credit may be spent.',
+        historyCount: '{count} uses recorded in the upstream history window starting {time}.',
+        proceedAnyway: 'Use a credit anyway',
         count: 'Credits',
         reset: 'Reset',
         countTooltipLoad: 'Click to load the available reset-credit count',
@@ -1584,6 +1593,7 @@ export default {
         resetAccountRefreshFailed: 'The window, account state, and reset-credit cache were updated, but the latest account display could not be loaded.',
         refreshCachePersistFailed: 'Showing the live count, but its expiration details were unavailable, so the cached details were kept.',
         autoStatus: {
+          paused: 'Automatic use paused',
           checking: 'Checking',
           available: 'Credit available',
           resetting: 'Auto-resetting',
@@ -1591,7 +1601,7 @@ export default {
           noCredit: 'No credit',
           failed: 'Auto-reset failed'
         },
-        confirmTitle: 'Confirm Weekly Limit Reset',
+        confirmTitle: 'Confirm Reset Credit Use',
         confirmMessage: 'This will consume 1 reset credit to immediately restore the current window ({count} remaining). This action cannot be undone. Continue?'
       },
       tier: {

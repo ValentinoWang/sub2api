@@ -485,6 +485,15 @@ export default {
         estimatedTotalCostTooltip: '根据当前窗口费用和使用率估算达到 100% 使用率时的总费用'
       },
       openaiQuotaReset: {
+        checkingHistory: '检查近期用卡…',
+        lastUsedAt: '上游历史中最近一次用卡：{time}',
+        autoRecentUse: '最近 10 分钟已用过重置卡，自动用卡已暂缓，稍后会重新检查。',
+        autoHistoryUnknown: '暂时无法确认近期用卡记录，自动用卡已暂缓。',
+        recentUseWarning: '该上游账号最近 10 分钟已使用 {count} 张重置卡，最近一次为 {time}。再次使用仍会扣除一张，请确认是否需要。',
+        historyClear: '截至 {time}，上游历史中未发现最近 10 分钟的用卡记录。提交时会再次检查。',
+        historyUnknown: '暂时无法确认最近 10 分钟是否已用卡。不能视为无人使用；建议稍后重试。继续操作仍可能扣除一张卡。',
+        historyCount: '上游历史窗口自 {time} 起，共记录 {count} 次使用。',
+        proceedAnyway: '仍要使用一张',
         count: '次数',
         reset: '重置',
         countTooltipLoad: '点击查询剩余重置次数',
@@ -505,6 +514,7 @@ export default {
         resetAccountRefreshFailed: '窗口、账号状态和重置次数缓存已更新，但无法加载最新账号显示。',
         refreshCachePersistFailed: '已显示实时次数，但到期明细获取失败，仍保留原有缓存明细。',
         autoStatus: {
+          paused: '自动用卡暂缓',
           checking: '检测中',
           available: '卡可用',
           resetting: '自动重置中',
@@ -512,7 +522,7 @@ export default {
           noCredit: '无卡',
           failed: '自动重置失败'
         },
-        confirmTitle: '确认重置周限',
+        confirmTitle: '确认使用重置卡',
         confirmMessage: '将消耗 1 次重置次数立即恢复当前窗口，剩余 {count} 次。此操作不可撤销，确定继续吗？'
       },
       tier: {

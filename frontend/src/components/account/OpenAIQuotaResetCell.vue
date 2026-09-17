@@ -47,7 +47,7 @@
       >
         <svg
           class="h-2.5 w-2.5"
-          :class="{ 'animate-spin': resetting }"
+          :class="{ 'animate-spin': resetting || checkingHistory }"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -59,7 +59,7 @@
             d="M20 12a8 8 0 11-2.343-5.657L20 8m0 0V4m0 4h-4"
           />
         </svg>
-        {{ t('admin.accounts.openaiQuotaReset.reset') }}
+        {{ t(checkingHistory ? 'admin.accounts.openaiQuotaReset.checkingHistory' : 'admin.accounts.openaiQuotaReset.reset') }}
       </button>
     </div>
 
@@ -85,7 +85,7 @@
         class="max-w-full truncate text-red-600 dark:text-red-400"
         :title="autoResetState.error_code"
       >
-        {{ autoResetState.error_code }}
+        {{ autoResetErrorMessage }}
       </span>
     </div>
 
@@ -154,12 +154,18 @@
       :show="showResetConfirm"
       :title="t('admin.accounts.openaiQuotaReset.confirmTitle')"
       :message="t('admin.accounts.openaiQuotaReset.confirmMessage', { count: availableResetCount })"
-      :confirm-text="t('admin.accounts.openaiQuotaReset.reset')"
+      :confirm-text="t(resetCreditCheck?.status === 'clear' ? 'admin.accounts.openaiQuotaReset.reset' : 'admin.accounts.openaiQuotaReset.proceedAnyway')"
       :cancel-text="t('common.cancel')"
       danger
       @confirm="confirmReset"
       @cancel="showResetConfirm = false"
-    />
+    >
+      <div v-if="resetCreditCheck" data-testid="reset-credit-history-warning" class="space-y-2 rounded border p-3 text-sm" :class="resetCreditCheck.status === 'clear' ? 'border-gray-200 text-gray-600 dark:border-dark-600 dark:text-gray-300' : 'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200'">
+        <p>{{ resetCreditHistoryMessage }}</p>
+        <p v-if="resetCreditCheck.last_used_at && resetCreditCheck.status !== 'recent'" data-testid="reset-credit-last-used" class="text-xs">{{ t('admin.accounts.openaiQuotaReset.lastUsedAt', { time: formatResetCreditExpiry(resetCreditCheck.last_used_at, 'full') }) }}</p>
+        <p v-if="resetCreditCheck.history_complete && resetCreditCheck.window_start" class="text-xs">{{ t('admin.accounts.openaiQuotaReset.historyCount', { count: resetCreditCheck.used_count, time: formatResetCreditExpiry(resetCreditCheck.window_start, 'full') }) }}</p>
+      </div>
+    </ConfirmDialog>
   </div>
 </template>
 
@@ -170,6 +176,8 @@ import type { Account } from '@/types'
 import {
   refreshOpenAIQuota,
   resetOpenAIQuota,
+  checkOpenAIResetCreditHistory,
+  type OpenAIResetCreditCheck,
   type OpenAIQuotaUsage,
   type OpenAIQuotaResetResult
 } from '@/api/admin/accounts'
@@ -196,6 +204,18 @@ const cachedData = ref<OpenAIQuotaUsage | null>(null)
 const resetMessage = ref<string | null>(null)
 const resetWarning = ref<string | null>(null)
 const showResetConfirm = ref(false)
+const resetCreditCheck = ref<OpenAIResetCreditCheck | null>(null)
+const checkingHistory = ref(false)
+let resetCheckRequestID = 0
+const resetCreditHistoryMessage = computed(() => {
+  const check = resetCreditCheck.value
+  if (!check || check.status === 'unknown') return t('admin.accounts.openaiQuotaReset.historyUnknown')
+  if (check.status === 'recent') return t('admin.accounts.openaiQuotaReset.recentUseWarning', {
+    count: check.recent_use_count,
+    time: check.last_used_at ? formatResetCreditExpiry(check.last_used_at, 'full') : '—',
+  })
+  return t('admin.accounts.openaiQuotaReset.historyClear', { time: check.as_of ? formatResetCreditExpiry(check.as_of, 'full') : '—' })
+})
 const showResetCreditDetails = ref(false)
 
 type AutoResetCreditState = NonNullable<NonNullable<Account['extra']>['codex_auto_reset_credit_state']>
@@ -208,6 +228,10 @@ const autoResetState = computed<AutoResetCreditState | null>(() => {
 })
 const autoResetStateLabel = computed(() => {
   if (!autoResetState.value?.status) return ''
+  if (autoResetState.value.status === 'failed' &&
+      ['RESET_CREDIT_RECENT_USE', 'RESET_CREDIT_HISTORY_UNKNOWN'].includes(autoResetState.value.error_code || '')) {
+    return t('admin.accounts.openaiQuotaReset.autoStatus.paused')
+  }
   const keyByStatus: Record<string, string> = {
     checking: 'checking',
     available: 'available',
@@ -217,6 +241,13 @@ const autoResetStateLabel = computed(() => {
     failed: 'failed'
   }
   return t(`admin.accounts.openaiQuotaReset.autoStatus.${keyByStatus[autoResetState.value.status]}`)
+})
+const autoResetErrorMessage = computed(() => {
+  switch (autoResetState.value?.error_code) {
+    case 'RESET_CREDIT_RECENT_USE': return t('admin.accounts.openaiQuotaReset.autoRecentUse')
+    case 'RESET_CREDIT_HISTORY_UNKNOWN': return t('admin.accounts.openaiQuotaReset.autoHistoryUnknown')
+    default: return autoResetState.value?.error_code || ''
+  }
 })
 const autoResetStateClass = computed(() => {
   switch (autoResetState.value?.status) {
@@ -352,6 +383,9 @@ const formatResetCreditExpiry = (value: string, style: 'short' | 'full'): string
   }
   if (style === 'full') {
     options.year = 'numeric'
+    options.second = '2-digit'
+    options.hour12 = false
+    options.timeZoneName = 'short'
   }
 
   return new Intl.DateTimeFormat(undefined, options).format(date)
@@ -407,13 +441,32 @@ const handleQuery = async () => {
   }
 }
 
-const openResetConfirm = () => {
+const openResetConfirm = async () => {
   if (resetting.value || loading.value) return
   if (!canReset.value) {
     error.value = t('admin.accounts.openaiQuotaReset.noCreditsAvailable')
     return
   }
-  showResetConfirm.value = true
+  const accountID = props.account.id
+  const requestID = ++resetCheckRequestID
+  loading.value = true
+  checkingHistory.value = true
+  resetCreditCheck.value = null
+  error.value = null
+  try {
+    const check = await checkOpenAIResetCreditHistory(accountID)
+    if (requestID !== resetCheckRequestID || accountID !== props.account.id) return
+    resetCreditCheck.value = check
+  } catch {
+    if (requestID !== resetCheckRequestID || accountID !== props.account.id) return
+    resetCreditCheck.value = { status: 'unknown', checked_at: '', used_count: 0, recent_use_count: 0, history_complete: false, confirmation_key: '' }
+  } finally {
+    if (requestID === resetCheckRequestID && accountID === props.account.id) {
+      loading.value = false
+      checkingHistory.value = false
+    }
+  }
+  if (requestID === resetCheckRequestID && accountID === props.account.id) showResetConfirm.value = true
 }
 
 const confirmReset = async () => {
@@ -424,11 +477,14 @@ const confirmReset = async () => {
     return
   }
   resetting.value = true
+  const accountID = props.account.id
+  const requestID = resetCheckRequestID
   error.value = null
   resetMessage.value = null
   resetWarning.value = null
   try {
-    const result: OpenAIQuotaResetResult = await resetOpenAIQuota(props.account.id)
+    const result: OpenAIQuotaResetResult = await resetOpenAIQuota(accountID, resetCreditCheck.value?.confirmation_key || undefined)
+    if (accountID !== props.account.id || requestID !== resetCheckRequestID) return
     showResetCreditDetails.value = false
     if (result.cache_refreshed && result.quota) {
       data.value = result.quota
@@ -453,9 +509,21 @@ const confirmReset = async () => {
       })
     }
   } catch (e) {
+    if (accountID !== props.account.id || requestID !== resetCheckRequestID) return
+    const conflict = e as { reason?: string; metadata?: { reset_credit_check?: string } } | null
+    if (conflict?.reason === 'RESET_CREDIT_CONFIRMATION_REQUIRED' && conflict.metadata?.reset_credit_check) {
+      try {
+        const check = JSON.parse(conflict.metadata.reset_credit_check) as OpenAIResetCreditCheck
+        if (['recent', 'clear', 'unknown'].includes(check.status) && typeof check.confirmation_key === 'string') {
+          resetCreditCheck.value = check
+          showResetConfirm.value = true
+          return
+        }
+      } catch { /* Keep the normal error feedback for invalid server metadata. */ }
+    }
     error.value = extractErrorMessage(e)
   } finally {
-    resetting.value = false
+    if (accountID === props.account.id && requestID === resetCheckRequestID) resetting.value = false
   }
 }
 
@@ -471,6 +539,9 @@ watch(
     loading.value = false
     resetting.value = false
     showResetConfirm.value = false
+    resetCheckRequestID++
+    resetCreditCheck.value = null
+    checkingHistory.value = false
     showResetCreditDetails.value = false
   }
 )
