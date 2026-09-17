@@ -38,6 +38,22 @@ const getUserTimezone = (): string => {
   }
 }
 
+function transportFailure(error: Pick<AxiosError, 'code'>) {
+  const timedOut = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT'
+  const chinese = getLocale().startsWith('zh')
+  return {
+    status: 0,
+    code: timedOut ? 'REQUEST_TIMEOUT' : 'NETWORK_ERROR',
+    message: timedOut
+      ? (chinese
+          ? '请求超时，暂未收到处理结果。请先确认当前状态，再重试。'
+          : 'The request timed out before a result was received. Check the current status before retrying.')
+      : (chinese
+          ? '无法连接服务器，请检查网络后重试。'
+          : 'Unable to connect to the server. Check your connection and try again.'),
+  }
+}
+
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Attach token from localStorage
@@ -186,7 +202,7 @@ apiClient.interceptors.response.use(
               originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`
             }
             return apiClient(originalRequest)
-          } catch {
+          } catch (refreshError) {
             // A stale request must never destroy a session that was logged out or replaced while
             // its refresh was in flight (for example, when another tab signs in as another user).
             const sessionChanged =
@@ -197,6 +213,24 @@ apiClient.interceptors.response.use(
                 status: 401,
                 code: 'AUTH_SESSION_CHANGED',
                 message: 'Authentication session changed while refreshing.'
+              })
+            }
+
+            // An unavailable refresh service cannot establish that a session was revoked.
+            // Keep the credentials so a later request can refresh after recovery.
+            const refreshFailure = refreshError as AxiosError
+            const refreshStatus = refreshFailure.response?.status
+            if (!refreshStatus || ![400, 401, 403].includes(refreshStatus)) {
+              if (axios.isCancel(refreshError)) return Promise.reject(refreshError)
+              if (!refreshStatus && axios.isAxiosError(refreshError)) {
+                return Promise.reject(transportFailure(refreshFailure))
+              }
+              return Promise.reject({
+                status: refreshStatus || 503,
+                code: 'AUTH_REFRESH_UNAVAILABLE',
+                message: getLocale().startsWith('zh')
+                  ? '登录服务暂时不可用，请稍后重试。'
+                  : 'The sign-in service is temporarily unavailable. Please try again shortly.',
               })
             }
 
@@ -254,11 +288,7 @@ apiClient.interceptors.response.use(
       })
     }
 
-    // Network error
-    return Promise.reject({
-      status: 0,
-      message: 'Network error. Please check your connection.'
-    })
+    return Promise.reject(transportFailure(error))
   }
 )
 

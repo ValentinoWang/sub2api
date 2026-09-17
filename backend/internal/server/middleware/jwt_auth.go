@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"errors"
+	"net/http"
 	"strings"
 
 	"github.com/Wei-Shaw/sub2api/internal/service"
@@ -71,7 +72,12 @@ func jwtAuth(
 		// 从数据库获取最新的用户信息
 		user, err := userService.GetByID(c.Request.Context(), claims.UserID)
 		if err != nil {
-			AbortWithError(c, 401, "USER_NOT_FOUND", "User not found")
+			if errors.Is(err, service.ErrUserNotFound) {
+				AbortWithError(c, http.StatusUnauthorized, "USER_NOT_FOUND", "User not found")
+			} else {
+				// A failed dependency does not invalidate an otherwise valid session.
+				AbortWithError(c, http.StatusServiceUnavailable, "AUTH_SERVICE_UNAVAILABLE", "Authentication service is temporarily unavailable")
+			}
 			return
 		}
 
