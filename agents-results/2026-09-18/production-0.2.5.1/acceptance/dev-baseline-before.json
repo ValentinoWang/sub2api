@@ -1,0 +1,11 @@
+{
+  "version": "0.2.4.9",
+  "purchase_subscription_enabled": true,
+  "purchase_subscription_url": "https://wzyp.cn/item/e8yrh4",
+  "browser_enabled": true,
+  "browser_products": 5,
+  "key3": {
+    "status": "active",
+    "group_id": 3
+  }
+}
