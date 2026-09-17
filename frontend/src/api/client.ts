@@ -220,9 +220,10 @@ apiClient.interceptors.response.use(
             // Keep the credentials so a later request can refresh after recovery.
             const refreshFailure = refreshError as AxiosError
             const refreshStatus = refreshFailure.response?.status
-            if (!refreshStatus || ![400, 401, 403].includes(refreshStatus)) {
-              if (axios.isCancel(refreshError)) return Promise.reject(refreshError)
-              if (!refreshStatus && axios.isAxiosError(refreshError)) {
+            if (axios.isCancel(refreshError)) return Promise.reject(refreshError)
+            // A malformed refresh result is not an outage, so it still ends the session below.
+            if (axios.isAxiosError(refreshError) && (!refreshStatus || ![400, 401, 403].includes(refreshStatus))) {
+              if (!refreshStatus) {
                 return Promise.reject(transportFailure(refreshFailure))
               }
               return Promise.reject({

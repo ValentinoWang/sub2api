@@ -166,15 +166,11 @@ func applyAdminProxyUpdate(id int64, proxy *Proxy, input *UpdateProxyInput) erro
 	if input.Port != 0 {
 		proxy.Port = input.Port
 	}
-	if input.UsernameSet {
-		proxy.Username = input.Username
-	} else if input.ClearUsername {
-		proxy.Username = ""
+	if input.Username != nil {
+		proxy.Username = *input.Username
 	}
-	if input.PasswordSet {
-		proxy.Password = input.Password
-	} else if input.ClearPassword {
-		proxy.Password = ""
+	if input.Password != nil {
+		proxy.Password = *input.Password
 	}
 	if input.Status != "" {
 		proxy.Status = input.Status

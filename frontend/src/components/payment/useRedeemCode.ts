@@ -31,16 +31,14 @@ export function useRedeemCode(fallbackError: () => string) {
     }
 
     // The server result is final. Refresh failures must not reclassify a committed redemption.
-    try {
-      await authStore.refreshUser()
-      if (result.value.type === 'subscription') {
-        await subscriptionStore.fetchActiveSubscriptions(true)
-      }
-    } catch {
-      refreshWarning.value = true
-    } finally {
-      submitting.value = false
+    // Refresh both independently so a profile failure still updates subscription status.
+    const refreshes: Promise<unknown>[] = [authStore.refreshUser()]
+    if (result.value.type === 'subscription') {
+      refreshes.push(subscriptionStore.fetchActiveSubscriptions(true))
     }
+    const settled = await Promise.allSettled(refreshes)
+    refreshWarning.value = settled.some((outcome) => outcome.status === 'rejected')
+    submitting.value = false
 
     return result.value
   }

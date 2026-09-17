@@ -541,12 +541,8 @@ type UpdateProxyInput struct {
 	Protocol       string
 	Host           string
 	Port           int
-	Username       string
-	UsernameSet    bool
-	ClearUsername  bool
-	Password       string
-	PasswordSet    bool
-	ClearPassword  bool
+	Username       *string
+	Password       *string
 	Status         string
 	ExpiresAt      *time.Time
 	ClearExpiresAt bool

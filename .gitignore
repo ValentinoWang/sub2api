@@ -141,6 +141,7 @@ docs/*
 !docs/COMMERCE_RELEASE.md
 !docs/ui-preview/
 !docs/ui-preview/**
+!docs/ANTIGRAVITY_ATTRIBUTION_429.md
 !docs/PAYMENT.md
 !docs/PAYMENT_CN.md
 !docs/ADMIN_PAYMENT_INTEGRATION_API.md

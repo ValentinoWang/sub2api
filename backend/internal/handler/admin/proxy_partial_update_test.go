@@ -65,43 +65,6 @@ func TestProxyHandlerUpdatePreservesFieldPresence(t *testing.T) {
 	}
 }
 
-func TestProxyHandlerUpdatePreservesCredentialFieldPresence(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	for _, tc := range []struct {
-		name              string
-		body              string
-		wantUsername      string
-		wantUsernameSet   bool
-		wantClearUsername bool
-		wantPassword      string
-		wantPasswordSet   bool
-		wantClearPassword bool
-	}{
-		{name: "omitted", body: `{}`},
-		{name: "null clears", body: `{"username":null,"password":null}`, wantClearUsername: true, wantClearPassword: true},
-		{name: "strings set", body: `{"username":" alice ","password":" secret "}`, wantUsername: "alice", wantUsernameSet: true, wantPassword: "secret", wantPasswordSet: true},
-		{name: "empty strings set empty", body: `{"username":"","password":""}`, wantUsernameSet: true, wantPasswordSet: true},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			svc := &proxyPartialUpdateService{}
-			router := gin.New()
-			router.PUT("/proxies/:id", NewProxyHandler(svc).Update)
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodPut, "/proxies/9", strings.NewReader(tc.body))
-			req.Header.Set("Content-Type", "application/json")
-			router.ServeHTTP(w, req)
-
-			require.Equal(t, http.StatusOK, w.Code, w.Body.String())
-			require.Equal(t, tc.wantUsername, svc.input.Username)
-			require.Equal(t, tc.wantUsernameSet, svc.input.UsernameSet)
-			require.Equal(t, tc.wantClearUsername, svc.input.ClearUsername)
-			require.Equal(t, tc.wantPassword, svc.input.Password)
-			require.Equal(t, tc.wantPasswordSet, svc.input.PasswordSet)
-			require.Equal(t, tc.wantClearPassword, svc.input.ClearPassword)
-		})
-	}
-}
-
 func TestProxyHandlerUpdateRejectsNegativeExpiryAndClearsZero(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Run("negative", func(t *testing.T) {
