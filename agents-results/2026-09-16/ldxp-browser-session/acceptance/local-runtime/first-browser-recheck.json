@@ -1,0 +1,25 @@
+{
+  "id": "96631ddf70590063f027ed2498164714",
+  "name": "本机 HTTP 补货脚本",
+  "runtime": {
+    "state": "paused",
+    "reason": "verification_required",
+    "browser_verification_required": true,
+    "execution_mode": "browser",
+    "checked_at": "2026-09-16T10:22:48.026647Z",
+    "reported_at": "2026-09-16T18:22:48.029215+08:00"
+  },
+  "recheck": {
+    "id": "b2e4d26cedf9c1772c877fbe38bed675",
+    "device_id": "96631ddf70590063f027ed2498164714",
+    "requested_by": 1,
+    "state": "failed",
+    "reason": "verification_required",
+    "resumed": false,
+    "requested_at": "2026-09-16T18:22:44.716275+08:00",
+    "started_at": "2026-09-16T18:22:47.996618+08:00",
+    "finished_at": "2026-09-16T18:22:48.032856+08:00"
+  },
+  "last_seen_at": "2026-09-16T14:10:24.684363+08:00",
+  "authorization_verified_at": "2026-09-16T14:10:24.672539+08:00"
+}

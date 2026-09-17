@@ -1,0 +1,34 @@
+{
+  "red": {
+    "command": [
+      "/Users/vsiyo/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.0.darwin-arm64/bin/go",
+      "test",
+      "-tags",
+      "integration",
+      "./internal/service",
+      "-run",
+      "^TestLiandongBrowserDeliveryProofIntegration$",
+      "-count=1",
+      "-p",
+      "1",
+      "-v"
+    ],
+    "exit_code": 1
+  },
+  "green": {
+    "command": [
+      "/Users/vsiyo/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.0.darwin-arm64/bin/go",
+      "test",
+      "-tags",
+      "integration",
+      "./internal/service",
+      "-run",
+      "^TestLiandongBrowser(PersistentSafety|DeliveryProof)Integration$",
+      "-count=1",
+      "-p",
+      "1",
+      "-v"
+    ],
+    "exit_code": 0
+  }
+}

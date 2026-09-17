@@ -1,0 +1,20 @@
+{
+  "order_no": "LD260915G5W4S3",
+  "goods_id": 874783,
+  "goods_key": "e8yrh4",
+  "quantity": 1,
+  "paid": true,
+  "delivered": true,
+  "buyer_paid_cny": 5,
+  "fee_cny": 0.15,
+  "fee_payer": 0,
+  "merchant_card_id": 33669,
+  "sold_code_exact_match": true,
+  "local_exact_code_match": true,
+  "local_code_id": 5,
+  "local_status": "unused",
+  "local_type": "balance",
+  "local_credit_usd": 5,
+  "local_used": false,
+  "code_sha256": "4ca2fd8ad2d131e5057d43748af38182f66056862db38b3cf56920f23b820e07"
+}

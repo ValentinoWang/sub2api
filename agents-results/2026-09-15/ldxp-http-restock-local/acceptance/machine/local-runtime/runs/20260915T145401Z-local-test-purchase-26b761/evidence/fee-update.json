@@ -1,0 +1,11 @@
+{
+  "goods_id": 874783,
+  "name": "【测试专用】5元额度",
+  "price": 5,
+  "fee_payer_before": -1,
+  "fee_payer_after": 1,
+  "meaning": "buyer",
+  "other_product_settings_preserved": true,
+  "checked_at": 1789483592.2075038,
+  "protocol_source": "https://www.ldxp.cn/package/merchant/assets/index.2d865194.js"
+}

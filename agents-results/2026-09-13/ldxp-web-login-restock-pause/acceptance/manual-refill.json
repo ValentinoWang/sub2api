@@ -1,0 +1,18 @@
+{
+  "goods_id": 874782,
+  "count": 1,
+  "value_each": 5,
+  "code_ids": [
+    6
+  ],
+  "same_request_replayed": true,
+  "repeat_returns_same_record_id": true,
+  "replay_response_redacts_code": true,
+  "original_code_verified_by_admin_readback": true,
+  "upload_status": "confirmed",
+  "merchant_before": 1,
+  "merchant_after": 2,
+  "merchant_added": 1,
+  "merchant_duplicates_removed": 0,
+  "automatic_refill_verified": false
+}

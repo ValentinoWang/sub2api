@@ -1,0 +1,13 @@
+{
+  "command": [
+    "bash",
+    "tools/quality/run_local_ci.sh",
+    "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-01"
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 4293386240,
+  "status": "STOPPED_FOR_SPACE",
+  "exit_code": 73,
+  "reserve_preserved": true
+}

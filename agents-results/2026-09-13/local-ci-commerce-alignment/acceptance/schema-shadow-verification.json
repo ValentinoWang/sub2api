@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "source_commit": "ca164ab1dcbb956324a81fd0c5887cd11fd06090",
+  "scope": "schema-only copies of observed dev/prod; migrations239+240; no business rows",
+  "environments": {
+    "dev": {
+      "logical_schema_sha256": "1ce02f3041fd8379b1273de3cd8d8f0571704ab4bb05faf72eb3977408e994aa",
+      "counts": {
+        "relations": 122,
+        "columns": 1625,
+        "constraints": 373,
+        "indexes": 486,
+        "sequences": 75,
+        "functions": 82,
+        "triggers": 16,
+        "views": 0,
+        "types": 0,
+        "policies": 0,
+        "rules": 0,
+        "extensions": 3
+      }
+    },
+    "prod": {
+      "logical_schema_sha256": "1ce02f3041fd8379b1273de3cd8d8f0571704ab4bb05faf72eb3977408e994aa",
+      "counts": {
+        "relations": 122,
+        "columns": 1625,
+        "constraints": 373,
+        "indexes": 486,
+        "sequences": 75,
+        "functions": 82,
+        "triggers": 16,
+        "views": 0,
+        "types": 0,
+        "policies": 0,
+        "rules": 0,
+        "extensions": 3
+      }
+    }
+  }
+}

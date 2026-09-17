@@ -1,0 +1,15 @@
+{
+  "money_events": 0,
+  "quota_observations": 8,
+  "unknown_duration_observations": 8,
+  "public_references": 1,
+  "runtime_can_update_money": false,
+  "runtime_can_delete_money": false,
+  "runtime_can_truncate_money": false,
+  "local_only": true,
+  "source_default_read_only": true,
+  "cost_endpoint": "http://127.0.0.1:50242",
+  "checked_at": "2026-09-16T09:19:41.606494+00:00",
+  "binary_sha256": "b0c610aa30c9dda77e791baf87621901fc5d946856064a25c3c07cd13eb4a81d",
+  "free_bytes": 7980244992
+}

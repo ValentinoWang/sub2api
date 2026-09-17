@@ -1,0 +1,92 @@
+{
+  "commit": "64f459e05d2ec50ac997dd6933794a1fcccaac61",
+  "tree": "4df1eaa5020d49fe147eeb330641726d106b7487",
+  "started_at": "2026-09-12T16:19:16Z",
+  "finished_at": "2026-09-12T16:19:16.663984+00:00",
+  "exit_code": 1,
+  "status": "FAIL",
+  "stages": [
+    {
+      "stage": "source-preflight",
+      "exit_code": 1,
+      "seconds": 0,
+      "log": "source-preflight.log",
+      "status": "FAIL"
+    },
+    {
+      "stage": "snapshot",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "toolchain",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frozen-install",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "acceptance-layout",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "deploy-guards",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "version-guards",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "backend-unit",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "backend-integration",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "backend-lint",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-lint",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-typecheck",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-tests",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-build",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "backend-security",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-security",
+      "status": "NOT_RUN",
+      "exit_code": null
+    }
+  ]
+}

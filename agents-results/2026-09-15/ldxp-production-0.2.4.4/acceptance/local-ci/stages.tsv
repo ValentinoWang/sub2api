@@ -1,0 +1,4 @@
+stage	exit_code	seconds	log
+source-preflight	0	0	source-preflight.log
+snapshot	0	4	snapshot.log
+toolchain	1	0	toolchain.log

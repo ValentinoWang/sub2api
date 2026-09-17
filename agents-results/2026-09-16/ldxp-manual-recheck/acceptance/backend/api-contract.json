@@ -1,0 +1,32 @@
+{
+  "admin_create": "POST /api/v1/admin/tools/ldxp/browser/devices/:id/recheck",
+  "device_claim": "POST /api/v1/ldxp/device/recheck/claim",
+  "device_result": "POST /api/v1/ldxp/device/recheck/:id/result",
+  "create_and_claim_body": "empty or {}",
+  "result_body": {
+    "state": "passed or failed",
+    "reason": "empty for passed; existing runtime error enum for failed",
+    "resumed": "required boolean; failed requires false"
+  },
+  "response": "data.recheck = request record; claim returns null if no pending request",
+  "record_fields": [
+    "id",
+    "device_id",
+    "requested_by",
+    "state",
+    "reason",
+    "resumed",
+    "requested_at",
+    "started_at?",
+    "finished_at?"
+  ],
+  "status_projection": [
+    "recheck_supported:true",
+    "devices[].recheck (omitted without request history)"
+  ],
+  "queue_expiration_minutes": 10,
+  "result_conflict_status": 409,
+  "foreign_request_status": 404,
+  "invalid_or_revoked_device_status": 401,
+  "observation_only": true
+}

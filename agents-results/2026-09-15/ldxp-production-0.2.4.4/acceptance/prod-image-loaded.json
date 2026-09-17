@@ -1,0 +1,8 @@
+{
+  "status": "LOADED",
+  "archive_sha256": "47dbe10961d530b537feb4fc03c559692b1958bb2d61186bc1f0e5f796efa7ff",
+  "image_id": "sha256:4e7bf76b9e2cccf925a2f385460acf1361fedf4b72521a6c566df0ed4fd19db5",
+  "platform": "linux/amd64",
+  "observed_at": 1789473457.049827,
+  "verification": "Remote SSH SHA256 and docker image inspect assertions passed"
+}

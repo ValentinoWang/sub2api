@@ -1,0 +1,227 @@
+Window: "联动小铺补货 - rest2build", App: Google Chrome.
+0 标准窗口 联动小铺补货 - rest2build - Google Chrome - 思尧, URL: 127.0.0.1:4174/admin/tools/ldxp, Secondary Actions: Raise
+	1 container 联动小铺补货 - rest2build - Google Chrome - 思尧, URL: 127.0.0.1:4174/admin/tools/ldxp
+		2 container
+			3 container
+				4 HTML 内容 联动小铺补货 - rest2build, URL: 127.0.0.1:4174/admin/tools/ldxp
+					5 container
+						6 container
+							7 link Logo. 要获取缺失的图片说明，请打开上下文菜单。, Value: 127.0.0.1:4174/admin/dashboard
+							8 link rest2build, Value: 127.0.0.1:4174/admin/dashboard
+							9 按钮 v0.2.4.6, Help: 有新版本可用！
+							10 link 仪表盘, Value: 127.0.0.1:4174/admin/dashboard
+							11 按钮 成本工作台
+								12 图像
+								13 container
+									14 文本 成本工作台
+									15 图像
+							16 link 运维监控, Value: 127.0.0.1:4174/admin/ops
+							17 按钮 工具
+								18 图像
+								19 container
+									20 文本 工具
+									21 图像
+							22 link 联动小铺, Value: 127.0.0.1:4174/admin/tools/ldxp
+							23 link 用户管理, Value: 127.0.0.1:4174/admin/users
+							24 link 分组管理, Value: 127.0.0.1:4174/admin/groups
+							25 按钮 渠道管理
+								26 图像
+								27 container
+									28 文本 渠道管理
+									29 图像
+							30 link 订阅管理, Value: 127.0.0.1:4174/admin/subscriptions
+							31 link AI 充值工作台, Value: 127.0.0.1:4174/admin/membership
+							32 link 账号管理, Value: 127.0.0.1:4174/admin/accounts
+							33 link 公告, Value: 127.0.0.1:4174/admin/announcements
+							34 link IP管理, Value: 127.0.0.1:4174/admin/proxies
+							35 link 兑换码, Value: 127.0.0.1:4174/admin/redeem
+							36 link 优惠码, Value: 127.0.0.1:4174/admin/promo-codes
+							37 按钮 订单管理
+								38 图像
+								39 container
+									40 文本 订单管理
+									41 图像
+							42 link 使用记录, Value: 127.0.0.1:4174/admin/usage
+							43 link 操作日志, Value: 127.0.0.1:4174/admin/audit-logs
+							44 link 系统设置, Value: 127.0.0.1:4174/admin/settings
+							45 文本 我的账户
+							46 link API 密钥, Value: 127.0.0.1:4174/keys
+							47 link 使用记录, Value: 127.0.0.1:4174/usage
+							48 link 渠道状态, Value: 127.0.0.1:4174/monitor
+							49 link 我的订阅, Value: 127.0.0.1:4174/subscriptions
+							50 link 会员充值, Value: 127.0.0.1:4174/memberships
+							51 link 充值/订阅, Value: 127.0.0.1:4174/purchase
+							52 link 我的订单, Value: 127.0.0.1:4174/orders
+							53 link 兑换中心, Value: 127.0.0.1:4174/redeem
+							54 link 经验分享, Value: 127.0.0.1:4174/experiences
+							55 link 个人资料, Value: 127.0.0.1:4174/profile
+							56 按钮 深色模式
+								57 图像
+								58 文本 深色模式
+							59 按钮 收起
+								60 图像
+								61 文本 收起
+						62 container
+							63 标题 联动小铺补货, Value: 1
+								64 文本 联动小铺补货
+							65 文本 查看和管理联动小铺自动补货、商品映射与设备状态。
+							66 按钮 公告
+								67 图像
+							68 按钮 🇨🇳 ZH, Help: 中文
+								69 文本 🇨🇳
+								70 文本 ZH
+								71 图像
+							72 container
+								73 图像
+								74 文本 $999964739.95
+							75 按钮 用户菜单
+								76 文本 AD
+								77 文本 admin
+								78 文本 管理员
+								79 图像
+							80 container
+								81 标题 自动补货状态, Value: 2
+									82 文本 自动补货状态
+								83 文本 查看自动补货开关、设备最近通信和各额度库存。遇到网页验证时，可在这里提交复查请求。
+								84 按钮 刷新
+								85 文本 脚本仍收到验证页，尚未通过。浏览器验证不会自动同步到独立脚本；需要检查脚本的商户授权。
+								86 标题 联动小铺需要完成网页验证, Value: 3
+									87 文本 联动小铺需要完成网页验证
+								88 文本 请打开联动小铺，在网页中完成滑块或其他真人验证。完成后点击“我已完成验证，立即检查”，只有脚本授权与库存确认成功后才恢复补货。
+								89 文本 本机 HTTP 补货脚本 · 状态上报时间: 2026/9/16 17:20:39
+								90 文本 最近检查小铺: 2026/9/16 17:17:36
+								91 文本 下次自动检查: 2026/9/16 17:32:36
+								92 link 打开小铺完成验证, Value: ldxp.cn/merchant/
+								93 按钮 我已完成验证，立即检查
+								94 文本 脚本仍收到验证页，尚未通过。浏览器验证不会自动同步到独立脚本；需要检查脚本的商户授权。
+								95 文本 自动补货开关
+								96 文本 已启用
+								97 文本 执行设备通信
+								98 文本 补货已暂停
+								99 文本 最近连接: 2026/9/16 17:20:39
+								100 文本 近期核实达标商品
+								101 文本 0 / 5
+								102 文本 仅统计最近 2 分钟核对通过的已启用商品
+								103 text 每 15 秒自动刷新。开关开启表示允许补货，近期心跳不代表每轮已完成；请结合库存核对时间和待处理批次判断。心跳过期也可能是脚本遇到小铺异常后暂停，并不一定是电脑离线。 最近补货批次: 100元额度 · 13 张 · 已核对确认 已启用
+								104 按钮 停用补货
+								105 标题 补货设备, Value: 3
+									106 文本 补货设备
+								107 文本栏 (settable) 设备名称，例如本机补货脚本
+								108 弹出式按钮 绑定商品, Value: 当前全部已启用商品
+									109 (selected) 当前全部已启用商品
+								110 按钮 (disabled) 生成设备凭据
+								111 text 本机 HTTP 补货脚本 最近连接: 2026/9/16 17:20:39 · 补货已暂停
+								112 按钮 撤销凭据
+								113 text 我的 Chrome 最近连接: 2026/9/13 20:57:00 · 设备离线 / 需重新检查
+								114 按钮 撤销凭据
+								115 text 本地测试 Chrome 20260913 最近连接: 尚未连接 · 等待设备验证
+								116 按钮 撤销凭据
+								117 开合三角标记 商品映射
+									118 文本 商品映射
+								119 container
+									120 按钮 添加商品
+									121 text 只填写已核验的真实商品。支付 ¥1 对应 $1 额度，手续费在小铺外部结算。库存身份未核实前不会进入公开购买目录。每批最多补 20 张。库存目标由补货脚本设置，默认每种额度 999 张。 小铺商品 ID
+									122 步进器 (settable, float) 小铺商品 ID, Value: 874783
+									123 文本 售价（元）/ 到账额度（美元）
+									124 步进器 (settable, float) 售价（元）/ 到账额度（美元）, Value: 5
+									125 文本 该商品购买链接
+									126 网址 (settable) 该商品购买链接, Value: https://wzyp.cn/item/e8yrh4, Placeholder: https://…
+									127 复选框 允许该商品补货, Value: 1
+									128 文本 最近库存: 999 / 999 · 库存身份已核实
+									129 按钮 删除
+									130 text 库存核对时间: 2026/9/16 14:10:20 小铺商品 ID
+									131 步进器 (settable, float) 小铺商品 ID, Value: 875537
+									132 文本 售价（元）/ 到账额度（美元）
+									133 步进器 (settable, float) 售价（元）/ 到账额度（美元）, Value: 10
+									134 文本 该商品购买链接
+									135 网址 (settable) 该商品购买链接, Value: https://wzyp.cn/item/gugvzf, Placeholder: https://…
+									136 复选框 允许该商品补货, Value: 1
+									137 文本 最近库存: 999 / 999 · 库存身份已核实
+									138 按钮 删除
+									139 text 库存核对时间: 2026/9/16 14:10:22 小铺商品 ID
+									140 步进器 (settable, float) 小铺商品 ID, Value: 875562
+									141 文本 售价（元）/ 到账额度（美元）
+									142 步进器 (settable, float) 售价（元）/ 到账额度（美元）, Value: 20
+									143 文本 该商品购买链接
+									144 网址 (settable) 该商品购买链接, Value: https://wzyp.cn/item/15ktqx, Placeholder: https://…
+									145 复选框 允许该商品补货, Value: 1
+									146 文本 最近库存: 999 / 999 · 库存身份已核实
+									147 按钮 删除
+									148 text 库存核对时间: 2026/9/16 14:10:22 小铺商品 ID
+									149 步进器 (settable, float) 小铺商品 ID, Value: 875570
+									150 文本 售价（元）/ 到账额度（美元）
+									151 步进器 (settable, float) 售价（元）/ 到账额度（美元）, Value: 50
+									152 文本 该商品购买链接
+									153 网址 (settable) 该商品购买链接, Value: https://wzyp.cn/item/8uzkw1, Placeholder: https://…
+									154 复选框 允许该商品补货, Value: 1
+									155 文本 最近库存: 999 / 999 · 库存身份已核实
+									156 按钮 删除
+									157 text 库存核对时间: 2026/9/16 14:10:23 小铺商品 ID
+									158 步进器 (settable, float) 小铺商品 ID, Value: 875577
+									159 文本 售价（元）/ 到账额度（美元）
+									160 步进器 (settable, float) 售价（元）/ 到账额度（美元）, Value: 100
+									161 文本 该商品购买链接
+									162 网址 (settable) 该商品购买链接, Value: https://wzyp.cn/item/goco5q, Placeholder: https://…
+									163 复选框 允许该商品补货, Value: 1
+									164 文本 最近库存: 999 / 999 · 库存身份已核实
+									165 按钮 删除
+									166 文本 库存核对时间: 2026/9/16 14:10:24
+									167 按钮 (disabled) 保存
+		168 container
+			169 container
+				170 工具栏
+					171 按钮 返回
+					172 按钮 (disabled) 前进
+					173 按钮 重新加载
+					174 container
+						175 弹出式按钮 查看网站信息
+						176 文本栏 (settable) 地址和搜索栏, Value: 127.0.0.1:4174/admin/tools/ldxp, Placeholder: 在 Google 中搜索，或输入网址
+						177 按钮 为此标签页添加书签
+					178 container
+						179 弹出式按钮 easyScholar
+可以访问此网站
+						180 弹出式按钮 Save to Zotero (Embedded Metadata)
+可以访问此网站
+						181 弹出式按钮 Snip
+可以访问此网站
+						182 弹出式按钮 不背单词查词
+可以访问此网站
+						183 弹出式按钮 ChatGPT
+可以访问此网站
+						184 弹出式按钮 扩展程序
+					185 按钮 思尧
+					186 弹出式按钮 Chrome
+			187 container
+				188 弹出式按钮 标签页搜索
+				189 标签组
+					190 标签 (settable, boolean) 账号管理 - rest2build - 内存用量 - 216 MB, Value: off
+						191 按钮 关闭
+					192 标签 (settable, boolean) Search | arXiv e-print repository - 内存用量 - 82.2 MB, Value: off
+						193 按钮 关闭
+					194 标签 (settable, boolean) MediaClaw｜AI 内容生产工作台 - 内存用量 - 236 MB, Value: off
+						195 按钮 关闭
+					196 标签 (settable, boolean) Cadenvo 前端开发工作台 - 内存用量 - 119 MB, Value: off
+						197 按钮 关闭
+					198 标签 (settable, boolean) 交付调度台 - 内存用量 - 138 MB, Value: off
+						199 按钮 关闭
+					200 标签 (selected, settable, boolean) 联动小铺补货 - rest2build - 内存用量 - 116 MB, Value: on
+						201 按钮 关闭
+					202 标签 (settable, boolean) 链动小铺 - 寄售平台-发货平台-自动发货网-专注自动发货系统,链动小铺寄售网(ldxp.cn), Value: off
+						203 按钮 关闭
+				204 按钮 新标签页
+	205 container
+		206 关闭按钮
+		207 缩放按钮
+208 menu bar
+	209 Chrome
+	210 文件
+	211 编辑
+	212 显示
+	213 历史记录
+	214 书签
+	215 个人资料
+	216 标签页
+	217 窗口
+	218 帮助
+
+The focused UI element is 117 开合三角标记 商品映射

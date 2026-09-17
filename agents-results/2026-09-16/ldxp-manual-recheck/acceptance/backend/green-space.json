@@ -1,0 +1,21 @@
+{
+  "command": [
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/go",
+    "test",
+    "-tags",
+    "integration",
+    "./internal/server/routes",
+    "-run",
+    "^TestLiandongBrowser(Recheck|Runtime)Integration$",
+    "-count=1",
+    "-p",
+    "1",
+    "-v"
+  ],
+  "minimum_required_gib": 3.0,
+  "stop_threshold_gib": 4.0,
+  "lowest_free_bytes": 6295105536,
+  "status": "PASS",
+  "exit_code": 0,
+  "reserve_preserved": true
+}

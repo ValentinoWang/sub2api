@@ -1,0 +1,126 @@
+{
+  "at": 1789485256.3998442,
+  "probes": [
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 14.47
+    },
+    {
+      "probe": "settings",
+      "status": "URLError",
+      "ms": 0.65
+    },
+    {
+      "probe": "login-validation",
+      "status": "URLError",
+      "ms": 0.33
+    },
+    {
+      "probe": "admin-users",
+      "status": 200,
+      "ms": 142.36
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 12.01
+    },
+    {
+      "probe": "settings",
+      "status": "URLError",
+      "ms": 0.45
+    },
+    {
+      "probe": "login-validation",
+      "status": "URLError",
+      "ms": 0.55
+    },
+    {
+      "probe": "admin-users",
+      "status": 200,
+      "ms": 136.75
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 5.44
+    },
+    {
+      "probe": "settings",
+      "status": "URLError",
+      "ms": 0.83
+    },
+    {
+      "probe": "login-validation",
+      "status": "URLError",
+      "ms": 1.21
+    },
+    {
+      "probe": "admin-users",
+      "status": 200,
+      "ms": 27.93
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 4.01
+    },
+    {
+      "probe": "settings",
+      "status": "URLError",
+      "ms": 0.51
+    },
+    {
+      "probe": "login-validation",
+      "status": "URLError",
+      "ms": 0.22
+    },
+    {
+      "probe": "admin-users",
+      "status": 200,
+      "ms": 21.46
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 3.99
+    },
+    {
+      "probe": "settings",
+      "status": "URLError",
+      "ms": 0.56
+    },
+    {
+      "probe": "login-validation",
+      "status": "URLError",
+      "ms": 0.31
+    },
+    {
+      "probe": "admin-users",
+      "status": 200,
+      "ms": 18.88
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 5.14
+    },
+    {
+      "probe": "settings",
+      "status": "URLError",
+      "ms": 0.46
+    },
+    {
+      "probe": "login-validation",
+      "status": "URLError",
+      "ms": 0.3
+    },
+    {
+      "probe": "admin-users",
+      "status": 200,
+      "ms": 18.52
+    }
+  ],
+  "scope": "live local read-only and empty-login validation; no user password or paid write"
+}

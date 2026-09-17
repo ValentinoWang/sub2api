@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/quality/tests",
+    "-p",
+    "test_ldxp_browser_*.py",
+    "-v"
+  ],
+  "exit_code": 1
+}

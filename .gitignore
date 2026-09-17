@@ -189,6 +189,10 @@ output/
 # must be committed deliberately or archived outside this repository.
 !/agents-results/
 !/agents-results/**
+# Raw run logs, agent transcripts and copied third-party sources stay local.
+/agents-results/**/*.log
+/agents-results/**/*.jsonl
+/agents-results/**/research/sources/
 
 # Generated Chrome restock extension package
 frontend/public/assets/ldxp-browser-extension.zip

@@ -1,0 +1,188 @@
+[
+  {
+    "query": "ldxp in:name,description",
+    "url": "https://api.github.com/search/repositories?q=ldxp+in%3Aname%2Cdescription&per_page=30",
+    "total_count": 57,
+    "items": [
+      {
+        "repo": "WowJokerH/edge-ldxp-filter",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "WowJokerH/google-ldxp-filter",
+        "description": "链动小铺货源增强筛选 Google Chrome 扩展",
+        "license": null
+      },
+      {
+        "repo": "iKeilo/LdxpM",
+        "description": "链动小铺货物提醒",
+        "license": null
+      },
+      {
+        "repo": "miku1130/ldxp-merchant-toolkit",
+        "description": "链动小铺商家后台增强用户脚本：货源搜索对接、库存与分类筛选、价格排序、批量编辑和文字报表",
+        "license": "MIT"
+      },
+      {
+        "repo": "quark-xp/ldxp",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "wubw0508/ldxp",
+        "description": "查找链动小铺的gpt账号",
+        "license": null
+      },
+      {
+        "repo": "WenJiahu001/ldxp-search",
+        "description": "搜索链动小铺 纯前端",
+        "license": "MIT"
+      },
+      {
+        "repo": "leendx/LDXPicSelector",
+        "description": "图片选取功能",
+        "license": null
+      },
+      {
+        "repo": "SuperMaxine/ldxp-hide-out-of-stock",
+        "description": "链动小铺用户脚本：动态显示或隐藏缺货商品，并支持价格排序与两种页面布局。",
+        "license": null
+      },
+      {
+        "repo": "Libaoyun/LDXPAdvanced",
+        "description": "LDXP - Advanced",
+        "license": null
+      },
+      {
+        "repo": "YOUR-PAYMENT-SUCCESSFUL-1459/repo-ldxps5ht",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "ronielpereiraleite/Sistema-LDXPS",
+        "description": "Sistema Construído em Python - LDXPS",
+        "license": null
+      },
+      {
+        "repo": "iotwlw/LDXPtoken",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "S988777/ldxp-showcase",
+        "description": "gpt直充、gpt plus pro、codex成品号、team、k12、各类邮箱、接码、grok、Gemini、deepseek、低价中转站",
+        "license": null
+      },
+      {
+        "repo": "codingwa/toolbox-release",
+        "description": "卡网管理工具 ldxp https://pay.ldxp.cn/shop/plus123",
+        "license": null
+      },
+      {
+        "repo": "pokerts/LDXPS",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "zcluu/LDXP---Watcher",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "deathzephyr/LDXPLAY",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "ccaiqueez/LDXPS_",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "ChaconLima/LDXPS",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "Luhen1/LDXPS",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "thedhanzatamore/ldxpfj",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "Ciccotti/LDXPS",
+        "description": "Sistema LDXPS para o processo seletivo",
+        "license": null
+      },
+      {
+        "repo": "RodrigoFMorais/ldxps",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "ldx-hh/ldxproject",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "shadowmotormandeem/ldxpsmmo",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "vhugorod/ldxps-frontend",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "plusinguyravajai/ldxprn",
+        "description": "",
+        "license": null
+      },
+      {
+        "repo": "ZYDTR/pay-ldxp-links",
+        "description": "Simple pay.ldxp.cn link collection",
+        "license": null
+      },
+      {
+        "repo": "rossi-rabelo/LDXPS",
+        "description": "Projeto para o processo seletivo da Landix",
+        "license": null
+      }
+    ]
+  },
+  {
+    "query": "链动小铺 补货 in:readme",
+    "url": "https://api.github.com/search/repositories?q=%E9%93%BE%E5%8A%A8%E5%B0%8F%E9%93%BA+%E8%A1%A5%E8%B4%A7+in%3Areadme&per_page=30",
+    "total_count": 2,
+    "items": [
+      {
+        "repo": "hotcrush/Aether_api",
+        "description": "融合 CLIProxyAPI + Sub2API + CC Switch 等开源方案，解决 AI 账号分散、找号卖号依赖外部工具、多上游手动切换的痛点 — 本地一站式账号导入管理、智能代理调度与店铺市场监控。",
+        "license": null
+      },
+      {
+        "repo": "yusheng266186-beep/liandong-ai-radar",
+        "description": "公开、可审计的 ChatGPT 数字商品价格与库存雷达，支持原商家直达、分层核验和自动更新。",
+        "license": "MIT"
+      }
+    ]
+  },
+  {
+    "query": "ldxp remove_repeat in:readme",
+    "url": "https://api.github.com/search/repositories?q=ldxp+remove_repeat+in%3Areadme&per_page=30",
+    "total_count": 0,
+    "items": []
+  },
+  {
+    "query": "联动小铺 自动补货 in:readme",
+    "url": "https://api.github.com/search/repositories?q=%E8%81%94%E5%8A%A8%E5%B0%8F%E9%93%BA+%E8%87%AA%E5%8A%A8%E8%A1%A5%E8%B4%A7+in%3Areadme&per_page=30",
+    "total_count": 0,
+    "items": []
+  }
+]

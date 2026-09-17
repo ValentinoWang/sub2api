@@ -1,0 +1,14 @@
+{
+  "image": "sub2api-local:0.2.4.4-507a820c6792",
+  "image_id": "sha256:4e7bf76b9e2cccf925a2f385460acf1361fedf4b72521a6c566df0ed4fd19db5",
+  "platform": "linux/amd64",
+  "labels": {
+    "description": "Sub2API - AI API Gateway Platform",
+    "maintainer": "Wei-Shaw <github.com/Wei-Shaw>",
+    "org.opencontainers.image.created": "2026-09-15T18:03:33+08:00",
+    "org.opencontainers.image.revision": "507a820c6792782ac07f9962a06c6224ce6cba70",
+    "org.opencontainers.image.source": "https://github.com/ValentinoWang/sub2api",
+    "org.opencontainers.image.version": "0.2.4.4"
+  },
+  "binary_version": "2026-09-15T11:53:14.453Z\tINFO\tstdlog\tSub2API 0.2.4.4 (commit: 507a820c6792782ac07f9962a06c6224ce6cba70, built: 2026-09-15T18:03:33+08:00)\t{\"service\": \"sub2api\", \"env\": \"bootstrap\", \"legacy_stdlog\": true}"
+}

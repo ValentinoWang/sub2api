@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "delivery_cases": 24,
+  "original_persistent_safety_regression": "PASS",
+  "migration": {
+    "file": "backend/migrations/242_liandong_browser_delivery_proofs.sql",
+    "number": 242,
+    "validation": "repository.ApplyMigrations succeeded in two temporary postgres:18.1-alpine3.23 databases; receipt persistence, repeat proof, and failed receipt insert rollback verified"
+  },
+  "source_sha256": {
+    "backend/internal/service/liandong_browser.go": "933e0dccb182101df24882bd7d807a49a09da2932052373c241d0ecf22fbcece",
+    "backend/internal/service/liandong_browser_delivery_integration_test.go": "16f1cb6dd847c1b87f424b46578bfc8419e35c3c514b5dba455bea52e6fc7909",
+    "backend/migrations/242_liandong_browser_delivery_proofs.sql": "7c1fe749191b8792bd8eb91e79a17021a4bfe520024a5a7dda39b150ec87a2b4"
+  },
+  "log_sha256": {
+    "red": "5160a2a2454df2111bb6bf77623556fb15873ec0baa5d7325a5c85314b106c8d",
+    "green": "d9a06dc30aabb0436f61611a561c73dfa7cfef31a3c70c4b395561ed3e2017d4"
+  },
+  "red_note": "Original protocol produced 11 behavior failures plus one test fixture error from exceeding the code varchar(32) limit; the fixture was changed to an equal-length code mutation before the green run. Full command stdout/stderr chunks were recovered from the task transcript.",
+  "protocol": {
+    "request_additions": {
+      "sold_complete": "true and nonempty batch_id required when sold proofs are submitted",
+      "sold_proofs": "array of {code_hash: lowercase SHA256 hex, card_id: positive int64}; at most 20; no duplicate hashes/card IDs or overlap with unsold hashes"
+    },
+    "response_additions": {
+      "delivery_proof_version": 1,
+      "retry_eligible": "true only for an incomplete owned original batch, complete sold scan, valid unsold inventory, intact original rights, and every missing code unused; enabled config; device pause empty or disconnected"
+    },
+    "inventory_semantics": "hashes/total/matched_stock remain unsold only",
+    "pending_semantics": "blocked remains true for an unresolved uncertain batch, even when retry_eligible is true",
+    "audit_semantics": "first full proof per batch is preserved; no plaintext codes"
+  },
+  "boundaries": [
+    "No retry endpoint added.",
+    "No router or handler changes.",
+    "No automatic recovery of authorization_failed.",
+    "Fresh authorization is required for inventory reconciliation.",
+    "Remote atomic idempotency is not established by retry_eligible.",
+    "No operation against the existing 8080 backend.",
+    "No full local CI or runtime release acceptance claimed."
+  ]
+}

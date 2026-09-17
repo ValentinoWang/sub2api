@@ -1,0 +1,11 @@
+{
+  "status": "SCHEDULED",
+  "interval_seconds": 60,
+  "target_stock": 999,
+  "products": 5,
+  "finished_at": 1789550218.044418,
+  "source_sha256": {
+    "ldxp_http_restock.py": "080e09f972c2ed08561b1a88bd303bdd037108eab53b979de904c4764a885ff8",
+    "ldxp_http_probe.py": "2dcd70134729477459a92e216835c751aee4663f5f72dc0958bcf532710ab43f"
+  }
+}

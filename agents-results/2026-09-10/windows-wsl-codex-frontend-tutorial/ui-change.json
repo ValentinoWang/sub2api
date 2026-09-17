@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "ui_change_id": "windows-wsl-codex-frontend-tutorial",
+  "kind": "add-surface",
+  "user_visible": true,
+  "source_authority_mode": "none",
+  "affected_surfaces": [
+    "frontend/src/views/public/WslCodexFrontendTutorialView.vue",
+    "frontend/src/views/public/ExperiencesView.vue"
+  ],
+  "implementation_authority": {
+    "content": "2026-09-10 user request",
+    "runtime_behavior": "Vue route and component tests",
+    "visual_intent": "Figma file bG5roZJVC4F4IQwaL8oeOk page Experience - WSL Codex Tutorial"
+  },
+  "capture_matrix": {
+    "routes": [
+      "/experiences",
+      "/experiences/windows-11-wsl-codex-frontend"
+    ],
+    "themes": ["light", "dark"],
+    "viewports": ["1280x720", "390x844"]
+  },
+  "interaction_matrix": [
+    "open tutorial from experience card",
+    "copy a Linux command",
+    "copy a Codex prompt",
+    "return to experience index",
+    "open official WSL documentation"
+  ],
+  "visual_evidence_types": [
+    "browser-dom",
+    "fixed-browser-screenshot",
+    "horizontal-overflow-measurement",
+    "interaction-status",
+    "figma-editable-node-audit"
+  ]
+}

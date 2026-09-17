@@ -1,0 +1,17 @@
+{
+  "candidate_sha256": "baeb8723205360edb2961e08343d5ed44d3d4145df109ab81af98b25d705b28c",
+  "environment": "prod",
+  "created_at": 1789473966.5636191,
+  "status": "FUNCTIONAL_ACCEPTANCE",
+  "health_passed": true,
+  "functional_checks_passed": true,
+  "version": "0.2.4.4",
+  "shop_url": "https://wzyp.cn/shop/MGDY0ZE4",
+  "browser_enabled": false,
+  "configured_product_count": 0,
+  "catalog_http_status": 404,
+  "page_shells_passed": true,
+  "model": "gpt-5.6-luna",
+  "model_stream_completed": true,
+  "finished_at": 1789473970.8150241
+}

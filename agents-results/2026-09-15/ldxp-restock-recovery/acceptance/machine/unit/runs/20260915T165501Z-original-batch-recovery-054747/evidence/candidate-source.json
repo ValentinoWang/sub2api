@@ -1,0 +1,32 @@
+{
+  "commit": "be8771d92b66f8742fa90036d8507b822306e3eb",
+  "branch": "codex/ldxp-recovery-local",
+  "version": "0.2.4.5",
+  "checkout": "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-checkout",
+  "files": {
+    "backend/cmd/server/VERSION": "7e472db926f0d26980303b40d266a0f99402266805ff4aa15c858bde6f9b4368",
+    "backend/internal/repository/redis.go": "0ed5787658373a4956b6736ff00a6a331b7fc79e48744438301796f1a4c4198f",
+    "backend/internal/repository/redis_test.go": "e517bd7c344e267fb19ec9554ca980321e9ff3c570df2818dcea7fd78dd92f01",
+    "backend/internal/server/middleware/jwt_auth.go": "d2b2aa07adda59a6f7662c0ff3acecfda6faace5c4ab9499df3e9ba3810e8c0c",
+    "backend/internal/server/middleware/jwt_auth_test.go": "905db56900d969b9317b0172199d24c776eeec388148d960b88463dfcd80b7a9",
+    "backend/internal/service/user_service.go": "f9c0ed59155680dfe8a147963758a26be1561543c51321f8ceeeaaaed0349fb1",
+    "backend/internal/service/user_service_test.go": "629c246c7c5faf9bce54e0e16d26f389ed335c6e2a75d5cc29f20a7d54b843fa",
+    "backend/internal/service/liandong_browser.go": "933e0dccb182101df24882bd7d807a49a09da2932052373c241d0ecf22fbcece",
+    "backend/internal/service/liandong_browser_integration_test.go": "1a6a9f263da45dd1c1762e1eec1a9c3620c383bbaf64cf5088afa145e568826e",
+    "backend/migrations/242_liandong_browser_delivery_proofs.sql": "7c1fe749191b8792bd8eb91e79a17021a4bfe520024a5a7dda39b150ec87a2b4",
+    "frontend/src/api/client.ts": "5606541e7de5c4cfa194ba7e1caac4b7baa0e93d4fb89d171b16034edb13f62c",
+    "frontend/src/api/__tests__/client.spec.ts": "3443fbcac4e3242693ca7450730be4b912ec117b916686b36f4a897517a7987e",
+    "frontend/src/api/__tests__/client.transport.spec.ts": "89914a72566807c5e778b049aaad4ccc82993a39793cf02eb064b3478a4a0c6d",
+    "tools/commerce/ldxp_http_probe.py": "f8206b8fec1452bbc03d13471d7e83febad8ee62ab27fa2972f8b66359092411",
+    "tools/commerce/ldxp_http_probe.html": "403a3ca76db0c86f314602066beafbe8f7311f1d060c3b128be832f42da3fc86",
+    "tools/commerce/ldxp_http_restock.py": "40edfc8139a508ce4f315dc24dcc0ee89bc34dccefe92b43da63cf77fe7f497f",
+    "tools/commerce/ldxp-restock.local.json": "bd396415f21c7551dd0760a0812316a138f97670836ab549c213afbea5b9c398",
+    "tools/commerce/README.md": "c304e57381424ba0e5ad5a8405cccfdb5ce16fe880447b5d8c3bbb4854313080",
+    "tools/quality/tests/test_ldxp_http_probe.py": "6e33b27af9af6667e9902d082037901de1b3cf69780fabc222ff2d6f6563279a",
+    "tools/quality/tests/test_ldxp_http_restock.py": "67851a7041865cfb7318a7c92515cb669cd110e1341fdcf61e7cb0809ffcc7d9",
+    "tools/quality/tests/test_ldxp_http_recovery.py": "14606588a7c45c56d5617d52cf7b5ee93163cdb4ce3159848d58d00c6f2d861a"
+  },
+  "production_authorized": false,
+  "previous_candidate": "e87acb34928b915721ed6268da529052186aa0e6",
+  "ci_baseline": "26e666caee7edcd43ff2ac0ae85b4a35aeec4277"
+}

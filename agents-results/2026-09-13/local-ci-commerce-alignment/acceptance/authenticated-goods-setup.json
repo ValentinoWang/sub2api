@@ -1,0 +1,48 @@
+{
+  "observed_at": "2026-09-13T05:14:08.375937+00:00",
+  "environments": {
+    "dev": {
+      "goods_id": 874783,
+      "title": "【测试专用】rest2build 余额充值 5元",
+      "buyer_url": "https://wzyp.cn/item/e8yrh4",
+      "merchant_state": "warehouse/unsold",
+      "cny_amount": 5,
+      "usd_credit": 5,
+      "planned_stock": 2,
+      "mapping_saved_to_backend": false,
+      "toolkit_ready": true,
+      "business_rules": {
+        "credit_currency": "USD",
+        "goods_currency": "CNY",
+        "goods_to_credit_ratio": "1",
+        "native_balance_multiplier": "1",
+        "refund_policy": "unused_only",
+        "restock_interval_seconds": 300
+      },
+      "restock_enabled": false,
+      "purchase_enabled": true
+    },
+    "prod": {
+      "goods_id": 874782,
+      "title": "rest2build 余额充值 5元",
+      "buyer_url": "https://wzyp.cn/item/x6uqgh",
+      "merchant_state": "warehouse/unsold",
+      "cny_amount": 5,
+      "usd_credit": 5,
+      "planned_stock": 2,
+      "mapping_saved_to_backend": false,
+      "toolkit_ready": true,
+      "business_rules": {
+        "credit_currency": "USD",
+        "goods_currency": "CNY",
+        "goods_to_credit_ratio": "1",
+        "native_balance_multiplier": "1",
+        "refund_policy": "unused_only",
+        "restock_interval_seconds": 300
+      },
+      "restock_enabled": false,
+      "purchase_enabled": false
+    }
+  },
+  "blocker": "Merchant API token not yet available"
+}

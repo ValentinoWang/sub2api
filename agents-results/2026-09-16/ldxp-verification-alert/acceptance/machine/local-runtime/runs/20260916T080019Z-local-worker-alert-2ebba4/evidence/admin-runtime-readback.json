@@ -1,0 +1,23 @@
+{
+  "at": 1789547468.266203,
+  "enabled": true,
+  "devices": [
+    {
+      "name": "本机 HTTP 补货脚本",
+      "revoked": false,
+      "paused_reason": "",
+      "last_seen_at": "2026-09-16T14:10:24.684363+08:00",
+      "authorization_verified_at": "2026-09-16T14:10:24.672539+08:00",
+      "runtime": {
+        "state": "paused",
+        "reason": "non_json",
+        "browser_verification_required": true,
+        "checked_at": "2026-09-16T08:25:57.418328Z",
+        "next_check_at": "2026-09-16T08:40:57.418482Z",
+        "reported_at": "2026-09-16T16:31:03.774325+08:00"
+      }
+    }
+  ],
+  "free_gib": 6.825,
+  "reported_runtime_does_not_refresh_merchant_auth": true
+}

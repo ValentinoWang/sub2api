@@ -1,0 +1,9 @@
+{
+  "observed_at": "2026-09-12T18:07:26.657471+00:00",
+  "environment": "prod",
+  "model": "gpt-5.4-mini",
+  "store": false,
+  "status": "FAIL",
+  "error_class": "HTTPError",
+  "http_status": 400
+}

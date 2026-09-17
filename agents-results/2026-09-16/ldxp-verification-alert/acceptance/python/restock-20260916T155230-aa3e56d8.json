@@ -1,0 +1,24 @@
+{
+  "status": "PAUSED",
+  "site": "http://127.0.0.1:8080",
+  "products": [],
+  "uploaded": 0,
+  "error": "non_json",
+  "message": "小铺返回了网页或非 JSON 内容，验证已停止。",
+  "diagnostics": {
+    "route": "/merchantApi/user/userinfo",
+    "checked_at": 1789545150.5431921,
+    "http_status": 200,
+    "content_type": "text/html",
+    "body_bytes": 12099,
+    "body_sha256": "c74e5dcee5bdf86c71cdfd41374738eb4681a1f25c669eba11e571482f793e53",
+    "response_kind": "browser_verification"
+  },
+  "next_recheck_at": 1789546050.5434399,
+  "runtime_reported": false,
+  "finished_at": 1789545150.583576,
+  "source_sha256": {
+    "ldxp_http_restock.py": "52228d8b2a35c7d11c34d2c6f06a22d69b2a0d2fbccba3e9bd8a0f3d30579dc9",
+    "ldxp_http_probe.py": "2dcd70134729477459a92e216835c751aee4663f5f72dc0958bcf532710ab43f"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "duplicate_ui_message": "redeem code already used",
+  "local_code_id": 5,
+  "code_status": "used",
+  "used_at": "2026-09-15T22:55:54.69564+08:00",
+  "balance_after_duplicate": 10,
+  "checked_at": 1789484318.5672052,
+  "browser_origin": "http://localhost:8080",
+  "duplicate_sent_via_browser": true
+}

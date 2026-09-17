@@ -1,0 +1,17 @@
+{
+  "at": 1789486410.908967,
+  "node": "24.19.0",
+  "pnpm": "9.15.9",
+  "frontend_dependency_lock": "frozen/offline",
+  "checks": [
+    {
+      "command": "eslint src/api/client.ts src/api/__tests__/client.spec.ts src/api/__tests__/client.transport.spec.ts",
+      "exit_code": 0
+    },
+    {
+      "command": "vue-tsc --noEmit",
+      "exit_code": 0
+    }
+  ],
+  "verification_source": "executed shell session 43375 completed with exit code 0; stages joined by &&"
+}

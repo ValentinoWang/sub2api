@@ -1,0 +1,16 @@
+{
+  "observed_at": 1789486659.397482,
+  "scope": "read-only reconciliation during timeout investigation",
+  "worker_paused": true,
+  "reason": "uncertain",
+  "goods_id": 874783,
+  "pending_batch_code_count": 20,
+  "pending_batch_status": "uncertain",
+  "pending_batch_resolved": false,
+  "pending_codes_found_in_unsold": 0,
+  "remote_unsold": 404,
+  "all_existing_unsold_codes_matched": true,
+  "automatic_retry_of_uncertain_upload": false,
+  "no_resume_requested": true,
+  "limitation": "An absent batch in a later inventory read does not prove the original remote write cannot complete; no blind retransmission performed."
+}

@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "boundary": "real Vite page rendered with fictional read-only API responses in isolated Chromium; no live user data or writes",
+  "paths": [
+    "/api/v1/auth/me",
+    "/api/v1/admin/compliance",
+    "/api/v1/admin/compliance",
+    "/api/v1/subscriptions/active",
+    "/api/v1/announcements",
+    "/api/v1/admin/settings",
+    "/api/v1/admin/payment/config",
+    "/api/v1/admin/system/check-updates",
+    "/api/v1/keys",
+    "/api/v1/admin/tools/ldxp/browser/status"
+  ],
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

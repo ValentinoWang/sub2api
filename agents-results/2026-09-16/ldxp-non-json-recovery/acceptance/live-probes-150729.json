@@ -1,0 +1,30 @@
+[
+  {
+    "route": "/merchantApi/system/config",
+    "authenticated_request": false,
+    "started_at": 1789542448.1636312,
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "length": 12099,
+    "body_sha256": "94be8f076950b161de791bab4e36c45d00ae8a881e020ddab89bbf1d7f708fa3",
+    "html_title": "",
+    "challenge_marker": true,
+    "html_document": false,
+    "json": false,
+    "elapsed_ms": 1084
+  },
+  {
+    "route": "/merchantApi/user/userinfo",
+    "authenticated_request": true,
+    "started_at": 1789542448.171804,
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "length": 12099,
+    "body_sha256": "c8e50ff2d02a857f27513f1c48fb19fb6393aac55712e166babb13cc1d8a3feb",
+    "html_title": "",
+    "challenge_marker": true,
+    "html_document": false,
+    "json": false,
+    "elapsed_ms": 775
+  }
+]

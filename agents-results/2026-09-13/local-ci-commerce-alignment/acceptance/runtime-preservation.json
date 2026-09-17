@@ -1,0 +1,37 @@
+{
+  "dev": {
+    "preserved": {
+      "counts": true,
+      "database_identity": true,
+      "environment_sha256": true,
+      "secret_fingerprints": true,
+      "mounts": true,
+      "ports": true
+    },
+    "image_id": "sha256:a80e91772941bfccd6fe3fe02953f30218af04e0a067590396c93d9f505da728",
+    "schema_hash": "da44366b27d3aaaaaf2ce39ed0f594a036c65d94da40707aee4f5e1e2d373672",
+    "health": "healthy",
+    "applied_migrations": [
+      "239_liandong_unused_code_refunds.sql",
+      "240_canonical_legacy_schema_alignment.sql"
+    ]
+  },
+  "prod": {
+    "preserved": {
+      "counts": true,
+      "database_identity": true,
+      "environment_sha256": true,
+      "secret_fingerprints": true,
+      "mounts": true,
+      "ports": true
+    },
+    "image_id": "sha256:a80e91772941bfccd6fe3fe02953f30218af04e0a067590396c93d9f505da728",
+    "schema_hash": "da44366b27d3aaaaaf2ce39ed0f594a036c65d94da40707aee4f5e1e2d373672",
+    "health": "healthy",
+    "applied_migrations": [
+      "239_liandong_unused_code_refunds.sql",
+      "240_canonical_legacy_schema_alignment.sql"
+    ]
+  },
+  "same_image_and_schema": "PASS"
+}

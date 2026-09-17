@@ -1,0 +1,20 @@
+{
+  "reason": "Removed unrequested task-created Claude memories. Verified creation receipts, exact model content and auto-added metadata bound to this same session.",
+  "removed": [
+    {
+      "path": "/Users/vsiyo/.claude/projects/-Users-vsiyo-Desktop-Opensource-Tool-Sub2api/memory/cost-workbench-honest-states.md",
+      "sha256": "33ab8848d38dcef61ebd1bd575cd67e959ae13dd8777f5ec220449ca291a07f6",
+      "absent": true
+    },
+    {
+      "path": "/Users/vsiyo/.claude/projects/-Users-vsiyo-Desktop-Opensource-Tool-Sub2api/memory/cost-workbench-known-gaps.md",
+      "sha256": "06be35c8b2ed1e867c24fe2004b9ea3943055d58858973a5f458c1963afbaa64",
+      "absent": true
+    },
+    {
+      "path": "/Users/vsiyo/.claude/projects/-Users-vsiyo-Desktop-Opensource-Tool-Sub2api/memory/MEMORY.md",
+      "sha256": "dc92508b459ac3e11b9ac5f3ddb1a58ad5ee3a55983256491878abd46b31c45c",
+      "absent": true
+    }
+  ]
+}

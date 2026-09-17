@@ -1,0 +1,28 @@
+{
+  "checked_at": 1789483092.319975,
+  "before": {
+    "id": 874783,
+    "name": "【测试专用】5元额度",
+    "price": 5,
+    "status": 0,
+    "goods_type": "card"
+  },
+  "after": {
+    "id": 874783,
+    "name": "【测试专用】5元额度",
+    "price": 5,
+    "status": 1,
+    "goods_type": "card"
+  },
+  "other_products_unchanged": true,
+  "merchant_bundle": "https://www.ldxp.cn/package/merchant/assets/index.ac52079d.js",
+  "bundle_sha256": "b87917ae605b5201eddccd0a15a5e25e8ba84b79cef3519074195b412fd57f3e",
+  "observed_request": {
+    "method": "POST",
+    "path": "/merchantApi/Goods/statusUpdate",
+    "body": {
+      "id": 874783,
+      "status": 1
+    }
+  }
+}

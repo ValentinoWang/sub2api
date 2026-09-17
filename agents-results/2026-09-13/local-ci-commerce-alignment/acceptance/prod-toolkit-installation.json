@@ -1,0 +1,13 @@
+{
+  "os": "linux",
+  "arch": "amd64",
+  "expected_program_path": "/app/data/ldxp/toolkit/ldxp-toolkit",
+  "version": "0.2.4.1",
+  "ready": true,
+  "asset_available": true,
+  "exists": true,
+  "executable": true,
+  "sha256": "d71d7b84ffed14b9fa272aaa76dbddae68533ff58056df0964190bb96b0c21bd",
+  "data_directory_writable": true,
+  "diagnostics": []
+}

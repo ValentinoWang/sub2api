@@ -1,0 +1,38 @@
+[
+  {
+    "stage": "archive",
+    "exit_code": 0,
+    "seconds": 2.0,
+    "minimum_free_gib": 9.108
+  },
+  {
+    "stage": "extract",
+    "exit_code": 0,
+    "seconds": 2.01,
+    "minimum_free_gib": 9.045
+  },
+  {
+    "stage": "dependencies",
+    "exit_code": 0,
+    "seconds": 6.01,
+    "minimum_free_gib": 9.007
+  },
+  {
+    "stage": "frontend",
+    "exit_code": 0,
+    "seconds": 66.15,
+    "minimum_free_gib": 6.985
+  },
+  {
+    "stage": "go",
+    "exit_code": 0,
+    "seconds": 8.02,
+    "minimum_free_gib": 6.888
+  },
+  {
+    "stage": "image",
+    "exit_code": 0,
+    "seconds": 2.0,
+    "minimum_free_gib": 6.888
+  }
+]

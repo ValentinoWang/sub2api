@@ -1,0 +1,119 @@
+{
+  "repo": "miao8818/ldxp-consumption-assistant",
+  "commit": "c821b6992c2533a28b562a010c58cfaa770f3b86",
+  "default_branch": "main",
+  "license": "MIT",
+  "size_kb": 578,
+  "description": "链动小铺订单统计浏览器扩展（非官方、永久免费），支持每日汇总、筛选、排序与 CSV 导出。",
+  "tree_truncated": false,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "size": 60
+    },
+    {
+      "path": ".gitignore",
+      "size": 78
+    },
+    {
+      "path": "CHANGELOG.md",
+      "size": 1881
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "size": 2897
+    },
+    {
+      "path": "DISCLAIMER.md",
+      "size": 2803
+    },
+    {
+      "path": "LICENSE",
+      "size": 1065
+    },
+    {
+      "path": "PRIVACY.md",
+      "size": 1701
+    },
+    {
+      "path": "README.md",
+      "size": 8272
+    },
+    {
+      "path": "SECURITY.md",
+      "size": 1080
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "size": 883
+    },
+    {
+      "path": "assets/qq-group.jpg",
+      "size": 420938
+    },
+    {
+      "path": "demo.html",
+      "size": 7811
+    },
+    {
+      "path": "docs/architecture.md",
+      "size": 5639
+    },
+    {
+      "path": "docs/preview.png",
+      "size": 129978
+    },
+    {
+      "path": "icons/icon.svg",
+      "size": 539
+    },
+    {
+      "path": "icons/icon128.png",
+      "size": 4718
+    },
+    {
+      "path": "icons/icon16.png",
+      "size": 1419
+    },
+    {
+      "path": "icons/icon32.png",
+      "size": 2659
+    },
+    {
+      "path": "icons/icon48.png",
+      "size": 3888
+    },
+    {
+      "path": "manifest.json",
+      "size": 1672
+    },
+    {
+      "path": "package.json",
+      "size": 632
+    },
+    {
+      "path": "src/background.js",
+      "size": 346
+    },
+    {
+      "path": "src/content.js",
+      "size": 50862
+    },
+    {
+      "path": "src/core.js",
+      "size": 7521
+    },
+    {
+      "path": "src/page-bridge.js",
+      "size": 4836
+    },
+    {
+      "path": "src/panel.css",
+      "size": 22235
+    },
+    {
+      "path": "tests/core.test.js",
+      "size": 3534
+    }
+  ]
+}

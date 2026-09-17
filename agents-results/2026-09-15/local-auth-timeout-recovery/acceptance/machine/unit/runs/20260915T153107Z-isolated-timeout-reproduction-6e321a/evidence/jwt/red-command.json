@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/Users/vsiyo/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.0.darwin-arm64/bin/go",
+    "test",
+    "-overlay",
+    "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-15/local-auth-timeout-recovery/acceptance/machine/unit/runs/20260915T153107Z-isolated-timeout-reproduction-6e321a/evidence/jwt/red-overlay.json",
+    "-tags",
+    "unit",
+    "./internal/server/middleware",
+    "-run",
+    "TestJWTAuth_(UserLookupFailurePreservesValidToken|WrappedUserNotFoundRemainsUnauthorized)",
+    "-count=1",
+    "-v"
+  ],
+  "exit_code": 1,
+  "source": "overlay restores only the pre-fix JWT dependency classification; workspace implementation stays fixed"
+}

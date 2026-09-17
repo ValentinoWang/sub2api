@@ -1,0 +1,15 @@
+{
+  "at": 1789494374.579651,
+  "batch_id": "browser-0b48f949fd37bdacf09bac416c8fe152",
+  "scheduled_recovery_receipt": "restock-20260916T014305-25ea9769.json",
+  "automatic_missing_upload_count": 19,
+  "retry_attempts": 1,
+  "original_batch_count": 20,
+  "original_codes_unique": 20,
+  "delivery_proof_count": 20,
+  "proof_sold_count": 0,
+  "db_batch_status": "uploaded",
+  "same_batch_after_recovery": true,
+  "replacement_codes_generated": false,
+  "worker_paused": true
+}

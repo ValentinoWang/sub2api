@@ -1,0 +1,7 @@
+{
+  "base": "20189b7348fa74020e066241890c240e0c28cad4",
+  "tree": "72b968baf05eb473297dfa4832890c0702915e85",
+  "scope": "Git dev/main promotion and Docker artifact; no production cutover or live commerce acceptance",
+  "created": "2026-09-12T23:30:20.531428",
+  "candidate": "/var/folders/w0/td0lhml95j374vr26ypgjzfh0000gn/T/sub2api-candidate-8qjoq7ad"
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "local_account_id": 6,
+    "endpoint": "rate-limit-reset-credits/history",
+    "method": "GET",
+    "checked_at": "2026-09-15T17:35:57.725277+00:00",
+    "status": 200,
+    "body_sha256": "a3eeb4c0e4015b2f053f0cefbae10662ff78baeac59909f75cb82ab3ebb43b0c",
+    "top_level_keys": [
+      "as_of",
+      "events",
+      "next_cursor",
+      "window_start"
+    ],
+    "record_count": 0,
+    "record_fields": [],
+    "statuses": {},
+    "records": []
+  }
+]

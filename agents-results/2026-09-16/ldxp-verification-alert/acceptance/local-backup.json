@@ -1,0 +1,10 @@
+{
+  "at": 1789547321.948086,
+  "prior_image": "sub2api-local:0.2.4.5-be8771d92b66",
+  "prior_image_id": "sha256:94d5252779108bc8ada75b12d6187093d702063ad47a8cdf89666343675ac428",
+  "backup": "/Users/vsiyo/.local/share/sub2api/ldxp-verification-deployment/before-runtime-alert-20260916T162841.dump",
+  "bytes": 197301,
+  "sha256": "96354c20b11bcd879ddda05f4025babd0054f0a8a3a96658f800c30cac4a0e5a",
+  "restore_catalog_verified": true,
+  "scope": "affected restock configuration, device and inventory tables; migration only adds independent runtime table"
+}

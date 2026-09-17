@@ -1,0 +1,14 @@
+{
+  "commit": "64f459e05d2ec50ac997dd6933794a1fcccaac61",
+  "tree": "4df1eaa5020d49fe147eeb330641726d106b7487",
+  "remote": "https://github.com/ValentinoWang/sub2api.git",
+  "remote_heads": [
+    "64f459e05d2ec50ac997dd6933794a1fcccaac61\trefs/heads/dev",
+    "64f459e05d2ec50ac997dd6933794a1fcccaac61\trefs/heads/main"
+  ],
+  "source_archive_sha256": "47418e8e72e76d0272b8cc8c169457c4d64436a5ecbdd0e50eb22ea4192e1477",
+  "image_tag": "sub2api-local:0.2.6-64f459e05d2e",
+  "platform": "linux/amd64",
+  "production_cutover": false,
+  "time": "2026-09-12T23:53:28.057257"
+}

@@ -1,0 +1,12 @@
+{
+  "at": 1789487888.695337,
+  "goods_id": 874783,
+  "case": "repeat_existing_sold_code",
+  "before_unsold_total": 404,
+  "before_sold_matching": 1,
+  "response_code": 0,
+  "safe_message": "去重后没有可添加的卡密",
+  "new_unsold_matching": 0,
+  "after_unsold_total": 404,
+  "original_listing_restored": true
+}

@@ -1,0 +1,13 @@
+{
+  "candidate_commit": "507a820c6792782ac07f9962a06c6224ce6cba70",
+  "tree": "6c79f03f68717abf40341596b4436596cb728fef",
+  "version": "0.2.4.4",
+  "merged_heads": [
+    "8373160e19779a5822f25f6a8d89b62195155439",
+    "0c8afe26a4c136a9fea2eb1ec7134c9fbe64f889"
+  ],
+  "merge_strategy": "ours; superseded source retained in history; resulting tree identical to dev",
+  "remote_before": "e77fce24d8e94f826e604e1c0895e90de93cd4ba",
+  "main_worktree_uncommitted_evidence": "preserved; excluded from image",
+  "production_inventory_issue": "Only 6 redeem_codes; shop inventory thousands not proven redeemable. Do not claim inventory or automatic restock acceptance."
+}

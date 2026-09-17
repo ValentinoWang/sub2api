@@ -1,0 +1,40 @@
+{
+  "window": "2026-09-15T22:52:00+08:00/2026-09-15T22:55:15+08:00",
+  "observed": {
+    "auth_me_duration_seconds": 41.68,
+    "redeem_duration_seconds": 39.754,
+    "http_status": 500,
+    "multiple_background_modules_deadline_exceeded": true,
+    "inventory_requests_in_window": 0
+  },
+  "later_snapshot": {
+    "at_local": "2026-09-15T23:03:00+08:00",
+    "business_db_connections": 7,
+    "business_db_connections_idle": 7,
+    "active_transactions": 0,
+    "lock_waits": 0,
+    "idle_in_transaction": 0,
+    "deadlocks": 0,
+    "db_conflicts": 0
+  },
+  "host_checks": {
+    "sleep_wake_transition_in_2248_2300": false,
+    "container_restart_or_oom_evidence": false,
+    "vm_pause_evidence": false,
+    "application_log_gap_alone_proves_vm_stall": false
+  },
+  "limits": [
+    "No request-level link from the in-app browser failure to the logged 500 responses.",
+    "No historical slow-query/lock-wait recordings; later idle state cannot prove historical cause.",
+    "Docker KILL cleanup messages concern already-finished exec processes, not container restarts.",
+    "Observed current load and isolated reproductions do not establish the source of the historical slowdown."
+  ],
+  "raw_evidence_sources": [
+    "Docker sub2api application logs",
+    "pmset power history",
+    "macOS unified logs",
+    "~/Library/Containers/com.docker.docker/Data/log/vm/dockerd.log:2665-2666",
+    "~/Library/Containers/com.docker.docker/Data/log/host/com.docker.backend.log.1:5620,5720"
+  ],
+  "scope": "sanitized summary of read-only observations; no raw account/request payloads"
+}

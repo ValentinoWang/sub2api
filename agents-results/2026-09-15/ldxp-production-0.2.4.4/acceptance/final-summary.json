@@ -1,0 +1,12 @@
+{
+  "completed_at": 1789474202.112187,
+  "commit": "507a820c6792782ac07f9962a06c6224ce6cba70",
+  "version": "0.2.4.4",
+  "image_id": "sha256:4e7bf76b9e2cccf925a2f385460acf1361fedf4b72521a6c566df0ed4fd19db5",
+  "local_and_production_same_image": true,
+  "local_ci": "PASS",
+  "technical_deployment": "COMPLETE",
+  "human_business_acceptance": "PENDING",
+  "production_automatic_restock_enabled": false,
+  "task_cache_cleanup": "COMPLETE"
+}

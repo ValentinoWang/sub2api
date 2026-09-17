@@ -1,0 +1,9 @@
+{
+  "status": "STOPPED_BY_USER",
+  "launch_agent_unloaded": false,
+  "autostart_removed": true,
+  "manual_pause_saved": true,
+  "runtime_reported": true,
+  "products_or_balances_changed": false,
+  "production_changed": false
+}

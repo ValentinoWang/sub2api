@@ -1,0 +1,55 @@
+{
+  "endpoint": "POST /api/v1/ldxp/device/runtime",
+  "required_fields": [
+    "state",
+    "reason",
+    "browser_verification_required"
+  ],
+  "optional_fields": [
+    "checked_at",
+    "next_check_at"
+  ],
+  "state_values": [
+    "running",
+    "paused"
+  ],
+  "paused_reason_values": [
+    "binding_changed",
+    "inventory_mismatch",
+    "uncertain",
+    "backend_error",
+    "backend_auth",
+    "busy",
+    "manual",
+    "setup_required",
+    "disabled",
+    "invalid_config",
+    "state_invalid",
+    "recovery_wait",
+    "recovery_exhausted",
+    "dedup_unverified",
+    "backend_upgrade_required",
+    "login_required",
+    "login_rejected",
+    "verification_required",
+    "upstream_rejected",
+    "upstream_unavailable",
+    "network_error",
+    "non_json",
+    "invalid_response",
+    "unsafe_session",
+    "local_unavailable",
+    "invalid_input"
+  ],
+  "running_requires": {
+    "reason": "",
+    "browser_verification_required": false
+  },
+  "verification_true_reasons": [
+    "non_json",
+    "verification_required"
+  ],
+  "time_format": "RFC3339",
+  "response": "runtime report fields plus backend reported_at",
+  "status_projection": "GET /api/v1/admin/tools/ldxp/browser/status -> devices[].runtime; omitted before first report"
+}

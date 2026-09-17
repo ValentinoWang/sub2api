@@ -1,0 +1,64 @@
+{
+  "repo": "iKeilo/LdxpM",
+  "commit": "2fe31f0e5a04aeb227950a9f206ce8f1c816bdda",
+  "license": null,
+  "files": [
+    {
+      "path": ".dockerignore",
+      "size": 101
+    },
+    {
+      "path": ".gitattributes",
+      "size": 123
+    },
+    {
+      "path": ".github/workflows/docker.yml",
+      "size": 1516
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "size": 2730
+    },
+    {
+      "path": ".github/workflows/test.yml",
+      "size": 585
+    },
+    {
+      "path": ".gitignore",
+      "size": 67
+    },
+    {
+      "path": "Dockerfile",
+      "size": 415
+    },
+    {
+      "path": "README.md",
+      "size": 6697
+    },
+    {
+      "path": "app.py",
+      "size": 94141
+    },
+    {
+      "path": "docker-compose.yml",
+      "size": 693
+    },
+    {
+      "path": "install.sh",
+      "size": 4465
+    },
+    {
+      "path": "tests/blackbox_empty_shop.py",
+      "size": 12477
+    },
+    {
+      "path": "tests/email_digest_test.py",
+      "size": 4039
+    },
+    {
+      "path": "tests/upstream_safety_test.py",
+      "size": 3606
+    }
+  ],
+  "tree_truncated": false
+}

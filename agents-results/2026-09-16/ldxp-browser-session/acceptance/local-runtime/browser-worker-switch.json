@@ -1,0 +1,9 @@
+{
+  "commit": "d2966e82874a32a0f4eefaa43b56b7bd252fa1c7",
+  "source_matches_candidate": true,
+  "browser_profile": "dedicated private profile; normal Chrome profile untouched",
+  "worker": "lol.rest2build.ldxp-browser-local",
+  "control_url": "http://127.0.0.1:52401/",
+  "old_worker_retired": true,
+  "recorded_at": "2026-09-16T10:23:40.521914+00:00"
+}

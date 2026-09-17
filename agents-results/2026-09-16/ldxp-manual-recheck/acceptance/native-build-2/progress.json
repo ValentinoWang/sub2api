@@ -1,0 +1,20 @@
+[
+  {
+    "stage": "archive",
+    "exit_code": 0,
+    "seconds": 2.01,
+    "minimum_free_gib": 5.827
+  },
+  {
+    "stage": "extract",
+    "exit_code": 0,
+    "seconds": 2.01,
+    "minimum_free_gib": 5.77
+  },
+  {
+    "stage": "dependencies",
+    "exit_code": 0,
+    "seconds": 38.12,
+    "minimum_free_gib": 5.064
+  }
+]

@@ -1,0 +1,210 @@
+{
+  "tables_unchanged": true,
+  "tables": {
+    "users": {
+      "count": 1,
+      "identity_digest": "e320f8625479e93b18baf60e3a6bb392"
+    },
+    "accounts": {
+      "count": 10,
+      "identity_digest": "da8874bab3bcccba860160c3fc8b4377"
+    },
+    "api_keys": {
+      "count": 3,
+      "identity_digest": "857e5f1358401b99cdd6eda91c44fce7"
+    },
+    "groups": {
+      "count": 4,
+      "identity_digest": "14dbd64a014a8ac18c72aa52f6cfa0d9"
+    },
+    "proxies": {
+      "count": 66,
+      "identity_digest": "821483aa94ff43d882bff58c11f531dd"
+    },
+    "payment_orders": {
+      "count": 0,
+      "identity_digest": "d751713988987e9331980363e24189ce"
+    }
+  },
+  "dependency_container_ids_unchanged": {
+    "sub2api-postgres": true,
+    "sub2api-redis": true,
+    "sub2api-mihomo": true
+  },
+  "migration_count": 292,
+  "pending_now_applied": [
+    "231_add_usage_log_native_compaction_v2.sql",
+    "231_add_usage_log_requested_reasoning_effort.sql",
+    "231_user_restrict_public_groups.sql",
+    "232_add_usage_log_upstream_request_id.sql",
+    "232_channel_cache_write_1h_pricing.sql",
+    "232_group_force_openai_fast.sql",
+    "232_group_reasoning_effort_over_limit.sql",
+    "233_add_usage_log_upstream_request_id_index_notx.sql",
+    "233_group_free_openai_fast.sql",
+    "234_channel_max_reasoning_effort_multiplier.sql",
+    "234_group_codex_models_manifest_config.sql",
+    "235_group_model_allowlist.sql",
+    "236_group_model_allowlist_repair.sql",
+    "237_add_minimax_platform.sql",
+    "238_rest2build_product_schema.sql"
+  ],
+  "health_checks": [
+    {
+      "status": 200,
+      "duration_ms": 30.3
+    },
+    {
+      "status": 200,
+      "duration_ms": 6.38
+    },
+    {
+      "status": 200,
+      "duration_ms": 9.44
+    },
+    {
+      "status": 200,
+      "duration_ms": 3.57
+    },
+    {
+      "status": 200,
+      "duration_ms": 4.9
+    }
+  ],
+  "pages": [
+    {
+      "route": "/home",
+      "status": 200,
+      "cache_control": "no-cache",
+      "body_sha256": "a580a01d27194996e2d88ea9229c59f153482938acca72d428d7e74b82babab6",
+      "assets": [
+        "/assets/index-3arOPzWt.js",
+        "/assets/vendor-vue-dfADlGa0.js",
+        "/assets/vendor-i18n-JmzAZDEl.js",
+        "/assets/vendor-misc-B-ZovEPK.js",
+        "/assets/vendor-misc-DB0Q8XAf.css",
+        "/assets/index-Co6aydw1.css"
+      ],
+      "prerender_has_content": true
+    },
+    {
+      "route": "/experiences",
+      "status": 200,
+      "cache_control": "no-cache",
+      "body_sha256": "364aec49a67f8336f12605d48c9b222b61f3041399ec451ccea40a3808f7e6c5",
+      "assets": [
+        "/assets/index-3arOPzWt.js",
+        "/assets/vendor-vue-dfADlGa0.js",
+        "/assets/vendor-i18n-JmzAZDEl.js",
+        "/assets/vendor-misc-B-ZovEPK.js",
+        "/assets/vendor-misc-DB0Q8XAf.css",
+        "/assets/index-Co6aydw1.css"
+      ],
+      "prerender_has_content": true
+    },
+    {
+      "route": "/public-benefit",
+      "status": 200,
+      "cache_control": "no-cache",
+      "body_sha256": "a5ca7c93854adb75eea56d39ad60d104159b66b7c341afece1cb134848c57170",
+      "assets": [
+        "/assets/index-3arOPzWt.js",
+        "/assets/vendor-vue-dfADlGa0.js",
+        "/assets/vendor-i18n-JmzAZDEl.js",
+        "/assets/vendor-misc-B-ZovEPK.js",
+        "/assets/vendor-misc-DB0Q8XAf.css",
+        "/assets/index-Co6aydw1.css"
+      ],
+      "prerender_has_content": true
+    },
+    {
+      "route": "/business-invoice",
+      "status": 200,
+      "cache_control": "no-cache",
+      "body_sha256": "8a3bd3c77758faa52e29e89fc32b301f308988c9604637be0ea4314ecf6ee706",
+      "assets": [
+        "/assets/index-3arOPzWt.js",
+        "/assets/vendor-vue-dfADlGa0.js",
+        "/assets/vendor-i18n-JmzAZDEl.js",
+        "/assets/vendor-misc-B-ZovEPK.js",
+        "/assets/vendor-misc-DB0Q8XAf.css",
+        "/assets/index-Co6aydw1.css"
+      ],
+      "prerender_has_content": true
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "cache_control": "no-cache",
+      "body_sha256": "58ed941a264bed6b88f9c45eb758b4b3c6afe66edee151c3732c8de78516ef2d",
+      "assets": [
+        "/assets/index-3arOPzWt.js",
+        "/assets/vendor-vue-dfADlGa0.js",
+        "/assets/vendor-i18n-JmzAZDEl.js",
+        "/assets/vendor-misc-B-ZovEPK.js",
+        "/assets/vendor-misc-DB0Q8XAf.css",
+        "/assets/index-Co6aydw1.css"
+      ],
+      "prerender_has_content": true
+    },
+    {
+      "route": "/codex-cli",
+      "status": 200,
+      "cache_control": "no-cache",
+      "body_sha256": "3e028b14a069c7442c16be115d8ae760f87de514ca22c960f3e8360669b0127e",
+      "assets": [
+        "/assets/index-3arOPzWt.js",
+        "/assets/vendor-vue-dfADlGa0.js",
+        "/assets/vendor-i18n-JmzAZDEl.js",
+        "/assets/vendor-misc-B-ZovEPK.js",
+        "/assets/vendor-misc-DB0Q8XAf.css",
+        "/assets/index-Co6aydw1.css"
+      ],
+      "prerender_has_content": true
+    }
+  ],
+  "assets": [
+    {
+      "path": "/assets/index-3arOPzWt.js",
+      "status": 200,
+      "cache_control": "public, max-age=31536000, immutable",
+      "sha256": "034ffcc48605577c0830d81a0d0011771446652d6f08c3dd1155a3dbaf9cb138"
+    },
+    {
+      "path": "/assets/index-Co6aydw1.css",
+      "status": 200,
+      "cache_control": "public, max-age=31536000, immutable",
+      "sha256": "51c03866d4fe4f61dd3a18cbae7b3ade3f896bcef482b6571e3827ae3fbf5343"
+    },
+    {
+      "path": "/assets/vendor-i18n-JmzAZDEl.js",
+      "status": 200,
+      "cache_control": "public, max-age=31536000, immutable",
+      "sha256": "6a5d1bc9c9702502b2fb778b4ba832c3b2b191dc20e348242fa049907f13cf64"
+    },
+    {
+      "path": "/assets/vendor-misc-B-ZovEPK.js",
+      "status": 200,
+      "cache_control": "public, max-age=31536000, immutable",
+      "sha256": "1985ed0093bf8b8ea5082fe114ce3f103165150bda79b71c04ef2791f32988d5"
+    },
+    {
+      "path": "/assets/vendor-misc-DB0Q8XAf.css",
+      "status": 200,
+      "cache_control": "public, max-age=31536000, immutable",
+      "sha256": "4b398481a7ce8375af4d9f58f39410c73a0b70726fe513686d3d51c10ad76cb5"
+    },
+    {
+      "path": "/assets/vendor-vue-dfADlGa0.js",
+      "status": 200,
+      "cache_control": "public, max-age=31536000, immutable",
+      "sha256": "d0526386df1c8e604c194e4b9373c20832dc113c45b880844bbf3653eeee5e59"
+    }
+  ],
+  "image": "sha256:be86989dffeb042d5bbf60f6ed6567d07cb449c72402794673776adf6568f7f8",
+  "container": "66ac0c5217bcf7b9b01cbc852cb2049998e219271f347928554ba03a879cdf4e",
+  "state": "running",
+  "health": "healthy",
+  "restart_count": 0,
+  "old_home_entry_absent": true
+}

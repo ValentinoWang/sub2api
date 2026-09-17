@@ -1,0 +1,7 @@
+stage	exit_code	seconds	log
+source-preflight	0	0	source-preflight.log
+snapshot	0	1	snapshot.log
+toolchain	0	2	toolchain.log
+frozen-install	0	15	frozen-install.log
+acceptance-layout	0	1	acceptance-layout.log
+deploy-guards	1	13	deploy-guards.log

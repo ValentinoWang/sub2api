@@ -1,0 +1,110 @@
+{
+  "result": "PASS",
+  "boundary": "isolated Chromium; real extension options/worker/alarm flow with fictional merchant and backend fixtures; no user profile, real codes, real inventory, or deployment",
+  "checks": [
+    "default999 and all ten products selected",
+    "one action starts ten products across two fictional sites",
+    "998 to 999 uploads one per product",
+    "repeat save at999 uploads none",
+    "real alarm refills two simulated sales per product",
+    "pause all",
+    "saved target and credentials survive reload",
+    "single options entry",
+    "no page errors or horizontal overflow"
+  ],
+  "uploads": [
+    {
+      "goods": 100,
+      "count": 1
+    },
+    {
+      "goods": 101,
+      "count": 1
+    },
+    {
+      "goods": 102,
+      "count": 1
+    },
+    {
+      "goods": 103,
+      "count": 1
+    },
+    {
+      "goods": 104,
+      "count": 1
+    },
+    {
+      "goods": 200,
+      "count": 1
+    },
+    {
+      "goods": 201,
+      "count": 1
+    },
+    {
+      "goods": 202,
+      "count": 1
+    },
+    {
+      "goods": 203,
+      "count": 1
+    },
+    {
+      "goods": 204,
+      "count": 1
+    },
+    {
+      "goods": 100,
+      "count": 2
+    },
+    {
+      "goods": 101,
+      "count": 2
+    },
+    {
+      "goods": 102,
+      "count": 2
+    },
+    {
+      "goods": 103,
+      "count": 2
+    },
+    {
+      "goods": 104,
+      "count": 2
+    },
+    {
+      "goods": 200,
+      "count": 2
+    },
+    {
+      "goods": 201,
+      "count": 2
+    },
+    {
+      "goods": 202,
+      "count": 2
+    },
+    {
+      "goods": 203,
+      "count": 2
+    },
+    {
+      "goods": 204,
+      "count": 2
+    }
+  ],
+  "layout": [
+    {
+      "width": 1280,
+      "height": 1000,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

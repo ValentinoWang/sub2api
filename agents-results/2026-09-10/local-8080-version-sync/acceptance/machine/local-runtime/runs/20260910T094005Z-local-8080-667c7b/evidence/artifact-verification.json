@@ -1,0 +1,27 @@
+{
+  "program_version_output": "2026-09-10T17:46:49.179+0800\tINFO\tstdlog\tSub2API 0.2.5 (commit: 20189b7348fa-local-1b221364260b, built: 2026-09-10T09:30:00Z)\t{\"service\": \"sub2api\", \"env\": \"bootstrap\", \"legacy_stdlog\": true}",
+  "toolkit_manifest": {
+    "schema_version": 1,
+    "program": "ldxp-toolkit",
+    "version": "0.2.5",
+    "os": "linux",
+    "arch": "amd64",
+    "sha256": "2736aaa180a11694f592e72a53b364c68700bbc6888e2fc702bedf42091f7ab7"
+  },
+  "toolkit_checksum_matches": true,
+  "embedded_home_has_current_copy": {
+    "\u8d26\u53f7\u5145\u503c": true,
+    "Codex": true,
+    "\u516c\u76ca": true,
+    "Harness": true
+  },
+  "image_tag_pinned_in_local_env": "sub2api-local:0.2.5-local-1b221364260b",
+  "home_assets": [
+    "/assets/index-3arOPzWt.js",
+    "/assets/vendor-vue-dfADlGa0.js",
+    "/assets/vendor-i18n-JmzAZDEl.js",
+    "/assets/vendor-misc-B-ZovEPK.js",
+    "/assets/vendor-misc-DB0Q8XAf.css",
+    "/assets/index-Co6aydw1.css"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "govulncheck",
+    "./..."
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 4950134784,
+  "status": "NOT_STARTED",
+  "exit_code": null,
+  "reserve_preserved": true
+}

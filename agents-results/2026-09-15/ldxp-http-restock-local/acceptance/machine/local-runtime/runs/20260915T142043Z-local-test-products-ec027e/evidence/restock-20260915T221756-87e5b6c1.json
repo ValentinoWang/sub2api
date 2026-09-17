@@ -1,0 +1,39 @@
+{
+  "status": "PAUSED",
+  "target_stock": 999,
+  "products": {
+    "874783": {
+      "phase": "idle",
+      "stock": 25,
+      "matched_stock": 25,
+      "target_stock": 999
+    },
+    "875537": {
+      "phase": "idle",
+      "stock": 25,
+      "matched_stock": 25,
+      "target_stock": 999
+    },
+    "875562": {
+      "phase": "idle",
+      "stock": 25,
+      "matched_stock": 25,
+      "target_stock": 999
+    },
+    "875570": {
+      "phase": "idle",
+      "stock": 25,
+      "matched_stock": 25,
+      "target_stock": 999
+    },
+    "875577": {
+      "phase": "idle",
+      "stock": 25,
+      "matched_stock": 25,
+      "target_stock": 999
+    }
+  },
+  "reason": "backend_error",
+  "last_success_at": 1789481742.798042,
+  "finished_at": 1789481876.437912
+}

@@ -1,0 +1,12 @@
+{
+  "mode": "run",
+  "command_poll_seconds": 5,
+  "stock_interval_seconds": 60,
+  "launchctl": [
+    "state = running",
+    "runs = 1",
+    "pid = 3417",
+    "state = active",
+    "state = active"
+  ]
+}

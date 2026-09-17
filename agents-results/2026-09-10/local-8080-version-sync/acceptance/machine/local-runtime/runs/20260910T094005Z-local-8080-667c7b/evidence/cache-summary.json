@@ -1,0 +1,10 @@
+{
+  "build_private_cache_reclaimed": "3.703GB",
+  "selection": "58 exact cache record IDs created during this build",
+  "remaining_private_build_cache_bytes": 0,
+  "remaining_shared_image_layer_cache": "150.9MB (in-use image layers preserved)",
+  "app_in_memory_cache": "old process destroyed by container replacement",
+  "browser": "local Chrome homepage force-refreshed; no global browser wipe",
+  "redis_flushed": false,
+  "persistent_user_data_deleted": false
+}

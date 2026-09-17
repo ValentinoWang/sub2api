@@ -1,0 +1,22 @@
+{
+  "at": 1789485905.2120168,
+  "probes": [
+    {
+      "path": "/health",
+      "status": 200,
+      "ms": 221.16
+    },
+    {
+      "path": "/api/v1/settings/public",
+      "status": 200,
+      "ms": 125.77
+    },
+    {
+      "path": "/src/api/client.ts",
+      "status": 200,
+      "ms": 918.14,
+      "updated_timeout_code_served": true,
+      "updated_refresh_handling_served": true
+    }
+  ]
+}

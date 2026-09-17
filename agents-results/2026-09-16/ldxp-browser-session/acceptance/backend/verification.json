@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "baseline_commit": "f0e321a7cb350f809e5f7657a3edc3b433177a40",
+  "head_at_evidence_recording": "f0e321a7cb350f809e5f7657a3edc3b433177a40",
+  "source_sha256": {
+    "backend/internal/service/liandong_browser_runtime.go": "5165fa501abd3df6554a59890c3c4d03131181f4acdaf37580034147c920494d",
+    "backend/internal/service/liandong_browser.go": "7bfcad411c8fe41a779eadfbc39dd3edea51974e7d04f87b353b6457137a00b9",
+    "backend/internal/handler/admin/liandong_browser.go": "636375b58e9efd0b78b05204c4346cd22c251bba7c8eb165bd5dd8eb0fe159dd",
+    "backend/internal/server/routes/liandong_browser_runtime_integration_test.go": "2c3ac84c2c8c704e224f6304e8d5e0d80ded062e011cc506f5877624e78bd72a"
+  },
+  "root_and_isolated_owned_files_identical": true,
+  "checks": {
+    "red": {
+      "exit_code": 1,
+      "passed_cases": 39,
+      "failed_cases": 5,
+      "minimum_free_gib": 6.600830078125,
+      "reserve_preserved": true,
+      "log_sha256": "d8f2ee0d47c3d480444b096dc0126a75d90c7cbf16c26610aadec35ae83dd643"
+    },
+    "green": {
+      "exit_code": 0,
+      "passed_cases": 66,
+      "failed_cases": 0,
+      "minimum_free_gib": 5.170612335205078,
+      "reserve_preserved": true,
+      "log_sha256": "9b5d8a6523cade195ec84556a708983ccecfd0fde22ae1c58ddc30030a03ca61"
+    }
+  },
+  "runtime_cases": 44,
+  "manual_recheck_regression_cases": 22,
+  "database_migrations_added": false,
+  "contract": {
+    "endpoint": "POST /api/v1/ldxp/device/runtime",
+    "optional_field": "execution_mode",
+    "allowed_values": [
+      "http",
+      "browser"
+    ],
+    "omitted_default": "http",
+    "explicit_empty_null_wrong_type_or_unknown_value": "HTTP 400",
+    "response_and_status_projection": "Execution mode is explicit in the runtime response and BrowserStatus devices[].runtime; existing stored reports without this field read as http without being rewritten."
+  },
+  "verified_boundaries": [
+    "Original state, reason, timestamp, required-field and device authorization rules retained.",
+    "Unknown mode also rejected by the service independently of HTTP binding.",
+    "HTTP and browser reports preserve device/config/inventory/batch/code/user state; no merchant authorization or pause clearing.",
+    "Original runtime and recheck integration scenarios remain green."
+  ],
+  "not_verified": [
+    "No script/frontend edits in this subtask.",
+    "No original 8080/production call, Git commit, VERSION change or deployment.",
+    "No live persistent-browser execution or full local CI acceptance in this subtask."
+  ]
+}

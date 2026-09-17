@@ -1,0 +1,45 @@
+{
+  "scope": "JWT dependency error classification and bounded last-active bookkeeping",
+  "source_sha256": {
+    "backend/internal/server/middleware/jwt_auth.go": "d2b2aa07adda59a6f7662c0ff3acecfda6faace5c4ab9499df3e9ba3810e8c0c",
+    "backend/internal/server/middleware/jwt_auth_test.go": "905db56900d969b9317b0172199d24c776eeec388148d960b88463dfcd80b7a9",
+    "backend/internal/service/user_service.go": "f9c0ed59155680dfe8a147963758a26be1561543c51321f8ceeeaaaed0349fb1",
+    "backend/internal/service/user_service_test.go": "629c246c7c5faf9bce54e0e16d26f389ed335c6e2a75d5cc29f20a7d54b843fa"
+  },
+  "checks": {
+    "jwt": {
+      "red": {
+        "exit_code": 1,
+        "log": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-15/local-auth-timeout-recovery/acceptance/machine/unit/runs/20260915T153107Z-isolated-timeout-reproduction-6e321a/evidence/jwt/red.log",
+        "sha256": "977f257aa30e0184c30df421388359eb47daacba9351dbc0895a0a983352d175",
+        "top_level_passes": 1,
+        "top_level_failures": 1
+      },
+      "green": {
+        "exit_code": 0,
+        "log": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-15/local-auth-timeout-recovery/acceptance/machine/unit/runs/20260915T153107Z-isolated-timeout-reproduction-6e321a/evidence/jwt/green.log",
+        "sha256": "bdad0073f91cece6c7a8d73ea6b85ef03c73e723d994d62d0d0c02c70e228d5a",
+        "top_level_passes": 13,
+        "top_level_failures": 0
+      }
+    },
+    "activity": {
+      "red": {
+        "exit_code": 1,
+        "log": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-15/local-auth-timeout-recovery/acceptance/machine/unit/runs/20260915T153107Z-isolated-timeout-reproduction-6e321a/evidence/activity/red.log",
+        "sha256": "2ec817af452d04452b39baa8d31aec95b5c66d3bd938abe902a2271c18002027",
+        "top_level_passes": 0,
+        "top_level_failures": 3
+      },
+      "green": {
+        "exit_code": 0,
+        "log": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-15/local-auth-timeout-recovery/acceptance/machine/unit/runs/20260915T153107Z-isolated-timeout-reproduction-6e321a/evidence/activity/green.log",
+        "sha256": "79faec98e16e981648bff0e0e4ebc05ed0c3cb165b25bf329d8f4b7a200e6aa0",
+        "top_level_passes": 4,
+        "top_level_failures": 0
+      }
+    }
+  },
+  "historical_40_second_root_cause": "NOT_PROVEN",
+  "real_backend_operations": "NONE"
+}

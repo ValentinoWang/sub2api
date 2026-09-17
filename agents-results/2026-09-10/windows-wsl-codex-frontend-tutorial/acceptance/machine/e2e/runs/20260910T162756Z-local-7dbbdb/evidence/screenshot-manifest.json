@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "source_identity": "20189b7348fa74020e066241890c240e0c28cad4+worktree-7dbbdb86976a",
+  "runtime_identity": "vite-hmr-127.0.0.1:4174",
+  "review": {
+    "status": "PASS",
+    "reviewer": "Codex visual review",
+    "reviewed_at": "2026-09-10T16:30:50Z",
+    "conclusion": "The tutorial renders with clear light-theme hierarchy at the declared desktop and mobile viewports; the mobile layout remains single-column without page-level horizontal overflow or visible text clipping."
+  },
+  "screenshots": [
+    {
+      "path": "evidence/screenshots/tutorial-desktop-1280x720.png",
+      "sha256": "612a34778cd37802c98f2aea3462f5dd41a573535fc3f18e0b9bb86f0c2696d2",
+      "page_id": "windows-wsl-codex-frontend-tutorial",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "captured_at": "2026-09-10T16:30:00Z"
+    },
+    {
+      "path": "evidence/screenshots/tutorial-mobile-390x844.png",
+      "sha256": "9f018acb60c2109dcfff19d7d6f4c434d62a4808fd3752185eaed4eebd5de1b4",
+      "page_id": "windows-wsl-codex-frontend-tutorial",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "captured_at": "2026-09-10T16:30:01Z"
+    }
+  ]
+}

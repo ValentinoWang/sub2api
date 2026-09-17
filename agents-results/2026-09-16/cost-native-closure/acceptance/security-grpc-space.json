@@ -1,0 +1,19 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-p",
+    "1",
+    "-tags=integration",
+    "./internal/service",
+    "./internal/costing",
+    "./pkg/pluginapi/v1",
+    "-count=1"
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 4571877376,
+  "status": "PASS",
+  "exit_code": 0,
+  "reserve_preserved": true
+}

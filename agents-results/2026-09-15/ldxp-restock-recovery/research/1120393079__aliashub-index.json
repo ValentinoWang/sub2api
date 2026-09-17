@@ -1,0 +1,2639 @@
+{
+  "repo": "1120393079/aliashub",
+  "commit": "d45f51c96495d2150c02e5ac7971d38ba3c05a50",
+  "default_branch": "main",
+  "license": "AGPL-3.0",
+  "size_kb": 2978,
+  "description": "Self-hosted email alias and verification-code hub with optional account registration and SUB2-compatible integration.",
+  "tree_truncated": false,
+  "files": [
+    {
+      "path": ".dockerignore",
+      "size": 289
+    },
+    {
+      "path": ".env.example",
+      "size": 4852
+    },
+    {
+      "path": ".gitattributes",
+      "size": 120
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "size": 2576
+    },
+    {
+      "path": ".gitignore",
+      "size": 646
+    },
+    {
+      "path": "CHANGELOG.md",
+      "size": 6423
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "size": 1433
+    },
+    {
+      "path": "Dockerfile",
+      "size": 1586
+    },
+    {
+      "path": "LICENSE",
+      "size": 34523
+    },
+    {
+      "path": "LOCAL-DEPLOY.md",
+      "size": 14494
+    },
+    {
+      "path": "README.md",
+      "size": 14409
+    },
+    {
+      "path": "SECURITY.md",
+      "size": 1481
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "size": 2632
+    },
+    {
+      "path": "compose.full.yaml",
+      "size": 4961
+    },
+    {
+      "path": "compose.yaml",
+      "size": 607
+    },
+    {
+      "path": "data/attachments/.gitkeep",
+      "size": 1
+    },
+    {
+      "path": "docs/INVENTORY-API.md",
+      "size": 2955
+    },
+    {
+      "path": "docs/RELEASING.md",
+      "size": 4849
+    },
+    {
+      "path": "docs/SAFE-MAINTENANCE.md",
+      "size": 4307
+    },
+    {
+      "path": "extension/README.txt",
+      "size": 932
+    },
+    {
+      "path": "extension/background.js",
+      "size": 2970
+    },
+    {
+      "path": "extension/content.js",
+      "size": 10795
+    },
+    {
+      "path": "extension/manifest.json",
+      "size": 811
+    },
+    {
+      "path": "extension/popup.css",
+      "size": 1248
+    },
+    {
+      "path": "extension/popup.html",
+      "size": 790
+    },
+    {
+      "path": "extension/popup.js",
+      "size": 1571
+    },
+    {
+      "path": "index.html",
+      "size": 554
+    },
+    {
+      "path": "mail-pickup/.dockerignore",
+      "size": 56
+    },
+    {
+      "path": "mail-pickup/.env.example",
+      "size": 773
+    },
+    {
+      "path": "mail-pickup/Dockerfile",
+      "size": 690
+    },
+    {
+      "path": "mail-pickup/README.md",
+      "size": 5175
+    },
+    {
+      "path": "mail-pickup/app.py",
+      "size": 152512
+    },
+    {
+      "path": "mail-pickup/ldxp-verification-browser.sh",
+      "size": 1683
+    },
+    {
+      "path": "mail-pickup/requirements.txt",
+      "size": 47
+    },
+    {
+      "path": "mail-pickup/static/admin.html",
+      "size": 9262
+    },
+    {
+      "path": "mail-pickup/static/admin.js",
+      "size": 28576
+    },
+    {
+      "path": "mail-pickup/static/pickup.html",
+      "size": 1566
+    },
+    {
+      "path": "mail-pickup/static/pickup.js",
+      "size": 9650
+    },
+    {
+      "path": "mail-pickup/static/style.css",
+      "size": 19679
+    },
+    {
+      "path": "mail-pickup/tests/test_delivery_format.py",
+      "size": 16403
+    },
+    {
+      "path": "package-lock.json",
+      "size": 126737
+    },
+    {
+      "path": "package.json",
+      "size": 2004
+    },
+    {
+      "path": "payment-link-extractor/.dockerignore",
+      "size": 120
+    },
+    {
+      "path": "payment-link-extractor/.env.example",
+      "size": 1268
+    },
+    {
+      "path": "payment-link-extractor/Dockerfile",
+      "size": 1001
+    },
+    {
+      "path": "payment-link-extractor/README.md",
+      "size": 2998
+    },
+    {
+      "path": "payment-link-extractor/iprocket_chain_bridge.py",
+      "size": 7723
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/__init__.py",
+      "size": 789
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/__main__.py",
+      "size": 80
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/application.py",
+      "size": 9041
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/auth.py",
+      "size": 1845
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/checkout.py",
+      "size": 11644
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/cli.py",
+      "size": 5540
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/config.py",
+      "size": 7043
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/errors.py",
+      "size": 2201
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/flows/__init__.py",
+      "size": 154
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/flows/cs_live.py",
+      "size": 24790
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/flows/oaics.py",
+      "size": 19299
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/logging_utils.py",
+      "size": 2691
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/models.py",
+      "size": 2604
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/providers/__init__.py",
+      "size": 170
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/providers/base.py",
+      "size": 339
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/providers/gcash.py",
+      "size": 147
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/providers/gopay.py",
+      "size": 297
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/providers/paypal.py",
+      "size": 151
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/providers/registry.py",
+      "size": 807
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/stripe_common.py",
+      "size": 15197
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/transport.py",
+      "size": 15821
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/__init__.py",
+      "size": 275
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/__main__.py",
+      "size": 1161
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/app.py",
+      "size": 4196
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/auth.py",
+      "size": 1091
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/env.py",
+      "size": 656
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/events.py",
+      "size": 871
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/proxy_probe.py",
+      "size": 3320
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/routes.py",
+      "size": 12246
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/ssl_config.py",
+      "size": 950
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/static/app.js",
+      "size": 76354
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/static/styles.css",
+      "size": 16437
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/tasks.py",
+      "size": 20440
+    },
+    {
+      "path": "payment-link-extractor/payment_link_extractor/web/templates/index.html",
+      "size": 11959
+    },
+    {
+      "path": "payment-link-extractor/requirements.txt",
+      "size": 131
+    },
+    {
+      "path": "payment-link-extractor/tests/__init__.py",
+      "size": 1
+    },
+    {
+      "path": "payment-link-extractor/tests/test_currency_observation.py",
+      "size": 4297
+    },
+    {
+      "path": "payment-link-extractor/tests/test_smoke.py",
+      "size": 3628
+    },
+    {
+      "path": "public/aliashub-mark.svg",
+      "size": 1474
+    },
+    {
+      "path": "public/naturalflower-logo.png",
+      "size": 30099
+    },
+    {
+      "path": "registration-worker/.dockerignore",
+      "size": 569
+    },
+    {
+      "path": "registration-worker/.env.example",
+      "size": 4424
+    },
+    {
+      "path": "registration-worker/.github/ISSUE_TEMPLATE/bug_report.md",
+      "size": 1325
+    },
+    {
+      "path": "registration-worker/.github/ISSUE_TEMPLATE/feature_request.md",
+      "size": 1068
+    },
+    {
+      "path": "registration-worker/.github/workflows/release.yml",
+      "size": 6726
+    },
+    {
+      "path": "registration-worker/.gitignore",
+      "size": 1702
+    },
+    {
+      "path": "registration-worker/.kiro/steering/preferences.md",
+      "size": 2830
+    },
+    {
+      "path": "registration-worker/.kiro/steering/superpowers-brainstorming.md",
+      "size": 10652
+    },
+    {
+      "path": "registration-worker/.kiro/steering/superpowers-executing-plans.md",
+      "size": 2487
+    },
+    {
+      "path": "registration-worker/.kiro/steering/superpowers-subagent-driven-development.md",
+      "size": 12564
+    },
+    {
+      "path": "registration-worker/.kiro/steering/superpowers-systematic-debugging.md",
+      "size": 9902
+    },
+    {
+      "path": "registration-worker/.kiro/steering/superpowers-test-driven-development.md",
+      "size": 9885
+    },
+    {
+      "path": "registration-worker/.kiro/steering/superpowers-using-superpowers.md",
+      "size": 5443
+    },
+    {
+      "path": "registration-worker/.kiro/steering/superpowers-verification-before-completion.md",
+      "size": 4219
+    },
+    {
+      "path": "registration-worker/.kiro/steering/superpowers-writing-plans.md",
+      "size": 6118
+    },
+    {
+      "path": "registration-worker/.kiro/steering/superpowers.md",
+      "size": 2105
+    },
+    {
+      "path": "registration-worker/CONTRIBUTING.md",
+      "size": 1020
+    },
+    {
+      "path": "registration-worker/Dockerfile",
+      "size": 1905
+    },
+    {
+      "path": "registration-worker/LICENSE",
+      "size": 34523
+    },
+    {
+      "path": "registration-worker/README.md",
+      "size": 5025
+    },
+    {
+      "path": "registration-worker/SECURITY.md",
+      "size": 2664
+    },
+    {
+      "path": "registration-worker/UPSTREAM.md",
+      "size": 474
+    },
+    {
+      "path": "registration-worker/api/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/api/account_checks.py",
+      "size": 1779
+    },
+    {
+      "path": "registration-worker/api/accounts.py",
+      "size": 10346
+    },
+    {
+      "path": "registration-worker/api/actions.py",
+      "size": 1059
+    },
+    {
+      "path": "registration-worker/api/auth.py",
+      "size": 708
+    },
+    {
+      "path": "registration-worker/api/bitbrowser_profiles.py",
+      "size": 1635
+    },
+    {
+      "path": "registration-worker/api/config.py",
+      "size": 587
+    },
+    {
+      "path": "registration-worker/api/health.py",
+      "size": 310
+    },
+    {
+      "path": "registration-worker/api/lifecycle.py",
+      "size": 1656
+    },
+    {
+      "path": "registration-worker/api/platform_capabilities.py",
+      "size": 503
+    },
+    {
+      "path": "registration-worker/api/platforms.py",
+      "size": 412
+    },
+    {
+      "path": "registration-worker/api/provider_definitions.py",
+      "size": 1532
+    },
+    {
+      "path": "registration-worker/api/provider_settings.py",
+      "size": 4118
+    },
+    {
+      "path": "registration-worker/api/proxies.py",
+      "size": 2001
+    },
+    {
+      "path": "registration-worker/api/sms.py",
+      "size": 8263
+    },
+    {
+      "path": "registration-worker/api/sms_pool.py",
+      "size": 1759
+    },
+    {
+      "path": "registration-worker/api/stats.py",
+      "size": 5026
+    },
+    {
+      "path": "registration-worker/api/system.py",
+      "size": 2754
+    },
+    {
+      "path": "registration-worker/api/task_commands.py",
+      "size": 8788
+    },
+    {
+      "path": "registration-worker/api/task_logs.py",
+      "size": 381
+    },
+    {
+      "path": "registration-worker/api/tasks.py",
+      "size": 878
+    },
+    {
+      "path": "registration-worker/application/__init__.py",
+      "size": 34
+    },
+    {
+      "path": "registration-worker/application/account_checks.py",
+      "size": 13917
+    },
+    {
+      "path": "registration-worker/application/account_exports.py",
+      "size": 20752
+    },
+    {
+      "path": "registration-worker/application/accounts.py",
+      "size": 6155
+    },
+    {
+      "path": "registration-worker/application/actions.py",
+      "size": 2037
+    },
+    {
+      "path": "registration-worker/application/bitbrowser_profiles.py",
+      "size": 8295
+    },
+    {
+      "path": "registration-worker/application/config.py",
+      "size": 1960
+    },
+    {
+      "path": "registration-worker/application/ctf_plus.py",
+      "size": 8538
+    },
+    {
+      "path": "registration-worker/application/gopay_pay_chatgpt.py",
+      "size": 62422
+    },
+    {
+      "path": "registration-worker/application/health.py",
+      "size": 369
+    },
+    {
+      "path": "registration-worker/application/phone_binding.py",
+      "size": 23706
+    },
+    {
+      "path": "registration-worker/application/platform_capabilities.py",
+      "size": 1056
+    },
+    {
+      "path": "registration-worker/application/platforms.py",
+      "size": 3037
+    },
+    {
+      "path": "registration-worker/application/provider_definitions.py",
+      "size": 2445
+    },
+    {
+      "path": "registration-worker/application/provider_settings.py",
+      "size": 3754
+    },
+    {
+      "path": "registration-worker/application/proxies.py",
+      "size": 4310
+    },
+    {
+      "path": "registration-worker/application/system.py",
+      "size": 393
+    },
+    {
+      "path": "registration-worker/application/task_commands.py",
+      "size": 5035
+    },
+    {
+      "path": "registration-worker/application/task_logs.py",
+      "size": 1014
+    },
+    {
+      "path": "registration-worker/application/tasks.py",
+      "size": 153618
+    },
+    {
+      "path": "registration-worker/application/tasks_query.py",
+      "size": 2486
+    },
+    {
+      "path": "registration-worker/core/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/core/account_display.py",
+      "size": 11049
+    },
+    {
+      "path": "registration-worker/core/account_graph.py",
+      "size": 39587
+    },
+    {
+      "path": "registration-worker/core/any2api_sync.py",
+      "size": 10782
+    },
+    {
+      "path": "registration-worker/core/auth.py",
+      "size": 1614
+    },
+    {
+      "path": "registration-worker/core/base_captcha.py",
+      "size": 5187
+    },
+    {
+      "path": "registration-worker/core/base_executor.py",
+      "size": 1138
+    },
+    {
+      "path": "registration-worker/core/base_identity.py",
+      "size": 4591
+    },
+    {
+      "path": "registration-worker/core/base_mailbox.py",
+      "size": 96177
+    },
+    {
+      "path": "registration-worker/core/base_platform.py",
+      "size": 24030
+    },
+    {
+      "path": "registration-worker/core/base_sms.py",
+      "size": 54911
+    },
+    {
+      "path": "registration-worker/core/capability_registry.py",
+      "size": 5834
+    },
+    {
+      "path": "registration-worker/core/config_store.py",
+      "size": 1401
+    },
+    {
+      "path": "registration-worker/core/datetime_utils.py",
+      "size": 925
+    },
+    {
+      "path": "registration-worker/core/db.py",
+      "size": 25089
+    },
+    {
+      "path": "registration-worker/core/desktop_apps.py",
+      "size": 4409
+    },
+    {
+      "path": "registration-worker/core/executors/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/core/executors/playwright.py",
+      "size": 4675
+    },
+    {
+      "path": "registration-worker/core/executors/protocol.py",
+      "size": 1595
+    },
+    {
+      "path": "registration-worker/core/generic_http_mailbox.py",
+      "size": 18215
+    },
+    {
+      "path": "registration-worker/core/http_client.py",
+      "size": 6642
+    },
+    {
+      "path": "registration-worker/core/inbox_link_mailbox.py",
+      "size": 14361
+    },
+    {
+      "path": "registration-worker/core/lifecycle.py",
+      "size": 28796
+    },
+    {
+      "path": "registration-worker/core/local_ms_mailbox.py",
+      "size": 22747
+    },
+    {
+      "path": "registration-worker/core/manual_oauth_browser.py",
+      "size": 411
+    },
+    {
+      "path": "registration-worker/core/oauth_browser.py",
+      "size": 17325
+    },
+    {
+      "path": "registration-worker/core/outlook_email_mailbox.py",
+      "size": 24116
+    },
+    {
+      "path": "registration-worker/core/platform_accounts.py",
+      "size": 4360
+    },
+    {
+      "path": "registration-worker/core/provider_drivers.py",
+      "size": 62
+    },
+    {
+      "path": "registration-worker/core/proxy_pool.py",
+      "size": 3418
+    },
+    {
+      "path": "registration-worker/core/proxy_providers.py",
+      "size": 3687
+    },
+    {
+      "path": "registration-worker/core/proxy_urls.py",
+      "size": 4413
+    },
+    {
+      "path": "registration-worker/core/registration/__init__.py",
+      "size": 1036
+    },
+    {
+      "path": "registration-worker/core/registration/adapters.py",
+      "size": 2253
+    },
+    {
+      "path": "registration-worker/core/registration/errors.py",
+      "size": 599
+    },
+    {
+      "path": "registration-worker/core/registration/flows.py",
+      "size": 6659
+    },
+    {
+      "path": "registration-worker/core/registration/helpers.py",
+      "size": 9059
+    },
+    {
+      "path": "registration-worker/core/registration/models.py",
+      "size": 1804
+    },
+    {
+      "path": "registration-worker/core/registry.py",
+      "size": 4602
+    },
+    {
+      "path": "registration-worker/core/scheduler.py",
+      "size": 4415
+    },
+    {
+      "path": "registration-worker/core/server_guard.py",
+      "size": 2989
+    },
+    {
+      "path": "registration-worker/core/tls.py",
+      "size": 983
+    },
+    {
+      "path": "registration-worker/core/version.py",
+      "size": 162
+    },
+    {
+      "path": "registration-worker/customer_portal_api/.env.example",
+      "size": 289
+    },
+    {
+      "path": "registration-worker/customer_portal_api/Dockerfile",
+      "size": 433
+    },
+    {
+      "path": "registration-worker/customer_portal_api/README.md",
+      "size": 3428
+    },
+    {
+      "path": "registration-worker/customer_portal_api/__init__.py",
+      "size": 35
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/__init__.py",
+      "size": 55
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/bootstrap.py",
+      "size": 5943
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/catalog.py",
+      "size": 8272
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/config.py",
+      "size": 1142
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/db.py",
+      "size": 805
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/deps.py",
+      "size": 1273
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/models.py",
+      "size": 9154
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/routers/admin.py",
+      "size": 14241
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/routers/app_api.py",
+      "size": 5010
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/routers/auth.py",
+      "size": 1224
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/routers/payment.py",
+      "size": 1028
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/security.py",
+      "size": 3272
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/services/auth.py",
+      "size": 5342
+    },
+    {
+      "path": "registration-worker/customer_portal_api/app/services/portal.py",
+      "size": 52284
+    },
+    {
+      "path": "registration-worker/customer_portal_api/docker-compose.yml",
+      "size": 917
+    },
+    {
+      "path": "registration-worker/customer_portal_api/main.py",
+      "size": 1265
+    },
+    {
+      "path": "registration-worker/customer_portal_api/requirements.txt",
+      "size": 23
+    },
+    {
+      "path": "registration-worker/docker-compose.yml",
+      "size": 641
+    },
+    {
+      "path": "registration-worker/docker-entrypoint.sh",
+      "size": 645
+    },
+    {
+      "path": "registration-worker/domain/__init__.py",
+      "size": 40
+    },
+    {
+      "path": "registration-worker/domain/accounts.py",
+      "size": 2866
+    },
+    {
+      "path": "registration-worker/domain/actions.py",
+      "size": 681
+    },
+    {
+      "path": "registration-worker/domain/platform_caps.py",
+      "size": 400
+    },
+    {
+      "path": "registration-worker/domain/platforms.py",
+      "size": 479
+    },
+    {
+      "path": "registration-worker/domain/proxies.py",
+      "size": 608
+    },
+    {
+      "path": "registration-worker/domain/task_logs.py",
+      "size": 328
+    },
+    {
+      "path": "registration-worker/domain/tasks.py",
+      "size": 1011
+    },
+    {
+      "path": "registration-worker/electron/build-backend.sh",
+      "size": 2205
+    },
+    {
+      "path": "registration-worker/electron/electron-builder.yml",
+      "size": 724
+    },
+    {
+      "path": "registration-worker/electron/main.js",
+      "size": 7172
+    },
+    {
+      "path": "registration-worker/electron/package-lock.json",
+      "size": 122499
+    },
+    {
+      "path": "registration-worker/electron/package.json",
+      "size": 626
+    },
+    {
+      "path": "registration-worker/frontend/.gitignore",
+      "size": 253
+    },
+    {
+      "path": "registration-worker/frontend/README.md",
+      "size": 2425
+    },
+    {
+      "path": "registration-worker/frontend/eslint.config.js",
+      "size": 616
+    },
+    {
+      "path": "registration-worker/frontend/index.html",
+      "size": 360
+    },
+    {
+      "path": "registration-worker/frontend/package-lock.json",
+      "size": 142879
+    },
+    {
+      "path": "registration-worker/frontend/package.json",
+      "size": 1181
+    },
+    {
+      "path": "registration-worker/frontend/public/favicon.svg",
+      "size": 9522
+    },
+    {
+      "path": "registration-worker/frontend/public/icons.svg",
+      "size": 5031
+    },
+    {
+      "path": "registration-worker/frontend/src/App.css",
+      "size": 2891
+    },
+    {
+      "path": "registration-worker/frontend/src/App.tsx",
+      "size": 14651
+    },
+    {
+      "path": "registration-worker/frontend/src/assets/hero.png",
+      "size": 44919
+    },
+    {
+      "path": "registration-worker/frontend/src/assets/react.svg",
+      "size": 4126
+    },
+    {
+      "path": "registration-worker/frontend/src/assets/vite.svg",
+      "size": 8709
+    },
+    {
+      "path": "registration-worker/frontend/src/components/UpdateBanner.tsx",
+      "size": 2509
+    },
+    {
+      "path": "registration-worker/frontend/src/components/WelcomeDialog.tsx",
+      "size": 2590
+    },
+    {
+      "path": "registration-worker/frontend/src/components/settings/AdvancedSettings.tsx",
+      "size": 9403
+    },
+    {
+      "path": "registration-worker/frontend/src/components/settings/BitBrowserProfiles.tsx",
+      "size": 7558
+    },
+    {
+      "path": "registration-worker/frontend/src/components/settings/ProviderCards.tsx",
+      "size": 26227
+    },
+    {
+      "path": "registration-worker/frontend/src/components/tasks/TaskLogPanel.tsx",
+      "size": 13961
+    },
+    {
+      "path": "registration-worker/frontend/src/components/ui/badge.tsx",
+      "size": 1041
+    },
+    {
+      "path": "registration-worker/frontend/src/components/ui/button.tsx",
+      "size": 1724
+    },
+    {
+      "path": "registration-worker/frontend/src/components/ui/card.tsx",
+      "size": 1245
+    },
+    {
+      "path": "registration-worker/frontend/src/index.css",
+      "size": 8115
+    },
+    {
+      "path": "registration-worker/frontend/src/lib/app-data.ts",
+      "size": 2368
+    },
+    {
+      "path": "registration-worker/frontend/src/lib/config-options.ts",
+      "size": 3393
+    },
+    {
+      "path": "registration-worker/frontend/src/lib/i18n-context.tsx",
+      "size": 1726
+    },
+    {
+      "path": "registration-worker/frontend/src/lib/i18n.ts",
+      "size": 49462
+    },
+    {
+      "path": "registration-worker/frontend/src/lib/registration.ts",
+      "size": 4081
+    },
+    {
+      "path": "registration-worker/frontend/src/lib/tasks.ts",
+      "size": 1611
+    },
+    {
+      "path": "registration-worker/frontend/src/lib/utils.ts",
+      "size": 2069
+    },
+    {
+      "path": "registration-worker/frontend/src/main.tsx",
+      "size": 230
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/Accounts.tsx",
+      "size": 131747
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/CtfGptPlus.tsx",
+      "size": 84163
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/Dashboard.tsx",
+      "size": 9197
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/GoPayGptPlus.tsx",
+      "size": 39186
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/PlusManager.tsx",
+      "size": 36562
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/Proxies.tsx",
+      "size": 8126
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/Register.tsx",
+      "size": 34788
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/Settings.tsx",
+      "size": 61675
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/SettingsPage.tsx",
+      "size": 19000
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/SmsPoolBlacklist.tsx",
+      "size": 7139
+    },
+    {
+      "path": "registration-worker/frontend/src/pages/TaskHistory.tsx",
+      "size": 17312
+    },
+    {
+      "path": "registration-worker/frontend/tsconfig.app.json",
+      "size": 797
+    },
+    {
+      "path": "registration-worker/frontend/tsconfig.json",
+      "size": 119
+    },
+    {
+      "path": "registration-worker/frontend/tsconfig.node.json",
+      "size": 653
+    },
+    {
+      "path": "registration-worker/frontend/vite.config.ts",
+      "size": 439
+    },
+    {
+      "path": "registration-worker/infrastructure/__init__.py",
+      "size": 51
+    },
+    {
+      "path": "registration-worker/infrastructure/accounts_repository.py",
+      "size": 17558
+    },
+    {
+      "path": "registration-worker/infrastructure/config_repository.py",
+      "size": 1629
+    },
+    {
+      "path": "registration-worker/infrastructure/health_runtime.py",
+      "size": 1191
+    },
+    {
+      "path": "registration-worker/infrastructure/platform_caps_repository.py",
+      "size": 2000
+    },
+    {
+      "path": "registration-worker/infrastructure/platform_runtime.py",
+      "size": 21677
+    },
+    {
+      "path": "registration-worker/infrastructure/provider_definitions_repository.py",
+      "size": 34288
+    },
+    {
+      "path": "registration-worker/infrastructure/provider_settings_repository.py",
+      "size": 6715
+    },
+    {
+      "path": "registration-worker/infrastructure/proxies_repository.py",
+      "size": 2407
+    },
+    {
+      "path": "registration-worker/infrastructure/sms_pool_repository.py",
+      "size": 8121
+    },
+    {
+      "path": "registration-worker/infrastructure/system_runtime.py",
+      "size": 346
+    },
+    {
+      "path": "registration-worker/infrastructure/task_logs_repository.py",
+      "size": 1369
+    },
+    {
+      "path": "registration-worker/infrastructure/tasks_read_repository.py",
+      "size": 2390
+    },
+    {
+      "path": "registration-worker/main.py",
+      "size": 7079
+    },
+    {
+      "path": "registration-worker/platforms/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/_bitbrowser.py",
+      "size": 21032
+    },
+    {
+      "path": "registration-worker/platforms/_browser_backend.py",
+      "size": 9207
+    },
+    {
+      "path": "registration-worker/platforms/anything/__init__.py",
+      "size": 1
+    },
+    {
+      "path": "registration-worker/platforms/anything/core.py",
+      "size": 24076
+    },
+    {
+      "path": "registration-worker/platforms/anything/plugin.py",
+      "size": 6040
+    },
+    {
+      "path": "registration-worker/platforms/anything/protocol_mailbox.py",
+      "size": 5605
+    },
+    {
+      "path": "registration-worker/platforms/blink/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/blink/core.py",
+      "size": 23760
+    },
+    {
+      "path": "registration-worker/platforms/blink/plugin.py",
+      "size": 8653
+    },
+    {
+      "path": "registration-worker/platforms/blink/protocol_mailbox.py",
+      "size": 6634
+    },
+    {
+      "path": "registration-worker/platforms/cerebras/__init__.py",
+      "size": 27
+    },
+    {
+      "path": "registration-worker/platforms/cerebras/core.py",
+      "size": 5462
+    },
+    {
+      "path": "registration-worker/platforms/cerebras/plugin.py",
+      "size": 3352
+    },
+    {
+      "path": "registration-worker/platforms/cerebras/protocol_mailbox.py",
+      "size": 1282
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/_payment_jslib.py",
+      "size": 17266
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/browser_get_rt.py",
+      "size": 42767
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/browser_oauth.py",
+      "size": 4904
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/browser_register.py",
+      "size": 357450
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/card_generator.py",
+      "size": 4217
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/constants.py",
+      "size": 13865
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/cpa_session.py",
+      "size": 33261
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/cpa_upload.py",
+      "size": 13108
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/http_client.py",
+      "size": 5767
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/oauth.py",
+      "size": 10773
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/payment.py",
+      "size": 419837
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/payment_protocol.py",
+      "size": 99761
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/paypal_fraudnet.py",
+      "size": 12848
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/paypal_fraudnet_baseline.json",
+      "size": 7762
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/paypal_http.py",
+      "size": 68589
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/paypal_signup_query.gql",
+      "size": 4599
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/plugin.py",
+      "size": 122608
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/protocol_mailbox.py",
+      "size": 10783
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/register.py",
+      "size": 76212
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/registration_errors.py",
+      "size": 2456
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/sentinel_vm.py",
+      "size": 30690
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/stripe_http.py",
+      "size": 33117
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/switch.py",
+      "size": 14062
+    },
+    {
+      "path": "registration-worker/platforms/chatgpt/token_refresh.py",
+      "size": 10640
+    },
+    {
+      "path": "registration-worker/platforms/cursor/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/cursor/browser_oauth.py",
+      "size": 2090
+    },
+    {
+      "path": "registration-worker/platforms/cursor/browser_register.py",
+      "size": 30983
+    },
+    {
+      "path": "registration-worker/platforms/cursor/core.py",
+      "size": 5244
+    },
+    {
+      "path": "registration-worker/platforms/cursor/plugin.py",
+      "size": 11731
+    },
+    {
+      "path": "registration-worker/platforms/cursor/protocol_mailbox.py",
+      "size": 1570
+    },
+    {
+      "path": "registration-worker/platforms/cursor/switch.py",
+      "size": 13193
+    },
+    {
+      "path": "registration-worker/platforms/gopay/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/gopay/_opai_loader.py",
+      "size": 1429
+    },
+    {
+      "path": "registration-worker/platforms/gopay/browser_pay.py",
+      "size": 10750
+    },
+    {
+      "path": "registration-worker/platforms/gopay/plugin.py",
+      "size": 27019
+    },
+    {
+      "path": "registration-worker/platforms/gopay/sms_channel.py",
+      "size": 26413
+    },
+    {
+      "path": "registration-worker/platforms/grok/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/grok/browser_oauth.py",
+      "size": 1933
+    },
+    {
+      "path": "registration-worker/platforms/grok/browser_register.py",
+      "size": 7756
+    },
+    {
+      "path": "registration-worker/platforms/grok/core.py",
+      "size": 4491
+    },
+    {
+      "path": "registration-worker/platforms/grok/plugin.py",
+      "size": 4267
+    },
+    {
+      "path": "registration-worker/platforms/grok/protocol_mailbox.py",
+      "size": 1687
+    },
+    {
+      "path": "registration-worker/platforms/kiro/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/kiro/browser_oauth.py",
+      "size": 4129
+    },
+    {
+      "path": "registration-worker/platforms/kiro/browser_register.py",
+      "size": 22172
+    },
+    {
+      "path": "registration-worker/platforms/kiro/core.py",
+      "size": 77915
+    },
+    {
+      "path": "registration-worker/platforms/kiro/plugin.py",
+      "size": 15103
+    },
+    {
+      "path": "registration-worker/platforms/kiro/protocol_mailbox.py",
+      "size": 4303
+    },
+    {
+      "path": "registration-worker/platforms/kiro/switch.py",
+      "size": 17266
+    },
+    {
+      "path": "registration-worker/platforms/openblocklabs/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/openblocklabs/browser_oauth.py",
+      "size": 2137
+    },
+    {
+      "path": "registration-worker/platforms/openblocklabs/browser_register.py",
+      "size": 24026
+    },
+    {
+      "path": "registration-worker/platforms/openblocklabs/core.py",
+      "size": 14476
+    },
+    {
+      "path": "registration-worker/platforms/openblocklabs/plugin.py",
+      "size": 4135
+    },
+    {
+      "path": "registration-worker/platforms/openblocklabs/protocol_mailbox.py",
+      "size": 2662
+    },
+    {
+      "path": "registration-worker/platforms/tavily/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/tavily/browser_oauth.py",
+      "size": 3423
+    },
+    {
+      "path": "registration-worker/platforms/tavily/browser_register.py",
+      "size": 19869
+    },
+    {
+      "path": "registration-worker/platforms/tavily/core.py",
+      "size": 3888
+    },
+    {
+      "path": "registration-worker/platforms/tavily/plugin.py",
+      "size": 5378
+    },
+    {
+      "path": "registration-worker/platforms/tavily/protocol_mailbox.py",
+      "size": 1310
+    },
+    {
+      "path": "registration-worker/platforms/trae/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/platforms/trae/browser_oauth.py",
+      "size": 2576
+    },
+    {
+      "path": "registration-worker/platforms/trae/browser_register.py",
+      "size": 14392
+    },
+    {
+      "path": "registration-worker/platforms/trae/core.py",
+      "size": 3772
+    },
+    {
+      "path": "registration-worker/platforms/trae/plugin.py",
+      "size": 6558
+    },
+    {
+      "path": "registration-worker/platforms/trae/protocol_mailbox.py",
+      "size": 1422
+    },
+    {
+      "path": "registration-worker/platforms/trae/switch.py",
+      "size": 6835
+    },
+    {
+      "path": "registration-worker/platforms/windsurf/__init__.py",
+      "size": 34
+    },
+    {
+      "path": "registration-worker/platforms/windsurf/browser_register.py",
+      "size": 81762
+    },
+    {
+      "path": "registration-worker/platforms/windsurf/core.py",
+      "size": 25028
+    },
+    {
+      "path": "registration-worker/platforms/windsurf/plugin.py",
+      "size": 16476
+    },
+    {
+      "path": "registration-worker/platforms/windsurf/protocol_mailbox.py",
+      "size": 2850
+    },
+    {
+      "path": "registration-worker/platforms/windsurf/switch.py",
+      "size": 10883
+    },
+    {
+      "path": "registration-worker/providers/__init__.py",
+      "size": 266
+    },
+    {
+      "path": "registration-worker/providers/captcha/__init__.py",
+      "size": 32
+    },
+    {
+      "path": "registration-worker/providers/captcha/local_solver.py",
+      "size": 2998
+    },
+    {
+      "path": "registration-worker/providers/captcha/manual.py",
+      "size": 638
+    },
+    {
+      "path": "registration-worker/providers/captcha/twocaptcha.py",
+      "size": 5638
+    },
+    {
+      "path": "registration-worker/providers/captcha/yescaptcha.py",
+      "size": 9709
+    },
+    {
+      "path": "registration-worker/providers/mailbox/__init__.py",
+      "size": 32
+    },
+    {
+      "path": "registration-worker/providers/mailbox/aitre.py",
+      "size": 218
+    },
+    {
+      "path": "registration-worker/providers/mailbox/cfworker.py",
+      "size": 236
+    },
+    {
+      "path": "registration-worker/providers/mailbox/ddg_email.py",
+      "size": 239
+    },
+    {
+      "path": "registration-worker/providers/mailbox/dispose_inbox_link.py",
+      "size": 256
+    },
+    {
+      "path": "registration-worker/providers/mailbox/duckmail.py",
+      "size": 223
+    },
+    {
+      "path": "registration-worker/providers/mailbox/freemail.py",
+      "size": 230
+    },
+    {
+      "path": "registration-worker/providers/mailbox/laoudo.py",
+      "size": 219
+    },
+    {
+      "path": "registration-worker/providers/mailbox/local_ms_pool.py",
+      "size": 268
+    },
+    {
+      "path": "registration-worker/providers/mailbox/moemail.py",
+      "size": 226
+    },
+    {
+      "path": "registration-worker/providers/mailbox/outlook_email.py",
+      "size": 244
+    },
+    {
+      "path": "registration-worker/providers/mailbox/tempmail_lol.py",
+      "size": 237
+    },
+    {
+      "path": "registration-worker/providers/mailbox/tempmail_web.py",
+      "size": 243
+    },
+    {
+      "path": "registration-worker/providers/mailbox/testmail.py",
+      "size": 230
+    },
+    {
+      "path": "registration-worker/providers/proxy/__init__.py",
+      "size": 30
+    },
+    {
+      "path": "registration-worker/providers/proxy/api_extract.py",
+      "size": 3711
+    },
+    {
+      "path": "registration-worker/providers/proxy/rotating_gateway.py",
+      "size": 1119
+    },
+    {
+      "path": "registration-worker/providers/registry.py",
+      "size": 2661
+    },
+    {
+      "path": "registration-worker/providers/sms/__init__.py",
+      "size": 28
+    },
+    {
+      "path": "registration-worker/providers/sms/herosms.py",
+      "size": 654
+    },
+    {
+      "path": "registration-worker/providers/sms/sms_activate.py",
+      "size": 468
+    },
+    {
+      "path": "registration-worker/providers/sms/smsbower.py",
+      "size": 339
+    },
+    {
+      "path": "registration-worker/pytest.ini",
+      "size": 42
+    },
+    {
+      "path": "registration-worker/requirements.txt",
+      "size": 506
+    },
+    {
+      "path": "registration-worker/scripts/smoke.py",
+      "size": 1006
+    },
+    {
+      "path": "registration-worker/services/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/services/solver_manager.py",
+      "size": 8270
+    },
+    {
+      "path": "registration-worker/services/task_runtime.py",
+      "size": 4816
+    },
+    {
+      "path": "registration-worker/services/turnstile_solver/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/services/turnstile_solver/api_solver.py",
+      "size": 52828
+    },
+    {
+      "path": "registration-worker/services/turnstile_solver/browser_configs.py",
+      "size": 998
+    },
+    {
+      "path": "registration-worker/services/turnstile_solver/db_results.py",
+      "size": 856
+    },
+    {
+      "path": "registration-worker/services/turnstile_solver/start.py",
+      "size": 887
+    },
+    {
+      "path": "registration-worker/start_with_go_gateway.bat",
+      "size": 130
+    },
+    {
+      "path": "registration-worker/start_with_go_gateway.ps1",
+      "size": 4832
+    },
+    {
+      "path": "registration-worker/tests/__init__.py",
+      "size": 16
+    },
+    {
+      "path": "registration-worker/tests/conftest.py",
+      "size": 1644
+    },
+    {
+      "path": "registration-worker/tests/test_any2api_sync.py",
+      "size": 3191
+    },
+    {
+      "path": "registration-worker/tests/test_api_accounts.py",
+      "size": 32324
+    },
+    {
+      "path": "registration-worker/tests/test_api_health.py",
+      "size": 329
+    },
+    {
+      "path": "registration-worker/tests/test_api_lifecycle.py",
+      "size": 1345
+    },
+    {
+      "path": "registration-worker/tests/test_api_platforms.py",
+      "size": 754
+    },
+    {
+      "path": "registration-worker/tests/test_api_proxies.py",
+      "size": 9295
+    },
+    {
+      "path": "registration-worker/tests/test_api_sms_pool.py",
+      "size": 3959
+    },
+    {
+      "path": "registration-worker/tests/test_api_stats.py",
+      "size": 1811
+    },
+    {
+      "path": "registration-worker/tests/test_bitbrowser_profile_pool.py",
+      "size": 5087
+    },
+    {
+      "path": "registration-worker/tests/test_browser_backend.py",
+      "size": 11749
+    },
+    {
+      "path": "registration-worker/tests/test_captcha_providers.py",
+      "size": 1328
+    },
+    {
+      "path": "registration-worker/tests/test_card_generator.py",
+      "size": 3873
+    },
+    {
+      "path": "registration-worker/tests/test_cfworker_cloud_mail.py",
+      "size": 6301
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_browser_get_rt.py",
+      "size": 1779
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_browser_window.py",
+      "size": 1005
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_cpa_session.py",
+      "size": 20980
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_dynamic_proxy.py",
+      "size": 12039
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_get_rt_har.py",
+      "size": 4683
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_get_rt_otp_callback.py",
+      "size": 5847
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_get_rt_phone_reuse.py",
+      "size": 4011
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_oauth_callback_wait.py",
+      "size": 1192
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_oauth_requirements.py",
+      "size": 30489
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_password_settings.py",
+      "size": 91513
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_payment_link.py",
+      "size": 325876
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_payment_protocol.py",
+      "size": 124496
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_protocol_mailbox_fallback.py",
+      "size": 4987
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_protocol_otp.py",
+      "size": 5034
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_refresh_access_token.py",
+      "size": 5742
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_registration_errors.py",
+      "size": 2036
+    },
+    {
+      "path": "registration-worker/tests/test_chatgpt_workspace_join.py",
+      "size": 7053
+    },
+    {
+      "path": "registration-worker/tests/test_frontend_sidebar_nav.py",
+      "size": 1952
+    },
+    {
+      "path": "registration-worker/tests/test_gopay_autoregister.py",
+      "size": 10281
+    },
+    {
+      "path": "registration-worker/tests/test_gopay_balance_poll.py",
+      "size": 3106
+    },
+    {
+      "path": "registration-worker/tests/test_gopay_envelope.py",
+      "size": 2455
+    },
+    {
+      "path": "registration-worker/tests/test_gopay_grab_midtrans.py",
+      "size": 6178
+    },
+    {
+      "path": "registration-worker/tests/test_gopay_pay_chatgpt.py",
+      "size": 19506
+    },
+    {
+      "path": "registration-worker/tests/test_gopay_pay_chatgpt_task.py",
+      "size": 27663
+    },
+    {
+      "path": "registration-worker/tests/test_gopay_phone_ttl.py",
+      "size": 1161
+    },
+    {
+      "path": "registration-worker/tests/test_gopay_register_balance.py",
+      "size": 8718
+    },
+    {
+      "path": "registration-worker/tests/test_gopay_sms_channel.py",
+      "size": 9862
+    },
+    {
+      "path": "registration-worker/tests/test_herosms_api.py",
+      "size": 972
+    },
+    {
+      "path": "registration-worker/tests/test_inbox_link_mailbox.py",
+      "size": 6321
+    },
+    {
+      "path": "registration-worker/tests/test_local_ms_mailbox.py",
+      "size": 3498
+    },
+    {
+      "path": "registration-worker/tests/test_outlook_email_mailbox.py",
+      "size": 8861
+    },
+    {
+      "path": "registration-worker/tests/test_paypal_fraudnet.py",
+      "size": 12727
+    },
+    {
+      "path": "registration-worker/tests/test_paypal_http.py",
+      "size": 52521
+    },
+    {
+      "path": "registration-worker/tests/test_phone_bind_oauth_sms.py",
+      "size": 11902
+    },
+    {
+      "path": "registration-worker/tests/test_platform_action_task.py",
+      "size": 42195
+    },
+    {
+      "path": "registration-worker/tests/test_proxy_providers.py",
+      "size": 5026
+    },
+    {
+      "path": "registration-worker/tests/test_registration_phone_callbacks.py",
+      "size": 2773
+    },
+    {
+      "path": "registration-worker/tests/test_server_guard.py",
+      "size": 1846
+    },
+    {
+      "path": "registration-worker/tests/test_sms_provider.py",
+      "size": 18526
+    },
+    {
+      "path": "registration-worker/tests/test_stripe_http.py",
+      "size": 10651
+    },
+    {
+      "path": "registration-worker/tests/test_task_dispatch_lanes.py",
+      "size": 11373
+    },
+    {
+      "path": "registration-worker/tests/test_task_pause.py",
+      "size": 5366
+    },
+    {
+      "path": "registration-worker/tests/test_task_proxy_logging.py",
+      "size": 622
+    },
+    {
+      "path": "registration-worker/tests/test_task_sms_pool_errors.py",
+      "size": 711
+    },
+    {
+      "path": "registration-worker/tests/test_tasks_herosms.py",
+      "size": 2498
+    },
+    {
+      "path": "registration-worker/tests/test_validity_recovery.py",
+      "size": 48326
+    },
+    {
+      "path": "registration-worker/tests/test_windsurf_platform.py",
+      "size": 19761
+    },
+    {
+      "path": "registration-worker/tools/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "registration-worker/tools/_dump_entry.py",
+      "size": 1272
+    },
+    {
+      "path": "registration-worker/tools/_export_graphql_batch_fixture.py",
+      "size": 2104
+    },
+    {
+      "path": "registration-worker/tools/_export_otp_fixtures.py",
+      "size": 1768
+    },
+    {
+      "path": "registration-worker/tools/_export_signup_fixture.py",
+      "size": 2160
+    },
+    {
+      "path": "registration-worker/tools/_find_euat.py",
+      "size": 1719
+    },
+    {
+      "path": "registration-worker/tools/_find_euat_value.py",
+      "size": 1438
+    },
+    {
+      "path": "registration-worker/tools/_find_op.py",
+      "size": 944
+    },
+    {
+      "path": "registration-worker/tools/_full_chain.py",
+      "size": 1250
+    },
+    {
+      "path": "registration-worker/tools/_inspect_landing.py",
+      "size": 902
+    },
+    {
+      "path": "registration-worker/tools/_inspect_otp_fixtures.py",
+      "size": 721
+    },
+    {
+      "path": "registration-worker/tools/_list_graphql_ops.py",
+      "size": 1045
+    },
+    {
+      "path": "registration-worker/tools/_retry_protocol.py",
+      "size": 2894
+    },
+    {
+      "path": "registration-worker/tools/_trace_euat.py",
+      "size": 1997
+    },
+    {
+      "path": "registration-worker/tools/analyze_fraudnet_har.py",
+      "size": 4871
+    },
+    {
+      "path": "registration-worker/tools/har_analyze.py",
+      "size": 14597
+    },
+    {
+      "path": "registration-worker/tools/har_capture.py",
+      "size": 2620
+    },
+    {
+      "path": "registration-worker/tools/har_extract.py",
+      "size": 3320
+    },
+    {
+      "path": "registration-worker/tools/har_paypal_business.py",
+      "size": 3636
+    },
+    {
+      "path": "registration-worker/tools/har_summary.py",
+      "size": 2171
+    },
+    {
+      "path": "registration-worker/tools/inspect_db_accounts.py",
+      "size": 3399
+    },
+    {
+      "path": "registration-worker/tools/inspect_har_entry_505_full.py",
+      "size": 828
+    },
+    {
+      "path": "registration-worker/tools/inspect_har_logger.py",
+      "size": 1212
+    },
+    {
+      "path": "registration-worker/tools/inspect_har_otp_chain.py",
+      "size": 1097
+    },
+    {
+      "path": "registration-worker/tools/inspect_har_otp_cookies.py",
+      "size": 1087
+    },
+    {
+      "path": "registration-worker/tools/inspect_har_otp_headers.py",
+      "size": 1670
+    },
+    {
+      "path": "registration-worker/tools/inspect_har_otp_nonce.py",
+      "size": 2633
+    },
+    {
+      "path": "registration-worker/tools/inspect_har_stripe_confirm.py",
+      "size": 2558
+    },
+    {
+      "path": "registration-worker/tools/inspect_har_tsrce_origin.py",
+      "size": 875
+    },
+    {
+      "path": "registration-worker/tools/inspect_proxy_settings.py",
+      "size": 1336
+    },
+    {
+      "path": "registration-worker/tools/inspect_register_tasks.py",
+      "size": 1235
+    },
+    {
+      "path": "registration-worker/tools/inspect_stripe_init_pmtypes.py",
+      "size": 1987
+    },
+    {
+      "path": "registration-worker/tools/inspect_stripe_tax_region.py",
+      "size": 1973
+    },
+    {
+      "path": "registration-worker/tools/poll_task.ps1",
+      "size": 1150
+    },
+    {
+      "path": "registration-worker/tools/selfrun_paypal_checkout.py",
+      "size": 4317
+    },
+    {
+      "path": "registration-worker/tools/tail_task.py",
+      "size": 1827
+    },
+    {
+      "path": "registration-worker/tools/test_kookeey_rotation.py",
+      "size": 2187
+    },
+    {
+      "path": "registration-worker/tools/trigger_payment_link.ps1",
+      "size": 1588
+    },
+    {
+      "path": "scripts/backfill-icloud-html.mjs",
+      "size": 5032
+    },
+    {
+      "path": "scripts/backfill-inbox-link-html.mjs",
+      "size": 2215
+    },
+    {
+      "path": "scripts/check-public-release.sh",
+      "size": 7539
+    },
+    {
+      "path": "scripts/deploy-production.sh",
+      "size": 3129
+    },
+    {
+      "path": "scripts/install-nfapi-credential-reader.sql",
+      "size": 1713
+    },
+    {
+      "path": "scripts/package-extension.sh",
+      "size": 2847
+    },
+    {
+      "path": "scripts/package-local-release.sh",
+      "size": 5108
+    },
+    {
+      "path": "scripts/patch-ez-captcha-perimeterx.mjs",
+      "size": 2438
+    },
+    {
+      "path": "scripts/recover-legacy-inbox-links.mjs",
+      "size": 2284
+    },
+    {
+      "path": "scripts/setup-local.sh",
+      "size": 8887
+    },
+    {
+      "path": "scripts/start-local.sh",
+      "size": 729
+    },
+    {
+      "path": "scripts/update-local.sh",
+      "size": 5296
+    },
+    {
+      "path": "server/account-service.js",
+      "size": 34357
+    },
+    {
+      "path": "server/address-generator.js",
+      "size": 10345
+    },
+    {
+      "path": "server/auth.js",
+      "size": 2908
+    },
+    {
+      "path": "server/checkout-type-probe.js",
+      "size": 3880
+    },
+    {
+      "path": "server/db.js",
+      "size": 63299
+    },
+    {
+      "path": "server/extension-service.js",
+      "size": 12836
+    },
+    {
+      "path": "server/ez-captcha-adapter.js",
+      "size": 3665
+    },
+    {
+      "path": "server/google-gmail.js",
+      "size": 30658
+    },
+    {
+      "path": "server/ic-registration-pipeline-service.js",
+      "size": 56153
+    },
+    {
+      "path": "server/icloud-imap.js",
+      "size": 17346
+    },
+    {
+      "path": "server/icloud-privacy-client.js",
+      "size": 3755
+    },
+    {
+      "path": "server/inbox-link-pool.js",
+      "size": 30797
+    },
+    {
+      "path": "server/index.js",
+      "size": 139737
+    },
+    {
+      "path": "server/inventory-api-service.js",
+      "size": 15911
+    },
+    {
+      "path": "server/jp-trial-eligibility-probe.js",
+      "size": 17212
+    },
+    {
+      "path": "server/mailcom-alias-playwright.js",
+      "size": 40564
+    },
+    {
+      "path": "server/mailcom-alias-service.js",
+      "size": 60912
+    },
+    {
+      "path": "server/mailcom-imap.js",
+      "size": 7924
+    },
+    {
+      "path": "server/mailcom-import.js",
+      "size": 4204
+    },
+    {
+      "path": "server/mailcom-recycle-reservation.js",
+      "size": 1744
+    },
+    {
+      "path": "server/mailcom-registration-pipeline-service.js",
+      "size": 241187
+    },
+    {
+      "path": "server/microsoft-graph.js",
+      "size": 16804
+    },
+    {
+      "path": "server/microsoft-registration-runner-service.js",
+      "size": 78509
+    },
+    {
+      "path": "server/microsoft-registration-service.js",
+      "size": 21367
+    },
+    {
+      "path": "server/momo-eligibility-probe.js",
+      "size": 16546
+    },
+    {
+      "path": "server/netease-aliases.js",
+      "size": 4870
+    },
+    {
+      "path": "server/netease-imap.js",
+      "size": 20447
+    },
+    {
+      "path": "server/netease-import.js",
+      "size": 6966
+    },
+    {
+      "path": "server/nfapi-client.js",
+      "size": 8199
+    },
+    {
+      "path": "server/nfapi-credential-sync.js",
+      "size": 9755
+    },
+    {
+      "path": "server/nfapi-service.js",
+      "size": 84190
+    },
+    {
+      "path": "server/openai-agent-identity.js",
+      "size": 10130
+    },
+    {
+      "path": "server/openai-sms-service.js",
+      "size": 64292
+    },
+    {
+      "path": "server/payment-agreement-service.js",
+      "size": 42983
+    },
+    {
+      "path": "server/payment-link-service.js",
+      "size": 31082
+    },
+    {
+      "path": "server/pickup-service.js",
+      "size": 13947
+    },
+    {
+      "path": "server/registration-client.js",
+      "size": 7740
+    },
+    {
+      "path": "server/registration-failure.js",
+      "size": 7864
+    },
+    {
+      "path": "server/registration-import.js",
+      "size": 10112
+    },
+    {
+      "path": "server/registration-proxy.js",
+      "size": 10910
+    },
+    {
+      "path": "server/registration-service.js",
+      "size": 248749
+    },
+    {
+      "path": "server/tests/account-service.test.js",
+      "size": 4162
+    },
+    {
+      "path": "server/tests/address-generator.test.js",
+      "size": 2740
+    },
+    {
+      "path": "server/tests/agent-identity-bulk.test.js",
+      "size": 3617
+    },
+    {
+      "path": "server/tests/auth.test.js",
+      "size": 1874
+    },
+    {
+      "path": "server/tests/checkout-type-probe.test.js",
+      "size": 4331
+    },
+    {
+      "path": "server/tests/codes-api.test.js",
+      "size": 27425
+    },
+    {
+      "path": "server/tests/extension-background.test.js",
+      "size": 1788
+    },
+    {
+      "path": "server/tests/extension-content.test.js",
+      "size": 2298
+    },
+    {
+      "path": "server/tests/extension-service.test.js",
+      "size": 8261
+    },
+    {
+      "path": "server/tests/google-gmail.test.js",
+      "size": 29123
+    },
+    {
+      "path": "server/tests/http-harness.js",
+      "size": 2067
+    },
+    {
+      "path": "server/tests/ic-registration-pipeline-service.test.js",
+      "size": 34385
+    },
+    {
+      "path": "server/tests/icloud-aliases.test.js",
+      "size": 23173
+    },
+    {
+      "path": "server/tests/icloud-imap.test.js",
+      "size": 13139
+    },
+    {
+      "path": "server/tests/inbox-link-pool.test.js",
+      "size": 19460
+    },
+    {
+      "path": "server/tests/inventory-api-service.test.js",
+      "size": 7531
+    },
+    {
+      "path": "server/tests/inventory-api.test.js",
+      "size": 16094
+    },
+    {
+      "path": "server/tests/jp-trial-eligibility-probe.test.js",
+      "size": 14842
+    },
+    {
+      "path": "server/tests/mailcom-alias-service.test.js",
+      "size": 68086
+    },
+    {
+      "path": "server/tests/mailcom-delete-safety.test.js",
+      "size": 22542
+    },
+    {
+      "path": "server/tests/mailcom-imap.test.js",
+      "size": 12786
+    },
+    {
+      "path": "server/tests/mailcom-registration-pipeline-service.test.js",
+      "size": 174332
+    },
+    {
+      "path": "server/tests/messages-api.test.js",
+      "size": 17957
+    },
+    {
+      "path": "server/tests/microsoft-graph.test.js",
+      "size": 13174
+    },
+    {
+      "path": "server/tests/microsoft-registration-api.test.js",
+      "size": 6634
+    },
+    {
+      "path": "server/tests/microsoft-registration-runner-api.test.js",
+      "size": 21825
+    },
+    {
+      "path": "server/tests/momo-eligibility-probe.test.js",
+      "size": 9767
+    },
+    {
+      "path": "server/tests/netease-imap.test.js",
+      "size": 21755
+    },
+    {
+      "path": "server/tests/nfapi-api.test.js",
+      "size": 17108
+    },
+    {
+      "path": "server/tests/nfapi-client.test.js",
+      "size": 11720
+    },
+    {
+      "path": "server/tests/nfapi-credential-sync.test.js",
+      "size": 4812
+    },
+    {
+      "path": "server/tests/nfapi-service.test.js",
+      "size": 86853
+    },
+    {
+      "path": "server/tests/official-aliases-api.test.js",
+      "size": 3695
+    },
+    {
+      "path": "server/tests/openai-agent-identity.test.js",
+      "size": 8321
+    },
+    {
+      "path": "server/tests/openai-sms-service.test.js",
+      "size": 36360
+    },
+    {
+      "path": "server/tests/payment-agreement-service.test.js",
+      "size": 30446
+    },
+    {
+      "path": "server/tests/payment-link-service.test.js",
+      "size": 17339
+    },
+    {
+      "path": "server/tests/pickup-service.test.js",
+      "size": 12049
+    },
+    {
+      "path": "server/tests/pickup-status-model.test.js",
+      "size": 4989
+    },
+    {
+      "path": "server/tests/registration-account-signals.test.js",
+      "size": 74182
+    },
+    {
+      "path": "server/tests/registration-api.test.js",
+      "size": 132291
+    },
+    {
+      "path": "server/tests/registration-client.test.js",
+      "size": 9824
+    },
+    {
+      "path": "server/tests/registration-failure.test.js",
+      "size": 3703
+    },
+    {
+      "path": "server/tests/registration-import.test.js",
+      "size": 5285
+    },
+    {
+      "path": "server/tests/registration-password-setup.test.js",
+      "size": 18569
+    },
+    {
+      "path": "server/tests/registration-proxy.test.js",
+      "size": 4140
+    },
+    {
+      "path": "server/tests/registration-selection-model.test.js",
+      "size": 619
+    },
+    {
+      "path": "server/tests/security-api.test.js",
+      "size": 1973
+    },
+    {
+      "path": "server/tests/sub2-export.test.js",
+      "size": 2951
+    },
+    {
+      "path": "src/AliasSyncModal.jsx",
+      "size": 17354
+    },
+    {
+      "path": "src/App.jsx",
+      "size": 14120
+    },
+    {
+      "path": "src/agent-identity-bulk.js",
+      "size": 3048
+    },
+    {
+      "path": "src/api.js",
+      "size": 2064
+    },
+    {
+      "path": "src/components.jsx",
+      "size": 9626
+    },
+    {
+      "path": "src/components/InventoryApiModal.jsx",
+      "size": 17141
+    },
+    {
+      "path": "src/main.jsx",
+      "size": 322
+    },
+    {
+      "path": "src/pages/Addresses.jsx",
+      "size": 16616
+    },
+    {
+      "path": "src/pages/Codes.jsx",
+      "size": 11964
+    },
+    {
+      "path": "src/pages/Factory.jsx",
+      "size": 20691
+    },
+    {
+      "path": "src/pages/ICloudPrivacy.jsx",
+      "size": 18403
+    },
+    {
+      "path": "src/pages/Inbox.jsx",
+      "size": 18277
+    },
+    {
+      "path": "src/pages/InboxLinkRegistration.jsx",
+      "size": 12856
+    },
+    {
+      "path": "src/pages/MicrosoftRegistration.jsx",
+      "size": 24595
+    },
+    {
+      "path": "src/pages/Overview.jsx",
+      "size": 7060
+    },
+    {
+      "path": "src/pages/Registration.jsx",
+      "size": 207161
+    },
+    {
+      "path": "src/pages/Sales.jsx",
+      "size": 14944
+    },
+    {
+      "path": "src/pages/Settings.jsx",
+      "size": 22448
+    },
+    {
+      "path": "src/pages/Sources.jsx",
+      "size": 53179
+    },
+    {
+      "path": "src/pages/registration/IcRegistrationPipelineBar.jsx",
+      "size": 34965
+    },
+    {
+      "path": "src/pages/registration/MailcomRegistrationPipelineBar.jsx",
+      "size": 71203
+    },
+    {
+      "path": "src/pages/registration/OpenAiSmsModal.jsx",
+      "size": 41307
+    },
+    {
+      "path": "src/pages/registration/PaymentAgreementModal.jsx",
+      "size": 4916
+    },
+    {
+      "path": "src/pages/registration/account-signals.js",
+      "size": 7047
+    },
+    {
+      "path": "src/pages/registration/display.jsx",
+      "size": 20745
+    },
+    {
+      "path": "src/pages/registration/nfapi-model.js",
+      "size": 3101
+    },
+    {
+      "path": "src/pages/registration/pickup-model.js",
+      "size": 1023
+    },
+    {
+      "path": "src/pages/registration/proxy-model.js",
+      "size": 7206
+    },
+    {
+      "path": "src/pages/registration/registration-model.js",
+      "size": 5880
+    },
+    {
+      "path": "src/pages/registration/sub2-export.js",
+      "size": 2417
+    },
+    {
+      "path": "src/providers.js",
+      "size": 5033
+    },
+    {
+      "path": "src/styles.css",
+      "size": 221789
+    },
+    {
+      "path": "src/utils.js",
+      "size": 1553
+    },
+    {
+      "path": "vite.config.js",
+      "size": 339
+    }
+  ]
+}

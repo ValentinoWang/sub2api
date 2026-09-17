@@ -1,0 +1,42 @@
+{
+  "paused": false,
+  "reason": "",
+  "target": 999,
+  "products": {
+    "874783": {
+      "phase": "idle",
+      "stock": 85,
+      "matched_stock": 85,
+      "target_stock": 999
+    },
+    "875537": {
+      "phase": "idle",
+      "stock": 85,
+      "matched_stock": 85,
+      "target_stock": 999
+    },
+    "875562": {
+      "phase": "idle",
+      "stock": 85,
+      "matched_stock": 85,
+      "target_stock": 999
+    },
+    "875570": {
+      "phase": "idle",
+      "stock": 85,
+      "matched_stock": 85,
+      "target_stock": 999
+    },
+    "875577": {
+      "phase": "idle",
+      "stock": 85,
+      "matched_stock": 85,
+      "target_stock": 999
+    }
+  },
+  "last_success_at": 1789482190.567245,
+  "scheduler_loaded": true,
+  "scheduler_runs": 2,
+  "last_exit_code": 0,
+  "checked_at": 1789482212.050185
+}

@@ -1,0 +1,690 @@
+ID:		jvquw701kqfpgyj53ip8gwlnz
+Created at:	2026-09-10 09:36:13.132218877 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		1.083GB
+Description:	cached mount /root/.cache/go-build from exec /bin/sh -c VERSION_VALUE="${VERSION}" &&     if [ -z "${VERSION_VALUE}" ]; then VERSION_VALUE="$(./scripts/resolve-version.sh)"; fi &&     DATE_VALUE="${DATE:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}" &&     CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build     -tags embed     -ldflags="-s -w -X main.Version=${VERSION_VALUE} -X main.Commit=${COMMIT} -X main.Date=${DATE_VALUE} -X main.BuildType=release"     -trimpath     -o /app/sub2api     ./cmd/server with id "/sub2api-gobuild"
+Usage count:	2
+Last used:	47 seconds ago
+Type:		exec.cachemount
+
+ID:		qix3q8k351vem2mjd1i5ramly
+Created at:	2026-09-10 09:34:13.645642169 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		958.1MB
+Description:	cached mount /go/pkg/mod from exec /bin/sh -c go mod download with id "/sub2api-gomod"
+Usage count:	3
+Last used:	46 seconds ago
+Type:		exec.cachemount
+
+ID:		dprktrojwv443vesyqyp1z74f
+Parent:		ii8rrqlvbqp55392xnbpktasx
+Created at:	2026-09-10 09:34:16.54279517 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		532.5MB
+Description:	mount / from exec /bin/sh -c if [ -n "${NPM_CONFIG_REGISTRY}" ]; then pnpm config set registry "${NPM_CONFIG_REGISTRY}"; fi &&     pnpm install --frozen-lockfile --prefer-offline
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		2t9x46vaxn1nkc7fh32ygi2wn
+Created at:	2026-09-10 09:33:24.247653215 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		522.6MB
+Description:	cached mount /root/.local/share/pnpm/store from exec /bin/sh -c if [ -n "${NPM_CONFIG_REGISTRY}" ]; then pnpm config set registry "${NPM_CONFIG_REGISTRY}"; fi &&     pnpm install --frozen-lockfile --prefer-offline with id "/sub2api-pnpm-store"
+Usage count:	2
+Last used:	6 minutes ago
+Type:		exec.cachemount
+
+ID:		2jjd6eczy7b0sjczopr6wfkt1
+Created at:	2026-09-10 09:32:50.444904797 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		166.3MB
+Description:	local source for context
+Usage count:	1
+Last used:	5 minutes ago
+Type:		source.local
+
+ID:		aoqzv4ud6jmmtents2qj695mv
+Parent:		34iba6jo8535wrqobnuys98s3
+Created at:	2026-09-10 09:36:13.051099877 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		155.7MB
+Description:	[backend-builder 6/8] COPY backend/ ./
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		ka11guqyfa3mbcr7jxye514ui
+Parent:		z7t3thrwwjdvb9x4ggjrjpaur
+Created at:	2026-09-10 09:36:13.129283418 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		129.4MB
+Description:	mount / from exec /bin/sh -c VERSION_VALUE="${VERSION}" &&     if [ -z "${VERSION_VALUE}" ]; then VERSION_VALUE="$(./scripts/resolve-version.sh)"; fi &&     DATE_VALUE="${DATE:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}" &&     CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build     -tags embed     -ldflags="-s -w -X main.Version=${VERSION_VALUE} -X main.Commit=${COMMIT} -X main.Date=${DATE_VALUE} -X main.BuildType=release"     -trimpath     -o /app/sub2api     ./cmd/server
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		jbfyc6l2bnraegodgao7i3rvi
+Parent:		jpbr6dqy7v90kitd7ijelt2uw
+Created at:	2026-09-10 09:38:34.278628345 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		129.3MB
+Description:	[stage-4  8/15] COPY --from=backend-builder --chown=sub2api:sub2api /app/sub2api /app/sub2api
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		2a83q2ufdzfij87qluejibqty
+Parent:		q537xxm5d9xcd2mslmidfbfno
+Created at:	2026-09-10 09:33:58.760863842 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		100.2MB
+Description:	mount / from exec /bin/sh -c set -eu; 	TARGET_OS="${TARGETOS:-linux}"; 	TARGET_ARCH="${TARGETARCH:-amd64}"; 	if [ "${TARGET_OS}" != "linux" ] || [ "${TARGET_ARCH}" != "amd64" ]; then 		echo "LDXP toolkit release asset is available only for linux/amd64 (requested ${TARGET_OS}/${TARGET_ARCH})" >&2; 		exit 1; 	fi; 	TOOLKIT_VERSION="${VERSION:-$(tr -d '\\r\\n' < /tmp/sub2api-version)}"; 	case "${TOOLKIT_VERSION}" in 		""|dev|unpackaged|[!0-9A-Za-z]*|*[!0-9A-Za-z._+-]*) echo "LDXP toolkit release version is missing or invalid" >&2; exit 1;; 	esac; 	if [ "${#TOOLKIT_VERSION}" -gt 128 ]; then echo "LDXP toolkit release version is too long" >&2; exit 1; fi; 	mkdir -p /out; 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.toolkitVersion=${TOOLKIT_VERSION}" -o /out/ldxp-toolkit .; 	test -f /out/ldxp-toolkit && test -x /out/ldxp-toolkit; 	TOOLKIT_SHA256="$(sha256sum /out/ldxp-toolkit | awk '{print $1}')"; 	printf '{"schema_version":1,"program":"ldxp-toolkit","version":"%s","os":"linux","arch":"amd64","sha256":"%s"}\n' "${TOOLKIT_VERSION}" "${TOOLKIT_SHA256}" > /out/ldxp-toolkit-release.json
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		krmq6lm604d7hnmafmm46zalv
+Parent:		m11mbb7zdyyr6vvz4cvznrpdz
+Created at:	2026-09-10 09:33:24.224447257 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		17.53MB
+Description:	mount / from exec /bin/sh -c corepack enable && corepack prepare pnpm@9 --activate
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		oi0siwufd1cmrqwlxqozscpif
+Parent:		o60b5ruxdxtfoom7n0x2bba3t
+Created at:	2026-09-10 09:34:13.607947585 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		14.12MB
+Description:	mount / from exec /bin/sh -c apk add --no-cache git ca-certificates tzdata
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		9wmbbl2kv2sl9psjse3lepx92
+Parent:		dprktrojwv443vesyqyp1z74f
+Created at:	2026-09-10 09:34:16.984334295 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		10.42MB
+Description:	[frontend-builder 6/8] COPY frontend/ ./
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		a6h4annvems9hn6to4nnsnods
+Parent:		q90774p3cigifqedripghl1q6
+Created at:	2026-09-10 09:38:34.598951595 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		6.791MB
+Description:	mount / from exec /bin/sh -c chmod 0555 /app/ldxp-toolkit-assets/ldxp-toolkit && 	chmod 0444 /app/ldxp-toolkit-assets/ldxp-toolkit-release.json
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		3cgtj6aj55jc4ir5nt7xtr2ct
+Parent:		d3hvirqsdrucrtqi2zbkc360n
+Created at:	2026-09-10 09:38:34.404527637 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		6.791MB
+Description:	[stage-4 10/15] COPY --from=ldxp-toolkit-builder --chown=root:root /out/ldxp-toolkit /app/ldxp-toolkit-assets/ldxp-toolkit
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		m5aetb821cxgsmn457jigqzsu
+Parent:		rlk7gczkgi8lpdd261sx807qa
+Created at:	2026-09-10 09:34:17.011388962 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		6.551MB
+Description:	mount / from exec /bin/sh -c pnpm run build
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		z7t3thrwwjdvb9x4ggjrjpaur
+Parent:		aoqzv4ud6jmmtents2qj695mv
+Created at:	2026-09-10 09:36:13.124080127 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		6.521MB
+Description:	[backend-builder 7/8] COPY --from=frontend-builder /app/backend/internal/web/dist ./internal/web/dist
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		ihdzbnf3kg400kippborr67d3
+Parent:		e4j21i0sm83aizbc7t0tkuk3a
+Created at:	2026-09-10 09:34:08.956066708 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		5.297MB
+Description:	mount / from exec /bin/sh -c apk add --no-cache     ca-certificates     tzdata     su-exec     libpq     zstd-libs     lz4-libs     krb5-libs     libldap     libedit     && rm -rf /var/cache/apk/*
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		00wan95nitbsgr6q1rk4eqejq
+Parent:		l1x9eqwzbctxh57sroi9xhu2s
+Created at:	2026-09-10 09:34:56.90362505 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		1.055MB
+Description:	[stage-4  4/15] COPY --from=pg-client /usr/local/bin/psql /usr/local/bin/psql
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		r1hvcu7ofdlsibzbnghobkasc
+Parent:		00wan95nitbsgr6q1rk4eqejq
+Created at:	2026-09-10 09:34:57.126174883 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		875.5kB
+Description:	[stage-4  5/15] COPY --from=pg-client /usr/local/lib/libpq.so.5* /usr/local/lib/
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		l1x9eqwzbctxh57sroi9xhu2s
+Parent:		ihdzbnf3kg400kippborr67d3
+Created at:	2026-09-10 09:34:56.812755925 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		543kB
+Description:	[stage-4  3/15] COPY --from=pg-client /usr/local/bin/pg_dump /usr/local/bin/pg_dump
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		ii8rrqlvbqp55392xnbpktasx
+Parent:		krmq6lm604d7hnmafmm46zalv
+Created at:	2026-09-10 09:33:24.240196757 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		331.7kB
+Description:	[frontend-builder 4/8] COPY frontend/package.json frontend/pnpm-lock.yaml ./
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		d3hvirqsdrucrtqi2zbkc360n
+Parent:		jbfyc6l2bnraegodgao7i3rvi
+Created at:	2026-09-10 09:38:34.347424262 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		204.3kB
+Description:	[stage-4  9/15] COPY --from=backend-builder --chown=sub2api:sub2api /app/backend/resources /app/resources
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		igy45oeycwwis1irh1jmov45t
+Parent:		slbflyw7wcnwhwentdiyqifhy
+Created at:	2026-09-10 09:34:13.63870946 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		82.47kB
+Description:	[backend-builder 4/8] COPY backend/go.mod backend/go.sum ./
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		w52bri5cddqeo4971vqiyx9ct
+Parent:		w6kxcqnk86zlwp732ia32kk7q
+Created at:	2026-09-10 09:33:58.660652717 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		66.79kB
+Description:	[ldxp-toolkit-builder 4/6] COPY tools/ldxp-toolkit/*.go ./
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		34iba6jo8535wrqobnuys98s3
+Parent:		igy45oeycwwis1irh1jmov45t
+Created at:	2026-09-10 09:36:12.143483293 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		16.39kB
+Description:	mount / from exec /bin/sh -c go mod download
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		rlk7gczkgi8lpdd261sx807qa
+Parent:		9wmbbl2kv2sl9psjse3lepx92
+Created at:	2026-09-10 09:34:17.004093587 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		13.44kB
+Description:	[frontend-builder 7/8] COPY docs/legal/ /app/docs/legal/
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		s9p5zifb8xb6ufer31la1t8am
+Created at:	2026-09-10 09:29:57.701974259 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		9.059kB
+Description:	local source for dockerfile
+Usage count:	1
+Last used:	5 minutes ago
+Type:		source.local
+
+ID:		ojq4pcr2q42qd5342c93c1kd4
+Parent:		r1hvcu7ofdlsibzbnghobkasc
+Created at:	2026-09-10 09:34:57.4145408 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		3.055kB
+Description:	mount / from exec /bin/sh -c addgroup -g 1000 sub2api &&     adduser -u 1000 -G sub2api -s /bin/sh -D sub2api
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		nmgdssbnt3emh801qpsr7d0h2
+Created at:	2026-09-10 09:32:50.373015797 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		1.329kB
+Description:	local source for context
+Usage count:	1
+Last used:	5 minutes ago
+Type:		source.local
+
+ID:		ynlidcy5t52zsmiajtl4gviqe
+Parent:		mq75ljvtmabimt53akka7rh90
+Created at:	2026-09-10 09:38:34.755850387 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		778B
+Description:	[stage-4 14/15] COPY deploy/docker-entrypoint.sh /app/docker-entrypoint.sh
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		rdvzhuinlse29zhwtov45v3v8
+Parent:		ynlidcy5t52zsmiajtl4gviqe
+Created at:	2026-09-10 09:38:34.87492022 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		778B
+Description:	mount / from exec /bin/sh -c chmod +x /app/docker-entrypoint.sh
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		q90774p3cigifqedripghl1q6
+Parent:		3cgtj6aj55jc4ir5nt7xtr2ct
+Created at:	2026-09-10 09:38:34.416925095 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		168B
+Description:	[stage-4 11/15] COPY --from=ldxp-toolkit-builder --chown=root:root /out/ldxp-toolkit-release.json /app/ldxp-toolkit-assets/ldxp-toolkit-release.json
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		w6kxcqnk86zlwp732ia32kk7q
+Parent:		fa37950h9teuok87y1fhkasfi
+Created at:	2026-09-10 09:33:58.628265342 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		29B
+Description:	[ldxp-toolkit-builder 3/6] COPY tools/ldxp-toolkit/go.mod ./
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		q537xxm5d9xcd2mslmidfbfno
+Parent:		w52bri5cddqeo4971vqiyx9ct
+Created at:	2026-09-10 09:33:58.733011384 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		6B
+Description:	[ldxp-toolkit-builder 5/6] COPY backend/cmd/server/VERSION /tmp/sub2api-version
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		zdj4efo7nhjcrwhgqxekp1hln
+Parent:		v487bhdeumbvj5a0lzjz1tuz5
+Created at:	2026-09-10 09:34:55.501071383 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+Usage count:	1
+Last used:	8 minutes ago
+Type:		regular
+
+ID:		zdcdvo8o4mwwuc5rit6miv7dw
+Parent:		xii9vlmp7abzpy95v8jm0r8io
+Created at:	2026-09-10 09:33:19.883248422 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/node:24-alpine@sha256:50c8e8ca1d27439048670df5883f32d57cf81cff6233222c893fd0d9884cbd81
+Usage count:	1
+Last used:	10 minutes ago
+Type:		regular
+
+ID:		xii9vlmp7abzpy95v8jm0r8io
+Created at:	2026-09-10 09:33:19.88156813 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		0B
+Description:	pulled from docker.io/library/node:24-alpine@sha256:50c8e8ca1d27439048670df5883f32d57cf81cff6233222c893fd0d9884cbd81
+Usage count:	2
+Last used:	9 minutes ago
+Type:		regular
+
+ID:		v487bhdeumbvj5a0lzjz1tuz5
+Parent:		t3emumrlclkfdrt9togt7hbmg
+Created at:	2026-09-10 09:34:55.497224966 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+Usage count:	1
+Last used:	8 minutes ago
+Type:		regular
+
+ID:		t3emumrlclkfdrt9togt7hbmg
+Created at:	2026-09-10 09:34:55.485976966 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+Usage count:	1
+Last used:	8 minutes ago
+Type:		regular
+
+ID:		slbflyw7wcnwhwentdiyqifhy
+Parent:		oi0siwufd1cmrqwlxqozscpif
+Created at:	2026-09-10 09:34:13.622658335 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	[backend-builder 3/8] WORKDIR /app/backend
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		q5gio2lfsr6ty6so1egy1eyy1
+Created at:	2026-09-10 09:31:19.514449713 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+Usage count:	1
+Last used:	5 minutes ago
+Type:		frontend
+
+ID:		pyu71ivmvskrfitjsnit8t0zb
+Parent:		4ldka599kc6v7wj0sytxw86y8
+Created at:	2026-09-10 09:34:55.509299258 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+Usage count:	1
+Last used:	8 minutes ago
+Type:		regular
+
+ID:		ouhwutolbiwdxsen44jrci5xa
+Parent:		pyu71ivmvskrfitjsnit8t0zb
+Created at:	2026-09-10 09:34:55.513511258 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+Usage count:	1
+Last used:	8 minutes ago
+Type:		regular
+
+ID:		ool3r5l8id3ak9ttznaeqavy0
+Parent:		irh5g6tttvwsnf0cpdx36yfsp
+Created at:	2026-09-10 09:34:55.536619633 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		ocjcti7i1gp20uer6xuux1dco
+Parent:		xii9vlmp7abzpy95v8jm0r8io
+Created at:	2026-09-10 09:33:57.179217175 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc
+Usage count:	1
+Last used:	9 minutes ago
+Type:		regular
+
+ID:		o60b5ruxdxtfoom7n0x2bba3t
+Parent:		nfujclmgo609vfx5jfj5xmmgd
+Created at:	2026-09-10 09:33:57.185096425 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		nfujclmgo609vfx5jfj5xmmgd
+Parent:		ag2259z5xqznwot6y32gedl3j
+Created at:	2026-09-10 09:33:57.183466967 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc
+Usage count:	1
+Last used:	9 minutes ago
+Type:		regular
+
+ID:		ndx8v3jt0vcz0r4pj230fhosv
+Parent:		41n05e96ole8il9vv0ustsv2f
+Created at:	2026-09-10 09:33:19.886414672 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/node:24-alpine@sha256:50c8e8ca1d27439048670df5883f32d57cf81cff6233222c893fd0d9884cbd81
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		mq75ljvtmabimt53akka7rh90
+Parent:		a6h4annvems9hn6to4nnsnods
+Created at:	2026-09-10 09:38:34.742950053 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		0B
+Description:	mount / from exec /bin/sh -c mkdir -p /app/data && chown sub2api:sub2api /app/data
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		m11mbb7zdyyr6vvz4cvznrpdz
+Parent:		ndx8v3jt0vcz0r4pj230fhosv
+Created at:	2026-09-10 09:33:20.527426422 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	[frontend-builder 2/8] WORKDIR /app/frontend
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		l3ugsoquibumpvr8rf0pij4x3
+Parent:		ouhwutolbiwdxsen44jrci5xa
+Created at:	2026-09-10 09:34:55.519388799 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+Usage count:	1
+Last used:	8 minutes ago
+Type:		regular
+
+ID:		jpbr6dqy7v90kitd7ijelt2uw
+Parent:		ojq4pcr2q42qd5342c93c1kd4
+Created at:	2026-09-10 09:34:57.4884173 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		0B
+Description:	[stage-4  7/15] WORKDIR /app
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		irh5g6tttvwsnf0cpdx36yfsp
+Parent:		l3ugsoquibumpvr8rf0pij4x3
+Created at:	2026-09-10 09:34:55.528109508 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+Usage count:	1
+Last used:	8 minutes ago
+Type:		regular
+
+ID:		fa37950h9teuok87y1fhkasfi
+Parent:		o60b5ruxdxtfoom7n0x2bba3t
+Created at:	2026-09-10 09:33:58.567816926 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	[ldxp-toolkit-builder 2/6] WORKDIR /src/tools/ldxp-toolkit
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		e4j21i0sm83aizbc7t0tkuk3a
+Created at:	2026-09-10 09:33:56.3619738 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		0B
+Description:	pulled from docker.io/library/alpine:3.21@sha256:48b0309ca019d89d40f670aa1bc06e426dc0931948452e8491e3d65087abc07d
+Usage count:	1
+Last used:	5 minutes ago
+Type:		regular
+
+ID:		ag2259z5xqznwot6y32gedl3j
+Parent:		ocjcti7i1gp20uer6xuux1dco
+Created at:	2026-09-10 09:33:57.181152467 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc
+Usage count:	1
+Last used:	9 minutes ago
+Type:		regular
+
+ID:		4ldka599kc6v7wj0sytxw86y8
+Parent:		zdj4efo7nhjcrwhgqxekp1hln
+Created at:	2026-09-10 09:34:55.503428466 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+Usage count:	1
+Last used:	8 minutes ago
+Type:		regular
+
+ID:		41n05e96ole8il9vv0ustsv2f
+Parent:		zdcdvo8o4mwwuc5rit6miv7dw
+Created at:	2026-09-10 09:33:19.884954255 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	pulled from docker.io/library/node:24-alpine@sha256:50c8e8ca1d27439048670df5883f32d57cf81cff6233222c893fd0d9884cbd81
+Usage count:	1
+Last used:	10 minutes ago
+Type:		regular
+
+Shared:		150.9MB
+Private:	3.703GB
+Reclaimable:	3.854GB
+Total:		3.854GB

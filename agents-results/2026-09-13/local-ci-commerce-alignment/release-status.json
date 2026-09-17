@@ -1,0 +1,29 @@
+{
+  "updated_at": "2026-09-13T05:14:51.544634+00:00",
+  "candidate": "8365f45ea179b99e627cfbbf751b604a45ad2eee",
+  "version": "0.2.4.1",
+  "ci": "PASS",
+  "deployment": "COMPLETED",
+  "sales": "BLOCKED",
+  "blockers": [
+    "Merchant API Token required for server configuration",
+    "New goods remain in warehouse without inventory; backend product mapping not yet saved",
+    "Real small-stock delivery/redemption/refill evidence pending",
+    "Independent settlement exports pending"
+  ],
+  "rule": "CNY 5 goods -> USD 5 credit; separate databases and goods; same immutable image; no shared codes",
+  "production_access": "Admin API and post-cutover gpt-5.6-luna Responses verified",
+  "human_acceptance": "PENDING; no signed PASS",
+  "github_dev": "8365f45ea179b99e627cfbbf751b604a45ad2eee",
+  "github_main": "8365f45ea179b99e627cfbbf751b604a45ad2eee",
+  "runtime_image_and_schema_parity": "PASS",
+  "business_parity_gate": "ARTIFACT_PASS; goods mapping and sales acceptance pending",
+  "cache_cleanup": "COMPLETED",
+  "local_admin_access": "VERIFIED; key stored mode0600",
+  "merchant_login": "VERIFIED",
+  "merchant_api_access": "TOKEN_REQUIRED",
+  "products": {
+    "dev": 874783,
+    "prod": 874782
+  }
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "stage": "archive",
+    "exit_code": 0,
+    "seconds": 2.01,
+    "minimum_free_gib": 10.935
+  },
+  {
+    "stage": "extract",
+    "exit_code": 0,
+    "seconds": 2.01,
+    "minimum_free_gib": 10.879
+  },
+  {
+    "stage": "dependencies",
+    "exit_code": 0,
+    "seconds": 6.02,
+    "minimum_free_gib": 10.844
+  },
+  {
+    "stage": "frontend",
+    "exit_code": 0,
+    "seconds": 38.09,
+    "minimum_free_gib": 10.814
+  },
+  {
+    "stage": "go",
+    "exit_code": 0,
+    "seconds": 76.14,
+    "minimum_free_gib": 8.845
+  }
+]

@@ -1,0 +1,130 @@
+{
+  "status": "PASS",
+  "owned_source_file": "tools/quality/tests/test_ldxp_http_recovery.py",
+  "new_recovery_tests": 23,
+  "legacy_restock_tests": 45,
+  "legacy_probe_tests": 14,
+  "network": "New recovery tests block socket connections; merchant/backend are synthetic fixtures. Process persistence uses fresh Python subprocesses and a temporary private directory.",
+  "behavior_coverage": [
+    "fully unsold original batch readback without upload or claim",
+    "partly or fully sold cards represented only as sold_proofs and excluded from sellable stock",
+    "only missing original codes uploaded after persistent attempt latch",
+    "lost acknowledgement plus upstream acceptance resolved by readback",
+    "missing/expired/wrong merchant/wrong goods/incomplete dedup capability blocks retransmission",
+    "backend proof version and retry eligibility are mandatory",
+    "local and remote protected pause never automatically unlocked",
+    "late manual pause blocks final resume",
+    "cooldown and max attempts persist across four fresh processes",
+    "new claim clears previous batch attempt",
+    "all products including idle products preflight before any upload",
+    "all products dedup coverage and backend eligibility preflight before any upload",
+    "duplicate, cross-status, foreign-product and pagination-drift evidence rejected"
+  ],
+  "confirmed_red_to_green_defects": [
+    "foreign goods row admitted into delivery snapshot",
+    "first product uploaded before later product dedup capability check",
+    "manual pause arriving during snapshot did not block final resume",
+    "first product uploaded before later product backend retry eligibility check"
+  ],
+  "initial_test_refinement": "The first run also had two sold-count subtest failures from requiring exactly one delivery report. The final test allows repeated reads and instead verifies every report contains exact sold proofs and excludes sold cards from sellable stock.",
+  "runs": {
+    "recovery-red": {
+      "script_sha256_before": "c00a62035a810230ebbedbf4dcfee5f2b1a84e6f5ceb31ad60f713c7399d2bf8",
+      "tests_sha256": "8ef84d39a88c87d1af027a26610d347997e3475bef2f9915174b5b311842c066",
+      "started_at": 1789488721.523808,
+      "exit_code": 1,
+      "script_sha256_after": "c00a62035a810230ebbedbf4dcfee5f2b1a84e6f5ceb31ad60f713c7399d2bf8",
+      "command": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/quality/tests",
+        "-p",
+        "test_ldxp_http_recovery.py",
+        "-v"
+      ]
+    },
+    "recovery-review-2": {
+      "script_sha256_before": "12dd863ff40239e3bcda14b83e538b102753d14ac85386ea6912cb2dd4416af3",
+      "tests_sha256": "d54230031a19887ca32cac1dcfaef59d97caa9b8243fc8010e729458186aac1d",
+      "started_at": 1789488826.692302,
+      "exit_code": 1,
+      "script_sha256_after": "12dd863ff40239e3bcda14b83e538b102753d14ac85386ea6912cb2dd4416af3",
+      "command": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/quality/tests",
+        "-p",
+        "test_ldxp_http_recovery.py",
+        "-v"
+      ]
+    },
+    "recovery-green": {
+      "script_sha256_before": "3d27c25cec7ef28844c3d54ae2a905607ef5a6371e2f8ff1e0b96e6f134cc6b8",
+      "tests_sha256": "d54230031a19887ca32cac1dcfaef59d97caa9b8243fc8010e729458186aac1d",
+      "started_at": 1789488942.886341,
+      "exit_code": 0,
+      "script_sha256_after": "3d27c25cec7ef28844c3d54ae2a905607ef5a6371e2f8ff1e0b96e6f134cc6b8",
+      "command": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/quality/tests",
+        "-p",
+        "test_ldxp_http_recovery.py",
+        "-v"
+      ]
+    },
+    "legacy-default-recovery-disabled": {
+      "command": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/quality/tests",
+        "-p",
+        "test_ldxp_http_restock.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "legacy_tests_sha256": "67851a7041865cfb7318a7c92515cb669cd110e1341fdcf61e7cb0809ffcc7d9"
+    },
+    "legacy-http-probe": {
+      "command": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/quality/tests",
+        "-p",
+        "test_ldxp_http_probe.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "legacy_tests_sha256": "6e33b27af9af6667e9902d082037901de1b3cf69780fabc222ff2d6f6563279a"
+    }
+  },
+  "legacy_test_files_untouched_by_this_agent": true,
+  "git_commit_created": false,
+  "limitations": [
+    "Synthetic client workflow tests do not replace live merchant dedup verification or backend database integration tests.",
+    "Legacy 59 tests were run before the final recovery-only preflight fix; their exact logs and test-file hashes are retained, while recovery-green.json binds the final 23 tests to the recorded source hash."
+  ],
+  "test_file_sha256": "d54230031a19887ca32cac1dcfaef59d97caa9b8243fc8010e729458186aac1d",
+  "syntax_check": "PASS",
+  "trailing_whitespace_check": "PASS"
+}

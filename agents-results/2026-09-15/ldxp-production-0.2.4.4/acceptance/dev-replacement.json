@@ -1,0 +1,1 @@
+{"status": "RECREATED", "candidate_sha256": "f66e47a471b99a800ad6064fd81b9461175d59e41627b40727871821104125e2", "environment": "dev", "maintenance_id": 3, "migrations_verified": true, "image_id": "sha256:4e7bf76b9e2cccf925a2f385460acf1361fedf4b72521a6c566df0ed4fd19db5", "state": "running", "health": "healthy", "runtime_invariants_preserved": true}

@@ -1,0 +1,16 @@
+{
+  "environment": "dev",
+  "installation": {
+    "ready": true,
+    "version": "0.2.4.2",
+    "sha256": "4e1429bdd42b9af95d9941eb127dc9f27fd052882c4e1ede25ef64f799a7adf1"
+  },
+  "restock": {
+    "enabled": false,
+    "merchant_token_configured": false,
+    "code_secret_configured": false,
+    "session_verification_required": false
+  },
+  "purchase_enabled": true,
+  "purchase_url": "https://wzyp.cn/item/e8yrh4"
+}

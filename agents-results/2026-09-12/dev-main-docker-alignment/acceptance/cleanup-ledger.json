@@ -1,0 +1,18 @@
+{
+  "time": "2026-09-13T00:06:42.662686",
+  "remote_tip_confirmed": "64f459e05d2ec50ac997dd6933794a1fcccaac61",
+  "candidate_removed": true,
+  "lock_backup_removed": true,
+  "worker_exit_codes": {
+    "recharge": 0,
+    "public": 0,
+    "build": 0
+  },
+  "image_smoke_container_removed": true,
+  "retained": [
+    "Git commits on dev and main",
+    "built image and portable archive for delivery",
+    "review reports, test logs and Codex audit transcripts"
+  ],
+  "live_services_changed": false
+}

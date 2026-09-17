@@ -1,0 +1,103 @@
+{
+  "enabled": true,
+  "paused_reason": "",
+  "products": [
+    {
+      "goods_id": 874783,
+      "cny_amount": 5,
+      "usd_credit": 5,
+      "external_url": "https://wzyp.cn/item/e8yrh4",
+      "title": "5元额度",
+      "target_stock": 3,
+      "batch_size": 1,
+      "enabled": true,
+      "current_stock": 3,
+      "identity_verified": true,
+      "inventory_at": "2026-09-13T20:56:59.076748+08:00"
+    },
+    {
+      "goods_id": 875537,
+      "cny_amount": 10,
+      "usd_credit": 10,
+      "external_url": "https://wzyp.cn/item/gugvzf",
+      "title": "10元额度",
+      "target_stock": 1,
+      "batch_size": 1,
+      "enabled": true,
+      "current_stock": 1,
+      "identity_verified": true,
+      "inventory_at": "2026-09-13T20:56:59.381135+08:00"
+    },
+    {
+      "goods_id": 875562,
+      "cny_amount": 20,
+      "usd_credit": 20,
+      "external_url": "https://wzyp.cn/item/15ktqx",
+      "title": "20元额度",
+      "target_stock": 1,
+      "batch_size": 1,
+      "enabled": true,
+      "current_stock": 1,
+      "identity_verified": true,
+      "inventory_at": "2026-09-13T20:56:59.653604+08:00"
+    },
+    {
+      "goods_id": 875570,
+      "cny_amount": 50,
+      "usd_credit": 50,
+      "external_url": "https://wzyp.cn/item/8uzkw1",
+      "title": "50元额度",
+      "target_stock": 1,
+      "batch_size": 1,
+      "enabled": true,
+      "current_stock": 1,
+      "identity_verified": true,
+      "inventory_at": "2026-09-13T20:57:00.050475+08:00"
+    },
+    {
+      "goods_id": 875577,
+      "cny_amount": 100,
+      "usd_credit": 100,
+      "external_url": "https://wzyp.cn/item/goco5q",
+      "title": "100元额度",
+      "target_stock": 1,
+      "batch_size": 1,
+      "enabled": true,
+      "current_stock": 1,
+      "identity_verified": true,
+      "inventory_at": "2026-09-13T20:57:00.358969+08:00"
+    }
+  ],
+  "batches": [
+    {
+      "batch_id": "browser-ebcb291bd89e6120ca99fcaf48ba8ed4",
+      "goods_id": 875577,
+      "status": "verified",
+      "code_count": 1
+    },
+    {
+      "batch_id": "browser-4feb9ac9e985179f0519b05bd8c91f66",
+      "goods_id": 875570,
+      "status": "verified",
+      "code_count": 1
+    },
+    {
+      "batch_id": "browser-b7efe523c29f9f75f5a5bbcd0d3ca65f",
+      "goods_id": 875562,
+      "status": "verified",
+      "code_count": 1
+    },
+    {
+      "batch_id": "browser-c10d6e5a2df750d355d6b79c07a9b54f",
+      "goods_id": 875537,
+      "status": "verified",
+      "code_count": 1
+    },
+    {
+      "batch_id": "browser-e2bc38fe19f93c24ce9c56ff8da7e25d",
+      "goods_id": 874783,
+      "status": "verified",
+      "code_count": 1
+    }
+  ]
+}

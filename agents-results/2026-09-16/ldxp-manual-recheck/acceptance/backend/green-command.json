@@ -1,0 +1,31 @@
+{
+  "command": [
+    "/usr/bin/python3",
+    "-B",
+    "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/tools/quality/run_with_space_guard.py",
+    "--volume",
+    "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api",
+    "--minimum-free-gib",
+    "3",
+    "--stop-free-gib",
+    "4",
+    "--evidence",
+    "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/ldxp-manual-recheck/acceptance/backend/green-space.json",
+    "--",
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/go",
+    "test",
+    "-tags",
+    "integration",
+    "./internal/server/routes",
+    "-run",
+    "^TestLiandongBrowser(Recheck|Runtime)Integration$",
+    "-count=1",
+    "-p",
+    "1",
+    "-v"
+  ],
+  "cwd": "/Users/vsiyo/.local/share/sub2api/ldxp-verification-checkout/backend",
+  "baseline": "2478cc12a97cd3caa10aac7db51fc9b47295aae0",
+  "starting_free_bytes": 6295736320,
+  "exit_code": 0
+}

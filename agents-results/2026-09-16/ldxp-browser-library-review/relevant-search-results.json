@@ -1,0 +1,94 @@
+[
+  {
+    "query": "ldxp",
+    "total_count": 60,
+    "results": [
+      {
+        "repo": "WowJokerH/edge-ldxp-filter",
+        "url": "https://github.com/WowJokerH/edge-ldxp-filter",
+        "description": ""
+      },
+      {
+        "repo": "WowJokerH/google-ldxp-filter",
+        "url": "https://github.com/WowJokerH/google-ldxp-filter",
+        "description": "链动小铺货源增强筛选 Google Chrome 扩展"
+      },
+      {
+        "repo": "bytedoger/awesome-OpenPrice",
+        "url": "https://github.com/bytedoger/awesome-OpenPrice",
+        "description": "开源的 AI 订阅价格聚合与比价平台，收录 ChatGPT、Claude、Gemini、Grok、Cursor 等产品的官方订阅价格和卡网渠道报价，帮助用户快速查询并比较不同购买渠道。"
+      },
+      {
+        "repo": "iKeilo/LdxpM",
+        "url": "https://github.com/iKeilo/LdxpM",
+        "description": "链动小铺货物提醒"
+      },
+      {
+        "repo": "miku1130/ldxp-merchant-toolkit",
+        "url": "https://github.com/miku1130/ldxp-merchant-toolkit",
+        "description": "链动小铺商家后台增强用户脚本：货源搜索对接、库存与分类筛选、价格排序、批量编辑和文字报表"
+      },
+      {
+        "repo": "WenJiahu001/ldxp-search",
+        "url": "https://github.com/WenJiahu001/ldxp-search",
+        "description": "搜索链动小铺 纯前端"
+      },
+      {
+        "repo": "leendx/LDXPicSelector",
+        "url": "https://github.com/leendx/LDXPicSelector",
+        "description": "图片选取功能"
+      },
+      {
+        "repo": "SuperMaxine/ldxp-hide-out-of-stock",
+        "url": "https://github.com/SuperMaxine/ldxp-hide-out-of-stock",
+        "description": "链动小铺用户脚本：动态显示或隐藏缺货商品，并支持价格排序与两种页面布局。"
+      }
+    ]
+  },
+  {
+    "query": "链动小铺",
+    "total_count": 30,
+    "results": [
+      {
+        "repo": "WowJokerH/google-ldxp-filter",
+        "url": "https://github.com/WowJokerH/google-ldxp-filter",
+        "description": "链动小铺货源增强筛选 Google Chrome 扩展"
+      },
+      {
+        "repo": "maile456/source-browser",
+        "url": "https://github.com/maile456/source-browser",
+        "description": "货源查询工具，支持链动小铺商家登录、货源搜索、可售筛选、价格排序和详情查看，查找低价plus、k12货源。"
+      },
+      {
+        "repo": "iKeilo/LdxpM",
+        "url": "https://github.com/iKeilo/LdxpM",
+        "description": "链动小铺货物提醒"
+      },
+      {
+        "repo": "qion888/ldsub2api",
+        "url": "https://github.com/qion888/ldsub2api",
+        "description": "自动监控链动小铺商品价格与库存，支持一键支付，订单查询，401账号找回，导入账号到sub2api"
+      },
+      {
+        "repo": "kirk-y/ai-price-monitor",
+        "url": "https://github.com/kirk-y/ai-price-monitor",
+        "description": "用于自己添加店铺信息，监控店铺中商品价格的情况，目前仅支持链动小铺，后续有需求再新增其他平台"
+      },
+      {
+        "repo": "WenJiahu001/ldxp-search",
+        "url": "https://github.com/WenJiahu001/ldxp-search",
+        "description": "搜索链动小铺 纯前端"
+      },
+      {
+        "repo": "zeasin/qihang-erp-open",
+        "url": "https://github.com/zeasin/qihang-erp-open",
+        "description": "启航电商ERP系统是一个驱动电商企业数智化转型的电商业务中台底座。该项目采用SpringBoot4开发，除了具有ERP全链路功能之外，还正在构建以SpringAI2.0为底层的AI原生电商ERP系统，主要包括Erp Tools提供读写ERP结构化数据。系统支持多平台多店铺商品、订单、售后、库存、电子面单等电商核心业务处理，支持：淘宝、京东、拼多多、抖店、微信小店、快手、小红书等。系统拥有完善的对外开放接口，可以很方便地与企业原有其他系统进行对接。"
+      },
+      {
+        "repo": "Samge0/wzyp-view",
+        "url": "https://github.com/Samge0/wzyp-view",
+        "description": "链动小铺店铺数据洞察"
+      }
+    ]
+  }
+]

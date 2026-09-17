@@ -1,0 +1,1 @@
+The first local build used a host pnpm 11 child despite a pnpm 9 parent; retried using temporary Corepack shims. The second build typecheck was stopped by the coordinator due to memory pressure from concurrent typechecks; it is not a product failure. Final build must be rerun sequentially. No live services were stopped.

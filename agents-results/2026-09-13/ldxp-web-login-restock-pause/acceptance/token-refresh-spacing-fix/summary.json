@@ -1,0 +1,26 @@
+{
+  "status": "focused_passed",
+  "root_cause": "Future slot reservations were released after a single timer wake without rechecking actual admission; expired timers could burst together after scheduler delays.",
+  "red": {
+    "log": "red.log",
+    "exit_code": 1,
+    "failure": "ExpiredTimersRecheckActualAdmission: 0s < 50ms"
+  },
+  "green": {
+    "log": "green-focused.log",
+    "exit_code": 0,
+    "passed_test_executions": 80,
+    "unique_tests": 8,
+    "repetitions": 10
+  },
+  "scope": "Only token_refresh_service.go and token_refresh_pool_health_test.go; full CI is delegated to parent.",
+  "guarantee": "Rate gate admissions are separated by the configured interval. The operating system may still delay execution between admission and a network request.",
+  "checks": {
+    "git_diff_check": "passed",
+    "existing_5ms_burst_assertion": "unchanged"
+  },
+  "files": {
+    "backend/internal/service/token_refresh_service.go": "40540089d8ae3374fd88eb683d4bc3819124c1b7fae84b939b7b98627289426b",
+    "backend/internal/service/token_refresh_pool_health_test.go": "c349ef8464b6628268bf4aec2f4e913e7c85769d8c356bd1aa8715e05496b8f5"
+  }
+}

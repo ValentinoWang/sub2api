@@ -1,0 +1,130 @@
+[
+  {
+    "local_account_id": 6,
+    "endpoint": "rate-limit-reset-credits",
+    "method": "GET",
+    "checked_at": "2026-09-15T17:33:39.156206+00:00",
+    "status": 200,
+    "body_sha256": "776acd44323693b2ea606b79c81347dedf41e68e2799bd348c0d517d8e4ca49c",
+    "top_level_keys": [
+      "available_count",
+      "credits",
+      "history_enabled",
+      "immediate_reset_purchase_eligible",
+      "total_earned_count"
+    ],
+    "history_enabled": true,
+    "available_count": 2,
+    "total_earned_count": 0,
+    "record_count": 2,
+    "record_fields": [
+      "description",
+      "expires_at",
+      "granted_at",
+      "id",
+      "is_supported_by_plan",
+      "profile_image_url",
+      "profile_user_id",
+      "redeem_started_at",
+      "redeemed_at",
+      "reset_type",
+      "status",
+      "title"
+    ],
+    "statuses": {
+      "available": 2
+    },
+    "records": [
+      {
+        "status": "available",
+        "reset_type": "codex_rate_limits",
+        "granted_at": "2026-09-04T05:38:43.348120+00:00",
+        "expires_at": "2026-10-04T05:38:43.348120+00:00"
+      },
+      {
+        "status": "available",
+        "reset_type": "codex_rate_limits",
+        "granted_at": "2026-09-05T04:20:39.299602+00:00",
+        "expires_at": "2026-10-05T04:20:39.299602+00:00"
+      }
+    ]
+  },
+  {
+    "local_account_id": 6,
+    "endpoint": "rate-limit-reset-credits?include_history=true",
+    "method": "GET",
+    "checked_at": "2026-09-15T17:33:45.972912+00:00",
+    "status": 200,
+    "body_sha256": "776acd44323693b2ea606b79c81347dedf41e68e2799bd348c0d517d8e4ca49c",
+    "top_level_keys": [
+      "available_count",
+      "credits",
+      "history_enabled",
+      "immediate_reset_purchase_eligible",
+      "total_earned_count"
+    ],
+    "history_enabled": true,
+    "available_count": 2,
+    "total_earned_count": 0,
+    "record_count": 2,
+    "record_fields": [
+      "description",
+      "expires_at",
+      "granted_at",
+      "id",
+      "is_supported_by_plan",
+      "profile_image_url",
+      "profile_user_id",
+      "redeem_started_at",
+      "redeemed_at",
+      "reset_type",
+      "status",
+      "title"
+    ],
+    "statuses": {
+      "available": 2
+    },
+    "records": [
+      {
+        "status": "available",
+        "reset_type": "codex_rate_limits",
+        "granted_at": "2026-09-04T05:38:43.348120+00:00",
+        "expires_at": "2026-10-04T05:38:43.348120+00:00"
+      },
+      {
+        "status": "available",
+        "reset_type": "codex_rate_limits",
+        "granted_at": "2026-09-05T04:20:39.299602+00:00",
+        "expires_at": "2026-10-05T04:20:39.299602+00:00"
+      }
+    ]
+  },
+  {
+    "local_account_id": 6,
+    "endpoint": "usage",
+    "method": "GET",
+    "checked_at": "2026-09-15T17:33:48.751855+00:00",
+    "status": 200,
+    "body_sha256": "97bef1f670dcc036b86969936a3870a034ec5893879272a7eed5d50adcd2647a",
+    "top_level_keys": [
+      "account_id",
+      "additional_rate_limits",
+      "code_review_rate_limit",
+      "credits",
+      "email",
+      "model_usage",
+      "plan_type",
+      "promo",
+      "rate_limit",
+      "rate_limit_reached_type",
+      "rate_limit_reset_credits",
+      "spend_control",
+      "user_id"
+    ],
+    "reset_credit_fields": [
+      "applicable_available_count",
+      "available_count"
+    ],
+    "available_count": 2
+  }
+]

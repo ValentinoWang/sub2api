@@ -1,0 +1,48 @@
+{
+  "removed_worktrees": [
+    "chrome-restock-products-20260913",
+    "release-0.2.4.4-20260915"
+  ],
+  "removed_branches": [
+    "codex/chrome-restock-products",
+    "release/0.2.4.4"
+  ],
+  "main_and_dev": "507a820c6792782ac07f9962a06c6224ce6cba70",
+  "retained": [
+    {
+      "path": "/Users/vsiyo/.local/share/sub2api/archives/chrome-restock-products-20260915",
+      "reason": "Verified legacy evidence and extension archive",
+      "owner": "user"
+    },
+    {
+      "path": "main worktree untracked evidence and generated acceptance projections",
+      "reason": "Pre-existing user work preserved",
+      "owner": "user"
+    },
+    {
+      "path": "/Users/vsiyo/.local/share/sub2api/backups/20260915-0.2.4.4-507a820c-dev",
+      "reason": "Verified local rollback backup",
+      "owner": "user"
+    },
+    {
+      "path": "/home/ubuntu/sub2api-backups/20260915-0.2.4.4-507a820c-r2",
+      "reason": "Verified production rollback backup",
+      "owner": "user"
+    },
+    {
+      "path": "new image, old rollback images, image archive, operational evidence",
+      "reason": "Deployment provenance and rollback",
+      "owner": "user"
+    }
+  ],
+  "go_and_lint_cache_cleaned_before_image_build": true,
+  "buildkit_cleanup_pending": false,
+  "removed_buildkit_builder": "sub2api-release-20260915",
+  "host_go_module_cache_cleaned": true,
+  "removed_task_scratch": [
+    "/tmp/sub2api-release-tools-20260915",
+    "agents-results/2026-09-15/ldxp-production-0.2.4.4/__pycache__",
+    "agents-results/2026-09-15/ldxp-production-0.2.4.4/tests/__pycache__"
+  ],
+  "completed_at": 1789474128.7869399
+}

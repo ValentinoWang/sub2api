@@ -1,0 +1,57 @@
+{
+  "implementation_files": [
+    "backend/internal/repository/redis.go",
+    "backend/internal/repository/redis_test.go"
+  ],
+  "dependency": "github.com/redis/go-redis/v9 v9.22.0",
+  "isolation": "net.Pipe fake RESP server; no real Redis, TCP endpoint, credentials, or business data",
+  "command_deadline_ms": 100,
+  "socket_read_timeout_ms": 2000,
+  "red": {
+    "exit_code": 1,
+    "elapsed_ms": 2000.933958,
+    "log": "red.log",
+    "failure_class": "caller_deadline_ignored_during_socket_read"
+  },
+  "green": {
+    "exit_code": 0,
+    "elapsed_ms": 148.567,
+    "log": "green.log"
+  },
+  "checks": [
+    {
+      "kind": "repository_package",
+      "exit_code": 1,
+      "log": "red-package.log",
+      "result": "SETUP_BLOCKED_MISSING_CACHED_DEPENDENCIES",
+      "GOPROXY": "off"
+    },
+    {
+      "kind": "real_implementation_file_list",
+      "command": [
+        "/Users/vsiyo/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.0.darwin-arm64/bin/go",
+        "test",
+        "internal/repository/redis.go",
+        "internal/repository/redis_test.go",
+        "internal/repository/server_timing_redis.go",
+        "-run",
+        "^TestBuildRedisOptions",
+        "-count=1",
+        "-v"
+      ],
+      "exit_code": 0,
+      "GOPROXY": "off",
+      "GOTOOLCHAIN": "local"
+    }
+  ],
+  "limitations": [
+    "Only existing context deadlines are forwarded; no deadline is added to callers without one.",
+    "This regression proves the I/O deadline defect; it does not establish Redis as the cause of the historical 22:54 slowdown.",
+    "No runtime restart, deployment, real Redis manipulation, or global environment changes were performed.",
+    "Full repository package testing is not claimed; missing cached dependencies blocked that entry."
+  ],
+  "sha256": {
+    "backend/internal/repository/redis.go": "0ed5787658373a4956b6736ff00a6a331b7fc79e48744438301796f1a4c4198f",
+    "backend/internal/repository/redis_test.go": "e517bd7c344e267fb19ec9554ca980321e9ff3c570df2818dcea7fd78dd92f01"
+  }
+}

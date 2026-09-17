@@ -1,0 +1,27 @@
+{
+  "repo": "miku1130/ldxp-merchant-toolkit",
+  "commit": "90bdecc5c19f97ccf43a91e2617e8b56dc7919ca",
+  "default_branch": "main",
+  "license": "MIT",
+  "size_kb": 33,
+  "description": "链动小铺商家后台增强用户脚本：货源搜索对接、库存与分类筛选、价格排序、批量编辑和文字报表",
+  "tree_truncated": false,
+  "files": [
+    {
+      "path": "LICENSE",
+      "size": 1065
+    },
+    {
+      "path": "README.md",
+      "size": 1723
+    },
+    {
+      "path": "ldxp-merchant-toolkit.user.js",
+      "size": 46317
+    },
+    {
+      "path": "使用说明.md",
+      "size": 2320
+    }
+  ]
+}

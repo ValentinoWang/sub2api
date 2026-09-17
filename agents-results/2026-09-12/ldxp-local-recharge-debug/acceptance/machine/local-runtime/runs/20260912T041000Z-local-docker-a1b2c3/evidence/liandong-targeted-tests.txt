@@ -1,0 +1,4 @@
+FAIL	github.com/Wei-Shaw/sub2api/internal/service [build failed]
+FAIL	github.com/Wei-Shaw/sub2api/internal/handler/admin [build failed]
+FAIL	github.com/Wei-Shaw/sub2api/internal/server/routes [build failed]
+FAIL

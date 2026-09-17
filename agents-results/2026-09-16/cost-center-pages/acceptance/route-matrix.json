@@ -1,0 +1,57 @@
+{
+  "scope": "frontend route split",
+  "routes": [
+    {
+      "path": "/admin/cost-center",
+      "expected": "redirect to accounting"
+    },
+    {
+      "path": "/admin/cost-center/accounting",
+      "title": "成本核算",
+      "requires_admin": true,
+      "viewports": [
+        390,
+        768,
+        1440
+      ]
+    },
+    {
+      "path": "/admin/cost-center/purchases",
+      "title": "采购与录入",
+      "requires_admin": true,
+      "viewports": [
+        390,
+        768,
+        1440
+      ]
+    },
+    {
+      "path": "/admin/cost-center/ledger",
+      "title": "账本记录",
+      "requires_admin": true,
+      "viewports": [
+        390,
+        768,
+        1440
+      ]
+    },
+    {
+      "path": "/admin/cost-center/comparison",
+      "title": "三档情景比较",
+      "requires_admin": true,
+      "viewports": [
+        390,
+        768,
+        1440
+      ]
+    }
+  ],
+  "source_hashes": {
+    "frontend/src/views/admin/CostCenterView.vue": "175abc4eb134c2296df4202d5b208732cc909fd4c0d48d4cd58438ca6f94d4fd",
+    "frontend/src/views/admin/components/CostLedgerPanel.vue": "cb64f87208781ca25ea8c1acb2fe00e3f6ffb5d48870a6e1229c47a1906ad830",
+    "frontend/src/router/cost-center.ts": "4b451deefa44473eb5c5b7bd2cc35189aaebfe4ee8edb8266ed0bb344dd0074b",
+    "frontend/src/components/layout/AppSidebar.vue": "ee89e710a772651dfb6f1e9f980607900aa0150e2d49e8ed77eabaa20a412d02",
+    "frontend/src/i18n/locales/zh/common.ts": "b7370da15d79aad0482ae8467cc2fa9a70e77218f4b7dbdf8a0091d01cd8aafd",
+    "frontend/src/i18n/locales/en/common.ts": "227fcac8b2b66b489447f0a0b69954228cd67aea9746208c925bb3e55a7e9e1b"
+  }
+}

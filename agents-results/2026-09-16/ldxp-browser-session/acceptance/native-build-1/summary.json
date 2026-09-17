@@ -1,0 +1,51 @@
+{
+  "commit": "d2966e82874a32a0f4eefaa43b56b7bd252fa1c7",
+  "runtime_base_image": "sub2api-local:0.2.4.8-f0e321a7cb35",
+  "runtime_base_image_id": "sha256:6519bf8ffba025428f87dd547e1bb2b1ec91905b8f33751423dad1ed4906326f",
+  "source": "git archive of the exact commit; no working-tree sources",
+  "binary_sha256": "0ee4516a3d5ff3a787a4bcf02a651d82961d2a3adbe35a819a333fdcc303b176",
+  "status": "PASS",
+  "image": "sub2api-local:0.2.4.9-d2966e82874a",
+  "image_id": "sha256:526135c3e78627f31124507d083964177113b02fc311463461a07605ae0ac058",
+  "version": "0.2.4.9",
+  "stages": [
+    {
+      "stage": "archive",
+      "exit_code": 0,
+      "seconds": 1.0,
+      "minimum_free_gib": 6.408
+    },
+    {
+      "stage": "extract",
+      "exit_code": 0,
+      "seconds": 1.01,
+      "minimum_free_gib": 6.352
+    },
+    {
+      "stage": "dependencies",
+      "exit_code": 0,
+      "seconds": 6.03,
+      "minimum_free_gib": 6.31
+    },
+    {
+      "stage": "frontend",
+      "exit_code": 0,
+      "seconds": 46.16,
+      "minimum_free_gib": 6.261
+    },
+    {
+      "stage": "go",
+      "exit_code": 0,
+      "seconds": 20.09,
+      "minimum_free_gib": 5.899
+    },
+    {
+      "stage": "image",
+      "exit_code": 0,
+      "seconds": 4.01,
+      "minimum_free_gib": 5.899
+    }
+  ],
+  "minimum_free_gib": 5.899,
+  "required_free_gib": 3
+}

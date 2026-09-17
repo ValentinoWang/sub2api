@@ -1,0 +1,7 @@
+{
+  "health": {"status_code": 200, "body": {"status": "ok"}},
+  "ldxp_admin_status_without_auth": {"status_code": 401, "body": {"code": "UNAUTHORIZED", "message": "Authorization required"}},
+  "frontend_home": {"status_code": 200, "url": "http://127.0.0.1:4174/home"},
+  "runtime": {"service": "sub2api", "health": "healthy", "image": "sub2api-local:0.2.5-local-1b221364260b"},
+  "test_scope": "targeted Liandong behavior tests with Go vet disabled because system temporary storage was exhausted"
+}

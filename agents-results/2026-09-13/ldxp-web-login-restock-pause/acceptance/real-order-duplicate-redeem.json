@@ -1,0 +1,14 @@
+{
+  "order": "LD260913BZVIEC",
+  "redeem": {
+    "id": 4,
+    "type": "balance",
+    "value": 5,
+    "status": "used",
+    "used_by": 1,
+    "used_at": "2026-09-13T14:22:03.121869+08:00"
+  },
+  "page_message": "redeem code already used",
+  "redemption_record_unchanged": true,
+  "live_balance_can_also_change_from_api_usage": true
+}

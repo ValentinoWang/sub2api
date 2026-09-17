@@ -1,0 +1,55 @@
+{
+  "observed_at": "2026-09-16T10:25:07.210444+00:00",
+  "enabled": true,
+  "runtime": {
+    "state": "paused",
+    "reason": "verification_required",
+    "browser_verification_required": true,
+    "execution_mode": "browser",
+    "reported_at": "2026-09-16T18:24:48.98614+08:00"
+  },
+  "recheck": {
+    "id": "b2e4d26cedf9c1772c877fbe38bed675",
+    "device_id": "96631ddf70590063f027ed2498164714",
+    "requested_by": 1,
+    "state": "failed",
+    "reason": "verification_required",
+    "resumed": false,
+    "requested_at": "2026-09-16T18:22:44.716275+08:00",
+    "started_at": "2026-09-16T18:22:47.996618+08:00",
+    "finished_at": "2026-09-16T18:22:48.032856+08:00"
+  },
+  "authorization_verified_at": "2026-09-16T14:10:24.672539+08:00",
+  "products": [
+    {
+      "goods_id": 874783,
+      "current_stock": 999,
+      "target_stock": 999,
+      "inventory_at": "2026-09-16T14:10:20.280142+08:00"
+    },
+    {
+      "goods_id": 875537,
+      "current_stock": 999,
+      "target_stock": 999,
+      "inventory_at": "2026-09-16T14:10:22.103248+08:00"
+    },
+    {
+      "goods_id": 875562,
+      "current_stock": 999,
+      "target_stock": 999,
+      "inventory_at": "2026-09-16T14:10:22.909634+08:00"
+    },
+    {
+      "goods_id": 875570,
+      "current_stock": 999,
+      "target_stock": 999,
+      "inventory_at": "2026-09-16T14:10:23.68477+08:00"
+    },
+    {
+      "goods_id": 875577,
+      "current_stock": 999,
+      "target_stock": 999,
+      "inventory_at": "2026-09-16T14:10:24.684363+08:00"
+    }
+  ]
+}

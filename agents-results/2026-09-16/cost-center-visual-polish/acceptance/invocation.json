@@ -1,0 +1,30 @@
+{
+  "command": [
+    "claude",
+    "--print",
+    "--model",
+    "claude-opus-5",
+    "--effort",
+    "max",
+    "--permission-mode",
+    "acceptEdits",
+    "--tools",
+    "Read,Glob,Grep,Edit,Write",
+    "--allowedTools",
+    "Read,Glob,Grep,Edit,Write",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "{\"mcpServers\":{}}",
+    "--verbose",
+    "--output-format",
+    "stream-json"
+  ],
+  "cwd": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api",
+  "started_at": "2026-09-16T15:23:48.882251+08:00",
+  "before_hashes": {
+    "frontend/src/views/admin/CostCenterView.vue": "a82e15c8996501b3149e94f5667cf9fed074dc5288258ad3bc479b2bd10a8e22",
+    "frontend/src/views/admin/components/CostLedgerPanel.vue": "c6792f9e92a6aeeffb965040111ab096f1ffaba4c4aa214bc376dbc20e5d6fe5"
+  },
+  "exit_code": 0,
+  "finished_at": "2026-09-16T15:51:47.656580+08:00"
+}

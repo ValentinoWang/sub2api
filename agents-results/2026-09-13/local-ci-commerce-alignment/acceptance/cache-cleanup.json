@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-09-12T18:39:46.309027+00:00",
+  "go_build_and_test_cache": "cleared after final CI",
+  "golangci_lint_cache": "cleared after final CI",
+  "temporary_ci_toolchain": "removed",
+  "docker_build_cache": "cleared; 0 B remaining",
+  "preserved": [
+    "active HMR dependencies",
+    "databases and Redis",
+    "credentials",
+    "backups",
+    "release and rollback images",
+    "Codex memory and transcripts"
+  ],
+  "docker_reclaimed": "3.883 GB",
+  "available_disk": "approximately 18 GiB"
+}

@@ -1,0 +1,16 @@
+{
+  "exit_code": 0,
+  "commit": "bf519bfe85dc40185a540f06c13ab84c172e3ce5",
+  "command": [
+    "/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/quality/tests",
+    "-p",
+    "test_ldxp*.py",
+    "-v"
+  ]
+}

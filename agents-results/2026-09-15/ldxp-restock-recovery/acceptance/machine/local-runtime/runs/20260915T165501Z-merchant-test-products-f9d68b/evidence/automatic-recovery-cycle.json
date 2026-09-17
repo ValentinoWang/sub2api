@@ -1,0 +1,55 @@
+{
+  "status": "RUNNING",
+  "site": "http://127.0.0.1:8080",
+  "products": [
+    {
+      "goods_id": 874783,
+      "stock": 684,
+      "matched_stock": 684,
+      "uploaded": 0
+    },
+    {
+      "goods_id": 875537,
+      "stock": 645,
+      "matched_stock": 645,
+      "uploaded": 0
+    },
+    {
+      "goods_id": 875562,
+      "stock": 625,
+      "matched_stock": 625,
+      "uploaded": 0
+    },
+    {
+      "goods_id": 875570,
+      "stock": 625,
+      "matched_stock": 625,
+      "uploaded": 0
+    },
+    {
+      "goods_id": 875577,
+      "stock": 626,
+      "matched_stock": 626,
+      "uploaded": 0,
+      "batch_verified": true,
+      "recovered_batch_id": "browser-0b48f949fd37bdacf09bac416c8fe152",
+      "recovery_attempt": {
+        "batch_id": "browser-0b48f949fd37bdacf09bac416c8fe152",
+        "count": 1,
+        "payload_sha256": "02c7dc282ba6df1fba1828dd2f7044da85c43ea25cadd5b61de89f650b2bb97c",
+        "missing_count": 19,
+        "started_at": 1789494179.968873,
+        "next_at": 1789494239.968874,
+        "response": "received"
+      }
+    }
+  ],
+  "uploaded": 19,
+  "recovery_only": true,
+  "at_target": false,
+  "finished_at": 1789494185.882556,
+  "source_sha256": {
+    "ldxp_http_restock.py": "40edfc8139a508ce4f315dc24dcc0ee89bc34dccefe92b43da63cf77fe7f497f",
+    "ldxp_http_probe.py": "f8206b8fec1452bbc03d13471d7e83febad8ee62ab27fa2972f8b66359092411"
+  }
+}

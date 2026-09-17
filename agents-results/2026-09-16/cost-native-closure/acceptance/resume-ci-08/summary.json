@@ -1,0 +1,142 @@
+{
+  "commit": "c8e82b6c0a9a7088690d5f52b597d02f2b0283a1",
+  "tree": "be1708e71128941c1817a5c9b6e0925c092306e7",
+  "mode": "resume_exact_unchanged_commit",
+  "previous_run": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06",
+  "status": "FAIL",
+  "stages": [
+    {
+      "stage": "source-preflight",
+      "exit_code": 0,
+      "seconds": 0,
+      "log": "source-preflight.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/source-preflight.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "snapshot",
+      "exit_code": 0,
+      "seconds": 2,
+      "log": "snapshot.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/snapshot.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "toolchain",
+      "exit_code": 0,
+      "seconds": 1,
+      "log": "toolchain.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/toolchain.log",
+      "sha256": "efa08abaccaa3d66f8b765a02512b26c9b252a77a7cdbee0379f2f527b117eff"
+    },
+    {
+      "stage": "acceptance-layout",
+      "exit_code": 0,
+      "seconds": 0,
+      "log": "acceptance-layout.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/acceptance-layout.log",
+      "sha256": "e3c9d4a17c42eb36728dd96ffd3c1a5d6f29fec138a2eeb79f6edc239f7208f5"
+    },
+    {
+      "stage": "deploy-guards",
+      "exit_code": 0,
+      "seconds": 6,
+      "log": "deploy-guards.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/deploy-guards.log",
+      "sha256": "aee02db2ea367bf8e7af8790246f7d3bbfe2cca54d58feaa1e58275ea2c196ae"
+    },
+    {
+      "stage": "version-guards",
+      "exit_code": 0,
+      "seconds": 2,
+      "log": "version-guards.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/version-guards.log",
+      "sha256": "31c45393596e7969088bf7058667330001d728de10961829623212545ef1cf8b"
+    },
+    {
+      "stage": "local-ci-guards",
+      "exit_code": 0,
+      "seconds": 12,
+      "log": "local-ci-guards.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/local-ci-guards.log",
+      "sha256": "8bf89b86297db195700acc04be20e002b4389a2b11a1755823ce8fc3b08cda68"
+    },
+    {
+      "stage": "commerce-parity-guards",
+      "exit_code": 0,
+      "seconds": 2,
+      "log": "commerce-parity-guards.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/commerce-parity-guards.log",
+      "sha256": "41567830068916b7cb54cc10aef35c0ed9ab24ca25fd3b61000ce50586bfb2cf"
+    },
+    {
+      "stage": "backend-unit",
+      "exit_code": 0,
+      "seconds": 765,
+      "log": "backend-unit.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/backend-unit.log",
+      "sha256": "c6738c579f1ab9877a04987d7d7349ff3c6207e372777fe226dcbc2ee5786f74"
+    },
+    {
+      "stage": "backend-integration",
+      "exit_code": 0,
+      "seconds": 447,
+      "log": "backend-integration.log",
+      "status": "PASS",
+      "reused_from": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-16/cost-native-closure/acceptance/local-ci-06/backend-integration.log",
+      "sha256": "6268297c3caf2b5ce5e40a1cb74c025fe3ad488c08233bcfae073848ddb966fb"
+    },
+    {
+      "stage": "backend-lint",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 605.54,
+      "log": "backend-lint.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    },
+    {
+      "stage": "frozen-install",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 7.03,
+      "log": "frozen-install.log",
+      "sha256": "dc16a62ee61a31341baa44d2b616f329d3339f17763d678649faa357e4d8b848"
+    },
+    {
+      "stage": "browser-extension-tests",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 1.01,
+      "log": "browser-extension-tests.log",
+      "sha256": "bea7260c37ae1003068d056bcbc539794a3634229bc878eaf343a9ac31a8c3d9"
+    },
+    {
+      "stage": "frontend-lint",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 14.05,
+      "log": "frontend-lint.log",
+      "sha256": "53964ba9869ff26507fd5fc42860cad15cb7ea9b5633cdfa17ae9210ec5abe60"
+    },
+    {
+      "stage": "frontend-typecheck",
+      "status": "FAIL",
+      "exit_code": -6,
+      "seconds": 31.18,
+      "log": "frontend-typecheck.log",
+      "sha256": "cfba91c1c3f6fc5f339cc509f379e3b7853de2ef99618336d3911f78e40c9aaa"
+    }
+  ],
+  "exit_code": 1,
+  "error": "Stage failed: frontend-typecheck",
+  "minimum_free_gib": 4.98
+}

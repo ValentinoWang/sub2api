@@ -1,0 +1,54 @@
+{
+  "dev": {
+    "runtime_invariants_preserved": true,
+    "health": "healthy",
+    "schema_hash": "da44366b27d3aaaaaf2ce39ed0f594a036c65d94da40707aee4f5e1e2d373672",
+    "image_id": "sha256:b439ad050f7b0c8e529eddfade85657d78f133b8d497e6ac353cffabb26f7573",
+    "before_counts": {
+      "users": 2,
+      "accounts": 10,
+      "api_keys": 3,
+      "redeem_codes": 6,
+      "groups": 4,
+      "user_subscriptions": 0,
+      "payment_orders": 0,
+      "liandong_restock_batches": 0
+    },
+    "after_counts": {
+      "users": 2,
+      "accounts": 10,
+      "api_keys": 3,
+      "redeem_codes": 6,
+      "groups": 4,
+      "user_subscriptions": 0,
+      "payment_orders": 0,
+      "liandong_restock_batches": 0
+    }
+  },
+  "prod": {
+    "runtime_invariants_preserved": true,
+    "health": "healthy",
+    "schema_hash": "da44366b27d3aaaaaf2ce39ed0f594a036c65d94da40707aee4f5e1e2d373672",
+    "image_id": "sha256:b439ad050f7b0c8e529eddfade85657d78f133b8d497e6ac353cffabb26f7573",
+    "before_counts": {
+      "users": 2,
+      "accounts": 10,
+      "api_keys": 9,
+      "redeem_codes": 6,
+      "groups": 4,
+      "user_subscriptions": 0,
+      "payment_orders": 0,
+      "liandong_restock_batches": 0
+    },
+    "after_counts": {
+      "users": 2,
+      "accounts": 11,
+      "api_keys": 10,
+      "redeem_codes": 6,
+      "groups": 4,
+      "user_subscriptions": 0,
+      "payment_orders": 0,
+      "liandong_restock_batches": 0
+    }
+  }
+}

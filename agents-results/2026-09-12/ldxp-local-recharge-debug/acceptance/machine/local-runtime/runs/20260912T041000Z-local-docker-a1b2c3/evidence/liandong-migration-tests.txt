@@ -1,0 +1,1 @@
+ok  	github.com/Wei-Shaw/sub2api/migrations	3.215s [no tests to run]

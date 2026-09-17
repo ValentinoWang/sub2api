@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/go",
+    "test",
+    "-tags",
+    "integration",
+    "./internal/server/routes",
+    "-run",
+    "^TestLiandongBrowserRuntimeIntegration$",
+    "-count=1",
+    "-p",
+    "1",
+    "-v"
+  ],
+  "exit_code": 1
+}

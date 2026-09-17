@@ -1,0 +1,8 @@
+{
+  "candidate_sha256": "baeb8723205360edb2961e08343d5ed44d3d4145df109ab81af98b25d705b28c",
+  "environment": "prod",
+  "created_at": 1789474015.142025,
+  "status": "RECOVERED",
+  "maintenance_id": 21,
+  "recovery_id": 22
+}

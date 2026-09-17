@@ -1,0 +1,42 @@
+{
+  "at": 1789496379.1518059,
+  "target_stock": 999,
+  "products": {
+    "874783": {
+      "stock": 999,
+      "matched_stock": 999,
+      "pending_batch": false
+    },
+    "875537": {
+      "stock": 999,
+      "matched_stock": 999,
+      "pending_batch": false
+    },
+    "875562": {
+      "stock": 999,
+      "matched_stock": 999,
+      "pending_batch": false
+    },
+    "875570": {
+      "stock": 999,
+      "matched_stock": 999,
+      "pending_batch": false
+    },
+    "875577": {
+      "stock": 999,
+      "matched_stock": 999,
+      "pending_batch": false
+    }
+  },
+  "worker_paused": false,
+  "last_cycle_uploaded": 0,
+  "at_target": true,
+  "scheduler_loaded": true,
+  "scheduler": {
+    "state": "active",
+    "runs": "175",
+    "last exit code": "0",
+    "run interval": "60 seconds"
+  },
+  "at_target_receipt_count": 1
+}

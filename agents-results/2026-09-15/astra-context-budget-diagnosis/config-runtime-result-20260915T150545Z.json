@@ -1,0 +1,33 @@
+{
+  "checked_at": "2026-09-15T15:05:36Z",
+  "binary": "/Applications/ChatGPT.app/Contents/Resources/codex",
+  "config": "/Users/vsiyo/.codex/config.toml",
+  "ephemeral": true,
+  "model_or_catalog_overrides": false,
+  "long_input_test": false,
+  "model": "gpt-6-astra",
+  "provider": "sub2api",
+  "thread_id": "01a0a59a-228f-7e51-a64e-5d8b94acdb16",
+  "reply": "CATALOG_OK",
+  "token_usage": {
+    "total": {
+      "totalTokens": 20481,
+      "inputTokens": 20447,
+      "cachedInputTokens": 3968,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 34,
+      "reasoningOutputTokens": 24
+    },
+    "last": {
+      "totalTokens": 20481,
+      "inputTokens": 20447,
+      "cachedInputTokens": 3968,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 34,
+      "reasoningOutputTokens": 24
+    },
+    "modelContextWindow": 997500
+  },
+  "status": "completed",
+  "passed": true
+}

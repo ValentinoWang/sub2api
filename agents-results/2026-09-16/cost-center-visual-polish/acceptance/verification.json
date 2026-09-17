@@ -1,0 +1,51 @@
+{
+  "source": [
+    {
+      "file": "frontend/src/views/admin/CostCenterView.vue",
+      "sha256": "175abc4eb134c2296df4202d5b208732cc909fd4c0d48d4cd58438ca6f94d4fd",
+      "input_bindings_preserved": true,
+      "form_handlers_preserved": true,
+      "final_sha256": "175abc4eb134c2296df4202d5b208732cc909fd4c0d48d4cd58438ca6f94d4fd",
+      "unchanged_after_checks": true
+    },
+    {
+      "file": "frontend/src/views/admin/components/CostLedgerPanel.vue",
+      "sha256": "cb64f87208781ca25ea8c1acb2fe00e3f6ffb5d48870a6e1229c47a1906ad830",
+      "input_bindings_preserved": true,
+      "form_handlers_preserved": true,
+      "final_sha256": "cb64f87208781ca25ea8c1acb2fe00e3f6ffb5d48870a6e1229c47a1906ad830",
+      "unchanged_after_checks": true
+    }
+  ],
+  "vite_transforms": [
+    {
+      "url": "http://127.0.0.1:4174/src/views/admin/CostCenterView.vue",
+      "status": 200,
+      "bytes": 124222
+    },
+    {
+      "url": "http://127.0.0.1:4174/src/views/admin/CostCenterView.vue?vue&type=style&index=0&scoped=b1b8b8f2&lang.css",
+      "status": 200,
+      "bytes": 2277
+    },
+    {
+      "url": "http://127.0.0.1:4174/src/views/admin/components/CostLedgerPanel.vue",
+      "status": 200,
+      "bytes": 222943
+    },
+    {
+      "url": "http://127.0.0.1:4174/src/views/admin/components/CostLedgerPanel.vue?vue&type=style&index=0&scoped=8019ac48&lang.css",
+      "status": 200,
+      "bytes": 6689
+    }
+  ],
+  "eslint": "PASS",
+  "typescript": "PASS",
+  "browser_visual": "BLOCKED: Chrome automation unsupported Codex auth method apikey; native state stale/screenshot unavailable; in-app browser timed out",
+  "backend_integration": "NOT_RUN: frontend-only task; cost endpoints not enabled",
+  "claude_model": "claude-opus-5",
+  "effort": "max",
+  "claude_run_finished": true,
+  "out_of_scope_memory_files_removed": 3,
+  "worker_report_correction": "No missing as_of defect: backend/internal/costing/ledger_http.go defaults an omitted as_of to the current time."
+}

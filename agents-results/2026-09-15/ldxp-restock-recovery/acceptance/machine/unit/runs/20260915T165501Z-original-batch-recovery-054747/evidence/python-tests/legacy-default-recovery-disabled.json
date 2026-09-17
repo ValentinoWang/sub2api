@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/quality/tests",
+    "-p",
+    "test_ldxp_http_restock.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "legacy_tests_sha256": "67851a7041865cfb7318a7c92515cb669cd110e1341fdcf61e7cb0809ffcc7d9"
+}

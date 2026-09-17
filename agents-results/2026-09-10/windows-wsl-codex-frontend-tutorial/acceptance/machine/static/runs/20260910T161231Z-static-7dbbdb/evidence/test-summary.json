@@ -1,0 +1,34 @@
+{
+  "task_id": "windows-wsl-codex-frontend-tutorial",
+  "source_identity": "20189b7348fa74020e066241890c240e0c28cad4+worktree-7dbbdb86976a",
+  "commands": [
+    {
+      "command": "./node_modules/.bin/vitest run src/views/public/__tests__/WslCodexFrontendTutorialView.spec.ts src/views/public/__tests__/ExperiencesView.spec.ts src/__tests__/integration/experience-publication.spec.ts",
+      "result": "PASS",
+      "summary": "3 files, 11 tests passed"
+    },
+    {
+      "command": "./node_modules/.bin/vitest run --reporter=dot",
+      "result": "PASS",
+      "summary": "293 files, 2182 tests passed"
+    },
+    {
+      "command": "./node_modules/.bin/vue-tsc --noEmit",
+      "result": "PASS"
+    },
+    {
+      "command": "./node_modules/.bin/eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
+      "result": "PASS",
+      "summary": "Full frontend lint"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "notes": [
+    "The package-manager wrapper first spent its check window on external registry supply-chain metadata. The same checks were then run from the repository's installed local binaries and completed.",
+    "The clipboard failure test emitted an i18n lookup warning because the focused test does not load locale messages; both Chinese and English common.copyFailed keys exist in the application resources.",
+    "The full suite completed with exit code 0. Existing test fixtures emit expected RouterLink, i18n and simulated network-error messages to stderr."
+  ]
+}

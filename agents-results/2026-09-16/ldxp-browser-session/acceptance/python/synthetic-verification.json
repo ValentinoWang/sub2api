@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "new_synthetic_tests": 23,
+  "existing_python_regression_tests": 115,
+  "total_tests": 138,
+  "interpreter": "/usr/bin/python3 -B",
+  "owned_files_frozen": true,
+  "source_sha256": {
+    "tools/quality/tests/test_ldxp_browser_session.py": "de790c40c7d7aa36c330c4ee8b68d48f0649d794a465ee8cec560c3d0d0fedb6",
+    "tools/quality/tests/test_ldxp_browser_worker.py": "77c1113cd5596e89db9f6703e085cbb51bdababc3369248d04854f04622025f2",
+    "tools/commerce/ldxp_browser_session.py": "fba415a466343b056f7e9ff30da1c70fa5990016239c32f1f873bdce8dd6d096",
+    "tools/commerce/ldxp_browser_session.html": "7e33147b1bfcf04805597e95588a004958e51c33608e6109c9bdc405461c97b5",
+    "tools/commerce/ldxp_browser_restock.py": "dbd1d49643876dd718f3bb4fb023172770da8e4a3daa1b8fd18e04a597a46db1",
+    "tools/commerce/ldxp_http_restock.py": "552eba90fd406848a3b81dc27230fab6eeee3d08dd8fb6e56bad339e1e7ee009",
+    "tools/commerce/ldxp_http_probe.py": "2dcd70134729477459a92e216835c751aee4663f5f72dc0958bcf532710ab43f"
+  },
+  "evidence_sha256": {
+    "synthetic-initial.log": "03aab6d152af05e248bbad1fec424d31d2476686967bdd901536d95ac5b8f932",
+    "synthetic-regression.log": "6374526e63b8e3f02187c3d9f4769ff22112343a2aa3045eec7a536196052209",
+    "synthetic-final.log": "897a4bc5ac51017d6bf5f31c4fff17886abb2dfcd2dd13cfd4b445781846fc8e"
+  },
+  "verified": [
+    "Fixed merchant origin and allowlisted request routes; typed login/captcha/errors do not expose synthetic secret canaries.",
+    "Profile directory permissions, symlink rejection, exclusive lock and release, driver cleanup even after context close failure.",
+    "Repeated open uses one context/page and only brings the existing merchant page forward; API challenge navigation waits for an operator Open, and visible captcha is not reloaded.",
+    "No cookies/tokens imported from HTTP session or exported from browser; expected merchant subject is checked.",
+    "BrowserMerchant inherits exact inventory identity/double-scan behavior and 20-code upload ceiling.",
+    "Loopback helper enforces Host/Origin/nonce/content type/known action; POST queues only an Open event; no replenishment or merchant requests.",
+    "Browser merchant factory replaces HTTP factory; cached ACK creates neither merchant; tick remains active every poll.",
+    "Service installation validates old/new ownership before retirement, creates a backup, and preserves state and pause file; backup failure does not unload existing service."
+  ],
+  "defects": [
+    {
+      "issue": "Profile path that is an ordinary file and symlinked lock path escaped as untyped filesystem errors.",
+      "status": "FIXED_BY_PARENT_AND_VERIFIED",
+      "red_evidence": "synthetic-initial.log"
+    }
+  ],
+  "fixture_note": "Initial helper mock lacked newly introduced pump(); mock was adapted to the current contract. This was not a production defect.",
+  "boundaries": [
+    "Only mock Playwright, in-memory HTTP handlers, temporary directories, mock merchant/backend and mock launchctl used.",
+    "No real browser, listening server, merchant, production backend, credentials or service installation accessed in this lane.",
+    "Parent-owned test_ldxp_browser_live.py was intentionally excluded; live Chromium synthetic verification remains separate.",
+    "No implementation source edited by this lane."
+  ]
+}

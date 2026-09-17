@@ -1,0 +1,93 @@
+{
+  "checked_at": "2026-09-15T16:18:32.528923+00:00",
+  "status": "TOOLCHAIN_READY",
+  "bin_directory": "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin",
+  "versions": [
+    {
+      "command": [
+        "node",
+        "--version"
+      ],
+      "exit_code": 0,
+      "output": "v24.19.0\n"
+    },
+    {
+      "command": [
+        "pnpm",
+        "--version"
+      ],
+      "exit_code": 0,
+      "output": "9.15.9\n"
+    },
+    {
+      "command": [
+        "go",
+        "version"
+      ],
+      "exit_code": 0,
+      "output": "go version go1.27.0 darwin/arm64\n"
+    },
+    {
+      "command": [
+        "golangci-lint",
+        "version"
+      ],
+      "exit_code": 0,
+      "output": "golangci-lint has version 2.13.0 built with go1.27.0 from f838df1e on 2026-08-19T22:59:37Z\n"
+    },
+    {
+      "command": [
+        "govulncheck",
+        "-version"
+      ],
+      "exit_code": 0,
+      "output": "Go: go1.27.0\nScanner: govulncheck@v1.8.0\nDB: https://vuln.go.dev\nDB updated: 2026-09-10 14:48:42 +0000 UTC\n\n"
+    },
+    {
+      "command": [
+        "go",
+        "version",
+        "-m",
+        "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/govulncheck"
+      ],
+      "exit_code": 0,
+      "output": "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/govulncheck: go1.27.0\n\tpath\tgolang.org/x/vuln/cmd/govulncheck\n\tmod\tgolang.org/x/vuln\tv1.8.0\th1:clG4qBU6zH5VKjti8n5j8BBuYzoSha392xXMkXS351U=\n\tdep\tgolang.org/x/mod\tv0.41.0\th1:qJmnOUb4YB+FsEuM3HcWucdZASCPGhsX6uljO6pog0c=\n\tdep\tgolang.org/x/sync\tv0.23.0\th1:KameEIfc1IkluZyXWLn39Wd4tURc6GbCiISGiZm2bQk=\n\tdep\tgolang.org/x/telemetry\tv0.0.0-20260908163034-4bcc4b2ee518\th1:F5BWKvW126NXR74uxkxuc1jQHhm/rwm/J3rSiFyuRs4=\n\tdep\tgolang.org/x/tools\tv0.50.0\th1:c2ifzfcuY7L90lZ2aKd8S4K2NpASF08SZx9ZuJkHmSU=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=tracebacklabels=0,x509sslcertoverrideplatform=0\n\tbuild\tCGO_ENABLED=1\n\tbuild\tCGO_CFLAGS=\n\tbuild\tCGO_CPPFLAGS=\n\tbuild\tCGO_CXXFLAGS=\n\tbuild\tCGO_LDFLAGS=\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=darwin\n\tbuild\tGOARM64=v8.0\n"
+    }
+  ],
+  "sha256": {
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/go": "e1ef08332605c68519d897abbbc3e7bd9b76c23223f272df349826737644ebe4",
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/golangci-lint": "c1fb98c6295f113e9499b814512123378390f0f1771cdf22057f56f10714e1cc",
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/govulncheck": "e7f6595398ec3c379f074534a191e2f05c3400b630230da275f5cbb086d34172",
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/node": "57e58329e65710b6eaad6ecfd105dfa6b22ec1ab1ba22715108fac4fdce97586",
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/pnpm": "62f82e53e212104d745f0e94cc3bc0c7e75ae29cf10b6ee5bc4fdcb01b39bcce",
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/python3": "bd3901051383b109e7dfb1dd42cd3db548955ab260990f2347fdfb3adcbe1473"
+  },
+  "golangci_source": "https://github.com/golangci/golangci-lint/releases/download/v2.13.0/golangci-lint-2.13.0-darwin-arm64.tar.gz",
+  "golangci_checksums_source": "https://github.com/golangci/golangci-lint/releases/download/v2.13.0/golangci-lint-2.13.0-checksums.txt",
+  "golangci_archive_sha256": "72eae670097978e61b78a773a25c27439e35d54094fd986cee5eeeb25d7144fd",
+  "golangci_official_checksum_verified": true,
+  "govulncheck_source": "golang.org/x/vuln/cmd/govulncheck@v1.8.0",
+  "limitations": [
+    "No full CI run performed by this worker.",
+    "Docker availability and functional recovery not assessed.",
+    "No repository dependencies or global configuration modified."
+  ],
+  "python_followup": {
+    "checked_at": "2026-09-15T16:24:48.062831+00:00",
+    "version": "3.12.14 (main, Aug 25 2026, 13:50:33) [Clang 22.1.3 ]",
+    "executable": "/Users/vsiyo/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "checks": {
+      "plistlib_roundtrip": "PASS",
+      "pyexpat": "expat_2.8.3",
+      "type_union": "PASS"
+    },
+    "targeted_test": {
+      "checkout": "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-checkout",
+      "commit": "e87acb34928b915721ed6268da529052186aa0e6",
+      "command": "python3 tools/quality/tests/test_pnpm_audit_exceptions.py",
+      "passed": 11,
+      "failed": 0,
+      "exit_code": 0
+    }
+  }
+}

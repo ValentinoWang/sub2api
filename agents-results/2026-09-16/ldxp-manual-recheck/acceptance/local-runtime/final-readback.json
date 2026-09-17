@@ -1,0 +1,25 @@
+{
+  "image": "sub2api-local:0.2.4.8-f0e321a7cb35",
+  "health": "starting",
+  "recheck_supported": true,
+  "recheck": {
+    "id": "fced9885918dc9bad97a0d35e8c64a33",
+    "device_id": "96631ddf70590063f027ed2498164714",
+    "requested_by": 1,
+    "state": "failed",
+    "reason": "non_json",
+    "resumed": false,
+    "requested_at": "2026-09-16T17:22:36.011767+08:00",
+    "started_at": "2026-09-16T17:22:37.143586+08:00",
+    "finished_at": "2026-09-16T17:22:38.662824+08:00"
+  },
+  "runtime": {
+    "state": "paused",
+    "reason": "non_json",
+    "browser_verification_required": true,
+    "checked_at": "2026-09-16T09:22:38.647518Z",
+    "next_check_at": "2026-09-16T09:37:38.647776Z",
+    "reported_at": "2026-09-16T17:26:44.243844+08:00"
+  },
+  "current_free_gib": 7.142677307128906
+}

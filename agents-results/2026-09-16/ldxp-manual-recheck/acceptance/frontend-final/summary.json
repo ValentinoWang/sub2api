@@ -1,0 +1,33 @@
+[
+  {
+    "check": "tests",
+    "exit_code": 0,
+    "command": [
+      "pnpm",
+      "--dir",
+      "frontend",
+      "exec",
+      "vitest",
+      "run",
+      "src/components/admin/liandong/__tests__/ChromeRestockPanel.spec.ts",
+      "src/views/admin/__tests__/LiandongToolkitView.spec.ts",
+      "src/i18n/__tests__/localeKeyCompleteness.spec.ts"
+    ]
+  },
+  {
+    "check": "lint",
+    "exit_code": 0,
+    "command": [
+      "pnpm",
+      "--dir",
+      "frontend",
+      "exec",
+      "eslint",
+      "src/api/liandongBrowser.ts",
+      "src/components/admin/liandong/ChromeRestockPanel.vue",
+      "src/components/admin/liandong/__tests__/ChromeRestockPanel.spec.ts",
+      "src/i18n/locales/en/misc.ts",
+      "src/i18n/locales/zh/misc.ts"
+    ]
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "tests": 144,
+  "edited_file": "tools/quality/tests/test_ldxp_browser_session.py",
+  "test_file_frozen": true,
+  "source_sha256": {
+    "tools/quality/tests/test_ldxp_browser_session.py": "e2664bdbd172488d2ed389daab7eb8a8d0736089280d5026085afe16a82623cc",
+    "tools/quality/tests/test_ldxp_browser_worker.py": "77c1113cd5596e89db9f6703e085cbb51bdababc3369248d04854f04622025f2",
+    "tools/commerce/ldxp_browser_session.py": "d28ef3cf91737e45430b53a5c7b423baaf85c35bed75d6d7ce13bda5b4f0680c",
+    "tools/commerce/ldxp_browser_session.html": "304cfd9c991e15742d6c84e9457a63c1d075a28de2acc44371cbb49c19fa16f4",
+    "tools/commerce/ldxp_browser_restock.py": "dbd1d49643876dd718f3bb4fb023172770da8e4a3daa1b8fd18e04a597a46db1",
+    "tools/commerce/ldxp_http_restock.py": "552eba90fd406848a3b81dc27230fab6eeee3d08dd8fb6e56bad339e1e7ee009"
+  },
+  "red": {
+    "log": "open-window-red.log",
+    "tests": 3,
+    "failure_assertions": 3,
+    "passing_control": "actual context-close event permits a fresh persistent context"
+  },
+  "green": {
+    "log": "open-window-green.log",
+    "command": "open-window-green-command.json",
+    "tests": 144,
+    "exit_code": 0
+  },
+  "verified": [
+    "TargetClosedError and page event errors retain the live persistent context; operator open creates a replacement page without a second persistent-context launch.",
+    "Actual context close remains distinct and permits a new launch.",
+    "Headful open restores native window bounds to normal, detaches CDP, then brings the page forward; headless needs no native window control.",
+    "JSON Open submission returns 202 requested, native form returns 303 to the live-result page; neither reports success before the worker acts.",
+    "GET /status exposes failed open_state and safe reason; helper HTML visibly says opening failed without revealing error details.",
+    "Host/Origin/nonce/content type/unknown-action rejection remains strict for both HTML and JSON response branches.",
+    "Existing merchant, inventory, recovery, ACK, daemon and service-install synthetic tests remain green."
+  ],
+  "boundaries": [
+    "Only tests were edited in this subtask.",
+    "No real Chrome, profile, helper server, credentials, merchant or worker operation was performed.",
+    "Parent-owned live Chromium tests and actual worker application remain separate evidence."
+  ]
+}

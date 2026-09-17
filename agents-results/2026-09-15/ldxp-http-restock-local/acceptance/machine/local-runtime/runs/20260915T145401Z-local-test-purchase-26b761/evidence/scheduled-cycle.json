@@ -1,0 +1,58 @@
+{
+  "status": "RUNNING",
+  "site": "http://127.0.0.1:8080",
+  "products": [
+    {
+      "goods_id": 874783,
+      "stock_before": 264,
+      "stock": 284,
+      "matched_stock": 284,
+      "uploaded": 20,
+      "batch_id": "browser-a210a80296cdfb9a27a75e7d039b2acd",
+      "batch_verified": true
+    },
+    {
+      "goods_id": 875537,
+      "stock_before": 265,
+      "stock": 285,
+      "matched_stock": 285,
+      "uploaded": 20,
+      "batch_id": "browser-84dca9a747531a806abd3f2988e64533",
+      "batch_verified": true
+    },
+    {
+      "goods_id": 875562,
+      "stock_before": 245,
+      "stock": 265,
+      "matched_stock": 265,
+      "uploaded": 20,
+      "batch_id": "browser-6ee363584be5411789776d5e3bf5ebd2",
+      "batch_verified": true
+    },
+    {
+      "goods_id": 875570,
+      "stock_before": 245,
+      "stock": 265,
+      "matched_stock": 265,
+      "uploaded": 20,
+      "batch_id": "browser-f20fb4202b6bff6176d2f1c46144980a",
+      "batch_verified": true
+    },
+    {
+      "goods_id": 875577,
+      "stock_before": 245,
+      "stock": 265,
+      "matched_stock": 265,
+      "uploaded": 20,
+      "batch_id": "browser-a17bbc193dc546265a17e181a9f30f4f",
+      "batch_verified": true
+    }
+  ],
+  "uploaded": 100,
+  "at_target": false,
+  "finished_at": 1789484394.178538,
+  "source_sha256": {
+    "ldxp_http_restock.py": "3c58ed112c62739669eb54812419309e84825e592a2a19d19c85213abfbd263a",
+    "ldxp_http_probe.py": "7e8dcc411e52900d63cf4129660c7e54314093ac573e1f00c35b96f1527bb7f7"
+  }
+}

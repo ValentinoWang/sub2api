@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "-v",
+    "test_ldxp_http_probe",
+    "test_ldxp_http_recovery",
+    "test_ldxp_http_response_recovery",
+    "test_ldxp_http_restock",
+    "test_ldxp_manual_recheck",
+    "test_ldxp_runtime_notification",
+    "test_ldxp_browser_session",
+    "test_ldxp_browser_worker"
+  ],
+  "cwd": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/tools/quality/tests",
+  "exit_code": 0,
+  "excluded": "test_ldxp_browser_live is separately owned and was not run by this mock-only lane"
+}

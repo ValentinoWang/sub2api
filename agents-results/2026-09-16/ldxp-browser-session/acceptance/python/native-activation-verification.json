@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "tests": 146,
+  "owned_test_frozen": true,
+  "edited_file": "tools/quality/tests/test_ldxp_browser_session.py",
+  "source_sha256": {
+    "tools/quality/tests/test_ldxp_browser_session.py": "e715a5281aa1868b8d247658f1b44fdc457e58eadeb79c6f90584d72ca5f8b27",
+    "tools/quality/tests/test_ldxp_browser_worker.py": "77c1113cd5596e89db9f6703e085cbb51bdababc3369248d04854f04622025f2",
+    "tools/commerce/ldxp_browser_session.py": "cff4d31c1d673e077c0d9a5ae483100a8e27d39689aa1f5972379a6074d6bc37",
+    "tools/commerce/ldxp_browser_session.html": "304cfd9c991e15742d6c84e9457a63c1d075a28de2acc44371cbb49c19fa16f4"
+  },
+  "command": "native-activation-green-command.json",
+  "log": "native-activation-green.log",
+  "log_sha256": "7d79d5f0ca7258e0b5d50e5205059b1fe8fe560d17b92b9802d264ab1613ab91",
+  "verified": [
+    "Session and helper test setup mock session-module subprocess.run before any BrowserSession.open.",
+    "Headful Darwin call sequence restores CDP window bounds, detaches CDP, runs /usr/bin/open with only the dedicated profile, then brings the page forward.",
+    "Native invocation exactly uses -W -n -a /Applications/Google Chrome.app --args --user-data-dir=<dedicated profile> with captured output, timeout=10 and check=False.",
+    "Headless does not invoke the native command or CDP native window control.",
+    "Nonzero exit, OSError and TimeoutExpired become typed network_error without raw output; retry retains the original context.",
+    "Native failure and timeout propagate through actual BrowserSession plus mock helper HTTP handler to failed open_state and visible opening failure.",
+    "All prior route, CSRF, authority, inventory, ACK, profile-lock and service-install synthetic assertions remain green."
+  ],
+  "boundaries": [
+    "No GUI process, real browser, real helper listener, merchant or service was started.",
+    "Only test_ldxp_browser_session.py was edited in this continuation.",
+    "Actual macOS foreground activation remains the parent live acceptance boundary."
+  ]
+}

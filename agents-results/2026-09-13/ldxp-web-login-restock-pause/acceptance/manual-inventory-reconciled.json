@@ -1,0 +1,33 @@
+{
+  "goods_id": 874782,
+  "merchant_total_cards": 3,
+  "merchant_unsold": 2,
+  "merchant_sold": 1,
+  "local_redeem_codes": [
+    {
+      "id": 4,
+      "status": "used",
+      "value": 5,
+      "used_by": 1,
+      "used_at": "2026-09-13T14:22:03.121869+08:00"
+    },
+    {
+      "id": 5,
+      "status": "unused",
+      "value": 5,
+      "used_by": null,
+      "used_at": null
+    },
+    {
+      "id": 6,
+      "status": "unused",
+      "value": 5,
+      "used_by": null,
+      "used_at": null
+    }
+  ],
+  "quantity_delta": 0,
+  "all_three_code_identities_match": true,
+  "method": "manual_merchant_ui_hash_comparison_and_admin_code_readback",
+  "automatic_batch_identity_verified": false
+}

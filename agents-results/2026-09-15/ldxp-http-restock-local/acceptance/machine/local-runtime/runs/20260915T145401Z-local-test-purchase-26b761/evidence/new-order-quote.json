@@ -1,0 +1,15 @@
+{
+  "goods_id": 874783,
+  "goods_name": "【测试专用】5元额度",
+  "goods_status": 1,
+  "price": 5,
+  "quote": {
+    "original_amount": 5,
+    "total_amount": 5.15,
+    "fee": 0.15,
+    "fee_payer": 1,
+    "sales_style": [],
+    "coupon_available": 0,
+    "coupon_price": 0
+  }
+}
