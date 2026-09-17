@@ -1,5 +1,18 @@
 export default {
   experiences: {
+    assistantTitle: '遇到问题，交给 Codex。',
+    assistantDescription: '把指令发给 Codex，让它自动读取本站完整经验文档，检查、修复并验证你的问题。你不用找教程，也不用自己改配置。',
+    assistantStepOne: '复制下方指令',
+    assistantStepTwo: '发给 Codex，告诉它哪里出了问题',
+    assistantProblem: '也可以先写一句问题（选填）',
+    assistantPlaceholder: '例如：转为中转站后，之前的对话打不开了',
+    assistantCopy: '复制指令，交给 Codex',
+    assistantCopied: '已复制，去 Codex 粘贴',
+    assistantCoverage: '接入配置 · 旧对话 · 模型与上下文 · Windows / WSL',
+    assistantNext: '下一步：打开这台电脑上的 Codex，粘贴发送即可。',
+    assistantFallback: '自动复制未成功。完整指令已展开并选中，请手动复制后发给 Codex。',
+    assistantPrerequisite: '需要一个能读取网页并操作这台电脑的 Codex；仅在这里复制不会执行任何修改。',
+    assistantPreview: '查看完整指令',
     nav: '经验分享',
     kicker: '经验分享',
     featuredTitle: 'Codex / Claude Code 遇到问题了？',

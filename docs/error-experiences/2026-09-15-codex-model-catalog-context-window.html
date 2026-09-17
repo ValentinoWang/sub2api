@@ -1,0 +1,173 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>已切换新模型，为什么 Codex 上下文仍然偏小？ · rest2build</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f6f8f8;font:15px/1.8 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}main{width:min(960px,calc(100% - 32px));margin:30px auto}a{color:#0f766e}button,textarea{font:inherit}footer{padding:64px 24px;text-align:center}footer img{width:42px;height:42px}footer .brand{display:inline-flex;align-items:center;gap:12px;font-size:30px;font-weight:800;text-decoration:none}footer .tagline{font-size:32px;font-weight:800}footer .service{max-width:720px;margin:16px auto;color:#52615c}@media(max-width:640px){footer .tagline{font-size:27px}}
+
+.catalog-experience{min-width:0;overflow:hidden;border:1px solid #d6e0dc;border-radius:8px;background:#fff;color:#22302b;box-shadow:0 20px 42px -38px rgba(15,23,42,.45)}
+.dark .catalog-experience{border-color:#31463f;background:#0d1916;color:#eaf4ef}
+.breadcrumb{display:flex;flex-wrap:wrap;gap:7px;padding:16px 36px 0;color:#64748b;font-size:12px}.breadcrumb a{color:#0f766e}
+.intro,.content-section{padding:32px 36px}.intro{border-bottom:1px solid #dce5e1;background:#f8fbfa}.dark .intro{border-color:#31463f;background:#12231e}
+.kicker,.step{margin:0 0 10px;color:#0f766e;font:700 12px ui-monospace,monospace}.intro h1{max-width:820px;margin:0;color:#18332b;font-size:32px;line-height:1.35}.dark .intro h1{color:#f0fdfa}.subtitle{margin:12px 0 0;color:#52615c;font-size:17px}.meta{margin:14px 0 0;color:#6b7b74;font-size:12px}
+.content-section{border-bottom:1px solid #dce5e1}.content-section:last-child{border-bottom:0}.content-section h2{margin:0 0 16px;font-size:22px;line-height:1.45}.content-section h3{margin:26px 0 12px;font-size:17px}.content-section p,.content-section li{margin-bottom:12px;color:#45534e;line-height:1.8;overflow-wrap:anywhere}.dark .content-section p,.dark .content-section li{color:#d1d5db}
+.markdown-body a{color:#0f766e;text-decoration:underline;text-underline-offset:3px}.dark .markdown-body a{color:#5eead4}.markdown-body code{border-radius:4px;background:#edf3f0;padding:2px 5px;color:#164e3e;overflow-wrap:anywhere}.dark .markdown-body code{background:#17352c;color:#ccfbf1}.markdown-body pre{max-width:100%;overflow-x:auto;padding:16px;background:#edf3f0;line-height:1.7;font-size:13px}.markdown-body pre code{padding:0}.dark .markdown-body pre{background:#17352c}.markdown-body ul,.markdown-body ol{padding-left:24px;list-style:revert}.markdown-body table{display:block;width:100%;overflow-x:auto;border-collapse:collapse;font-size:13px;margin:18px 0}.markdown-body th,.markdown-body td{min-width:140px;border:1px solid #d6e0dc;padding:10px 12px;text-align:left}
+.solution{background:#f3f8f6}.dark .solution{background:#10241e}.prompt-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:24px 0 12px}.prompt-heading h3{margin:0}.copy-button{min-height:38px;flex:none;border:1px solid #0f766e;border-radius:5px;background:#0f766e;padding:8px 12px;color:#fff;font-size:13px;font-weight:700}.copy-button:hover{background:#0b5d57}.copy-button:focus-visible{outline:3px solid #38bdf8;outline-offset:3px}.prompt-field{display:block;width:100%;min-height:320px;margin-top:16px;resize:vertical;border:1px solid #b8cac1;border-radius:5px;background:#fff;padding:16px;color:#1f2937;font:13px/1.85 ui-monospace,monospace}.dark .prompt-field{border-color:#466159;background:#0f1f1b;color:#e5e7eb}.copy-status{min-height:22px;margin:8px 0 0!important;color:#0f766e!important;font-size:12px}
+.prompt-download a{color:#0f766e;text-decoration:underline;text-underline-offset:3px}.dark .prompt-download a{color:#5eead4}
+@media(max-width:640px){.breadcrumb{padding:14px 20px 0}.intro,.content-section{padding:24px 20px}.intro h1{font-size:27px}.subtitle{font-size:15px}.prompt-heading{align-items:flex-start}.prompt-field{min-height:420px;padding:12px;font-size:12px}}
+</style></head><body><main><article class="catalog-experience"><nav class="breadcrumb"><a href="index.html">返回经验分享</a></nav><header class="intro"><p class="kicker">Codex 使用错误说明 / ERR-006</p><h1>已切换新模型，为什么 Codex 上下文仍然偏小？</h1><p class="meta">适用：通过 API Key 接入的 Codex 桌面端与 CLI；脚本需要 Python 3.11+ · 更新：2026-09-15</p></header>
+<section class="content-section"><p class="step">01</p><h2>问题说明</h2><div class="markdown-body"><p>你已经在任务中选中新模型，但 Codex 显示的上下文仍明显偏小。例如使用 GPT-6 Astra，任务却报告 258,400 tokens；重新切换模型或新建任务也没有变化。模型选择正确，并不代表客户端同时更新了窗口信息。</p>
+<p>先核对<strong>切换后的任务记录</strong>，再比较网关与客户端的模型目录。本文处理“已选中模型，但能力元数据未同步”的问题；如果模型根本没有出现在选择器中，请先阅读<a href="2026-09-06-codex-astra-visibility.md">新模型不可见的排查经验</a>。</p>
+</div></section>
+<section class="content-section solution"><p class="step">02</p><h2>解决方案</h2><div class="prompt-heading"><h3>让 Codex 帮你处理</h3><button type="button" class="copy-button">复制提示词</button></div><p class="prompt-download"><a href="../../frontend/public/downloads/sync-codex-model-catalog.py" download>下载目录同步脚本（Python 3.11+）</a></p><textarea id="prompt" class="prompt-field" readonly aria-label="ERR-006 完整排障与配置提示词">我通过 Sub2API 兼容入口使用 Codex，已经选中新模型，但运行时上下文仍明显小于站点或模型文档公布的值，例如选择 GPT-6 Astra 后仍显示 258,400。请先核对当前任务，而不是拿切换前的旧模型日志解释。我希望让客户端采用自己入口提供的正确模型目录，并明确上下文与压缩预算的边界。
+
+所需资源：[下载目录同步脚本（Python 3.11+）](../../frontend/public/downloads/sync-codex-model-catalog.py)。下载这个公开脚本不需要 API Key，不附带认证头。网页中的提示词会自动带上当前站点的完整下载地址；如果拿到的是相对路径，请结合教程来源解析，不要猜域名，也不要把模型 API Base URL 当作脚本所在站点。
+
+请检查我的操作系统、实际运行的桌面内置 Codex 或终端 CLI 路径与版本、当前任务模型、运行时窗口，以及真正生效的用户配置、profile、项目和启动覆盖。只读取必要字段，不打印 API Key、认证头、完整认证文件或私有对话。保留 provider、features、memories、profiles、MCP、项目 trust 和任务历史。
+
+使用我已有配置中的实际 Base URL 和对应凭证，读取 Codex 完整目录：在 Base URL 现有路径后追加 /models，并带当前客户端 client_version；不要随意补删 /v1，不跨域跟随带凭证的重定向。普通 data/id 模型列表不能替代包含 models/slug 与能力字段的目录。只有 HTTP 200、完整 JSON、目标模型存在且窗口字段有效，才继续。比较服务端 context_window、max_context_window、effective_context_window_percent、auto_compact_token_limit 与该实际 Codex 程序的 debug models 输出；不预设所有版本的 API Key 模式都不刷新。
+
+若确认是目录未被采用，允许生成独立的本地目录候选文件。保留完整上游元数据，不手写一个模型的小 JSON，不复制他人的账号目录，也不捏造百万窗口。先用该 Codex 程序的单进程 -c model_catalog_json=候选文件 debug models 验证，成功后才备份并替换旧目录；下载、认证、解析或验证失败则保留旧文件。
+
+允许备份后，仅在当前使用的 config.toml 顶层设置 model_catalog_json 为验证过的绝对路径；该行应位于首个 [section] 之前。已有 model_context_window、压缩阈值或 profile 覆盖时，先说明它们的实际影响，不静默移除或提高预算。根据接入通道已验证的最大输入和输出预留决定预算；没有长输入证据时，不把目录数字当成压测结果，也不自动把所有模型统一设为百万窗口。不得用简化示例覆盖整份配置。
+
+可使用上面链接中的 Python 3.11+ 目录同步脚本；先查看代码与 --help，并传入实际 Codex 程序和独立输出路径。脚本只生成、验证目录，不会自动修改 config.toml，也不会发起模型生成；执行后仍需核对配置加载与预算。若系统不支持脚本或当前版本没有 debug models，保持旧配置并报告具体限制，不绕过验证。
+
+请在当前生成和工具调用结束后说明重新加载配置的步骤，不在活跃任务中重启应用。最后分别报告：网关公布值、客户端实际目录值、重新加载后的任务模型与窗口、修改和备份路径、尚未验证的长上下文行为，以及回滚方式。默认不执行收费生成或长输入压测；只有我另外授权后才进行有限验证。不要修改服务器、账号、密钥或上游路由。
+
+为了避免再次发生，在客户端升级、切换入口或分组、站点更新模型后重新比较目录，按相同流程更新静态文件。切换 provider 时必须同时检查 model_catalog_json 的对应关系，不能继续套用另一个入口的目录。</textarea><p class="copy-status" role="status" aria-live="polite"></p><div class="markdown-body"><h3>自己操作：先生成目录，再接入配置</h3>
+<p><a href="../../frontend/public/downloads/sync-codex-model-catalog.py">下载目录同步脚本（Python 3.11+）</a>。保存后先查看代码和帮助。脚本只请求模型目录、验证并保存文件，不发送生成请求，也不自动修改 config.toml。</p>
+<p>以下示例适用于 macOS / Linux / WSL 终端，输出路径按你实际的 Codex 配置目录调整：</p>
+<pre><code class="language-sh">python3 sync-codex-model-catalog.py --help
+python3 sync-codex-model-catalog.py --model gpt-6-astra --output &quot;$HOME/.codex/model-catalogs/sub2api.json&quot;
+</code></pre>
+<p>脚本默认检查终端中的 codex。<strong>桌面使用者必须添加 --codex-bin，指定当前应用实际使用的内置引擎绝对路径</strong>；更新终端 CLI 不等于更新桌面程序。Windows PowerShell 可用 <code>py -3.11</code> 启动脚本，并使用 <code>&quot;$env:USERPROFILE/.codex/model-catalogs/sub2api.json&quot;</code> 作为示例输出路径；Windows 版本尚未专项实操验证。</p>
+<p>默认读取用户目录下 .codex/config.toml 和同目录 auth.json，支持该 provider 的普通 API Key 或 env_key。使用自定义 CODEX_HOME、profile 文件或其他认证方式时，先确认实际配置，再使用 --config、--provider、--auth-file 等参数；脚本不合并所有配置层，也不支持命令获取凭证或自定义认证请求头。不要把 API Key 写进命令行或网页。</p>
+<p>脚本会读取带 client_version 的完整 /models 目录，保留原有路径前缀和所有模型能力字段；验证目标模型、候选 JSON 与实际 Codex 加载结果。成功后备份旧文件并替换，失败保留旧目录。第一次生成没有旧文件，因此不会产生目录备份。</p>
+<p>生成成功后，脚本会打印适合本机的配置行。先备份配置，核对下面第三部分的窗口预算，再把该行放在 <strong>config.toml 顶层、首个 [section] 之前</strong>；如果已有该键，只更新它，不重复添加：</p>
+<pre><code class="language-toml"># 示例路径，必须换成脚本输出的真实绝对路径
+model_catalog_json = &quot;/absolute/path/to/sub2api.json&quot;
+</code></pre>
+<p>保留其他 provider、features、memories、profiles、MCP 和 trust 设置。已有窗口或压缩覆盖时先判断其用途，不随意删除。在当前生成和工具调用结束后重新加载客户端配置，再检查实际任务。<strong>目录文件准备好，不等于活跃任务已经采用新预算。</strong></p>
+</div></section>
+<section class="content-section"><p class="step">03</p><h2>原因、验证与注意事项</h2><div class="markdown-body"><h3>直接复制基础配置，文件不存在怎么办？</h3>
+<p>接入弹窗的基础示例不预先设置 <code>model_catalog_json</code>，因此不会依赖尚未生成的 JSON 文件。它不保证新模型已出现在选择器中或已使用完整上下文；遇到这些情况时，使用本文提示词生成、验证目录，再添加配置引用。已有自定义目录配置时先检查文件，不直接删除。</p>
+<p>macOS / Linux 的 <code>~/.codex/config.toml</code> 和 Windows 的 <code>%USERPROFILE%\\.codex\\config.toml</code> 是寻找配置文件的位置提示；自定义 <code>CODEX_HOME</code> 时以实际目录为准。不要把这些缩写照抄为 TOML 中的目录文件路径。生成成功后使用真实绝对路径；Windows 可写成 <code>C:/Users/你的用户名/.codex/model-catalogs/sub2api.json</code>，避免反斜杠转义问题。macOS、Windows 原生 Codex 和 WSL 的目录各自独立，必须由实际运行的客户端验证文件可读。</p>
+<h3>模型列表有别名重复怎么办？</h3>
+<p>同步脚本默认保留上游列表，不会按名字相似或能力相同推断重复，也不再内置具体型号规则。需要隐藏已核实的别名时，在输出目录文件旁保存同名 <code>.rules.json</code> 文件，例如 <code>sub2api.json</code> 对应 <code>sub2api.rules.json</code>，以后同步自动读取。</p>
+<p>规则采用 <code>version: 1</code>，并用 <code>provider</code> 和 <code>endpoint</code> 绑定实际 provider 与不带查询参数的完整模型目录接口。<code>aliases</code> 填写已核实的“别名 → 完整型号”；<code>visibility</code> 可对模型指定 <code>list</code> 或 <code>hide</code>。别名仅在最终完整型号存在且可见时隐藏，显式显示偏好优先；支持别名链，循环与自引用会报错。日期版本不自动合并，能力或价格不同的型号应先确认是否需要分别选择。</p>
+<p>每次从最新上游目录重新计算，不把旧输出的隐藏状态当成用户偏好。删除规则条目后下次同步恢复上游状态；<code>--ignore-rules</code> 可临时忽略全部本地规则，<code>--rules</code> 可指定其他规则文件。入口不匹配或规则格式错误时保留旧目录，输出 <code>picker_decisions</code> 说明每条规则是否应用。</p>
+<p>规则格式示例（使用自己的 provider、目录接口与已核实模型 ID）：</p>
+<pre><code class="language-json">{&quot;version&quot;:1,&quot;provider&quot;:&quot;your-provider&quot;,&quot;endpoint&quot;:&quot;https://gateway.example/v1/models&quot;,&quot;aliases&quot;:{&quot;friendly-alias&quot;:&quot;canonical-model&quot;},&quot;visibility&quot;:{}}
+</code></pre>
+<h3>为什么模型切换了，窗口却没有变化？</h3>
+<p>客户端既需要模型 ID，也需要默认窗口、最大窗口等能力信息。2026-09-15 的案例中，桌面内置 Codex 0.154.0-alpha.6.2 和 CLI 0.154.0 在普通 API Key 认证下未自动刷新远端目录，使用了内置 Astra 数据。这是带版本的观测，不代表所有未来客户端都会如此。</p>
+<table>
+<thead>
+<tr>
+<th>核验对象</th>
+<th align="right">Astra 默认窗口</th>
+<th align="right">最大窗口字段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>案例中的网关响应</td>
+<td align="right">1,050,000</td>
+<td align="right">1,050,000</td>
+</tr>
+<tr>
+<td>案例中的客户端目录</td>
+<td align="right">272,000</td>
+<td align="right">872,000</td>
+</tr>
+</tbody></table>
+<p>客户端按 95% 计算可用预算，因此 272,000 × 95% = 258,400。它不是“当前任务仍在用旧模型”的证明，也不是上游拒绝超过该长度请求的证明。当前案例中，显式传入网关完整目录后，同一个程序能正确加载 1,050,000；没有进行百万上下文生成测试。</p>
+<h3>目录、使用窗口、压缩阈值分别管什么？</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>model_catalog_json</td>
+<td>启动时读取的模型能力 JSON 文件路径，本身不是窗口数值</td>
+</tr>
+<tr>
+<td>context_window / max_context_window</td>
+<td>模型目录中的默认窗口与允许的最大窗口</td>
+</tr>
+<tr>
+<td>model_context_window</td>
+<td>本地对当前模型使用窗口的覆盖；案例版本仍会按目录最大值限制</td>
+</tr>
+<tr>
+<td>model_auto_compact_token_limit</td>
+<td>自动压缩触发阈值；未设置时由客户端模型规则推导</td>
+</tr>
+</tbody></table>
+<p>总上下文、最大输入、输出预留和压缩阈值不是同一个数。官方 Astra API 文档列出总上下文 1,050,000、最大输入 922,000；具体接入通道是否支持该长度仍需验证。按 95% 算出的 997,500 不能直接当成允许发送的输入量。目录可解析、短请求成功，都不能替代长输入验收。</p>
+<p>没有长输入证据时，先保留已验证可用的使用预算，不因目录变大就自动提高阈值。在案例中的 272K 默认窗口下，客户端按 90% 推导的自动压缩阈值为 244,800；这些数字仅用于解释该版本，不是所有模型的推荐配置。后续扩大预算应在独立、有限的验证中进行，并为下一轮输入、工具返回和输出留出空间。</p>
+<h3>怎样确认修复到了哪一步？</h3>
+<ol>
+<li>用自己的凭证取得完整 models/slug 目录，目标模型和窗口字段存在。</li>
+<li>候选文件经过实际 Codex 程序验证；可比较 <code>codex debug models</code> 与 <code>codex debug models --bundled</code>。桌面端应使用其内置程序执行同类检查。</li>
+<li>重新加载后，实际目录采用目标文件；检查启动覆盖与 profile 是否仍选择其他目录。</li>
+<li>当前任务选中目标模型，报告的窗口与生效目录及本地预算相符。保留较小预算时，窗口不增大可以是预期结果。</li>
+<li>只有额外完成真实请求，才能报告生成链路通过；只有验证对应长度，才能报告长输入可用。默认的同步流程不执行这两项。</li>
+</ol>
+<h3>怎样减少再次发生？</h3>
+<p>这个 JSON 是<strong>静态快照，不会自动同步</strong>。客户端升级、模型发布或窗口变化、切换接入入口或个人分组后，重新运行脚本并核对差异、来源和获取时间。保存脚本输出中的来源、版本和摘要即可，不公开完整目录或认证文件。</p>
+<p>model_catalog_json 默认是顶层配置，可能随 provider 切换继续生效。不同入口保留不同文件，切换时同步修改目录引用，或在确认客户端支持后放进对应 profile。每次刷新只在验证成功后替换，不把失败下载保存成正式文件。</p>
+<p>回滚时恢复脚本输出的目录备份，并恢复原来的 model_catalog_json 配置行；首次启用则移除新增的这一行。保留此前窗口与压缩设置、memories 和任务历史，不删除整个 .codex。等当前任务结束后重新加载并复查。</p>
+<h3>失败时检查什么？</h3>
+<table>
+<thead>
+<tr>
+<th>结果</th>
+<th>下一步</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>401 / 403</td>
+<td>核对当前入口、对应 Key 与个人权限；不要公开 Key</td>
+</tr>
+<tr>
+<td>重定向</td>
+<td>核对本站给出的最终入口，不携带凭证跨域跟随</td>
+</tr>
+<tr>
+<td>只有 data/id 或缺少目标模型</td>
+<td>联系站点确认 Codex 完整目录、模型映射与个人访问范围</td>
+</tr>
+<tr>
+<td>Codex 拒绝候选目录或没有 debug models</td>
+<td>核对实际引擎版本和格式兼容性；保留旧文件，不绕过验证</td>
+</tr>
+<tr>
+<td>文件更新后任务仍显示旧值</td>
+<td>检查实际路径、profile、启动覆盖和配置是否重新加载</td>
+</tr>
+<tr>
+<td>模型或长请求报错</td>
+<td>保留脱敏错误、时间与请求标识；目录成功不等于生成成功</td>
+</tr>
+</tbody></table>
+<p>本站提供的是通用方法与脚本，不提供适用于所有账号的固定模型目录。案例及脚本已在 macOS 验证；Linux / WSL / Windows 未专项验证。本文针对 Codex，Claude Code 不使用这套配置。</p>
+<p>资料：<a href="https://developers.openai.com/codex/config-reference">Codex 官方配置说明</a>、<a href="https://developers.openai.com/api/docs/models/gpt-6-astra">GPT-6 Astra 模型说明</a>、<a href="https://github.com/openai/codex/blob/rust-v0.154.0/codex-rs/models-manager/src/manager.rs">案例版本目录刷新实现</a>。</p>
+</div></section></article></main>
+<footer><a class="brand" href="https://ai.rest2build.lol/"><img src="../../frontend/public/logo.svg" alt=""><span>rest2build</span></a><p class="tagline">歇一会儿，让 AI 接着干。</p><p>rest 是你的，build 交给 AI。</p><p class="service">rest2build 提供面向 Codex、Claude Code 等工具的 AI 模型接入服务。同时围绕公益 Skills、AI 使用经验分享与 Harness 工程，持续开展内容与实践。</p><a href="https://ai.rest2build.lol/">ai.rest2build.lol</a></footer>
+<script>function formatTutorialPrompt(prompt, pageUrl) {
+  const page = new URL(pageUrl)
+  if (!['http:', 'https:', 'file:'].includes(page.protocol)) {
+    throw new TypeError('Unsupported tutorial page URL')
+  }
+  // Share the page location, never authentication, referral queries or fragments.
+  page.username = ''
+  page.password = ''
+  page.search = ''
+  page.hash = ''
+  const links = /(\[[^\]\n]+\]\()((?:\/(?!\/)|\.\.?\/)[^\s)]+)(\))/g
+  const resolved = prompt.replace(links, (_match, label, path, end) =>
+    `${label}${new URL(path, page).href}${end}`)
+  return `${resolved}\n\n教程来源：${page.href}`
+}
+const promptField=document.getElementById('prompt');promptField.value=formatTutorialPrompt(promptField.value,location.href);
+document.querySelector('.copy-button').addEventListener('click',async()=>{const field=document.getElementById('prompt'),status=document.querySelector('.copy-status');try{await navigator.clipboard.writeText(field.value);status.textContent='提示词已复制';document.querySelector('.copy-button').textContent='已复制'}catch{field.focus();field.select();status.textContent='自动复制未成功，提示词已选中，可手动复制'}})</script></body></html>

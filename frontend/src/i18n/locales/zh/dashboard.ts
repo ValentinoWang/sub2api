@@ -148,10 +148,10 @@ export default {
         authModeLegacy: '兼容模式',
         authModeApiKey: 'API Key Mode',
         authModeApiKeyRestartNotice: '保存此配置后，必须完全退出并重启 Codex Desktop 或 CLI，然后新建 task，让客户端重新构建工具注册表。',
-        configTomlHint: '请确保以下内容位于 config.toml 文件的开头部分',
-        note: '请确保配置目录存在。macOS/Linux 用户可运行 mkdir -p ~/.codex 创建目录。',
+        configTomlHint: '先备份现有配置，再合并以下内容；开头几行应放在第一个 [分节] 之前。此示例不依赖额外模型文件。',
+        note: 'macOS / Linux：配置保存在 ~/.codex。Windows 使用 WSL 时，也应在 WSL 内按此方式设置；不要与 Windows 原生 Codex 共用配置路径。',
         noteWindows:
-          '按 Win+R，输入 %userprofile%\\.codex 打开配置目录。如目录不存在，请先手动创建。'
+          'Windows 原生版：按 Win+R，输入 %USERPROFILE%\\.codex 打开配置目录；不存在时先创建。使用 WSL 时请切换 macOS / Linux 选项，在 WSL 内设置。'
       },
       cliTabs: {
         claudeCode: 'Claude Code',
@@ -199,34 +199,29 @@ export default {
       deepseek: {
         description: '通过当前 DeepSeek 分组配置 Claude Code、Codex 或 OpenCode。',
         codexDescription: '使用 API Key 配置 Codex，并通过当前 DeepSeek 分组发送请求。',
-        codexConfigTomlHint: '下载下方模型目录，将两个文件保存到 Codex 配置目录后重启 Codex。',
-        codexNote: '启动 Codex 前先导出 SUB2API_API_KEY。下载的目录只包含模型元数据，不包含 API Key。'
+        codexConfigTomlHint: '先备份并合并配置。模型或上下文异常时，点击下方教程完成设置。',
+        codexNote: '启动 Codex 前先导出 SUB2API_API_KEY。本示例不引用尚未生成的模型文件。'
       },
       minimax: {
         description: '通过当前 MiniMax 分组配置 Claude Code、Codex 或 OpenCode。',
         codexDescription: '使用 API Key 配置 Codex，并通过当前 MiniMax 分组发送请求。',
-        codexConfigTomlHint: '下载下方模型目录，将两个文件保存到 Codex 配置目录后重启 Codex。',
-        codexNote: '启动 Codex 前先导出 SUB2API_API_KEY。下载的目录只包含模型元数据，不包含 API Key。'
+        codexConfigTomlHint: '先备份并合并配置。模型或上下文异常时，点击下方教程完成设置。',
+        codexNote: '启动 Codex 前先导出 SUB2API_API_KEY。本示例不引用尚未生成的模型文件。'
       },
       composite: {
         description: '通过当前 Composite 路由分组配置受支持的客户端。',
         codexDescription: '使用 API Key 和当前 Composite 分组的完整模型目录配置 Codex。',
-        codexConfigTomlHint: '下载下方模型目录，将两个文件保存到 Codex 配置目录后重启 Codex。',
+        codexConfigTomlHint: '先备份并合并配置。模型或上下文异常时，点击下方教程完成设置。',
         codexNote: '启动 Codex 前先导出 SUB2API_API_KEY；分组会根据目录中选中的模型路由请求。'
       },
       routedCodex: {
         description: '使用当前路由分组的完整模型目录配置 Codex。',
-        configTomlHint: '下载下方模型目录，将两个文件保存到 Codex 配置目录后重启 Codex。',
-        note: '启动 Codex 前先导出 SUB2API_API_KEY。下载的目录只包含模型元数据，不包含 API Key。'
+        configTomlHint: '先备份并合并配置。模型或上下文异常时，点击下方教程完成设置。',
+        note: '启动 Codex 前先导出 SUB2API_API_KEY。本示例不引用尚未生成的模型文件。'
       },
       codexModelCatalog: {
-        title: 'Codex 模型目录',
-        description: '使用当前 API Key 获取目录，并保存到 config.toml 引用的路径。',
-        fetch: '获取目录',
-        retry: '重试',
-        download: '下载目录',
-        modelsCount: '已获取 {count} 个模型',
-        errorDescription: '无法使用当前 API Key 获取模型目录。'
+        title: 'Codex 中有看不到的模型？',
+        description: '查看教程，让 Codex 按你的电脑系统完成配置，生成并验证所需文件。'
       },
       opencode: {
         title: 'OpenCode 配置示例',

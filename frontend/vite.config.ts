@@ -1,5 +1,5 @@
 import { defineConfig, loadEnv, Plugin } from 'vite'
-import { prerenderPublicPages } from './prerender.config'
+import { experienceReference, prerenderPublicPages } from './prerender.config'
 import vue from '@vitejs/plugin-vue'
 import checker from 'vite-plugin-checker'
 import { resolve } from 'path'
@@ -112,6 +112,7 @@ export default defineConfig(({ mode }) => {
         vueTsc: true
       }),
       injectPublicSettings(backendUrl),
+      experienceReference(),
       prerenderPublicPages()
     ],
   resolve: {

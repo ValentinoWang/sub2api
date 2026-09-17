@@ -90,6 +90,15 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/error-experiences/codex-model-catalog-context-window',
+    name: 'CodexModelCatalogExperience',
+    component: () => import('@/views/public/CodexModelCatalogExperienceView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: '已切换新模型，为什么 Codex 上下文仍然偏小？'
+    }
+  },
+  {
     path: '/error-experiences/gpt-6-astra-not-visible',
     name: 'ErrorExperienceGpt6AstraNotVisible',
     component: () => import('@/views/public/ErrorExperienceView.vue'),
@@ -895,7 +904,7 @@ let authInitialized = false
 const navigationLoading = useNavigationLoadingState()
 // 延迟初始化预加载，传入 router 实例
 let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
-const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/experiences', '/error-experiences/gpt-6-astra-not-visible', '/error-experiences/claude-code-bypass-permissions', '/error-experiences/claude-code-fable-5-1-not-visible', '/error-experiences/codex-session-migration', '/error-experiences/windows-11-wsl2-codex-environment']
+const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/share', '/status', '/public-benefit', '/business-invoice', '/security', '/verify', '/codex-cli', '/claude-code', '/openai-compatible-api', '/benchmarks', '/experiences', '/error-experiences/codex-model-catalog-context-window', '/error-experiences/gpt-6-astra-not-visible', '/error-experiences/claude-code-bypass-permissions', '/error-experiences/claude-code-fable-5-1-not-visible', '/error-experiences/codex-session-migration', '/error-experiences/windows-11-wsl2-codex-environment']
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
   '/auth/linuxdo/callback',

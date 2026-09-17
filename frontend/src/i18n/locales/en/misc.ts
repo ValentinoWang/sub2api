@@ -1,5 +1,18 @@
 export default {
   experiences: {
+    assistantTitle: 'Having trouble? Hand it to Codex.',
+    assistantDescription: 'Send the prompt to Codex. Let it read our complete experience document, diagnose the issue, apply a fix and verify it. No need to find guides or edit configuration yourself.',
+    assistantStepOne: 'Copy the prompt below',
+    assistantStepTwo: 'Send it to Codex and describe the issue',
+    assistantProblem: 'Describe your issue first (optional)',
+    assistantPlaceholder: 'For example: old conversations stopped working after switching providers',
+    assistantCopy: 'Copy prompt for Codex',
+    assistantCopied: 'Copied — paste into Codex',
+    assistantCoverage: 'Setup · Conversations · Models and context · Windows / WSL',
+    assistantNext: 'Next: open Codex on this computer, paste the prompt and send it.',
+    assistantFallback: 'Automatic copying failed. The full prompt is expanded and selected for manual copying.',
+    assistantPrerequisite: 'Use Codex with web and local computer access. Copying here does not make any changes.',
+    assistantPreview: 'Read the full prompt',
     nav: 'Experience Sharing',
     kicker: 'Experience Sharing',
     featuredTitle: 'Having trouble with Codex or Claude Code?',

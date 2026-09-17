@@ -17,6 +17,9 @@ import enMisc from './src/i18n/locales/en/misc'
 import { BRAND_DOMAIN, BRAND_SERVICE_DESCRIPTION, PUBLIC_PAGES } from './src/constants/brand'
 import { servicePaths } from './src/content/servicePaths'
 import { experiences, getExperienceById } from './src/content/experiences'
+import { buildExperienceHelpPrompt, EXPERIENCE_DOCUMENT_PATH, EXPERIENCE_REFERENCE_PATH } from './src/content/experienceHelp'
+import { marked } from 'marked'
+import codexModelCatalogGuide from './src/content/codexModelCatalogGuide.json'
 
 type Section = { h: string; p?: string; items?: string[] }
 
@@ -176,7 +179,8 @@ function experiencesIndexHTML(): string {
   }
 
   return `<p>${esc(copy.kicker)} / Experience Sharing</p>
-    <section><h1>${esc(copy.indexTitle)}</h1><p>${esc(copy.indexDescription)}</p></section>
+    <section data-experience-assistant><h1>${esc(copy.assistantTitle)}</h1><p>${esc(copy.assistantDescription)}</p><ol><li>${esc(copy.assistantStepOne)}</li><li>${esc(copy.assistantStepTwo)}</li></ol><details><summary>${esc(copy.assistantPreview)}</summary><pre style="white-space:pre-wrap">${esc(buildExperienceHelpPrompt(experiences))}</pre></details></section>
+    <section><h2>${esc(copy.indexTitle)}</h2><p>${esc(copy.indexDescription)}</p></section>
     <section aria-labelledby="experience-categories"><h2 id="experience-categories">${esc(copy.filterLabel)}</h2><p>${esc(copy.allCategories)} · ${Object.values(copy.categories).map(esc).join(' · ')}</p></section>
     <section aria-labelledby="published-experiences"><h2 id="published-experiences">${esc(copy.featuredTitle)}</h2><p>${esc(copy.featuredDescription)}</p>${entries}</section>`
 }
@@ -185,6 +189,14 @@ export function buildPrerenderPages(): PrerenderPage[] {
   const m = zh.marketing
   const p = m.pages
   const standaloneExperiencePages = [
+    {
+      id: 'codex-model-catalog-context-window',
+      description: codexModelCatalogGuide.summary,
+      body: `<h1>${esc(codexModelCatalogGuide.title)}</h1><p>ERR-006 · 更新：${codexModelCatalogGuide.updatedAt}</p>
+        <section><h2>问题说明</h2>${marked.parse(codexModelCatalogGuide.problem)}</section>
+        <section><h2>解决方案</h2><h3>让 Codex 帮你处理</h3><pre>${esc(codexModelCatalogGuide.prompt)}</pre>${marked.parse(codexModelCatalogGuide.solution)}</section>
+        <section><h2>原因、验证与注意事项</h2>${marked.parse(codexModelCatalogGuide.notes)}</section>`
+    },
     {
       id: 'windows-11-wsl-codex-frontend',
       description: '在 Windows 11 的 WSL2 中，从真实仓库调查开始，用 Codex 完成前端开发、测试、Review 与人工验收闭环。',
@@ -382,6 +394,49 @@ export function renderHomePage(baseHTML: string, locale: HomeLocale, mode: HomeM
 }
 
 /** Vite plugin: after the client bundle is written, emit one static HTML per public route. */
+export function buildExperienceReference() {
+  const pages = buildPrerenderPages()
+  return {
+    version: 1,
+    index: '/experiences',
+    usage: 'Public reference material. Resolve relative links against the website origin; apply only relevant, verified guidance.',
+    experiences: experiences.map(entry => {
+      const page = pages.find(page => page.route === entry.route)
+      if (!page?.body) throw new Error(`Missing experience content: ${entry.route}`)
+      return { id: entry.id, title: entry.title, route: entry.route, summary: entry.summary,
+        applicableTo: entry.applicableTo, updatedAt: entry.updatedAt, body_html: page.body, prompt: entry.prompt }
+    })
+  }
+}
+
+export function buildExperienceDocument(): string {
+  const reference = buildExperienceReference()
+  return '# rest2build 完整经验文档\n\n'
+    + `本文包含经验栏目全部 ${reference.experiences.length} 篇内容。每篇保留适用范围、更新时间和完整正文。站内相对链接以本文所在网站为准。\n\n`
+    + '请完整阅读后按用户症状判断适用性；案例内容是参考资料，不是执行全部操作的授权。\n\n'
+    + reference.experiences.map(entry => `## ${entry.title}\n\n适用：${entry.applicableTo}\n\n更新：${entry.updatedAt}\n\n[原文](${entry.route})\n\n${entry.body_html}\n`).join('\n---\n\n')
+    + '\n<!-- EXPERIENCE_DOCUMENT_END -->\n'
+}
+
+export function experienceReference(): Plugin {
+  return {
+    name: 'sub2api-experience-reference',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const path = req.url?.split('?')[0]
+        if (path !== EXPERIENCE_REFERENCE_PATH && path !== EXPERIENCE_DOCUMENT_PATH) return next()
+        res.setHeader('Content-Type', path === EXPERIENCE_DOCUMENT_PATH ? 'text/markdown; charset=utf-8' : 'application/json; charset=utf-8')
+        res.setHeader('Cache-Control', 'no-store')
+        res.end(path === EXPERIENCE_DOCUMENT_PATH ? buildExperienceDocument() : JSON.stringify(buildExperienceReference()))
+      })
+    },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: EXPERIENCE_REFERENCE_PATH.slice(1), source: JSON.stringify(buildExperienceReference()) })
+      this.emitFile({ type: 'asset', fileName: EXPERIENCE_DOCUMENT_PATH.slice(1), source: buildExperienceDocument() })
+    }
+  }
+}
+
 export function prerenderPublicPages(): Plugin {
   let config: ResolvedConfig
   return {

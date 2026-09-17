@@ -165,6 +165,9 @@ docs/error-experiences/*
 !docs/error-experiences/2026-09-13-claude-code-bypass-permissions.html
 !docs/error-experiences/2026-09-13-claude-code-fable-5-1-not-visible.md
 !docs/error-experiences/2026-09-13-claude-code-fable-5-1-not-visible.html
+!docs/error-experiences/2026-09-15-codex-model-catalog-context-window.md
+!docs/error-experiences/2026-09-15-codex-model-catalog-context-window.html
+!docs/error-experiences/codex-catalog-picker-rules.md
 !docs/legal/
 !docs/legal/*.md
 !docs/screenshots/

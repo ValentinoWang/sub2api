@@ -1,7 +1,8 @@
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import ExperiencesView from '../ExperiencesView.vue'
+import { experiences } from '@/content/experiences'
 
 const PublicPageLayout = {
   template: '<div><slot /><footer><slot name="footer" /></footer></div>'
@@ -13,6 +14,36 @@ vi.mock('vue-i18n', async (importOriginal) => ({
 }))
 
 describe('ExperiencesView', () => {
+  afterEach(() => vi.restoreAllMocks())
+
+  it('copies a self-contained prompt for every experience and supports manual fallback', async () => {
+    const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/experiences', component: ExperiencesView }] })
+    await router.push('/experiences?category=conversationContinuity')
+    await router.isReady()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
+    const wrapper = mount(ExperiencesView, { global: { plugins: [router], stubs: { PublicPageLayout, RouterLink: RouterLinkStub } } })
+    expect(wrapper.find('[data-experience-assistant]').exists()).toBe(true)
+    await wrapper.get('.assistant-problem').setValue('模型列表中找不到我的模型')
+    await wrapper.get('.assistant-copy').trigger('click')
+    await flushPromises()
+    const field = wrapper.get<HTMLTextAreaElement>('.assistant-details textarea').element
+    expect(writeText).toHaveBeenCalledWith(field.value)
+    expect(field.value).toContain('我的问题：模型列表中找不到我的模型')
+    expect(field.value).toContain(`${window.location.origin}/experience-reference.json`)
+    expect(field.value).toContain(`${window.location.origin}/experience-reference.md`)
+    for (const entry of experiences) expect(field.value).toContain(`${window.location.origin}${entry.route}`)
+    expect(wrapper.get('[role="status"]').text()).toBe('experiences.assistantNext')
+    await wrapper.get('.assistant-problem').setValue('')
+    expect(wrapper.get('[role="status"]').text()).toBe('experiences.assistantPrerequisite')
+    writeText.mockRejectedValueOnce(new Error('denied'))
+    const select = vi.spyOn(field, 'select')
+    await wrapper.get('.assistant-copy').trigger('click')
+    await flushPromises()
+    expect(wrapper.get<HTMLDetailsElement>('.assistant-details').element.open).toBe(true)
+    expect(select).toHaveBeenCalledOnce()
+    expect(wrapper.get('[role="status"]').text()).toBe('experiences.assistantFallback')
+  })
   it('renders guide entries, keeps their public routes, and persists a topic filter in the route', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
@@ -29,7 +60,7 @@ describe('ExperiencesView', () => {
     })
 
     expect(wrapper.text()).toContain('中转站已有新模型，为什么 Codex 看不到？')
-    expect(wrapper.findAll('.experience-card')).toHaveLength(9)
+    expect(wrapper.findAll('.experience-card')).toHaveLength(10)
     expect(wrapper.findAll('.experience-filter')).toHaveLength(5)
     expect(wrapper.get('[data-experience-id="codex-cli"]').find('.experience-card-topic').text()).toBe('接入主题')
     expect(wrapper.get('[data-experience-id="codex-cli"]').find('.experience-card-audience-label').text()).toBe('experiences.appliesTo')

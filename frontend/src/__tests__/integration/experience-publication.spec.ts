@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildPrerenderPages, renderHomePage } from '../../../prerender.config'
+import { buildExperienceDocument, buildExperienceReference, buildPrerenderPages, experienceReference, renderHomePage } from '../../../prerender.config'
 import { experiences, getExperienceById } from '@/content/experiences'
 import router from '@/router'
 
@@ -31,7 +31,8 @@ describe('public experience publication', () => {
     const index = buildPrerenderPages().find((page) => page.route === '/experiences')
 
     expect(index).toBeDefined()
-    expect(index?.body).toContain('<h1>AI 使用经验分享</h1>')
+    expect(index?.body).toContain('<h1>遇到问题，交给 Codex。</h1>')
+    expect(index?.body).toContain('<h2>AI 使用经验分享</h2>')
     expect(index?.body).toContain('收录面向真实使用场景的排障与实践经验。')
     for (const experience of experiences) {
       expect(index?.body).toContain(experience.title)
@@ -102,11 +103,43 @@ describe('public experience publication', () => {
     }
   })
 
+  it('publishes the catalog configuration guide with its prompt and script', () => {
+    const experience = getExperienceById('codex-model-catalog-context-window')!
+    const article = buildPrerenderPages().find((page) => page.route === experience.route)!
+    expect(article.body.indexOf('<h2>问题说明</h2>')).toBeLessThan(article.body.indexOf('<h2>解决方案</h2>'))
+    expect(article.body).toContain(experience.prompt)
+    expect(article.body).toContain('/downloads/sync-codex-model-catalog.py')
+    expect(article.body).toContain('静态快照，不会自动同步')
+    expect(article.body).not.toContain('/Users/vsiyo')
+  })
+
   it('pre-renders every experience route exactly once', () => {
     const pages = buildPrerenderPages()
 
     for (const experience of experiences) {
       expect(pages.filter((page) => page.route === experience.route)).toHaveLength(1)
     }
+  })
+
+  it('publishes the full content of every listed experience in the build reference asset', () => {
+    const bundle = buildExperienceReference()
+    const document = buildExperienceDocument()
+    expect(bundle.experiences).toHaveLength(experiences.length)
+    for (const item of bundle.experiences) {
+      const page = buildPrerenderPages().find(page => page.route === item.route)!
+      expect(item.body_html).toBe(page.body)
+      expect(document).toContain(item.body_html)
+      expect(document).toContain(`[原文](${item.route})`)
+      expect(item.body_html.length).toBeGreaterThan(200)
+    }
+    const emitted: unknown[] = []
+    const plugin = experienceReference()
+    const hook = plugin.generateBundle as Function
+    hook.call({ emitFile: (asset: unknown) => emitted.push(asset) })
+    expect(document.trimEnd().endsWith('<!-- EXPERIENCE_DOCUMENT_END -->')).toBe(true)
+    expect(emitted).toEqual([
+      { type: 'asset', fileName: 'experience-reference.json', source: JSON.stringify(bundle) },
+      { type: 'asset', fileName: 'experience-reference.md', source: document }
+    ])
   })
 })
