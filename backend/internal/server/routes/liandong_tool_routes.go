@@ -29,6 +29,9 @@ func RegisterLiandongToolRoutes(
 	device.POST("/batches/:id/start", h.BrowserStart)
 	device.POST("/batches/:id/result", h.BrowserResult)
 	device.POST("/heartbeat", h.BrowserHeartbeat)
+	device.POST("/runtime", h.BrowserRuntime)
+	device.POST("/recheck/claim", h.BrowserClaimRecheck)
+	device.POST("/recheck/:id/result", h.BrowserFinishRecheck)
 	device.POST("/resume", h.BrowserDeviceResume)
 	ldxp := v1.Group("/admin/tools/ldxp")
 	ldxp.Use(gin.HandlerFunc(adminAuth))
@@ -43,6 +46,7 @@ func RegisterLiandongToolRoutes(
 		browser.PUT("/config", h.BrowserSaveConfig)
 		browser.POST("/devices", h.BrowserCreateDevice)
 		browser.DELETE("/devices/:id", h.BrowserRevokeDevice)
+		browser.POST("/devices/:id/recheck", h.BrowserRequestRecheck)
 		browser.POST("/resume", h.BrowserAdminResume)
 	}
 }

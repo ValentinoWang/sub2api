@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>小铺脚本验证</title>
+<style>body{margin:0;background:#f4f6f8;color:#202b3a;font:16px/1.7 system-ui,sans-serif}main{max-width:540px;margin:8vh auto;padding:32px;background:white;border:1px solid #dde3eb;border-radius:16px}h1{margin:0;font-size:26px}p{color:#586778}label{display:block;margin-top:18px;font-weight:600}input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #bfc9d6;border-radius:8px;font:inherit}button{margin-top:24px;padding:12px 20px;background:#225bd6;color:white;border:0;border-radius:8px;font:inherit;cursor:pointer}.note{font-size:14px}.secondary{background:#edf2fc;color:#225bd6}hr{border:0;border-top:1px solid #e7ebf0;margin-top:28px}@media(max-width:600px){main{margin:20px;padding:24px}}</style></head>
+<body><main><h1>小铺脚本验证</h1><p>登录一次，验证本机脚本能否读取小铺商品和测试库存。</p>
+<form method="post" action="/login"><input type="hidden" name="nonce" value="{{NONCE}}"><label for="username">小铺商户账号</label><input id="username" name="username" autocomplete="username" required><label for="password">商户密码</label><input id="password" name="password" type="password" autocomplete="off" required><button>登录并验证</button></form>
+<p class="note">账号密码仅用于向链动小铺验证登录，密码不会保存。登录凭据保存在本机受限文件中，用于后续脚本验证。</p><p class="note">本次只读取商品和库存，不生成或上传兑换码，不修改生产站。</p>
+<hr><form method="post" action="/verify"><input type="hidden" name="nonce" value="{{NONCE}}"><button class="secondary">使用已保存的登录态再次验证</button></form></main></body></html>

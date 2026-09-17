@@ -25,7 +25,7 @@ describe('Liandong single restocking screen', () => {
   it('shows unavailable browser backend without a legacy fallback or false enabled state', async () => {
     api.getStatus.mockRejectedValueOnce(new Error('unavailable'))
     const wrapper = render(); await flushPromises()
-    expect(wrapper.get('[role="alert"]').text()).toContain('浏览器补货状态暂不可用')
+    expect(wrapper.get('[role="alert"]').text()).toContain('补货状态暂不可用')
     expect(wrapper.find('[data-testid="chrome-toggle"]').exists()).toBe(false)
     expect(api.saveConfig).not.toHaveBeenCalled()
     wrapper.unmount()

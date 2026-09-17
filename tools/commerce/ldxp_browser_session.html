@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小铺补货专用浏览器</title>
+<style>body{font:16px/1.7 system-ui,sans-serif;margin:40px auto;padding:0 24px;max-width:640px;color:#17221f;background:#f6f8f7}main{background:white;padding:28px;border:1px solid #dbe4df;border-radius:12px}h1{font-size:24px;margin:0 0 12px}button,a{display:inline-block;padding:10px 16px;border-radius:8px}button{background:#087f68;color:white;border:0;font:inherit;cursor:pointer}a{color:#087f68}small{color:#5c6c64}</style>
+<main><h1>小铺补货专用浏览器</h1><p id="status" role="status">{{STATE}}</p>
+<p>请在补货专用窗口中登录联动小铺并完成真人验证。之后补货仍使用这个窗口的会话。</p>
+<form id="open-form" method="post" action="/open"><input type="hidden" name="nonce" value="{{NONCE}}"><button id="open-button">打开补货专用窗口</button></form>
+<ol><li>点击上方按钮，切换到补货专用窗口。</li><li>在该窗口完成商户登录或网页验证。</li><li>返回管理页，点击“我已完成验证，立即检查”。</li></ol>
+<a href="http://127.0.0.1:4174/admin/tools/ldxp">返回本地补货管理页</a>
+<p><small>只有授权和库存核对通过后才恢复补货。请保持专用窗口开启；本页面不会索取账号密码或兑换码。</small></p></main>
+<script nonce="{{NONCE}}">
+const statusLine = document.getElementById('status');
+const button = document.getElementById('open-button');
+async function refresh() {
+  try {
+    const response = await fetch('/status', {cache:'no-store'});
+    if (!response.ok) throw new Error();
+    const value = await response.json();
+    button.disabled = value.open_pending;
+    statusLine.textContent = value.open_pending ? '正在打开专用窗口，请稍候…'
+      : value.open_state === 'failed' ? '打开失败，请点击重试。补货仍保持暂停。'
+      : value.window_open ? '专用窗口已就绪，请在该窗口完成登录或验证。'
+      : '专用窗口尚未打开，请点击下方按钮。';
+  } catch { button.disabled = false; statusLine.textContent = '无法联系本机执行器，请确认补货服务正在运行。'; }
+}
+document.getElementById('open-form').addEventListener('submit', async event => {
+  event.preventDefault(); button.disabled = true;
+  statusLine.textContent = '正在请求打开窗口…';
+  try {
+    const response = await fetch('/open', {method:'POST', headers:{'Accept':'application/json'},
+      body:new URLSearchParams(new FormData(event.currentTarget))});
+    if (!response.ok) throw new Error();
+    await refresh();
+  } catch { button.disabled = false; statusLine.textContent = '打开请求未成功，请重试。'; }
+});
+setInterval(refresh, 1000); refresh();
+</script></html>
