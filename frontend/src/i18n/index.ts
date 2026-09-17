@@ -42,6 +42,17 @@ export const i18n = createI18n({
 
 const loadedLocales = new Set<LocaleCode>()
 
+// Lazy-loaded messages live in Vue I18n after import; replace them on HMR too.
+if (import.meta.hot) {
+  import.meta.hot.accept(['./locales/en', './locales/zh'], ([en, zh]) => {
+    for (const [locale, module] of [['en', en], ['zh', zh]] as const) {
+      if (module && loadedLocales.has(locale)) {
+        i18n.global.setLocaleMessage(locale, module.default)
+      }
+    }
+  })
+}
+
 export async function loadLocaleMessages(locale: LocaleCode): Promise<void> {
   if (loadedLocales.has(locale)) {
     return
