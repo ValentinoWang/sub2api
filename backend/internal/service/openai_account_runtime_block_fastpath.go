@@ -480,7 +480,25 @@ func (s *OpenAIGatewayService) isOpenAIAccountModelRuntimeBlocked(account *Accou
 // visible to every scheduler snapshot, and also cover persistence failures.
 // Only the explicit state-clear path may remove one before its deadline.
 func (s *OpenAIGatewayService) isOpenAIAccountRequestRuntimeBlocked(account *Account, requestedModel string) bool {
+<<<<<<< HEAD
 	return s != nil && (s.isOpenAIAccountRuntimeBlocked(account) || s.isOpenAIAccountModelRuntimeBlocked(account, requestedModel))
+=======
+	if s == nil {
+		return false
+	}
+	canonicalModel := canonicalOpenAIAccountSchedulingModel(account, requestedModel)
+	if s.openAICodexTicketBlocksAccount(account, canonicalModel) {
+		return true
+	}
+	snapshot := s.peekOpenAIAccountRuntimeBlock(account)
+	if snapshot.blocked {
+		if accountPersistedSchedulingCooldownActive(account) {
+			return true
+		}
+		s.clearOpenAIAccountRuntimeBlockIfUnchanged(account.ID, snapshot)
+	}
+	return s.isOpenAIAccountModelRuntimeBlocked(account, requestedModel)
+>>>>>>> bc47e212b (feat(openai): harvest and inject 292 x-codex-turn-state tickets for one hour)
 }
 
 func (s *OpenAIGatewayService) recordOpenAIOAuth429() {
