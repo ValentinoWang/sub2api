@@ -79,6 +79,13 @@ describe('custom page open button', () => {
     vi.unstubAllGlobals()
   })
 
+  it('hides the open button when configured while keeping the embedded page visible', () => {
+    Object.assign(appStore.cachedPublicSettings.custom_menu_items[0], { hide_open_button: true })
+    const wrapper = mountPage()
+    expect(wrapper.find('.custom-open-fab').exists()).toBe(false)
+    expect(wrapper.get('iframe').attributes('src')).toContain('https://example.com/docs')
+  })
+
   it('preserves the embedded URL, secure link attributes, and normal clicks with small pointer movements', async () => {
     const { wrapper, button } = mountEmbed()
     expect(button.href).toBe(wrapper.get('iframe').attributes('src'))
