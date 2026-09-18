@@ -6816,7 +6816,11 @@
 
                   <!-- Hide open button -->
                   <div class="flex items-center gap-3 sm:col-span-2">
-                    <Toggle v-model="item.hide_open_button" data-testid="custom-menu-hide-open-button" />
+                    <Toggle
+                      :model-value="item.hide_open_button ?? false"
+                      data-testid="custom-menu-hide-open-button"
+                      @update:model-value="item.hide_open_button = $event"
+                    />
                     <span class="text-sm text-gray-600 dark:text-gray-300">
                       {{ t("admin.settings.customMenu.hideOpenButton") }}
                     </span>
