@@ -199,6 +199,7 @@ export interface CustomMenuItem {
   page_slug?: string
   visibility: 'user' | 'admin'
   sort_order: number
+  hide_open_button?: boolean
 }
 
 export interface CustomEndpoint {
