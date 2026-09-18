@@ -6814,6 +6814,14 @@
                     </select>
                   </div>
 
+                  <!-- Hide open button -->
+                  <div class="flex items-center gap-3 sm:col-span-2">
+                    <Toggle v-model="item.hide_open_button" data-testid="custom-menu-hide-open-button" />
+                    <span class="text-sm text-gray-600 dark:text-gray-300">
+                      {{ t("admin.settings.customMenu.hideOpenButton") }}
+                    </span>
+                  </div>
+
                   <!-- URL (full width) -->
                   <div class="sm:col-span-2">
                     <label
@@ -9702,6 +9710,7 @@ const form = reactive<SettingsForm>({
     url: string;
     visibility: "user" | "admin";
     sort_order: number;
+    hide_open_button?: boolean;
   }>,
   custom_endpoints: [] as Array<{
     name: string;
