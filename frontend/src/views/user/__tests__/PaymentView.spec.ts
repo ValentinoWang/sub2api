@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, shallowMount } from '@vue/test-utils'
 import PaymentView from '../PaymentView.vue'
 import { PAYMENT_RECOVERY_STORAGE_KEY } from '@/components/payment/paymentFlow'
@@ -27,7 +27,11 @@ const showWarning = vi.hoisted(() => vi.fn())
 const getCheckoutInfo = vi.hoisted(() => vi.fn())
 const bridgeInvoke = vi.hoisted(() => vi.fn())
 const translate = vi.hoisted(() => vi.fn((key: string) => key))
-const cachedPublicSettings = vi.hoisted(() => ({ value: {} as Record<string, unknown> }))
+// Public settings live in a reactive holder so tests can flip feature flags after mount
+// and exercise the watchers that react to them.
+const appStoreState = vi.hoisted(() => ({
+  setPublicSettings: (_value: Record<string, unknown> | undefined) => {},
+}))
 
 vi.mock('vue-router', async () => {
   const actual = await vi.importActual<typeof import('vue-router')>('vue-router')
@@ -75,14 +79,23 @@ vi.mock('@/stores/subscriptions', () => ({
   }),
 }))
 
-vi.mock('@/stores', () => ({
-  useAppStore: () => ({
-    showError,
-    showInfo,
-    showWarning,
-    cachedPublicSettings: cachedPublicSettings.value,
-  }),
-}))
+vi.mock('@/stores', async () => {
+  const { reactive } = await import('vue')
+  const state = reactive({ cachedPublicSettings: undefined as Record<string, unknown> | undefined })
+  appStoreState.setPublicSettings = (value) => {
+    state.cachedPublicSettings = value
+  }
+  return {
+    useAppStore: () => ({
+      showError,
+      showInfo,
+      showWarning,
+      get cachedPublicSettings() {
+        return state.cachedPublicSettings
+      },
+    }),
+  }
+})
 
 vi.mock('@/api/payment', () => ({
   paymentAPI: {
@@ -387,11 +400,11 @@ describe('PaymentView recharge channels', () => {
   }
 
   it('shows only the store flow when native payment is disabled', async () => {
-    cachedPublicSettings.value = {
+    appStoreState.setPublicSettings({
       payment_enabled: false,
       purchase_subscription_enabled: true,
       purchase_subscription_url: 'https://shop.example.com/recharge',
-    }
+    })
     const wrapper = await mountRecharge()
 
     expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(true)
@@ -402,11 +415,11 @@ describe('PaymentView recharge channels', () => {
   })
 
   it('keeps a stale subscription link in the available store flow when native payment is disabled', async () => {
-    cachedPublicSettings.value = {
+    appStoreState.setPublicSettings({
       payment_enabled: false,
       purchase_subscription_enabled: true,
       purchase_subscription_url: 'https://shop.example.com/recharge',
-    }
+    })
     routeState.query = { tab: 'subscription' }
     const wrapper = await mountRecharge()
     expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(true)
@@ -416,11 +429,11 @@ describe('PaymentView recharge channels', () => {
   })
 
   it('keeps the redemption panel when the buyer link is withdrawn', async () => {
-    cachedPublicSettings.value = {
+    appStoreState.setPublicSettings({
       payment_enabled: false,
       purchase_subscription_enabled: true,
       purchase_subscription_url: '',
-    }
+    })
     const wrapper = await mountRecharge()
     expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(true)
     expect(wrapper.findComponent(AmountInput).exists()).toBe(false)
@@ -428,10 +441,10 @@ describe('PaymentView recharge channels', () => {
   })
 
   it('shows only native payment when the store channel is disabled', async () => {
-    cachedPublicSettings.value = {
+    appStoreState.setPublicSettings({
       payment_enabled: true,
       purchase_subscription_enabled: false,
-    }
+    })
     const wrapper = await mountRecharge()
 
     expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(false)
@@ -440,11 +453,11 @@ describe('PaymentView recharge channels', () => {
   })
 
   it('uses an explicit selector and renders only the selected channel when both are enabled', async () => {
-    cachedPublicSettings.value = {
+    appStoreState.setPublicSettings({
       payment_enabled: true,
       purchase_subscription_enabled: true,
       purchase_subscription_url: 'https://shop.example.com/recharge',
-    }
+    })
     const wrapper = await mountRecharge()
 
     expect(wrapper.findComponent(LiandongRechargePanel).exists()).toBe(true)
@@ -460,7 +473,7 @@ describe('PaymentView recharge channels', () => {
 
 describe('PaymentView recharge rate preview', () => {
   beforeEach(() => {
-    cachedPublicSettings.value = {}
+    appStoreState.setPublicSettings({})
   })
 
   it('uses the selected payment method currency in both locale templates', async () => {
@@ -499,12 +512,12 @@ describe('PaymentView recharge rate preview', () => {
   })
 
   it('selects the first top-up tier from credited balance instead of payment input', async () => {
-    cachedPublicSettings.value = {
+    appStoreState.setPublicSettings({
       first_topup_bonus_tiers: JSON.stringify([
         { min_amount: 20, bonus_amount: 2 },
         { min_amount: 50, bonus_amount: 8 },
       ]),
-    }
+    })
     routeState.path = '/purchase'
     routeState.query = {}
     getCheckoutInfo.mockReset().mockResolvedValue(checkoutInfoFixture({ balance_recharge_multiplier: 2 }))
@@ -935,5 +948,73 @@ describe('PaymentView WeChat JSAPI flow', () => {
     expect(showWarning).toHaveBeenCalledWith('payment.errors.mobilePaymentFallbackToQr')
     expect(showError).not.toHaveBeenCalled()
     expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toContain('weixin://wxpay/bizpayurl?pr=fallback-native')
+  })
+})
+
+describe('PaymentView subscription feature flag', () => {
+  afterEach(() => {
+    appStoreState.setPublicSettings(undefined)
+  })
+
+  function tabLabels(wrapper: Awaited<ReturnType<typeof mountSubscriptionPlanList>>) {
+    return wrapper
+      .findAll('button')
+      .map((button) => button.text())
+      .filter((text) => text === 'payment.tabTopUp' || text === 'payment.tabSubscribe')
+  }
+
+  it('keeps the top-up / subscribe switcher when subscription_enabled is absent (opt-out default)', async () => {
+    const wrapper = await mountSubscriptionPlanList(2)
+
+    expect(tabLabels(wrapper)).toEqual(['payment.tabTopUp', 'payment.tabSubscribe'])
+    expect(wrapper.findAllComponents(SubscriptionPlanCard)).toHaveLength(2)
+  })
+
+  it('drops the subscribe tab, hides the switcher and ignores ?tab=subscription when subscriptions are disabled', async () => {
+    appStoreState.setPublicSettings({ subscription_enabled: false })
+    const wrapper = await mountSubscriptionPlanList(2)
+
+    expect(tabLabels(wrapper)).toEqual([])
+    expect(wrapper.findAllComponents(SubscriptionPlanCard)).toHaveLength(0)
+    expect(wrapper.text()).toContain('payment.rechargeAccount')
+  })
+
+  it('shows an unavailable notice instead of a doomed top-up form when balance recharge is disabled too', async () => {
+    appStoreState.setPublicSettings({ subscription_enabled: false })
+    const wrapper = await mountSubscriptionConfirm({ checkout: { balance_disabled: true } })
+
+    expect(tabLabels(wrapper)).toEqual([])
+    expect(wrapper.findAllComponents(SubscriptionPlanCard)).toHaveLength(0)
+    expect(wrapper.text()).not.toContain('payment.confirmSubscription')
+    expect(wrapper.text()).not.toContain('payment.rechargeAccount')
+    expect(wrapper.text()).toContain('payment.billingUnavailable')
+    wrapper.unmount()
+  })
+
+  it('falls back from the subscribe tab to top-up when the flag flips off after mount', async () => {
+    const wrapper = await mountSubscriptionPlanList(2)
+    expect(wrapper.findAllComponents(SubscriptionPlanCard)).toHaveLength(2)
+
+    appStoreState.setPublicSettings({ subscription_enabled: false })
+    await flushPromises()
+
+    expect(tabLabels(wrapper)).toEqual([])
+    expect(wrapper.findAllComponents(SubscriptionPlanCard)).toHaveLength(0)
+    expect(wrapper.text()).toContain('payment.rechargeAccount')
+    wrapper.unmount()
+  })
+
+  it('enters the subscribe tab when a subscription-only site turns subscriptions back on', async () => {
+    appStoreState.setPublicSettings({ subscription_enabled: false })
+    const wrapper = await mountSubscriptionConfirm({ checkout: { balance_disabled: true } })
+    expect(wrapper.text()).toContain('payment.billingUnavailable')
+
+    appStoreState.setPublicSettings({ subscription_enabled: true })
+    await flushPromises()
+
+    expect(wrapper.text()).not.toContain('payment.billingUnavailable')
+    expect(wrapper.text()).not.toContain('payment.rechargeAccount')
+    expect(wrapper.findAllComponents(SubscriptionPlanCard).length).toBeGreaterThan(0)
+    wrapper.unmount()
   })
 })

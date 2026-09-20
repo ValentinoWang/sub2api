@@ -79,10 +79,10 @@ describe('custom page open button', () => {
     vi.unstubAllGlobals()
   })
 
-  it('hides the open button when configured while keeping the embedded page visible', () => {
-    Object.assign(appStore.cachedPublicSettings.custom_menu_items[0], { hide_open_button: true })
+  it.each([undefined, false, true])('honors the per-menu hide button setting %s while keeping the iframe', (hidden) => {
+    Object.assign(appStore.cachedPublicSettings.custom_menu_items[0], { hide_open_button: hidden })
     const wrapper = mountPage()
-    expect(wrapper.find('.custom-open-fab').exists()).toBe(false)
+    expect(wrapper.find('.custom-open-fab').exists()).toBe(hidden !== true)
     expect(wrapper.get('iframe').attributes('src')).toContain('https://example.com/docs')
   })
 

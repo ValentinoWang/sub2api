@@ -4,7 +4,10 @@ import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscriptions'
 import { extractApiErrorMessage } from '@/utils/apiError'
 
-export function useRedeemCode(fallbackError: () => string) {
+export function useRedeemCode(
+  fallbackError: () => string,
+  onRefreshError?: (kind: 'user' | 'subscription') => void,
+) {
   const authStore = useAuthStore()
   const subscriptionStore = useSubscriptionStore()
   const code = ref('')
@@ -33,14 +36,19 @@ export function useRedeemCode(fallbackError: () => string) {
     // The server result is final. Refresh failures must not reclassify a committed redemption.
     try {
       await authStore.refreshUser()
-      if (result.value.type === 'subscription') {
-        await subscriptionStore.fetchActiveSubscriptions(true)
-      }
     } catch {
       refreshWarning.value = true
-    } finally {
-      submitting.value = false
+      onRefreshError?.('user')
     }
+    if (result.value.type === 'subscription') {
+      try {
+        await subscriptionStore.fetchActiveSubscriptions(true)
+      } catch {
+        refreshWarning.value = true
+        onRefreshError?.('subscription')
+      }
+    }
+    submitting.value = false
 
     return result.value
   }

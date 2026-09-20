@@ -141,6 +141,7 @@ docs/*
 !docs/COMMERCE_RELEASE.md
 !docs/ui-preview/
 !docs/ui-preview/**
+!docs/ANTIGRAVITY_ATTRIBUTION_429.md
 !docs/PAYMENT.md
 !docs/PAYMENT_CN.md
 !docs/ADMIN_PAYMENT_INTEGRATION_API.md
@@ -165,17 +166,21 @@ docs/error-experiences/*
 !docs/error-experiences/2026-09-13-claude-code-bypass-permissions.html
 !docs/error-experiences/2026-09-13-claude-code-fable-5-1-not-visible.md
 !docs/error-experiences/2026-09-13-claude-code-fable-5-1-not-visible.html
+!docs/codex-credits.md
 !docs/legal/
 !docs/legal/*.md
 !docs/screenshots/
 docs/screenshots/*
 !docs/screenshots/mobile-account-actions-menu.png
+!docs/screenshots/codex-referral-dialog.png
+!docs/screenshots/codex-referral-success.png
 .serena/
 .codex/
 frontend/coverage/
 aicodex
 output/
 .codegraph/
+issues/
 
 # Vitest / Vite cache at repo root
 .vite/
