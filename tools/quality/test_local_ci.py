@@ -116,6 +116,24 @@ class LocalCITest(unittest.TestCase):
                 self.assertIn(diagnostic,
                               (fixture.repo / 'agents-results/evidence/toolchain.log').read_text())
 
+    def test_unavailable_docker_stops_before_install(self):
+        for docker_reply in ('exit 1', 'printf "\\n"'):
+            with self.subTest(docker_reply=docker_reply):
+                fixture = LocalCITest()
+                fixture.setUp()
+                self.addCleanup(fixture.doCleanups)
+                for name, valid in (('node', '24'), ('pnpm', '9.15.9'),
+                                    ('go', 'go1.27.0'),
+                                    ('golangci-lint', 'golangci-lint has version 2.13.0'),
+                                    ('govulncheck', 'govulncheck fixture')):
+                    fixture.stub(name, f'printf "%s\\n" "{valid}"')
+                fixture.stub('docker', docker_reply)
+                stages = fixture.run_ci()
+                self.assertEqual(stages['toolchain']['status'], 'FAIL')
+                self.assertEqual(stages['frozen-install']['status'], 'NOT_RUN')
+                self.assertIn('Docker',
+                              (fixture.repo / 'agents-results/evidence/toolchain.log').read_text())
+
     def test_inherited_go_test_filters_are_removed(self):
         self.stub('node', 'printf "24\\n"')
         self.stub('go', 'printf "%s\\n" "$GOFLAGS" > "$CI_TEST_LOG"\n'

@@ -103,7 +103,14 @@ preflight_toolchain() {
     echo 'Local CI requires golangci-lint 2.13.x.' >&2; return 1;
   }
   govulncheck -version
-  docker info --format '{{.ServerVersion}}'
+  local docker_version
+  docker_version="$(docker info --format '{{.ServerVersion}}')" || {
+    echo 'Local CI requires a reachable Docker engine.' >&2; return 1;
+  }
+  [[ "$docker_version" =~ ^[0-9]+\. ]] || {
+    echo 'Docker returned no server version; check that the engine is reachable.' >&2; return 1;
+  }
+  printf 'Docker %s\n' "$docker_version"
 }
 deploy_guards() {
   bash -n deploy/apple-container.sh
