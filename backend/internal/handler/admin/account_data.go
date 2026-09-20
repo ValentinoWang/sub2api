@@ -290,37 +290,7 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 			result.ProxyReused++
 			if normalizedStatus != "" {
 				if proxy, getErr := h.adminService.GetProxy(ctx, existingID); getErr == nil && proxy != nil && proxy.Status != normalizedStatus {
-					// 同步 status 时传入完整字段，避免零值覆盖已存在代理的有效期/fallback 配置。
-					var existingExpiresAt *time.Time
-					if item.ExpiresAt != nil {
-						t := time.Unix(*item.ExpiresAt, 0).UTC()
-						existingExpiresAt = &t
-					}
-					existingFallbackMode := item.FallbackMode
-					if existingFallbackMode == "" {
-						existingFallbackMode = service.FallbackModeNone
-					}
-					var existingBackupProxyID *int64
-					if item.BackupProxyName != "" {
-						if bid, ok := proxyNameToID[item.BackupProxyName]; ok {
-							existingBackupProxyID = &bid
-						}
-					}
-					_, _ = h.adminService.UpdateProxy(ctx, existingID, &service.UpdateProxyInput{
-						Status:         normalizedStatus,
-						ExpiresAt:      existingExpiresAt,
-						ClearExpiresAt: existingExpiresAt == nil,
-						FallbackMode:   existingFallbackMode,
-						BackupProxyID:  existingBackupProxyID,
-						ClearBackupID:  existingBackupProxyID == nil,
-						ExpiryWarnDays: &item.ExpiryWarnDays,
-						Name:           proxy.Name,
-						Protocol:       proxy.Protocol,
-						Host:           proxy.Host,
-						Port:           proxy.Port,
-						Username:       &proxy.Username,
-						Password:       &proxy.Password,
-					})
+					_, _ = h.adminService.UpdateProxy(ctx, existingID, &service.UpdateProxyInput{Status: normalizedStatus})
 				}
 			}
 			continue
@@ -381,22 +351,7 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 		result.ProxyCreated++
 
 		if normalizedStatus != "" && normalizedStatus != created.Status {
-			// 新建后同步 status 时，传入完整字段，避免零值覆盖刚创建的有效期/fallback 配置。
-			_, _ = h.adminService.UpdateProxy(ctx, created.ID, &service.UpdateProxyInput{
-				Status:         normalizedStatus,
-				ExpiresAt:      expiresAt,
-				ClearExpiresAt: expiresAt == nil,
-				FallbackMode:   fallbackMode,
-				BackupProxyID:  backupProxyID,
-				ClearBackupID:  backupProxyID == nil,
-				ExpiryWarnDays: &item.ExpiryWarnDays,
-				Name:           created.Name,
-				Protocol:       created.Protocol,
-				Host:           created.Host,
-				Port:           created.Port,
-				Username:       &created.Username,
-				Password:       &created.Password,
-			})
+			_, _ = h.adminService.UpdateProxy(ctx, created.ID, &service.UpdateProxyInput{Status: normalizedStatus})
 		}
 	}
 
