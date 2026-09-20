@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises, shallowMount } from '@vue/test-utils'
+import { enableAutoUnmount, flushPromises, shallowMount } from '@vue/test-utils'
 import PaymentView from '../PaymentView.vue'
 import { PAYMENT_RECOVERY_STORAGE_KEY } from '@/components/payment/paymentFlow'
 import { formatPaymentAmount } from '@/components/payment/currency'
@@ -9,6 +9,10 @@ import SubscriptionPlanCard from '@/components/payment/SubscriptionPlanCard.vue'
 import en from '@/i18n/locales/en'
 import zh from '@/i18n/locales/zh'
 import type { CheckoutInfoResponse, MethodLimit, SubscriptionPlan } from '@/types/payment'
+
+enableAutoUnmount(afterEach)
+
+beforeEach(() => appStoreState.setPublicSettings(undefined))
 
 const routeState = vi.hoisted(() => ({
   path: '/purchase',
@@ -244,6 +248,7 @@ async function mountSubscriptionConfirm(options: Parameters<typeof checkoutInfoW
   const wrapper = shallowMount(PaymentView, {
     global: {
       stubs: {
+        KeepAlive: false,
         AppLayout: {
           template: '<div><slot /></div>',
         },
@@ -284,6 +289,7 @@ async function mountSubscriptionPlanList(planCount: number) {
   const wrapper = shallowMount(PaymentView, {
     global: {
       stubs: {
+        KeepAlive: false,
         AppLayout: {
           template: '<div><slot /></div>',
         },
@@ -311,6 +317,7 @@ describe('PaymentView help text', () => {
     const wrapper = shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           AppLayout: { template: '<div><slot /></div>' },
           Teleport: true,
           Transition: false,
@@ -388,7 +395,7 @@ describe('PaymentView recharge channels', () => {
     const wrapper = shallowMount(PaymentView, {
       global: {
         stubs: {
-          KeepAlive: false,
+        KeepAlive: false,
           AppLayout: { template: '<div><slot /></div>' },
           Teleport: true,
           Transition: false,
@@ -493,6 +500,7 @@ describe('PaymentView recharge rate preview', () => {
     const wrapper = shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           AppLayout: { template: '<div><slot /></div>' },
           Teleport: true,
           Transition: false,
@@ -525,6 +533,7 @@ describe('PaymentView recharge rate preview', () => {
     const wrapper = shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           AppLayout: { template: '<div><slot /></div>' },
           Teleport: true,
           Transition: false,
@@ -690,6 +699,7 @@ describe('PaymentView payment recovery', () => {
     const wrapper = shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           AppLayout: {
             template: '<div><slot /></div>',
           },
@@ -747,6 +757,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
     shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           Teleport: true,
           Transition: false,
         },
@@ -776,6 +787,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
     shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           Teleport: true,
           Transition: false,
         },
@@ -797,6 +809,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
     const wrapper = shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           Teleport: true,
           Transition: false,
         },
@@ -841,6 +854,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
     shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           Teleport: true,
           Transition: false,
         },
@@ -879,6 +893,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
     shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           Teleport: true,
           Transition: false,
         },
@@ -927,6 +942,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
     shallowMount(PaymentView, {
       global: {
         stubs: {
+        KeepAlive: false,
           Teleport: true,
           Transition: false,
         },

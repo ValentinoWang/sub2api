@@ -6844,17 +6844,6 @@
                     />
                   </div>
 
-                  <label class="flex items-center gap-2 sm:col-span-2">
-                    <input
-                      v-model="item.hide_open_button"
-                      type="checkbox"
-                      data-testid="custom-menu-hide-open-button"
-                    />
-                    <span class="text-sm text-gray-700 dark:text-gray-300">
-                      {{ t("admin.settings.customMenu.hideOpenButton") }}
-                    </span>
-                  </label>
-
                   <!-- SVG Icon (full width) -->
                   <div class="sm:col-span-2">
                     <label

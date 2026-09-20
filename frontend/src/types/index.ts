@@ -200,7 +200,6 @@ export interface CustomMenuItem {
   hide_open_button?: boolean
   visibility: 'user' | 'admin'
   sort_order: number
-  hide_open_button?: boolean
 }
 
 export interface CustomEndpoint {
