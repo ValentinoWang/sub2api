@@ -1,7 +1,25 @@
 {
   "blocking_entries": [],
   "generated_at": null,
-  "non_blocking_entries": [],
+  "non_blocking_entries": [
+    {
+      "blocking": false,
+      "checklist_path": "acceptance/human/2026-W39/未-2026-09-21-upstream-ticket-capability/checklist.md",
+      "estimated_minutes": null,
+      "handoff_path": null,
+      "invalidation_keys": [],
+      "latest_run": null,
+      "loop_name": "upstream-ticket-capability",
+      "ready_at": null,
+      "release_slice": null,
+      "required_role": null,
+      "scope_hints": [],
+      "status": "PREPARING",
+      "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
+      "task_id": "upstream-ticket-capability",
+      "workspace": "acceptance/human/2026-W39/2026-09-21-upstream-ticket-capability"
+    }
+  ],
   "schema_version": 1,
-  "source_facts_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  "source_facts_sha256": "be6a40bf61c4feeeeca73166efd5609250e449e15ccecea2c58878fe6c0986a4"
 }

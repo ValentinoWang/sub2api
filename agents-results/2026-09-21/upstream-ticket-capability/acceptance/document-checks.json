@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "source_commit": "d59fe3f08ea341284d8959fce7f91d738dbfce47",
+  "local_ci_commit_matches": true,
+  "markdown_files": 6,
+  "broken_links": [],
+  "reference_review": "reference-files-final.json; initial capture preserved",
+  "human_acceptance": "DRAFT; unsigned; 未- directory retained",
+  "ssot_documents": {
+    "ssot-development.md": "06b30f02b059544033999b87f656c4e5d1a6a00377e8ef8b9873fc7a84badedf",
+    "openproblem.md": "d03f0649bd94371926fb03caa45ff866c49d12701169d055fd9fce5b7e43b571"
+  }
+}

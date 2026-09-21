@@ -1,0 +1,12 @@
+{
+  "captured_at": "2026-09-20T17:14:05.150921+00:00",
+  "source_branch": "dev",
+  "source_commit": "5d839653d2ed02965a43964f8402401c5ea69a8c",
+  "upstream_main": "7c700729c23187d31ed320f6b19c790e2f194826",
+  "latest_release": "v0.2.7",
+  "latest_release_commit": "aea725f2ea644d5592d0bbb1d63b607efa7e200a",
+  "upstream_commits_missing": 295,
+  "scope": "Upgrade source and propose ticket capability improvements; VPN/VPS/ISP subscriptions, YAML parsing, and tariff selection excluded per user clarification.",
+  "codex_degrade_head": "e05961bcf89a3f327d4d607aeb412d68c083a4ba",
+  "codex_degrade_reference": "Current working tree contains uncommitted implementation; do not describe it as a released dependency."
+}

@@ -1,0 +1,46 @@
+{
+  "captured_at": "2026-09-20T17:31:02.358440+00:00",
+  "purpose": "Read-only design references; source contents not copied.",
+  "files": [
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Codex_degrade/docs/turn-state-notes.md",
+      "sha256": "6ef740e97b90a14347b0a2cb26444091792a2e81f19c45ca43926767b3678518"
+    },
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Codex_degrade/docs/ticket-pool-verification.md",
+      "sha256": "17221a9eea292f1fafe278527717305184b9582a12fc4b8fc13cb3403115a531"
+    },
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Codex_degrade/src/fetch.rs",
+      "sha256": "439e6fd27acb3633c15b0408f892a845ac700ba5b1dbb8e475b6818aac6c74e8"
+    },
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Codex_degrade/src/turn_state.rs",
+      "sha256": "ec2c308c6c78e75e9c3e27b3b7503603843fefa1b29944cd5781b6a25d4aef32"
+    },
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Codex_degrade/src/probe_control.rs",
+      "sha256": "57bada8762ce9e5b75ab6c39bd23212950f74d8475e1f3824042ec98164e4372"
+    },
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Codex_degrade/src/feedback.rs",
+      "sha256": "62892b6015885af6d770027ecfe04e1d9d143ce1376e8c33bd3d87923756ac03"
+    },
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Codex_degrade/src/request_history.rs",
+      "sha256": "02c3f14a0cb89d94d44f4336f652cd9fee4737ccb9d5d36e90ceaf7822ed18c4"
+    },
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/backend/internal/service/openai_codex_ticket.go",
+      "sha256": "137a96d11e8bb7226a6c760c2929e4c527019887bf68c8b6b4a184490f56bae5"
+    },
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/backend/internal/service/openai_codex_turn_state.go",
+      "sha256": "d5c7720ad556e68bd4505c6dcec009d8489141e5bd4b6c7984d45a38430c7440"
+    },
+    {
+      "path": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/backend/internal/service/proxy_subscription_parser.go",
+      "sha256": "c376efc66e0c16e49f223957d9228208c2f8c86b6a7e22c3a94d9bff6396c7b4"
+    }
+  ]
+}

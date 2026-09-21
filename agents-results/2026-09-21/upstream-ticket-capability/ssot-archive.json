@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "artifact_class": "ssot-development",
+  "artifact_date": "2026-09-21",
+  "project_name": "Sub2api",
+  "ssot_name": "upstream-ticket-capability",
+  "main_document": "ssot-development.md",
+  "problem_documents": ["openproblem.md"]
+}
