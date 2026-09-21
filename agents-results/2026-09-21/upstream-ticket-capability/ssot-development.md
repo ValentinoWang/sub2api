@@ -160,4 +160,27 @@ T3 的人类清单按 `acceptance/README.md` 创建 split-root 绑定；人工�
 
 本方案的打票改造继续复用当前服务和认证配置，不把切换 provider 作为打票修复步骤。若后续接入验证涉及 provider 切换，才应用本节流程，并单独记录每一层的验证结果。
 
+## 9. CC Switch 导入默认设置
+
+用户补充要求修改导入 CC Switch 的默认设置，并明确默认模型改为 **`gpt-6-astra`**。此项是本轮新增的实际代码修改，独立于尚待实施的打票改造。
+
+| 设置 | 修改后行为 |
+|---|---|
+| OpenAI 分组的导入目标 | `app=codex`，默认模型 `gpt-6-astra` |
+| 推理接口 | 当前站点配置的 API 地址，末尾规范化为一个 `/v1`；保留站点自身路径前缀 |
+| 认证 | 将当前选中的 Sub2API 密钥通过 CC Switch 支持的 `apiKey` 字段传入，显示名使用本站名称 |
+| 用量查询 | 独立传入 `usageBaseUrl`，现有脚本追加 `/v1/usage` 后不会形成 `/v1/v1/usage`；Grok Build 同样修正 |
+| provider 标识与高级配置 | CC Switch 3.20.3 将 Codex 第三方导入生成为 `custom`；不要求改为官方 `openai`，也不假定可通过深链透传任意 TOML 字段 |
+| 激活与历史会话 | 导入链接不请求 `enabled=true`；导入不等于历史会话迁移，也不证明目标接口可用 |
+
+已读取本机安装版本 3.20.3，并核对该标签及查询时主分支源码：`build_codex_settings` 用传入模型、端点与密钥重新生成配置；`merge_codex_config` 只提取部分字段。因此不附加会被丢弃的自定义 provider、推理参数或全局配置。CC Switch 模板使用 `high` 推理强度，其最终认证落盘还受 CC Switch 的登录保留设置影响；本项目不能仅凭深链保证外部应用的所有写入行为。
+
+实际切换仍遵循第 8 节：保留全局配置、记忆、历史和已有 provider 定义，结束活动请求后再切换与重新加载；核对最终认证来源及实际接口结果，恢复本次排障临时归档的任务。不能因为链接生成成功而宣布既有会话恢复成功。
+
+实现文件：`frontend/src/utils/ccswitchImport.ts`；验证文件：`frontend/src/utils/__tests__/ccswitchImport.spec.ts`。本项只调整 CC Switch 导入；“使用密钥”手动配置模板的模型选择保持现有策略，不在本次默认模型变更范围。原有非 Codex 导入的模型与客户端选择保留。
+
+验收覆盖站点根地址、已有 `/v1`、尾斜杠、空白及子路径，验证模型、密钥、名称、推理和用量路径。全量本地 CI 结果见 `implementation-progress.md`。尚未用真实密钥触发 CC Switch 导入、切换 provider 或测试历史会话，不将协议源码核对冒充本机端到端验收。
+
+协议依据：[CC Switch 3.20.3 provider importer](https://github.com/farion1231/cc-switch/blob/v3.20.3/src-tauri/src/deeplink/provider.rs)、[Codex 配置写入](https://github.com/farion1231/cc-switch/blob/v3.20.3/src-tauri/src/codex_config.rs)。本任务证据保存版本、文件哈希和核验结论，不保存真实密钥或导入链接。
+
 尚待确认或运行验证的事项见 [openproblem.md](openproblem.md)。

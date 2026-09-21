@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "markdown_files": 6,
+  "broken_links": [],
+  "ssot_documents": {
+    "ssot-development.md": "6c4d9aafcf293eb9e8742576b16d98e62d194f6130e67ab6825dddc0b71de355",
+    "openproblem.md": "7c5f92246184d981743408d9f92bd693da5693235448d69c635fa4c4fef0140c"
+  },
+  "human_acceptance": "DRAFT; unsigned; 未- directory retained"
+}

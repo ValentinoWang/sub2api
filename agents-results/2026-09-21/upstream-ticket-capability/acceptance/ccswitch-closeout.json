@@ -1,0 +1,41 @@
+{
+  "verified_at": "2026-09-21T06:32:38.911214+00:00",
+  "tested_commit": "d4c720f033cba957d9e9ab975900f15d1b614128",
+  "promoted_commit": "07303488ab6709feee5e1f8476979c1b03ad9f30",
+  "tree": "17ebacf45b2a431f9a61efb801eae5266e84ce34",
+  "tree_equivalence": "PASS",
+  "local_ci": "PASS",
+  "ci_stages": 19,
+  "frontend_test_files": 331,
+  "frontend_tests": 2505,
+  "documents": {
+    "status": "PASS",
+    "markdown_files": 6,
+    "broken_links": [],
+    "ssot_documents": {
+      "ssot-development.md": "6c4d9aafcf293eb9e8742576b16d98e62d194f6130e67ab6825dddc0b71de355",
+      "openproblem.md": "7c5f92246184d981743408d9f92bd693da5693235448d69c635fa4c4fef0140c"
+    },
+    "human_acceptance": "DRAFT; unsigned; 未- directory retained"
+  },
+  "snapshot": {
+    "status": "verified",
+    "source": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/agents-results/2026-09-21/upstream-ticket-capability",
+    "destination": "/Users/vsiyo/Library/Mobile Documents/iCloud~md~obsidian/Documents/日记/开发/每日开发/SSOT合集/2026-09-21/Sub2api/upstream-ticket-capability",
+    "project_name": "Sub2api",
+    "ssot_name": "upstream-ticket-capability",
+    "snapshot_date": "2026-09-21",
+    "main_document": "ssot-development.md",
+    "file_count": 2,
+    "contains_openproblem": true
+  },
+  "archive": {
+    "status": "verified",
+    "archive_root": "/Users/vsiyo/Library/Mobile Documents/iCloud~md~obsidian/Documents/日记/开发/每日开发/SSOT合集",
+    "bundle_count": 59,
+    "problem_document_count": 29
+  },
+  "actual_ccswitch_import": "NOT_EXECUTED",
+  "ticket_redesign": "PLAN_ONLY",
+  "deployment": "NOT_EXECUTED"
+}

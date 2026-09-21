@@ -1,0 +1,42 @@
+{
+  "captured_at": "2026-09-21T05:07:58.671015+00:00",
+  "installed_version": "3.20.3",
+  "release_ref": "v3.20.3",
+  "release_tag_object": "2181dda6b4703a7870ffe8c52671947375dec6d0",
+  "main_source_commit": "8272707d5e2a9be0cd487ff2d3658f0c58121548",
+  "files": [
+    {
+      "local_evidence": "agents-results/2026-09-21/upstream-ticket-capability/acceptance/ccswitch-protocol-sources/v3.20.3-provider.rs",
+      "sha256": "2dc487c203de4a110f702e374e09509fa8e216a60e86e8295e7b0f0be2d60258"
+    },
+    {
+      "local_evidence": "agents-results/2026-09-21/upstream-ticket-capability/acceptance/ccswitch-protocol-sources/v3.20.3-codex_config.rs",
+      "sha256": "965e3ac1d2b694fa29ee079f67d0a53bce42167a26755ccaae5d0388048cc7ad"
+    },
+    {
+      "local_evidence": "agents-results/2026-09-21/upstream-ticket-capability/acceptance/ccswitch-protocol-sources/provider.rs",
+      "sha256": "723f222691fbb18a197af51894b41b7346db9288ffc1d828d3057ec87bbdbb96"
+    },
+    {
+      "local_evidence": "agents-results/2026-09-21/upstream-ticket-capability/acceptance/ccswitch-protocol-sources/codex_config.rs",
+      "sha256": "87f27c8ae2ea30faef0729e090446c5439d7ee60050431529a8a6dd526d79de2"
+    },
+    {
+      "local_evidence": "agents-results/2026-09-21/upstream-ticket-capability/acceptance/ccswitch-protocol-sources/parser.rs",
+      "sha256": "ea7ab6a5f1f7bbbdea4e424f87b6a94d60fa855390913d322d0241b6ffa692aa"
+    },
+    {
+      "local_evidence": "agents-results/2026-09-21/upstream-ticket-capability/acceptance/ccswitch-protocol-sources/deeplink_import.rs",
+      "sha256": "5014013240a14fe63d4838a6eccbc551e83fc66a7a5b42f30c7d71690b73ee7d"
+    }
+  ],
+  "findings": [
+    "Codex importer builds model_provider=custom with the supplied model, endpoint, provider display name and apiKey.",
+    "Codex inline configuration does not survive wholesale; merge extracts credentials, endpoint and model before rebuilding settings.",
+    "usageBaseUrl overrides the provider endpoint for the usage script and supports keeping exactly one /v1/usage suffix.",
+    "No enabled=true is requested by Sub2API. CC Switch owns actual activation and live configuration writing.",
+    "Source review is not an actual import, authentication probe or historical-session test."
+  ],
+  "credentials_used": false,
+  "global_config_modified": false
+}

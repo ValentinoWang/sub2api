@@ -1,19 +1,19 @@
 # Acceptance Contract: upstream-ticket-capability
 
 - Task ID: upstream-ticket-capability
-- Contract version: 1
+- Contract version: 2
 - Contract status: DRAFT
 - Test baseline: PLANNED
 - Acceptance owner: 产品负责人
 - Approval evidence: TBD
-- Request source: 2026-09-21 用户要求升级源码并提供打票方案，后续排除 VPN/VPS/ISP 订阅改造
+- Request source: 2026-09-21 用户要求升级源码并提供打票方案，后续排除 VPN/VPS/ISP 订阅改造，追加会话恢复经验及 CC Switch 默认模型 gpt-6-astra
 - SSOT node: none
 - SSOT path: none
 - Readiness mode: FORMAL
 - Decision refs: none
 - Assumption IDs: none
-- Invalidation keys: upstream-ticket-capability.source, upstream-ticket-capability.design
-- AC budget: 2
+- Invalidation keys: upstream-ticket-capability.source, upstream-ticket-capability.design, upstream-ticket-capability.ccswitch
+- AC budget: 3
 - Baseline identity: 5d839653d2ed02965a43964f8402401c5ea69a8c
 - Product Context refs: none
 - Role Context refs: none
@@ -25,7 +25,7 @@
 
 ## User and scenario
 
-管理员需要当前源码包含固定的上游更新，并能评审仅聚焦打票能力的修改方案。相关方案为同目录 ssot-development.md，尚未形成批准的版本化实施决定。本合同是源码集成与方案交付合同，不声明候选界面、实际部署或新的打票实现完成。
+管理员需要当前源码包含固定的上游更新，并能评审仅聚焦打票能力的修改方案；用户补充要求 CC Switch 导入默认模型改为 gpt-6-astra。相关方案为同目录 ssot-development.md，尚未形成批准的版本化打票实施决定。本合同覆盖源码集成、方案交付与 CC Switch 导出设置，不声明实际部署或新的打票实现完成。
 
 ## Problem
 
@@ -33,7 +33,7 @@
 
 ## Expected outcome
 
-固定上游提交被纳入候选；完整本地 CI 留存。方案区分当前事实、提议与真实上游验证边界，并具有可执行的后续验收场景。
+固定上游提交被纳入候选；完整本地 CI 留存。方案区分当前事实、提议与真实上游验证边界，并具有可执行的后续验收场景。CC Switch 导入使用 gpt-6-astra、当前站点地址和选中密钥，推理与用量路径正确。
 
 ## Non-goals
 
@@ -69,12 +69,14 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | AC-01 | behavior | 当前用户升级请求 | machine/integration-contract | 固定目标 7c700729c 被纳入，定制回归与完整本地 CI 通过；失败历史保留 | Integration | Automatic | Yes |
 | AC-02 | behavior | 当前用户打票方案与范围澄清 | machine/static | 方案仅聚焦打票；源文件、快照哈希、完整归档审计及链接核验通过 | Static | Automatic | Yes |
+| AC-03 | behavior | 用户追加 CC Switch 默认设置并选择 gpt-6-astra | machine/unit | 导入模型、选中密钥、站点显示名和路径正确；不请求自动激活；其他客户端选择保留 | Unit | Automatic | Yes |
 
 ## Human acceptance
 
 | ID | Summary | Checklist path | Required role | Blocking |
 | --- | --- | --- | --- | --- |
 | H-01 | 方案中的成功、失败与待验证边界清楚，满足预期改造范围 | acceptance/human/2026-W39/2026-09-21-upstream-ticket-capability/checklist.md#h-01 | 产品负责人 | Yes |
+| H-02 | CC Switch 导入确认页显示预期模型及站点 | acceptance/human/2026-W39/2026-09-21-upstream-ticket-capability/checklist.md#h-02 | 产品负责人 | Yes |
 
 ## Protected acceptance tests
 
@@ -88,7 +90,9 @@
 | --- | --- | --- | --- | --- |
 | AC-01 | 完整本地 CI、合并重点测试、提交祖先关系 | acceptance/local-ci-04/summary.json；后续修复使用新目录 | Automatic | Yes |
 | AC-02 | 快照检查、全归档审计、文件链接检查 | acceptance/snapshot-check.json；acceptance/archive-audit.json | Automatic | Yes |
+| AC-03 | 默认导入设置回归与完整本地 CI | acceptance/ccswitch-local-ci-01/summary.json | Automatic | Yes |
 | H-01 | 产品负责人阅读方案并记录意见 | acceptance/human/2026-W39/2026-09-21-upstream-ticket-capability/checklist.md#h-01 | Human | Yes |
+| H-02 | 产品负责人查看导入确认页 | acceptance/human/2026-W39/2026-09-21-upstream-ticket-capability/checklist.md#h-02 | Human | Yes |
 
 ## Exploratory testing
 
