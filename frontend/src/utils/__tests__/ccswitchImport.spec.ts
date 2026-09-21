@@ -13,7 +13,7 @@ function paramsFromDeeplink(deeplink: string): URLSearchParams {
 
 describe('ccswitchImport utils', () => {
   it('defaults OpenAI CC Switch imports to the current Codex model', () => {
-    expect(OPENAI_CC_SWITCH_CODEX_MODEL).toBe('gpt-5.5')
+    expect(OPENAI_CC_SWITCH_CODEX_MODEL).toBe('gpt-6-astra')
   })
 
   it('defaults Grok Build imports to the current Grok model', () => {
@@ -38,9 +38,32 @@ describe('ccswitchImport utils', () => {
 
     expect(params.get('resource')).toBe('provider')
     expect(params.get('app')).toBe('codex')
-    expect(params.get('endpoint')).toBe(baseInput.baseUrl)
+    expect(params.get('endpoint')).toBe(`${baseInput.baseUrl}/v1`)
     expect(params.get('model')).toBe(OPENAI_CC_SWITCH_CODEX_MODEL)
+    expect(params.get('apiKey')).toBe(baseInput.apiKey)
+    expect(params.get('name')).toBe(baseInput.providerName)
+    expect(params.get('usageBaseUrl')).toBe(baseInput.baseUrl)
+    expect(params.get('enabled')).not.toBe('true')
     expect(atob(params.get('usageScript') || '')).toBe(baseInput.usageScript)
+  })
+
+  it.each([
+    'https://api.example.com/relay',
+    'https://api.example.com/relay/',
+    'https://api.example.com/relay/v1',
+    'https://api.example.com/relay/v1/',
+    ' https://api.example.com/relay/v1/ '
+  ])('keeps Codex inference and usage paths correct for base URL %s', (baseUrl) => {
+    const params = paramsFromDeeplink(buildCcSwitchImportDeeplink({
+      ...baseInput,
+      baseUrl,
+      platform: 'openai',
+      clientType: 'claude'
+    }))
+
+    expect(`${params.get('endpoint')}/responses`).toBe('https://api.example.com/relay/v1/responses')
+    expect(`${params.get('usageBaseUrl')}/v1/usage`).toBe('https://api.example.com/relay/v1/usage')
+    expect(params.get('model')).toBe('gpt-6-astra')
   })
 
   it.each([
@@ -61,6 +84,7 @@ describe('ccswitchImport utils', () => {
     expect(params.get('app')).toBe('grokbuild')
     expect(params.get('endpoint')).toBe('https://api.example.com/v1')
     expect(params.get('model')).toBe(GROK_CC_SWITCH_MODEL)
+    expect(`${params.get('usageBaseUrl')}/v1/usage`).toBe('https://api.example.com/v1/usage')
   })
 
   it.each([

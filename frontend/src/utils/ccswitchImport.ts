@@ -1,6 +1,6 @@
 import type { GroupPlatform } from '@/types'
 
-export const OPENAI_CC_SWITCH_CODEX_MODEL = 'gpt-5.5'
+export const OPENAI_CC_SWITCH_CODEX_MODEL = 'gpt-6-astra'
 export const GROK_CC_SWITCH_MODEL = 'grok-4.5'
 
 export type CcSwitchClientType = 'claude' | 'gemini'
@@ -21,7 +21,7 @@ export interface CcSwitchImportDeeplinkInput {
 }
 
 function withV1Endpoint(baseUrl: string): string {
-  const normalizedBaseUrl = baseUrl.replace(/\/+$/, '')
+  const normalizedBaseUrl = baseUrl.trim().replace(/\/+$/, '')
   return normalizedBaseUrl.endsWith('/v1') ? normalizedBaseUrl : `${normalizedBaseUrl}/v1`
 }
 
@@ -39,7 +39,7 @@ export function resolveCcSwitchImportConfig(
     case 'openai':
       return {
         app: 'codex',
-        endpoint: baseUrl,
+        endpoint: withV1Endpoint(baseUrl),
         model: OPENAI_CC_SWITCH_CODEX_MODEL
       }
     case 'gemini':
@@ -78,6 +78,11 @@ export function buildCcSwitchImportDeeplink(input: CcSwitchImportDeeplinkInput):
 
   if (config.model) {
     entries.splice(2, 0, ['model', config.model])
+  }
+
+  if (config.app === 'codex' || config.app === 'grokbuild') {
+    // The usage script appends /v1/usage; inference endpoints already end in /v1.
+    entries.push(['usageBaseUrl', config.endpoint.slice(0, -'/v1'.length)])
   }
 
   return `ccswitch://v1/import?${new URLSearchParams(entries).toString()}`
