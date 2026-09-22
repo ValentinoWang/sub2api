@@ -1,0 +1,43 @@
+{
+  "commit": "2478cc12a97cd3caa10aac7db51fc9b47295aae0",
+  "runtime_base_image": "sub2api-local:0.2.4.5-be8771d92b66",
+  "runtime_base_image_id": "sha256:94d5252779108bc8ada75b12d6187093d702063ad47a8cdf89666343675ac428",
+  "source": "git archive of the exact commit; no working-tree sources",
+  "binary_sha256": "97346728dfa85dc2d021700562360008e8f4ddf1df1b4418e11f0cbf262489c0",
+  "status": "FAIL",
+  "error": "Command '['docker', 'image', 'inspect', 'sub2api-local:0.2.4.5-be8771d92b66']' timed out after 30 seconds",
+  "stages": [
+    {
+      "stage": "archive",
+      "exit_code": 0,
+      "seconds": 2.01,
+      "minimum_free_gib": 10.935
+    },
+    {
+      "stage": "extract",
+      "exit_code": 0,
+      "seconds": 2.01,
+      "minimum_free_gib": 10.879
+    },
+    {
+      "stage": "dependencies",
+      "exit_code": 0,
+      "seconds": 6.02,
+      "minimum_free_gib": 10.844
+    },
+    {
+      "stage": "frontend",
+      "exit_code": 0,
+      "seconds": 38.09,
+      "minimum_free_gib": 10.814
+    },
+    {
+      "stage": "go",
+      "exit_code": 0,
+      "seconds": 76.14,
+      "minimum_free_gib": 8.845
+    }
+  ],
+  "minimum_free_gib": 8.845,
+  "required_free_gib": 3
+}

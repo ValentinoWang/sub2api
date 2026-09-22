@@ -167,6 +167,9 @@ docs/error-experiences/*
 !docs/error-experiences/2026-09-13-claude-code-fable-5-1-not-visible.md
 !docs/error-experiences/2026-09-13-claude-code-fable-5-1-not-visible.html
 !docs/codex-credits.md
+!docs/error-experiences/2026-09-15-codex-model-catalog-context-window.md
+!docs/error-experiences/2026-09-15-codex-model-catalog-context-window.html
+!docs/error-experiences/codex-catalog-picker-rules.md
 !docs/legal/
 !docs/legal/*.md
 !docs/screenshots/
@@ -191,6 +194,10 @@ issues/
 # must be committed deliberately or archived outside this repository.
 !/agents-results/
 !/agents-results/**
+# Raw run logs, agent transcripts and copied third-party sources stay local.
+/agents-results/**/*.log
+/agents-results/**/*.jsonl
+/agents-results/**/research/sources/
 
 # Generated Chrome restock extension package
 frontend/public/assets/ldxp-browser-extension.zip

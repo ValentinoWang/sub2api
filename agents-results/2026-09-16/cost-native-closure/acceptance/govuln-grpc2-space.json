@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/govulncheck",
+    "./..."
+  ],
+  "minimum_required_gib": 3.0,
+  "stop_threshold_gib": 3.25,
+  "lowest_free_bytes": 5540311040,
+  "status": "PASS",
+  "exit_code": 0,
+  "reserve_preserved": true
+}

@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/go",
+    "test",
+    "-p",
+    "1",
+    "-tags=integration",
+    "./internal/service",
+    "./internal/costing",
+    "./pkg/pluginapi/v1",
+    "-count=1"
+  ],
+  "minimum_required_gib": 3.0,
+  "stop_threshold_gib": 3.25,
+  "lowest_free_bytes": 4134064128,
+  "status": "PASS",
+  "exit_code": 0,
+  "reserve_preserved": true
+}

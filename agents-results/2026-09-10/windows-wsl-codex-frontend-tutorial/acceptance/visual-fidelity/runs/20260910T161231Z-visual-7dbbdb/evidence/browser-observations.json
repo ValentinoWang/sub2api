@@ -1,0 +1,46 @@
+{
+  "task_id": "windows-wsl-codex-frontend-tutorial",
+  "url": "http://127.0.0.1:4174/experiences/windows-11-wsl-codex-frontend",
+  "hmr": {
+    "host": "127.0.0.1",
+    "port": 4174,
+    "route_status": 200
+  },
+  "desktop": {
+    "viewport": "1280x720",
+    "observed": [
+      "Hero, Human/AI responsibilities, learning goals and workflow are visible in a coherent first-screen hierarchy",
+      "Page title and direct route are correct"
+    ]
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "body_scroll_width": 382,
+    "document_scroll_width": 382,
+    "page_horizontal_overflow": false,
+    "step_count": 10,
+    "terminal_card_count": 3,
+    "prompt_card_count": 8
+  },
+  "interaction": {
+    "action": "click first Linux command copy button",
+    "visible_status": "内容已复制，可以粘贴到对应的终端或 Codex 输入框。"
+  },
+  "console": {
+    "tutorial_component_errors": 0,
+    "environment_errors": [
+      "Stale local authentication produced a 401 token refresh error",
+      "Global app initialization then logged announcement, subscription and compliance preload errors"
+    ]
+  },
+  "figma": {
+    "file_key": "bG5roZJVC4F4IQwaL8oeOk",
+    "page_id": "11:14",
+    "desktop_frame_id": "11:15",
+    "mobile_frame_id": "11:143",
+    "editable_node_count": 256,
+    "image_paint_count": 0,
+    "missing_font_count": 0,
+    "detected_text_overflow_count": 0
+  }
+}

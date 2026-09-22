@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "new_manual_recheck_tests": 18,
+  "all_ldxp_python_tests": 115,
+  "edited_source_files": [
+    "tools/quality/tests/test_ldxp_manual_recheck.py"
+  ],
+  "source_sha256": {
+    "tools/commerce/ldxp_http_restock.py": "080e09f972c2ed08561b1a88bd303bdd037108eab53b979de904c4764a885ff8",
+    "tools/commerce/ldxp_http_probe.py": "2dcd70134729477459a92e216835c751aee4663f5f72dc0958bcf532710ab43f",
+    "tools/quality/tests/test_ldxp_http_probe.py": "6e33b27af9af6667e9902d082037901de1b3cf69780fabc222ff2d6f6563279a",
+    "tools/quality/tests/test_ldxp_http_recovery.py": "14606588a7c45c56d5617d52cf7b5ee93163cdb4ce3159848d58d00c6f2d861a",
+    "tools/quality/tests/test_ldxp_http_response_recovery.py": "07d42adb76c9eacb9782d30e4a12b788cf2f6622c589810a495213e2c3924962",
+    "tools/quality/tests/test_ldxp_http_restock.py": "37953ccb1809494f5a104d506ac8193f4ce0fd047e5f0d64ade7a4e8fd4731cd",
+    "tools/quality/tests/test_ldxp_manual_recheck.py": "5eeb0c20f473279dbe2f1b7dba8496d6e32320ddecf19ab995ac175426d29e36",
+    "tools/quality/tests/test_ldxp_runtime_notification.py": "78407df84c017914dc4eff46c62f6062e9fa9bd5c21b433bd2be1aea35a07d1c"
+  },
+  "evidence_sha256": {
+    "ldxp-python-suite.log": "3e7220ed5788a0ae4eeea21018a0cca39722f6d01135ef9b14a8a453a46ea5a3",
+    "manual-recheck-initial.log": "11732de837fd1926dc2c4e6550d51bd4967fc26a6c2fa9c1c8c45ca9a0e41f5f",
+    "manual-recheck-regression.log": "eec07b132f0cec7bebb37c775f16aaf5f2915138288ae683d6de444b3f880a35"
+  },
+  "verified": [
+    "Manual check bypasses WAF wait but still validates merchant authorization and every pinned product inventory.",
+    "Failed checks do not resume, claim, start a batch, or upload; successful verification is the prerequisite to resume.",
+    "Manual file, protected persisted pauses, disabled backend, unknown inventory and uncertain batches remain protected.",
+    "Lost ACK replays the saved success/failure without another merchant scan, including after session loss on restart.",
+    "Invalid request/device/state/ID fails closed without ACK or merchant verification.",
+    "Paused daemon polls local recheck every 5 seconds while normal work remains at 60 seconds; manual request triggers before next normal cycle.",
+    "Worker lock releases after every poll and exception; scheduler lock remains held until daemon exit.",
+    "Installing daemon while paused preserves state.json and manual pause file."
+  ],
+  "defects": [
+    {
+      "issue": "Cached successful verdict was replaced by failed/login_required after ACK loss and session loss during daemon restart.",
+      "status": "FIXED_BY_PARENT_AND_VERIFIED"
+    },
+    {
+      "issue": "Non-string request IDs raised uncaught TypeError; malformed claims during missing-session handling could be acknowledged or change pause state.",
+      "status": "FIXED_BY_PARENT_AND_VERIFIED"
+    }
+  ],
+  "initial_fixture_note": "The initial scheduling fixture incorrectly retained an old response backoff while unpaused. Fixture corrected before final assertions; not treated as a product defect.",
+  "boundaries": [
+    "Only synthetic temporary directories, mock merchant/backend, fake monotonic clock, and mocked launchctl were used.",
+    "No production/backend/merchant/credential access, source script edits, Git commit, or deployment performed by this test subtask."
+  ]
+}

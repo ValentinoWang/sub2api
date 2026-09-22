@@ -1,5 +1,5 @@
 import { defineConfig, loadEnv, Plugin } from 'vite'
-import { prerenderPublicPages } from './prerender.config'
+import { experienceReference, prerenderPublicPages } from './prerender.config'
 import vue from '@vitejs/plugin-vue'
 import checker from 'vite-plugin-checker'
 import { resolve } from 'path'
@@ -82,6 +82,14 @@ export default defineConfig(({ mode }) => {
   // 加载环境变量
   const env = loadEnv(mode, process.cwd(), '')
   const backendUrl = env.VITE_DEV_PROXY_TARGET || 'http://127.0.0.1:8080'
+  const costLocalProxy = env.VITE_COST_LOCAL_PROXY
+  if (costLocalProxy) {
+    const target = new URL(costLocalProxy)
+    if (target.protocol !== 'http:' || target.hostname !== '127.0.0.1' || !target.port || target.username || target.password || target.pathname !== '/' || target.search || target.hash) {
+      throw new Error('成本本地服务必须使用明确的 127.0.0.1 端口。')
+    }
+  }
+
   const devPort = 4174
   if (env.VITE_DEV_PORT && env.VITE_DEV_PORT !== String(devPort)) {
     throw new Error('Sub2API 前端端口固定为 4174，请移除其他 VITE_DEV_PORT 设置。')
@@ -104,6 +112,7 @@ export default defineConfig(({ mode }) => {
         vueTsc: true
       }),
       injectPublicSettings(backendUrl),
+      experienceReference(),
       prerenderPublicPages()
     ],
   resolve: {
@@ -174,6 +183,7 @@ export default defineConfig(({ mode }) => {
       port: devPort,
       strictPort: true,
       proxy: {
+        ...(costLocalProxy ? { '/api/v1/admin/cost-center': { target: costLocalProxy, changeOrigin: true } } : {}),
         '/health': {
           target: backendUrl,
           changeOrigin: true
@@ -184,7 +194,8 @@ export default defineConfig(({ mode }) => {
         },
         '/v1': {
           target: backendUrl,
-          changeOrigin: true
+          changeOrigin: true,
+          ws: true
         },
         '/setup': {
           target: backendUrl,

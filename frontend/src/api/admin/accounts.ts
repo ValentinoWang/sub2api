@@ -953,6 +953,24 @@ export interface OpenAIQuotaResetResult {
     | 'account_state_refresh_failed'
 }
 
+export interface OpenAIResetCreditCheck {
+  status: 'recent' | 'clear' | 'unknown'
+  checked_at: string
+  as_of?: string
+  window_start?: string
+  last_used_at?: string
+  used_count: number
+  recent_use_count: number
+  history_complete: boolean
+  reason?: string
+  confirmation_key: string
+}
+
+export async function checkOpenAIResetCreditHistory(id: number): Promise<OpenAIResetCreditCheck> {
+  const { data } = await apiClient.get<OpenAIResetCreditCheck>(`/admin/openai/accounts/${id}/reset-credit-check`)
+  return data
+}
+
 /** Usage payload plus whether the reset-credit snapshot was persisted. */
 export interface OpenAIQuotaRefreshResult extends OpenAIQuotaUsage {
   cache_persisted: boolean
@@ -964,9 +982,8 @@ export interface OpenAIQuotaRefreshResult extends OpenAIQuotaUsage {
  * so the card can be rehydrated without an upstream round-trip. It is a POST
  * because it writes account state (and must therefore be audited).
  *
- * The read-only `GET /admin/openai/accounts/:id/quota` endpoint still exists for
- * API consumers; the panel always wants the snapshot persisted, so it has no
- * client binding here.
+ * The legacy quota GET also notifies automatic reset jobs. Use the dedicated
+ * reset-credit-check endpoint for preflight without notifying those jobs.
  */
 export async function refreshOpenAIQuota(id: number): Promise<OpenAIQuotaRefreshResult> {
   const { data } = await apiClient.post<OpenAIQuotaRefreshResult>(
@@ -1000,10 +1017,10 @@ export async function sendOpenAIReferralInvite(
  * timeout: aborting locally would report a successful consumption as a failure
  * and invite a retry that spends a second credit.
  */
-export async function resetOpenAIQuota(id: number): Promise<OpenAIQuotaResetResult> {
+export async function resetOpenAIQuota(id: number, confirmationKey?: string): Promise<OpenAIQuotaResetResult> {
   const { data } = await apiClient.post<OpenAIQuotaResetResult>(
     `/admin/openai/accounts/${id}/reset-quota`,
-    undefined,
+    confirmationKey ? { confirmation_key: confirmationKey } : undefined,
     { timeout: 90_000 }
   )
   return data

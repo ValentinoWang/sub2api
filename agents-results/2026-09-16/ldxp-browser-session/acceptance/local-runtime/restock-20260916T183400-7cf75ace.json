@@ -1,0 +1,11 @@
+{
+  "status": "SCHEDULED",
+  "execution_mode": "browser",
+  "control_url": "http://127.0.0.1:52401",
+  "interval_seconds": 60,
+  "finished_at": 1789554840.352213,
+  "source_sha256": {
+    "ldxp_http_restock.py": "552eba90fd406848a3b81dc27230fab6eeee3d08dd8fb6e56bad339e1e7ee009",
+    "ldxp_http_probe.py": "2dcd70134729477459a92e216835c751aee4663f5f72dc0958bcf532710ab43f"
+  }
+}

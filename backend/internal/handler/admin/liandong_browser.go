@@ -1,9 +1,12 @@
 package admin
 
 import (
+	"encoding/json"
 	"strings"
+	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
+	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -207,6 +210,97 @@ func (h *LiandongToolkitHandler) BrowserHeartbeat(c *gin.Context) {
 	}
 	browserRespond(c, gin.H{"enabled": out.Enabled, "paused_reason": out.PausedReason}, nil)
 }
+
+func (h *LiandongToolkitHandler) BrowserRuntime(c *gin.Context) {
+	s := h.browserService(c)
+	if s == nil {
+		return
+	}
+	var req struct {
+		State                       string          `json:"state"`
+		Reason                      *string         `json:"reason"`
+		BrowserVerificationRequired *bool           `json:"browser_verification_required"`
+		ExecutionMode               json.RawMessage `json:"execution_mode,omitempty"`
+		CheckedAt                   *time.Time      `json:"checked_at,omitempty"`
+		NextCheckAt                 *time.Time      `json:"next_check_at,omitempty"`
+	}
+	if !browserBind(c, &req) {
+		return
+	}
+	if req.Reason == nil || req.BrowserVerificationRequired == nil {
+		writeLiandongToolkitRequestError(c, "invalid runtime report")
+		return
+	}
+	executionMode := "http"
+	if req.ExecutionMode != nil {
+		var mode *string
+		if err := json.Unmarshal(req.ExecutionMode, &mode); err != nil || mode == nil || (*mode != "http" && *mode != "browser") {
+			writeLiandongToolkitRequestError(c, "invalid runtime execution mode")
+			return
+		}
+		executionMode = *mode
+	}
+	out, err := s.BrowserReportRuntime(c.Request.Context(), c.GetString("ldxp_browser_device"), service.LiandongBrowserRuntimeReport{
+		State: req.State, Reason: *req.Reason, BrowserVerificationRequired: *req.BrowserVerificationRequired,
+		ExecutionMode: executionMode, CheckedAt: req.CheckedAt, NextCheckAt: req.NextCheckAt,
+	})
+	browserRespond(c, out, err)
+}
+
+func browserEmptyRecheckBody(c *gin.Context) bool {
+	var empty struct{}
+	if _, err := bindLiandongToolkitJSON(c, &empty, true); err != nil {
+		writeLiandongToolkitRequestError(c, "recheck request must not contain parameters")
+		return false
+	}
+	return true
+}
+
+func (h *LiandongToolkitHandler) BrowserRequestRecheck(c *gin.Context) {
+	s := h.browserService(c)
+	if s == nil || !browserEmptyRecheckBody(c) {
+		return
+	}
+	subject, ok := middleware.GetAuthSubjectFromContext(c)
+	role, hasRole := middleware.GetUserRoleFromContext(c)
+	if !ok || subject.UserID <= 0 || !hasRole || role != "admin" {
+		response.Unauthorized(c, "Administrator identity is required")
+		return
+	}
+	out, err := s.BrowserRequestRecheck(c.Request.Context(), c.Param("id"), subject.UserID)
+	browserRespond(c, gin.H{"recheck": out}, err)
+}
+
+func (h *LiandongToolkitHandler) BrowserClaimRecheck(c *gin.Context) {
+	s := h.browserService(c)
+	if s == nil || !browserEmptyRecheckBody(c) {
+		return
+	}
+	out, err := s.BrowserClaimRecheck(c.Request.Context(), c.GetString("ldxp_browser_device"))
+	browserRespond(c, gin.H{"recheck": out}, err)
+}
+
+func (h *LiandongToolkitHandler) BrowserFinishRecheck(c *gin.Context) {
+	s := h.browserService(c)
+	if s == nil {
+		return
+	}
+	var req struct {
+		State   string  `json:"state"`
+		Reason  *string `json:"reason"`
+		Resumed *bool   `json:"resumed"`
+	}
+	if !browserBind(c, &req) {
+		return
+	}
+	if req.Reason == nil || req.Resumed == nil {
+		writeLiandongToolkitRequestError(c, "invalid recheck result")
+		return
+	}
+	out, err := s.BrowserFinishRecheck(c.Request.Context(), c.GetString("ldxp_browser_device"), c.Param("id"), service.LiandongBrowserRecheckResult{State: req.State, Reason: *req.Reason, Resumed: *req.Resumed})
+	browserRespond(c, gin.H{"recheck": out}, err)
+}
+
 func (h *LiandongToolkitHandler) BrowserDeviceResume(c *gin.Context) {
 	s := h.browserService(c)
 	if s == nil {

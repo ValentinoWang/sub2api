@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,10 +21,15 @@ import (
 // stubJWTUserRepo 实现 UserRepository 的最小子集，仅支持 GetByID。
 type stubJWTUserRepo struct {
 	service.UserRepository
-	users map[int64]*service.User
+	users              map[int64]*service.User
+	err                error
+	updateLastActiveFn func(context.Context) error
 }
 
 func (r *stubJWTUserRepo) GetByID(_ context.Context, id int64) (*service.User, error) {
+	if r.err != nil {
+		return nil, r.err
+	}
 	u, ok := r.users[id]
 	if !ok {
 		return nil, service.ErrUserNotFound
@@ -35,7 +41,10 @@ func (r *stubJWTUserRepo) GetUserAvatar(_ context.Context, _ int64) (*service.Us
 	return nil, nil
 }
 
-func (r *stubJWTUserRepo) UpdateUserLastActiveAt(_ context.Context, _ int64, _ time.Time) error {
+func (r *stubJWTUserRepo) UpdateUserLastActiveAt(ctx context.Context, _ int64, _ time.Time) error {
+	if r.updateLastActiveFn != nil {
+		return r.updateLastActiveFn(ctx)
+	}
 	return nil
 }
 
@@ -53,13 +62,16 @@ func (r *recordingActivityToucher) TouchLastActiveForUser(_ context.Context, use
 // newJWTTestEnv 创建 JWT 认证中间件测试环境。
 // 返回 gin.Engine（已注册 JWT 中间件）和 AuthService（用于生成 Token）。
 func newJWTTestEnv(users map[int64]*service.User) (*gin.Engine, *service.AuthService) {
+	return newJWTTestEnvWithRepo(&stubJWTUserRepo{users: users})
+}
+
+func newJWTTestEnvWithRepo(userRepo *stubJWTUserRepo) (*gin.Engine, *service.AuthService) {
 	gin.SetMode(gin.TestMode)
 
 	cfg := &config.Config{}
 	cfg.JWT.Secret = "test-jwt-secret-32bytes-long!!!"
 	cfg.JWT.AccessTokenExpireMinutes = 60
 
-	userRepo := &stubJWTUserRepo{users: users}
 	authSvc := service.NewAuthService(nil, userRepo, nil, nil, cfg, nil, nil, nil, nil, nil, nil, nil, nil)
 	userSvc := service.NewUserService(userRepo, nil, nil, nil)
 	mw := NewJWTAuthMiddleware(authSvc, userSvc, nil, nil)
@@ -244,10 +256,13 @@ func TestJWTAuth_UserLookupErrors(t *testing.T) {
 		err    error
 		status int
 		code   string
+		// The user JWT route keeps sessions alive during dependency outages (503).
+		userStatus int
+		userCode   string
 	}{
-		{"missing user", service.ErrUserNotFound, http.StatusUnauthorized, "USER_NOT_FOUND"},
-		{"database timeout", context.DeadlineExceeded, http.StatusInternalServerError, "INTERNAL_ERROR"},
-		{"database failure", errors.New("database unavailable"), http.StatusInternalServerError, "INTERNAL_ERROR"},
+		{"missing user", service.ErrUserNotFound, http.StatusUnauthorized, "USER_NOT_FOUND", http.StatusUnauthorized, "USER_NOT_FOUND"},
+		{"database timeout", context.DeadlineExceeded, http.StatusInternalServerError, "INTERNAL_ERROR", http.StatusServiceUnavailable, "AUTH_SERVICE_UNAVAILABLE"},
+		{"database failure", errors.New("database unavailable"), http.StatusInternalServerError, "INTERNAL_ERROR", http.StatusServiceUnavailable, "AUTH_SERVICE_UNAVAILABLE"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			userRepo := &stubUserRepo{getByID: func(context.Context, int64) (*service.User, error) {
@@ -282,10 +297,14 @@ func TestJWTAuth_UserLookupErrors(t *testing.T) {
 					w := httptest.NewRecorder()
 					router.ServeHTTP(w, req)
 
-					require.Equal(t, tc.status, w.Code)
+					wantStatus, wantCode := tc.status, tc.code
+					if route.name == "user" {
+						wantStatus, wantCode = tc.userStatus, tc.userCode
+					}
+					require.Equal(t, wantStatus, w.Code)
 					var body ErrorResponse
 					require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
-					require.Equal(t, tc.code, body.Code)
+					require.Equal(t, wantCode, body.Code)
 					require.False(t, called)
 				})
 			}
@@ -317,6 +336,95 @@ func TestJWTAuth_UserNotFound(t *testing.T) {
 	var body ErrorResponse
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
 	require.Equal(t, "USER_NOT_FOUND", body.Code)
+}
+
+func TestJWTAuth_UserLookupFailurePreservesValidToken(t *testing.T) {
+	user := &service.User{ID: 1, Email: "test@example.com", Role: "user", Status: service.StatusActive, TokenVersion: 1}
+	for _, tc := range []struct {
+		name string
+		err  error
+	}{
+		{name: "deadline", err: fmt.Errorf("synthetic lookup: %w", context.DeadlineExceeded)},
+		{name: "canceled", err: fmt.Errorf("synthetic lookup: %w", context.Canceled)},
+		{name: "database unavailable", err: errors.New("synthetic-private-database-error")},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := &stubJWTUserRepo{users: map[int64]*service.User{user.ID: user}, err: tc.err}
+			router, authSvc := newJWTTestEnvWithRepo(repo)
+			token, err := authSvc.GenerateToken(context.Background(), user)
+			require.NoError(t, err)
+			request := func() *httptest.ResponseRecorder {
+				req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+				req.Header.Set("Authorization", "Bearer "+token)
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+				return w
+			}
+
+			failed := request()
+			require.Equal(t, http.StatusServiceUnavailable, failed.Code)
+			var body ErrorResponse
+			require.NoError(t, json.Unmarshal(failed.Body.Bytes(), &body))
+			require.Equal(t, "AUTH_SERVICE_UNAVAILABLE", body.Code)
+			require.NotContains(t, failed.Body.String(), tc.err.Error())
+			require.NotContains(t, failed.Body.String(), token)
+			require.Empty(t, failed.Result().Cookies())
+
+			repo.err = nil
+			require.Equal(t, http.StatusOK, request().Code)
+		})
+	}
+}
+
+func TestJWTAuth_WrappedUserNotFoundRemainsUnauthorized(t *testing.T) {
+	user := &service.User{ID: 1, Email: "test@example.com", Role: "user", Status: service.StatusActive, TokenVersion: 1}
+	router, authSvc := newJWTTestEnvWithRepo(&stubJWTUserRepo{err: fmt.Errorf("synthetic lookup: %w", service.ErrUserNotFound)})
+	token, err := authSvc.GenerateToken(context.Background(), user)
+	require.NoError(t, err)
+	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	require.Equal(t, http.StatusUnauthorized, w.Code)
+	var body ErrorResponse
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
+	require.Equal(t, "USER_NOT_FOUND", body.Code)
+}
+
+func TestJWTAuth_LastActiveTimeoutAllowsAuthenticatedHandler(t *testing.T) {
+	user := &service.User{ID: 1, Email: "test@example.com", Role: "user", Status: service.StatusActive, TokenVersion: 1}
+	updateFinished := make(chan error, 1)
+	repo := &stubJWTUserRepo{
+		users: map[int64]*service.User{user.ID: user},
+		updateLastActiveFn: func(ctx context.Context) error {
+			<-ctx.Done()
+			updateFinished <- ctx.Err()
+			return ctx.Err()
+		},
+	}
+	router, authSvc := newJWTTestEnvWithRepo(repo)
+	token, err := authSvc.GenerateToken(context.Background(), user)
+	require.NoError(t, err)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	req := httptest.NewRequest(http.MethodGet, "/protected", nil).WithContext(ctx)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	done := make(chan struct{})
+	go func() { router.ServeHTTP(w, req); close(done) }()
+	t.Cleanup(func() { cancel(); <-done })
+	select {
+	case <-done:
+	case <-time.After(1500 * time.Millisecond):
+		t.Fatal("activity bookkeeping prevented authenticated handler execution")
+	}
+	require.Equal(t, http.StatusOK, w.Code)
+	select {
+	case err := <-updateFinished:
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+	case <-time.After(time.Second):
+		t.Fatal("activity repository did not receive its internal deadline")
+	}
 }
 
 func TestJWTAuth_UserInactive(t *testing.T) {

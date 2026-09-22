@@ -1,5 +1,6 @@
 import { CODEX_SESSION_MIGRATION } from '../constants/codexMigration'
 import { PUBLIC_PAGES } from '../constants/brand'
+import codexModelCatalogGuide from './codexModelCatalogGuide.json'
 
 export type ExperienceCategory =
   | 'connectionConfiguration'
@@ -128,6 +129,20 @@ export const claudeCodeFableNotVisiblePrompt = `我通过一个兼容 Anthropic 
 最后分别报告：客户端版本、模型目录是否含 claude-fable-5-1、发现开关是否生效、/model 是否显示、是否实际选中、是否执行过生成请求。若仍未显示，保留客户端错误和脱敏目录响应，判断应继续检查本机版本/配置还是联系中转站管理员。`
 
 export const experiences: ExperienceContent[] = [
+  {
+    id: 'codex-model-catalog-context-window',
+    category: 'modelsUsage',
+    route: PUBLIC_PAGES.codexModelCatalog,
+    routeName: 'CodexModelCatalogExperience',
+    icon: 'sync',
+    title: codexModelCatalogGuide.title,
+    summary: codexModelCatalogGuide.summary,
+    series: 'Codex 使用错误说明',
+    subtitle: '模型选对以后，还要让客户端加载正确的能力目录',
+    applicableTo: codexModelCatalogGuide.applicableTo,
+    updatedAt: codexModelCatalogGuide.updatedAt,
+    prompt: codexModelCatalogGuide.prompt,
+  },
   {
     id: 'windows-11-wsl-codex-frontend',
     category: 'connectionConfiguration',

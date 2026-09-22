@@ -1,0 +1,11 @@
+{
+  "passed": false,
+  "stage": "artifact",
+  "blockers": [
+    "unable to read the protected admin key file"
+  ],
+  "enablement": {
+    "requested": false,
+    "enabled": false
+  }
+}

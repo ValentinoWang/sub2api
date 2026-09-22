@@ -1,0 +1,55 @@
+{
+  "observed_at": "2026-09-12T16:43:44.504733+00:00",
+  "environments": {
+    "dev": {
+      "image_id": "sha256:be86989dffeb042d5bbf60f6ed6567d07cb449c72402794673776adf6568f7f8",
+      "image_name": "sub2api-local:0.2.5-local-1b221364260b",
+      "health": "healthy",
+      "counts": {
+        "users": 2,
+        "accounts": 10,
+        "api_keys": 3,
+        "redeem_codes": 4,
+        "migrations": 292,
+        "last_migration": "238_rest2build_product_schema.sql"
+      },
+      "secret_fingerprints": {
+        "DATABASE_PASSWORD": "394108c9ebee20639892c4c4b6ebe48cd9cfa638bfd5df91c6bb7a1d8903661b",
+        "JWT_SECRET": "274496560d6ab46a11db9c40706707f822e70208c7e5ce21ffe73a89eefddb14",
+        "TOTP_ENCRYPTION_KEY": "7bb280f9db422fdfa4753accb50bd65bce21f7844d767950b57c0ea234db92e4",
+        "REDIS_PASSWORD": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "mounts": [
+        {
+          "source": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/deploy/data",
+          "destination": "/app/data"
+        }
+      ]
+    },
+    "prod": {
+      "image_id": "sha256:d357b6704e0d9062d412af3d98caf4fcd5e57741cce38d6ccef65ee91aeee457",
+      "image_name": "sub2api-local:0.2.5-8c9390cb6e77",
+      "health": "healthy",
+      "counts": {
+        "users": 2,
+        "accounts": 10,
+        "api_keys": 9,
+        "redeem_codes": 3,
+        "migrations": 294,
+        "last_migration": "238_rest2build_product_schema.sql"
+      },
+      "secret_fingerprints": {
+        "DATABASE_PASSWORD": "394108c9ebee20639892c4c4b6ebe48cd9cfa638bfd5df91c6bb7a1d8903661b",
+        "JWT_SECRET": "274496560d6ab46a11db9c40706707f822e70208c7e5ce21ffe73a89eefddb14",
+        "TOTP_ENCRYPTION_KEY": "7bb280f9db422fdfa4753accb50bd65bce21f7844d767950b57c0ea234db92e4",
+        "REDIS_PASSWORD": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "mounts": [
+        {
+          "source": "/home/ubuntu/sub2api/deploy/data",
+          "destination": "/app/data"
+        }
+      ]
+    }
+  }
+}

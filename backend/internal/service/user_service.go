@@ -57,6 +57,7 @@ const (
 	defaultUserIdentityRedirect = "/settings/profile"
 	userLastActiveMinTouch      = 10 * time.Minute
 	userLastActiveFailBackoff   = 30 * time.Second
+	userLastActiveTouchTimeout  = time.Second
 )
 
 var (
@@ -1099,7 +1100,9 @@ func (s *UserService) TouchLastActiveForUser(ctx context.Context, user *User) {
 		}
 	}
 
-	_, err, _ := s.lastActiveTouchSF.Do(strconv.FormatInt(user.ID, 10), func() (any, error) {
+	touchCtx, cancel := context.WithTimeout(ctx, userLastActiveTouchTimeout)
+	defer cancel()
+	resultCh := s.lastActiveTouchSF.DoChan(strconv.FormatInt(user.ID, 10), func() (any, error) {
 		latest := time.Now()
 		if v, ok := s.lastActiveTouchL1.Load(user.ID); ok {
 			if nextAllowedAt, ok := v.(time.Time); ok && latest.Before(nextAllowedAt) {
@@ -1109,13 +1112,21 @@ func (s *UserService) TouchLastActiveForUser(ctx context.Context, user *User) {
 		if userLastActiveFresh(user.LastActiveAt, latest) {
 			return nil, nil
 		}
-		if err := s.userRepo.UpdateUserLastActiveAt(ctx, user.ID, latest); err != nil {
+		if err := s.userRepo.UpdateUserLastActiveAt(touchCtx, user.ID, latest); err != nil {
 			s.lastActiveTouchL1.Store(user.ID, latest.Add(userLastActiveFailBackoff))
 			return nil, fmt.Errorf("touch user last active: %w", err)
 		}
 		s.lastActiveTouchL1.Store(user.ID, latest.Add(userLastActiveMinTouch))
 		return nil, nil
 	})
+	// Activity bookkeeping must not hold authentication behind another request's write.
+	var err error
+	select {
+	case result := <-resultCh:
+		err = result.Err
+	case <-touchCtx.Done():
+		err = touchCtx.Err()
+	}
 	if err != nil {
 		slog.Warn("touch user last active failed", "user_id", user.ID, "error", err)
 	}

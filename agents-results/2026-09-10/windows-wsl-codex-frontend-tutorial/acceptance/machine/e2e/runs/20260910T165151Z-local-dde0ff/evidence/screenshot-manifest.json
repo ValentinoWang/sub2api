@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "source_identity": "20189b7348fa74020e066241890c240e0c28cad4+worktree-dde0ffb9e5fd",
+  "runtime_identity": "vite-hmr-127.0.0.1:4174",
+  "review": {
+    "status": "PASS",
+    "reviewer": "Codex visual review",
+    "reviewed_at": "2026-09-10T16:53:11Z",
+    "conclusion": "The rewritten page reads as a beginner-facing experience article, clearly distinguishes the reader's actions from Codex work, and renders without visible clipping or page-level horizontal overflow at the declared desktop and mobile viewports."
+  },
+  "screenshots": [
+    {
+      "path": "evidence/screenshots/tutorial-desktop-1280x720.png",
+      "sha256": "098aa96a180046bdcd896db5d0619b058c52716dc3bd6f7bf3c6300c71f050fd",
+      "page_id": "windows-wsl-codex-frontend-tutorial",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "captured_at": "2026-09-10T16:52:40Z"
+    },
+    {
+      "path": "evidence/screenshots/tutorial-mobile-390x844.png",
+      "sha256": "b274e83af7fc2f385b3b8857f53959662eeb8752c38b624b838199c0d01338d7",
+      "page_id": "windows-wsl-codex-frontend-tutorial",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "captured_at": "2026-09-10T16:52:41Z"
+    }
+  ]
+}

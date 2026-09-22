@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "baseline_commit": "2478cc12a97cd3caa10aac7db51fc9b47295aae0",
+  "head_at_evidence_recording": "2478cc12a97cd3caa10aac7db51fc9b47295aae0",
+  "isolated_checkout": "/Users/vsiyo/.local/share/sub2api/ldxp-verification-checkout",
+  "owned_root_and_isolated_files_identical": true,
+  "source_sha256": {
+    "backend/internal/service/liandong_browser_runtime.go": "7c8a6c0138518c5ba25b2b21eeee86ea8e2d5fd295cb451b9c66ab9eca5625f9",
+    "backend/internal/service/liandong_browser.go": "8e619c52f3934ac2fc42e30b9ecfe6c593762332ddb462a157f91c7da655f5c7",
+    "backend/internal/handler/admin/liandong_browser.go": "e7cf366ee39ff5cdcf5adb921cd15cff44c977ec243f273e6e4ab34548d8857d",
+    "backend/internal/server/routes/liandong_tool_routes.go": "39d1d0aa57d31bb8188d4da0bc5cc51a662e576c3f96ea6f5ed49a45bafb4f7b",
+    "backend/migrations/244_liandong_browser_rechecks.sql": "3716d2117c8a6cf2bbef5f243c18ab67935e965c1fd72e710be533efdf807fef",
+    "backend/internal/server/routes/liandong_browser_recheck_integration_test.go": "4073367cb6eb7f12d3dec16a72e9b9854bf6d32e98c1bf3607c198d756b023b2"
+  },
+  "checks": {
+    "red": {
+      "exit_code": 1,
+      "passed_cases": 0,
+      "failed_cases": 22,
+      "minimum_free_gib": 5.673030853271484,
+      "space_stop_threshold_gib": 4.0,
+      "reserve_preserved": true,
+      "log_sha256": "59c85cbf67d21443767464a0d4b0398552db3a5061b5bc8e32ba0b61fab5f0b9"
+    },
+    "green": {
+      "exit_code": 0,
+      "passed_cases": 51,
+      "failed_cases": 0,
+      "minimum_free_gib": 5.862773895263672,
+      "space_stop_threshold_gib": 4.0,
+      "reserve_preserved": true,
+      "log_sha256": "83117faceb0b9c3f3807cfe83dc369da965b4dd35354ef31404e40b2d65fece5"
+    }
+  },
+  "migration": {
+    "number": 244,
+    "name": "244_liandong_browser_rechecks.sql",
+    "result": "PASS in temporary PostgreSQL; foreign keys, state lifecycle and one-pending partial unique index exercised"
+  },
+  "verified_boundaries": [
+    "Admin actor comes from authenticated subject and must be an active administrator in the database.",
+    "One queued/checking request per device; repeated clicks and checking reclaims return the same request ID.",
+    "Queued requests older than ten minutes become failed/state_invalid; checking is recoverable after restart.",
+    "Only the owning active device may claim/finish. A queued request cannot bypass claim.",
+    "Consistent terminal results replay unchanged; conflicting terminal results return 409.",
+    "Only fixed state/reason/resumed fields are accepted for a result; arbitrary actor/device/token fields are rejected.",
+    "Request actions preserve merchant authorization, device timestamps, paused reason, runtime, configuration, inventory, batches, redemption codes and user balance snapshots.",
+    "BrowserStatus publishes recheck_supported=true and the latest devices[].recheck; actual safe resume remains an independent worker action.",
+    "Original runtime protocol integration suite remains green."
+  ],
+  "not_verified": [
+    "No original 8080 or production operation.",
+    "No full local CI or real frontend/worker/deployment acceptance in this subtask.",
+    "No Git commit or VERSION update performed."
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "checked_at": "2026-09-15T14:25:34.302095+00:00",
+  "status": "LOCAL_RESTOCK_VERIFIED",
+  "target_stock": 999,
+  "all_products_at_target": false,
+  "latest_complete_cycle": "restock-20260915T222431-d9c00fdd.json",
+  "products": [
+    {
+      "goods_id": 874783,
+      "stock_before": 85,
+      "stock": 105,
+      "matched_stock": 105,
+      "uploaded": 20,
+      "batch_id": "browser-b95909b2bd4ed360962c59534f9ce7ac",
+      "batch_verified": true
+    },
+    {
+      "goods_id": 875537,
+      "stock_before": 85,
+      "stock": 105,
+      "matched_stock": 105,
+      "uploaded": 20,
+      "batch_id": "browser-830344cb400d12044d7d4f365cab3a02",
+      "batch_verified": true
+    },
+    {
+      "goods_id": 875562,
+      "stock_before": 85,
+      "stock": 105,
+      "matched_stock": 105,
+      "uploaded": 20,
+      "batch_id": "browser-de4f3889fb821c5c78d5d2fea12072b9",
+      "batch_verified": true
+    },
+    {
+      "goods_id": 875570,
+      "stock_before": 85,
+      "stock": 105,
+      "matched_stock": 105,
+      "uploaded": 20,
+      "batch_id": "browser-810ea045bbe643bf43c6594599441cbc",
+      "batch_verified": true
+    },
+    {
+      "goods_id": 875577,
+      "stock_before": 85,
+      "stock": 105,
+      "matched_stock": 105,
+      "uploaded": 20,
+      "batch_id": "browser-002de6b3c26793002b0ba67675d0c7c0",
+      "batch_verified": true
+    }
+  ],
+  "small_batch_receipt": "restock-20260915T221048-7108c869.json",
+  "repeat_no_new_codes_receipt": "restock-20260915T221116-f566b32e.json",
+  "interrupted_batch_recovery_receipt": "restock-20260915T221232-0e8f454a.json",
+  "scheduler": {
+    "loaded": true,
+    "runs_since_restart": 4,
+    "interval_seconds": 60,
+    "last_exit_code": 0
+  },
+  "source_sha256": {
+    "ldxp_http_restock.py": "513762c37797cd2d9c9ed871c62ada28f29506b12f071e492a1b2e24fbeb2992",
+    "ldxp_http_probe.py": "7e8dcc411e52900d63cf4129660c7e54314093ac573e1f00c35b96f1527bb7f7"
+  },
+  "targeted_tests_passed": 49,
+  "production_sub2api_accessed": false,
+  "production_inventory_written": false,
+  "purchase_and_redemption": "WAITING_FOR_USER_TEST_ORDER",
+  "human_acceptance": "PENDING",
+  "full_local_ci_run": false,
+  "runtime": "macOS Python 3.9.6 standard library"
+}

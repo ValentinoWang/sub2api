@@ -1,0 +1,100 @@
+{
+  "observed_at": "2026-09-12T18:36:53.430442+00:00",
+  "routes": {
+    "dev": [
+      {
+        "route": "/health",
+        "status": 200
+      },
+      {
+        "route": "/login",
+        "status": 200
+      },
+      {
+        "route": "/purchase",
+        "status": 200
+      },
+      {
+        "route": "/redeem",
+        "status": 200
+      },
+      {
+        "route": "/Api_subscribe",
+        "status": 200
+      }
+    ],
+    "hmr": [
+      {
+        "route": "/health",
+        "status": 200
+      },
+      {
+        "route": "/login",
+        "status": 200
+      },
+      {
+        "route": "/purchase",
+        "status": 200
+      },
+      {
+        "route": "/redeem",
+        "status": 200
+      },
+      {
+        "route": "/Api_subscribe",
+        "status": 200
+      }
+    ],
+    "prod": [
+      {
+        "route": "/health",
+        "status": 200
+      },
+      {
+        "route": "/login",
+        "status": 200
+      },
+      {
+        "route": "/purchase",
+        "status": 200
+      },
+      {
+        "route": "/redeem",
+        "status": 200
+      },
+      {
+        "route": "/Api_subscribe",
+        "status": 200
+      }
+    ]
+  },
+  "startup_logs": {
+    "dev": {
+      "health": "healthy",
+      "critical_matches": {
+        "panic": 0,
+        "fatal": 0,
+        "decryption failed": 0,
+        "failed to run migrations": 0,
+        "database connection failed": 0,
+        "redis connection failed": 0
+      },
+      "streams": "stdout+stderr",
+      "line_count": 55
+    },
+    "prod": {
+      "health": "healthy",
+      "critical_matches": {
+        "panic": 0,
+        "fatal": 0,
+        "decryption failed": 0,
+        "failed to run migrations": 0,
+        "database connection failed": 0,
+        "redis connection failed": 0
+      },
+      "streams": "stdout+stderr",
+      "line_count": 107
+    }
+  },
+  "status": "PASS"
+}

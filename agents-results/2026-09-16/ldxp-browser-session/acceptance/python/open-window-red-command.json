@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "-v",
+    "test_ldxp_browser_session.BrowserSessionTests.test_closed_page_pump_preserves_live_context_and_reopens_without_second_launch",
+    "test_ldxp_browser_session.BrowserSessionTests.test_context_close_event_still_allows_a_new_persistent_context",
+    "test_ldxp_browser_session.BrowserControlTests.test_open_failure_is_observable_after_queued_request_without_secret_details"
+  ],
+  "cwd": "/Users/vsiyo/Desktop/Opensource_Tool/Sub2api/tools/quality/tests",
+  "exit_code": 1
+}

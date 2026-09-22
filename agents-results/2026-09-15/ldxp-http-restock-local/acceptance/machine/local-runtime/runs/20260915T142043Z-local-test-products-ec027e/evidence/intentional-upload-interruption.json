@@ -1,0 +1,7 @@
+{
+  "fault": "process_exit_after_successful_upload_before_inventory_readback",
+  "goods_id": 874783,
+  "uploaded_count": 1,
+  "exit_code": 75,
+  "time": 1789481537.760007
+}

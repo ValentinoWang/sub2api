@@ -1,10 +1,9 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { nextTick } from 'vue'
 
-const { copyToClipboardMock, saveAsMock } = vi.hoisted(() => ({
-  copyToClipboardMock: vi.fn().mockResolvedValue(true),
-  saveAsMock: vi.fn()
+const { copyToClipboardMock } = vi.hoisted(() => ({
+  copyToClipboardMock: vi.fn().mockResolvedValue(true)
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -19,25 +18,39 @@ vi.mock('@/composables/useClipboard', () => ({
   })
 }))
 
-vi.mock('file-saver', () => ({
-  saveAs: saveAsMock
-}))
-
 import UseKeyModal from '../UseKeyModal.vue'
 
-function readBlobAsText(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.addEventListener('load', () => resolve(String(reader.result || '')))
-    reader.addEventListener('error', () => reject(reader.error))
-    reader.readAsText(blob)
-  })
-}
-
 describe('UseKeyModal', () => {
+  it.each([
+    ['', () => `${window.location.origin}/v1`],
+    ['http://127.0.0.1:4174', () => 'http://127.0.0.1:4174/v1'],
+    ['https://production.example', () => 'https://production.example/v1'],
+    ['https://api.example/prefix/v1/', () => 'https://api.example/prefix/v1'],
+  ] as const)('generates portable HTTP and WS settings for %s on both operating systems', async (baseUrl, expected) => {
+    const wrapper = mount(UseKeyModal, {
+      props: { show: true, apiKey: 'sk-fixture', baseUrl, platform: 'openai' },
+      global: { stubs: { BaseDialog: { template: '<div><slot /></div>' }, Icon: true, RouterLink: RouterLinkStub } }
+    })
+    for (const ws of [false, true]) {
+      if (ws) await wrapper.findAll('button').find(b => b.text().includes('cliTabs.codexCliWs'))!.trigger('click')
+      for (const os of ['macOS / Linux', 'Windows']) {
+        await wrapper.findAll('button').find(b => b.text().trim() === os)!.trigger('click')
+        const code = wrapper.findAll('pre code').map(c => c.text()).find(c => c.includes('model_provider = "OpenAI"'))!
+        expect(code).toContain(`base_url = "${expected()}"`)
+        expect(code).toContain(`supports_websockets = ${ws}`)
+        expect(code).not.toMatch(/windows_wsl_setup_acknowledged|disable_response_storage|network_access|responses_websockets_v2|model_catalog_json/)
+        expect(wrapper.text()).toContain(os === 'Windows' ? '%userprofile%\\.codex\\config.toml' : '~/.codex/config.toml')
+        expect(wrapper.text()).toContain(os === 'Windows' ? '%userprofile%\\.codex\\auth.json' : '~/.codex/auth.json')
+      }
+    }
+    wrapper.unmount()
+  })
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }))
+    copyToClipboardMock.mockReset().mockResolvedValue(true)
+  })
   afterEach(() => {
     vi.unstubAllGlobals()
-    saveAsMock.mockClear()
   })
 
   it('links every Codex setup context to the local-history migration experience without exposing credentials', async () => {
@@ -50,7 +63,7 @@ describe('UseKeyModal', () => {
 
     const migrationLink = wrapper.findComponent(RouterLinkStub)
     expect(migrationLink.exists()).toBe(true)
-    expect(migrationLink.text()).toContain('旧对话无法继续')
+    expect(migrationLink.text()).toContain('从 OpenAI 官方订阅转为中转站后，之前的对话无法继续？')
     expect(migrationLink.props('to')).toEqual({
       path: '/error-experiences/codex-session-migration',
       query: { from: 'p1', topic: 'conversationContinuity' }
@@ -384,8 +397,8 @@ describe('UseKeyModal', () => {
     const configToml = codeBlocks.find((content) => content.includes('model_provider = "OpenAI"'))
 
     expect(configToml).toBeDefined()
-    expect(configToml).toContain('model = "gpt-5.5"')
-    expect(configToml).toContain('review_model = "gpt-5.5"')
+    expect(configToml).toContain('model = "gpt-6-astra"')
+    expect(configToml).toContain('review_model = "gpt-6-astra"')
     expect(configToml).not.toContain('model = "gpt-5.4"')
     expect(configToml).not.toContain('model_context_window')
     expect(configToml).not.toContain('model_auto_compact_token_limit')
@@ -394,7 +407,7 @@ describe('UseKeyModal', () => {
     expect(configToml).not.toContain('x-openai-actor-authorization')
     expect(configToml).not.toContain('env_key')
     expect(configToml).not.toContain('image_generation')
-    expect(configToml).not.toContain('supports_websockets')
+    expect(configToml).toContain('supports_websockets = false')
     expect(configToml).not.toContain('responses_websockets_v2')
     expect(configToml).toContain('[features]\ngoals = true')
     expect(configToml).not.toContain('model_reasoning_effort = "xhigh"')
@@ -486,8 +499,8 @@ describe('UseKeyModal', () => {
     const configToml = codeBlocks.find((content) => content.includes('supports_websockets = true'))
 
     expect(configToml).toBeDefined()
-    expect(configToml).toContain('model = "gpt-5.5"')
-    expect(configToml).toContain('review_model = "gpt-5.5"')
+    expect(configToml).toContain('model = "gpt-6-astra"')
+    expect(configToml).toContain('review_model = "gpt-6-astra"')
     expect(configToml).not.toContain('model = "gpt-5.4"')
     expect(configToml).not.toContain('model_context_window')
     expect(configToml).not.toContain('model_auto_compact_token_limit')
@@ -497,7 +510,8 @@ describe('UseKeyModal', () => {
     expect(configToml).not.toContain('env_key')
     expect(configToml).not.toContain('image_generation')
     expect(configToml).toContain('supports_websockets = true')
-    expect(configToml).toContain('[features]\nresponses_websockets_v2 = true\ngoals = true')
+    expect(configToml).toContain('[features]\ngoals = true')
+    expect(configToml).not.toContain('responses_websockets_v2')
     expect(codeBlocks).toContain('{\n  "OPENAI_API_KEY": "sk-test"\n}')
     expect(wrapper.text()).toContain('auth.json')
   })
@@ -543,7 +557,8 @@ describe('UseKeyModal', () => {
     expect(configToml).not.toContain('env_key')
     expect(configToml).not.toContain('image_generation')
     expect(configToml).toContain('supports_websockets = true')
-    expect(configToml).toContain('[features]\nresponses_websockets_v2 = true\ngoals = true')
+    expect(configToml).toContain('[features]\ngoals = true')
+    expect(configToml).not.toContain('responses_websockets_v2')
     expect(codeBlocks).not.toContain('{\n  "OPENAI_API_KEY": "sk-test"\n}')
     expect(wrapper.text()).not.toContain('auth.json')
   })
@@ -771,10 +786,13 @@ describe('UseKeyModal', () => {
     const unixConfig = wrapper.findAll('pre code')
       .map((code) => code.text())
       .find((content) => content.includes('[model_providers.sub2api]'))
-    expect(unixConfig).toContain('model_catalog_json = "~/.codex/codex-models.json"')
+    expect(unixConfig).not.toContain('model_catalog_json')
     expect(unixConfig).toContain('env_key = "SUB2API_API_KEY"')
 
-    await wrapper.get('[data-testid="codex-model-catalog-fetch"]').trigger('click')
+    expect(wrapper.get('[data-testid="codex-model-catalog-help"]').attributes('href')).toBe('/error-experiences/codex-model-catalog-context-window')
+    expect(wrapper.find('[data-testid="codex-model-catalog-copy"]').exists()).toBe(false)
+    expect(wrapper.find('a[href="/downloads/sync-codex-model-catalog.py"]').exists()).toBe(false)
+
     await flushPromises()
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -783,24 +801,16 @@ describe('UseKeyModal', () => {
         headers: expect.objectContaining({ Authorization: 'Bearer sk-composite-test' })
       })
     )
-    expect(wrapper.get('[data-testid="codex-model-catalog"]').text())
-      .toContain('keys.useKeyModal.codexModelCatalog.download')
+    expect(wrapper.find('[data-testid="codex-model-catalog-fetch"]').exists()).toBe(false)
 
     const loadedUnixConfig = wrapper.findAll('pre code')
       .map((code) => code.text())
       .find((content) => content.includes('[model_providers.sub2api]'))
     expect(loadedUnixConfig).toContain('model = "claude-opus-4-8"')
     expect(loadedUnixConfig).toContain('review_model = "claude-opus-4-8"')
-    expect(loadedUnixConfig).not.toContain('model = "gpt-5.5"')
+    expect(loadedUnixConfig).not.toContain('model = "gpt-6-astra"')
 
-    const downloadButton = wrapper.findAll('button').find((button) =>
-      button.text().includes('keys.useKeyModal.codexModelCatalog.download')
-    )
-    expect(downloadButton).toBeDefined()
-    await downloadButton!.trigger('click')
-    expect(saveAsMock).toHaveBeenCalledWith(expect.any(Blob), 'codex-models.json')
-    const downloadedBlob = saveAsMock.mock.calls[0]?.[0] as Blob
-    expect(JSON.parse(await readBlobAsText(downloadedBlob))).toEqual(manifest)
+    expect(wrapper.find('textarea').exists()).toBe(false)
 
     const windowsTab = wrapper.findAll('button').find((button) => button.text().trim() === 'Windows')
     expect(windowsTab).toBeDefined()
@@ -810,9 +820,7 @@ describe('UseKeyModal', () => {
     const windowsConfig = wrapper.findAll('pre code')
       .map((code) => code.text())
       .find((content) => content.includes('[model_providers.sub2api]'))
-    expect(windowsConfig).toContain(
-      'model_catalog_json = "%userprofile%\\\\.codex\\\\codex-models.json"'
-    )
+    expect(windowsConfig).not.toContain('model_catalog_json')
   })
 
   it.each(['anthropic', 'gemini', 'antigravity', 'kimi', 'zhipu', 'minimax'] as const)(
@@ -844,11 +852,11 @@ describe('UseKeyModal', () => {
       await codexTab!.trigger('click')
       await nextTick()
 
-      expect(wrapper.find('[data-testid="codex-model-catalog"]').exists()).toBe(true)
+      expect(wrapper.find('[data-testid="codex-model-catalog-help"]').exists()).toBe(true)
       const config = wrapper.findAll('pre code')
         .map((code) => code.text())
         .find((content) => content.includes('[model_providers.sub2api]'))
-      expect(config).toContain('model_catalog_json = "~/.codex/codex-models.json"')
+      expect(config).not.toContain('model_catalog_json')
       expect(config).toContain('base_url = "https://example.com/v1"')
       expect(config).toContain('wire_api = "responses"')
     }
@@ -862,7 +870,8 @@ describe('UseKeyModal', () => {
       json: async () => ({
         models: [
           { slug: 'claude-opus-4-8' },
-          { slug: 'gpt-5.5' }
+          { slug: 'gpt-5.5' },
+          { slug: 'gpt-6-astra' }
         ]
       })
     }))
@@ -891,14 +900,13 @@ describe('UseKeyModal', () => {
     )
     expect(codexTab).toBeDefined()
     await codexTab!.trigger('click')
-    await wrapper.get('[data-testid="codex-model-catalog-fetch"]').trigger('click')
     await flushPromises()
 
     const config = wrapper.findAll('pre code')
       .map((code) => code.text())
       .find((content) => content.includes('[model_providers.sub2api]'))
-    expect(config).toContain('model = "gpt-5.5"')
-    expect(config).toContain('review_model = "gpt-5.5"')
+    expect(config).toContain('model = "gpt-6-astra"')
+    expect(config).toContain('review_model = "gpt-6-astra"')
   })
 
   it('derives OpenAI Codex reasoning effort from the selected catalog descriptor', async () => {
@@ -935,7 +943,6 @@ describe('UseKeyModal', () => {
       }
     })
 
-    await wrapper.get('[data-testid="codex-model-catalog-fetch"]').trigger('click')
     await flushPromises()
 
     const configToml = wrapper.findAll('pre code')

@@ -163,9 +163,21 @@ export default {
     }
   },
 
+  costCenter: {
+    accountingDescription: '按账期查看已记录的支出、有效交付和单位成本。',
+    purchasesDescription: '登记已付款采购、分配共享费用，以及补充已完成的交付量。',
+    ledgerDescription: '查看账本流水与记录详情，通过追加作废记录更正误录。',
+    comparisonDescription: '在统一口径下比较 Plus、Pro 5x 和 Pro 20x 的成本情景；比较结果不写入账本。'
+  },
+
   // Navigation
   nav: {
     dashboard: '仪表盘',
+    costCenter: '成本工作台',
+    costAccounting: '成本核算',
+    costPurchases: '采购与录入',
+    costLedger: '账本记录',
+    costComparison: '三档情景比较',
     announcements: '公告',
     apiKeys: 'API 密钥',
     batchImage: '批量生图',

@@ -1,0 +1,16 @@
+{
+  "command": [
+    "go",
+    "build",
+    "-trimpath",
+    "-o",
+    "/Users/vsiyo/.local/share/sub2api-cost-local/cost-local",
+    "./cmd/cost-local"
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 7311732736,
+  "status": "PASS",
+  "exit_code": 0,
+  "reserve_preserved": true
+}

@@ -1,0 +1,13 @@
+{
+  "observed_at": 1789474128.787254,
+  "method": "Chrome CUA accessibility readback",
+  "purchase_url": "https://www.ai.rest2build.lol/purchase",
+  "purchase_heading": "充值余额",
+  "shop_link": "https://wzyp.cn/shop/MGDY0ZE4",
+  "same_page_redeem_input": true,
+  "redeem_url": "https://www.ai.rest2build.lol/redeem",
+  "redeem_input_visible": true,
+  "recovery_popup": "服务已恢复",
+  "payment_or_redemption_submitted": false,
+  "human_acceptance": "NOT_PERFORMED"
+}

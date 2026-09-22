@@ -31,6 +31,7 @@ const showWarning = vi.hoisted(() => vi.fn())
 const getCheckoutInfo = vi.hoisted(() => vi.fn())
 const bridgeInvoke = vi.hoisted(() => vi.fn())
 const translate = vi.hoisted(() => vi.fn((key: string) => key))
+const cachedPublicSettings = vi.hoisted(() => ({ value: {} as Record<string, unknown> }))
 // Public settings live in a reactive holder so tests can flip feature flags after mount
 // and exercise the watchers that react to them.
 const appStoreState = vi.hoisted(() => ({
@@ -95,7 +96,7 @@ vi.mock('@/stores', async () => {
       showInfo,
       showWarning,
       get cachedPublicSettings() {
-        return state.cachedPublicSettings
+        return state.cachedPublicSettings ?? cachedPublicSettings.value
       },
     }),
   }

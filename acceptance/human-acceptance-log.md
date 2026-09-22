@@ -64,6 +64,14 @@
 | --- | --- | --- | --- | ---: | --- | --- |
 | - | upstream-ticket-capability | upstream-ticket-capability | - | - | acceptance/human/2026-W39/未-2026-09-21-upstream-ticket-capability/checklist.md | - |
 | - | codex-ticket-lifetime | codex-ticket-lifetime | - | - | acceptance/human/2026-W39/未-2026-09-22-codex-ticket-lifetime/checklist.md | - |
+| - | windows-wsl-codex-frontend-tutorial | windows-wsl-codex-frontend-tutorial | - | - | acceptance/human/2026-W37/未-2026-09-10-windows-wsl-codex-frontend-tutorial/checklist.md | - |
+| - | local-ci-commerce-alignment | local-ci-commerce-alignment | - | - | acceptance/human/2026-W37/未-2026-09-13-local-ci-commerce-alignment/checklist.md | - |
+| - | local-8080-version-sync | local-8080-version-sync | - | - | acceptance/human/2026-W37/未-2026-09-10-local-8080-version-sync/checklist.md | - |
+| - | ldxp-manual-recheck | ldxp-manual-recheck | - | - | acceptance/human/2026-W38/未-2026-09-16-ldxp-manual-recheck/checklist.md | - |
+| - | ldxp-local-recharge-debug | ldxp-local-recharge-debug | - | - | acceptance/human/2026-W37/未-2026-09-12-ldxp-local-recharge-debug/checklist.md | - |
+| - | ldxp-http-restock-local | ldxp-http-restock-local | - | - | acceptance/human/2026-W38/未-2026-09-15-ldxp-http-restock-local/checklist.md | - |
+| - | ldxp-browser-session | ldxp-browser-session | - | - | acceptance/human/2026-W38/未-2026-09-16-ldxp-browser-session/checklist.md | - |
+| - | cost-native-completion | cost-native-completion | - | - | acceptance/human/2026-W38/未-2026-09-16-cost-native-completion/checklist.md | - |
 
 ### 已通过
 

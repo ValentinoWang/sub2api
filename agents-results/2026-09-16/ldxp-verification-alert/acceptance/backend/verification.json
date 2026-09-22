@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "baseline_commit": "4aa71a5401644b8bc62443b6642c61fd389eb85e",
+  "isolated_checkout": "/Users/vsiyo/.local/share/sub2api/ldxp-verification-checkout",
+  "head_at_evidence_recording": "2478cc12a97cd3caa10aac7db51fc9b47295aae0",
+  "owned_root_and_isolated_source_identical": true,
+  "source_sha256": {
+    "backend/internal/service/liandong_browser.go": "13ad6f7ab9adb593b17b5e5db8b77ba6701d9ac46950c7dc58228d88ebac3ff0",
+    "backend/internal/service/liandong_browser_runtime.go": "8490b0b4a4a6bbd4b3ba72293f59ff60281ba53b61e65114f25ece57641b4a74",
+    "backend/internal/handler/admin/liandong_browser.go": "f4c303d9d6096a8a937245cbaab241a62a9b99eab9a486e4c547cd6846a5648f",
+    "backend/internal/server/routes/liandong_tool_routes.go": "1a304838dd8298f0009ca58465cd80552cf7e5cd59f083e7da4a88d7b2325190",
+    "backend/migrations/243_liandong_browser_runtime.sql": "9c3eaa73d366f78414e3e305147afb8ee7493b59d48118937530202a8203dd48",
+    "backend/internal/server/routes/liandong_browser_runtime_integration_test.go": "2045d396eea2daf2154a1bda31deb667cbf8d9cc742a1b8e1c9c93f127616a0a"
+  },
+  "checks": {
+    "red": {
+      "exit_code": 1,
+      "passed_cases": 1,
+      "failed_cases": 28,
+      "sha256": "95a715f6903b49c0d008b3f76a1a2edfa25d135d256780dd3b85906e010c62a6"
+    },
+    "green": {
+      "exit_code": 0,
+      "passed_cases": 29,
+      "failed_cases": 0,
+      "sha256": "01c0a5e0f46fae1899bd18410fb87d44274ebfec8f754ce184cc82179aba8428"
+    }
+  },
+  "migration": {
+    "number": 243,
+    "applied_to": "temporary postgres:18.1-alpine3.23 container 359c10518e0e",
+    "result": "PASS; full repository.ApplyMigrations followed by runtime insert/readback/upsert succeeded"
+  },
+  "verified_boundaries": [
+    "Strict required state, reason, browser_verification_required; rejects null/missing and unknown fields.",
+    "Only enumerated error reasons; browser verification true only with non_json or verification_required.",
+    "Optional RFC3339 timestamps round-trip; reported_at is server-generated.",
+    "No runtime object before a real report.",
+    "Database snapshots of devices/config/inventory/batches/segments/codes/users unchanged by runtime reports.",
+    "Runtime cannot supply or refresh merchant authorization, clear authorization_failed, enable restock, or release uncertain batches.",
+    "Wrong/revoked device rejected; existing device rate limiter returns 429 after its budget."
+  ],
+  "not_verified": [
+    "No changes to the original 8080 backend or production.",
+    "No full local CI or live frontend/worker/deployment acceptance in this subtask."
+  ],
+  "prior_attempts": [
+    "infrastructure-failure-1.log: temporary PostgreSQL initialization exceeded the initial 60-second wait; test wait widened and own failed container removed.",
+    "root-unrelated-build-failure.log: unrelated parallel costing changes blocked compilation; validation moved to isolated baseline.",
+    "red-before-fixture-cleanup.log: one failed disabled-state fixture left later test setup disabled; cleanup was fixed before the recorded clean red and green."
+  ]
+}

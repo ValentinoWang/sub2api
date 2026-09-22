@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,8 @@ import (
 )
 
 type openAIQuotaWorkflowStub struct {
+	historyCheck       *service.OpenAIResetCreditCheck
+	historyCalls       int
 	resetResult        *service.OpenAIQuotaResetResult
 	resetErr           error
 	queryResult        *service.OpenAIQuotaUsage
@@ -32,6 +35,59 @@ type openAIQuotaWorkflowStub struct {
 
 	queryCtxErr error
 	cacheCtxErr error
+}
+
+func (s *openAIQuotaWorkflowStub) CheckResetCreditHistory(context.Context, int64) *service.OpenAIResetCreditCheck {
+	s.historyCalls++
+	if s.historyCheck != nil {
+		return s.historyCheck
+	}
+	return &service.OpenAIResetCreditCheck{Status: "clear", HistoryComplete: true, ConfirmationKey: "clear-check"}
+}
+
+func TestOpenAIResetQuota_RequiresFreshHistoryAcknowledgement(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	quota := successfulOpenAIQuotaWorkflowStub()
+	quota.historyCheck = &service.OpenAIResetCreditCheck{Status: "recent", RecentUseCount: 1, ConfirmationKey: "observation-a"}
+	handler := &OpenAIOAuthHandler{quotaService: quota, adminService: recoveredAccountStub(), rateLimitService: &openAIAccountStateRecovererStub{}}
+	router := gin.New()
+	router.POST("/reset/:id", handler.ResetQuota)
+	post := func(body string) int {
+		recorder := httptest.NewRecorder()
+		request := httptest.NewRequest(http.MethodPost, "/reset/42", strings.NewReader(body))
+		request.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(recorder, request)
+		return recorder.Code
+	}
+	require.Equal(t, http.StatusConflict, post("{}"))
+	require.Zero(t, quota.resetCalls)
+	quota.historyCheck.ConfirmationKey = "observation-b"
+	require.Equal(t, http.StatusConflict, post(`{"confirmation_key":"observation-a"}`))
+	require.Zero(t, quota.resetCalls, "stale client acknowledgement must never spend a credit")
+	require.Equal(t, http.StatusOK, post(`{"confirmation_key":"observation-b"}`))
+	require.Equal(t, 1, quota.resetCalls)
+	quota.historyCheck = &service.OpenAIResetCreditCheck{Status: "unknown", ConfirmationKey: "unknown-observation"}
+	require.Equal(t, http.StatusConflict, post("{}"))
+	require.Equal(t, 1, quota.resetCalls)
+	require.Equal(t, http.StatusOK, post(`{"confirmation_key":"unknown-observation"}`))
+	require.Equal(t, 2, quota.resetCalls)
+	require.Equal(t, http.StatusBadRequest, post("not-json"))
+	require.Equal(t, 2, quota.resetCalls)
+}
+
+func TestOpenAIResetCreditHistoryCheckDoesNotTriggerResetWorkflow(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	quota := successfulOpenAIQuotaWorkflowStub()
+	router := gin.New()
+	handler := &OpenAIOAuthHandler{quotaService: quota}
+	router.GET("/check/:id", handler.CheckResetCreditHistory)
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/check/42", nil))
+	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Equal(t, 1, quota.historyCalls)
+	require.Zero(t, quota.queryCalls)
+	require.Zero(t, quota.resetCalls)
+	require.Zero(t, quota.cacheCalls)
 }
 
 func (s *openAIQuotaWorkflowStub) ResetCredit(context.Context, int64) (*service.OpenAIQuotaResetResult, error) {

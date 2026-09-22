@@ -1,0 +1,7 @@
+{
+  "image_id": "sha256:b439ad050f7b0c8e529eddfade85657d78f133b8d497e6ac353cffabb26f7573",
+  "image": "sub2api-local:0.2.4.2-e77fce24d8e9",
+  "version": "0.2.4.2",
+  "commit": "e77fce24d8e94f826e604e1c0895e90de93cd4ba",
+  "platform": "linux/amd64"
+}

@@ -1,0 +1,411 @@
+{
+  "repo": "qion888/ldsub2api",
+  "commit": "21435faf3ada8889ad0f1c17c4d5447c7645139b",
+  "default_branch": "main",
+  "license": "Apache-2.0",
+  "size_kb": 7076,
+  "description": "自动监控链动小铺商品价格与库存，支持一键支付，订单查询，401账号找回，导入账号到sub2api",
+  "tree_truncated": false,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "size": 104
+    },
+    {
+      "path": ".gitignore",
+      "size": 762
+    },
+    {
+      "path": "CHANGELOG.md",
+      "size": 334
+    },
+    {
+      "path": "LICENSE",
+      "size": 11357
+    },
+    {
+      "path": "README.md",
+      "size": 12766
+    },
+    {
+      "path": "VERSION",
+      "size": 6
+    },
+    {
+      "path": "backend/main.py",
+      "size": 96589
+    },
+    {
+      "path": "backend/monitor_core/__init__.py",
+      "size": 320
+    },
+    {
+      "path": "backend/monitor_core/browser_verification.py",
+      "size": 46404
+    },
+    {
+      "path": "backend/monitor_core/database.py",
+      "size": 9338
+    },
+    {
+      "path": "backend/monitor_core/history.py",
+      "size": 8822
+    },
+    {
+      "path": "backend/monitor_core/inventory.py",
+      "size": 30456
+    },
+    {
+      "path": "backend/monitor_core/preorders.py",
+      "size": 10961
+    },
+    {
+      "path": "backend/monitor_core/settings.py",
+      "size": 2393
+    },
+    {
+      "path": "backend/monitor_core/storefront.py",
+      "size": 39596
+    },
+    {
+      "path": "backend/monitor_core/windows_input.py",
+      "size": 19633
+    },
+    {
+      "path": "backend/monitor_core/workers.py",
+      "size": 8663
+    },
+    {
+      "path": "backend/monitor_settings.py",
+      "size": 3396
+    },
+    {
+      "path": "backend/order_query/__init__.py",
+      "size": 114
+    },
+    {
+      "path": "backend/order_query/browser_verification.py",
+      "size": 34971
+    },
+    {
+      "path": "backend/order_query/captcha.py",
+      "size": 3780
+    },
+    {
+      "path": "backend/order_query/client.py",
+      "size": 28953
+    },
+    {
+      "path": "backend/order_query/complaint.py",
+      "size": 16008
+    },
+    {
+      "path": "backend/order_query/detail.py",
+      "size": 14159
+    },
+    {
+      "path": "backend/order_query/errors.py",
+      "size": 4675
+    },
+    {
+      "path": "backend/order_query/routes.py",
+      "size": 7067
+    },
+    {
+      "path": "backend/order_query/service.py",
+      "size": 38721
+    },
+    {
+      "path": "backend/order_query/sessions.py",
+      "size": 11479
+    },
+    {
+      "path": "backend/requirements.txt",
+      "size": 32
+    },
+    {
+      "path": "backend/sub2api/__init__.py",
+      "size": 344
+    },
+    {
+      "path": "backend/sub2api/automation.py",
+      "size": 13975
+    },
+    {
+      "path": "backend/sub2api/card_import_history.py",
+      "size": 21232
+    },
+    {
+      "path": "backend/sub2api/client.py",
+      "size": 24552
+    },
+    {
+      "path": "backend/sub2api/constants.py",
+      "size": 474
+    },
+    {
+      "path": "backend/sub2api/payloads.py",
+      "size": 15351
+    },
+    {
+      "path": "backend/sub2api/reclaim.py",
+      "size": 48334
+    },
+    {
+      "path": "backend/sub2api/routes.py",
+      "size": 14393
+    },
+    {
+      "path": "backend/sub2api/settings.py",
+      "size": 6601
+    },
+    {
+      "path": "backend/sub2api/worker.py",
+      "size": 2872
+    },
+    {
+      "path": "backend/test_waf_resilience.py",
+      "size": 26838
+    },
+    {
+      "path": "backend/user/__init__.py",
+      "size": 478
+    },
+    {
+      "path": "backend/user/auth.py",
+      "size": 40799
+    },
+    {
+      "path": "backend/user/errors.py",
+      "size": 1147
+    },
+    {
+      "path": "backend/user/routes.py",
+      "size": 14832
+    },
+    {
+      "path": "backend/user/security.py",
+      "size": 2482
+    },
+    {
+      "path": "backend/user/store.py",
+      "size": 11015
+    },
+    {
+      "path": "backend/version_control/__init__.py",
+      "size": 247
+    },
+    {
+      "path": "backend/version_control/archive.py",
+      "size": 14235
+    },
+    {
+      "path": "backend/version_control/backup.py",
+      "size": 12367
+    },
+    {
+      "path": "backend/version_control/errors.py",
+      "size": 679
+    },
+    {
+      "path": "backend/version_control/routes.py",
+      "size": 4076
+    },
+    {
+      "path": "backend/version_control/service.py",
+      "size": 39737
+    },
+    {
+      "path": "frontend/index.html",
+      "size": 73
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "size": 54831
+    },
+    {
+      "path": "frontend/package.json",
+      "size": 419
+    },
+    {
+      "path": "frontend/src/AuthGate.jsx",
+      "size": 8416
+    },
+    {
+      "path": "frontend/src/OrderQueryView.jsx",
+      "size": 106261
+    },
+    {
+      "path": "frontend/src/PriceHistoryChart.jsx",
+      "size": 13835
+    },
+    {
+      "path": "frontend/src/ReclaimView.jsx",
+      "size": 7251
+    },
+    {
+      "path": "frontend/src/SettingsView.jsx",
+      "size": 40422
+    },
+    {
+      "path": "frontend/src/Sub2ApiView.jsx",
+      "size": 72125
+    },
+    {
+      "path": "frontend/src/VersionMenu.jsx",
+      "size": 7624
+    },
+    {
+      "path": "frontend/src/authModel.js",
+      "size": 4717
+    },
+    {
+      "path": "frontend/src/authModel.test.js",
+      "size": 3593
+    },
+    {
+      "path": "frontend/src/main.jsx",
+      "size": 236267
+    },
+    {
+      "path": "frontend/src/orderQuery.css",
+      "size": 56831
+    },
+    {
+      "path": "frontend/src/orderQueryModel.js",
+      "size": 21241
+    },
+    {
+      "path": "frontend/src/orderQueryModel.test.js",
+      "size": 18723
+    },
+    {
+      "path": "frontend/src/productPagination.js",
+      "size": 1106
+    },
+    {
+      "path": "frontend/src/productPagination.test.js",
+      "size": 817
+    },
+    {
+      "path": "frontend/src/shopBatchSyncModel.js",
+      "size": 1705
+    },
+    {
+      "path": "frontend/src/shopBatchSyncModel.test.js",
+      "size": 1626
+    },
+    {
+      "path": "frontend/src/shopWafFlow.js",
+      "size": 2184
+    },
+    {
+      "path": "frontend/src/shopWafFlow.test.js",
+      "size": 2992
+    },
+    {
+      "path": "frontend/src/shopWafModel.js",
+      "size": 2813
+    },
+    {
+      "path": "frontend/src/shopWafModel.test.js",
+      "size": 3070
+    },
+    {
+      "path": "frontend/src/style.css",
+      "size": 258647
+    },
+    {
+      "path": "frontend/src/sub2apiAssignment.js",
+      "size": 1261
+    },
+    {
+      "path": "frontend/src/sub2apiAssignment.test.js",
+      "size": 1141
+    },
+    {
+      "path": "frontend/src/sub2apiCardPolling.js",
+      "size": 5219
+    },
+    {
+      "path": "frontend/src/sub2apiCardPolling.test.js",
+      "size": 4358
+    },
+    {
+      "path": "frontend/src/sub2apiNavigation.js",
+      "size": 727
+    },
+    {
+      "path": "frontend/src/sub2apiNavigation.test.js",
+      "size": 887
+    },
+    {
+      "path": "frontend/src/sub2apiNotices.js",
+      "size": 3591
+    },
+    {
+      "path": "frontend/src/sub2apiNotices.test.js",
+      "size": 2572
+    },
+    {
+      "path": "frontend/src/sub2apiRecoveryModel.js",
+      "size": 27904
+    },
+    {
+      "path": "frontend/src/sub2apiRecoveryModel.test.js",
+      "size": 9106
+    },
+    {
+      "path": "frontend/src/versionModel.js",
+      "size": 6588
+    },
+    {
+      "path": "frontend/src/versionModel.test.js",
+      "size": 3393
+    },
+    {
+      "path": "frontend/vite.config.js",
+      "size": 260
+    },
+    {
+      "path": "inc/2.png",
+      "size": 164499
+    },
+    {
+      "path": "inc/3.png",
+      "size": 182384
+    },
+    {
+      "path": "inc/4.png",
+      "size": 124762
+    },
+    {
+      "path": "inc/5.png",
+      "size": 126710
+    },
+    {
+      "path": "inc/6.png",
+      "size": 137922
+    },
+    {
+      "path": "inc/home.png",
+      "size": 172884
+    },
+    {
+      "path": "redeem_api_sdk.py",
+      "size": 21064
+    },
+    {
+      "path": "start.cmd",
+      "size": 442
+    },
+    {
+      "path": "start.ps1",
+      "size": 18777
+    },
+    {
+      "path": "start.sh",
+      "size": 15011
+    }
+  ]
+}

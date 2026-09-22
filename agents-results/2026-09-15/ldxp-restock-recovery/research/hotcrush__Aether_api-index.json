@@ -1,0 +1,852 @@
+{
+  "repo": "hotcrush/Aether_api",
+  "commit": "77280a5984d20f77619335af85684f77eabbb49e",
+  "license": null,
+  "files": [
+    {
+      "path": ".github/workflows/pages.yml",
+      "size": 686
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "size": 2631
+    },
+    {
+      "path": ".gitignore",
+      "size": 98
+    },
+    {
+      "path": "CHANGELOG.md",
+      "size": 19852
+    },
+    {
+      "path": "README.md",
+      "size": 38765
+    },
+    {
+      "path": "VERSIONING.md",
+      "size": 3655
+    },
+    {
+      "path": "docs/index.html",
+      "size": 31015
+    },
+    {
+      "path": "docs/screenshots/codex.png",
+      "size": 65646
+    },
+    {
+      "path": "docs/screenshots/logs.png",
+      "size": 91782
+    },
+    {
+      "path": "docs/screenshots/market.png",
+      "size": 80741
+    },
+    {
+      "path": "docs/screenshots/monitor.png",
+      "size": 90566
+    },
+    {
+      "path": "docs/screenshots/upstreams.png",
+      "size": 103156
+    },
+    {
+      "path": "icon-1024.png",
+      "size": 120655
+    },
+    {
+      "path": "icon.ico",
+      "size": 35804
+    },
+    {
+      "path": "icon.svg",
+      "size": 1813
+    },
+    {
+      "path": "index.html",
+      "size": 520
+    },
+    {
+      "path": "package.json",
+      "size": 1169
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "size": 42576
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "size": 29
+    },
+    {
+      "path": "src-tauri/.cargo/config.toml",
+      "size": 121
+    },
+    {
+      "path": "src-tauri/Cargo.lock",
+      "size": 188480
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "size": 2435
+    },
+    {
+      "path": "src-tauri/build.rs",
+      "size": 1023
+    },
+    {
+      "path": "src-tauri/capabilities/default.json",
+      "size": 694
+    },
+    {
+      "path": "src-tauri/capabilities/webview-audit.json",
+      "size": 284
+    },
+    {
+      "path": "src-tauri/gen/schemas/acl-manifests.json",
+      "size": 89138
+    },
+    {
+      "path": "src-tauri/gen/schemas/capabilities.json",
+      "size": 864
+    },
+    {
+      "path": "src-tauri/gen/schemas/desktop-schema.json",
+      "size": 162438
+    },
+    {
+      "path": "src-tauri/gen/schemas/windows-schema.json",
+      "size": 162438
+    },
+    {
+      "path": "src-tauri/icons/128x128.png",
+      "size": 9636
+    },
+    {
+      "path": "src-tauri/icons/128x128@2x.png",
+      "size": 21165
+    },
+    {
+      "path": "src-tauri/icons/32x32.png",
+      "size": 1652
+    },
+    {
+      "path": "src-tauri/icons/64x64.png",
+      "size": 4085
+    },
+    {
+      "path": "src-tauri/icons/Square107x107Logo.png",
+      "size": 7781
+    },
+    {
+      "path": "src-tauri/icons/Square142x142Logo.png",
+      "size": 10870
+    },
+    {
+      "path": "src-tauri/icons/Square150x150Logo.png",
+      "size": 11612
+    },
+    {
+      "path": "src-tauri/icons/Square284x284Logo.png",
+      "size": 23620
+    },
+    {
+      "path": "src-tauri/icons/Square30x30Logo.png",
+      "size": 1522
+    },
+    {
+      "path": "src-tauri/icons/Square310x310Logo.png",
+      "size": 26033
+    },
+    {
+      "path": "src-tauri/icons/Square44x44Logo.png",
+      "size": 2445
+    },
+    {
+      "path": "src-tauri/icons/Square71x71Logo.png",
+      "size": 4632
+    },
+    {
+      "path": "src-tauri/icons/Square89x89Logo.png",
+      "size": 6124
+    },
+    {
+      "path": "src-tauri/icons/StoreLogo.png",
+      "size": 2887
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-anydpi-v26/ic_launcher.xml",
+      "size": 261
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-hdpi/ic_launcher.png",
+      "size": 2506
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-hdpi/ic_launcher_foreground.png",
+      "size": 12862
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-hdpi/ic_launcher_round.png",
+      "size": 2619
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-mdpi/ic_launcher.png",
+      "size": 2384
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-mdpi/ic_launcher_foreground.png",
+      "size": 7985
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-mdpi/ic_launcher_round.png",
+      "size": 2433
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-xhdpi/ic_launcher.png",
+      "size": 5932
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-xhdpi/ic_launcher_foreground.png",
+      "size": 17536
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-xhdpi/ic_launcher_round.png",
+      "size": 5880
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-xxhdpi/ic_launcher.png",
+      "size": 10115
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-xxhdpi/ic_launcher_foreground.png",
+      "size": 27371
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-xxhdpi/ic_launcher_round.png",
+      "size": 9869
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-xxxhdpi/ic_launcher.png",
+      "size": 14388
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-xxxhdpi/ic_launcher_foreground.png",
+      "size": 38046
+    },
+    {
+      "path": "src-tauri/icons/android/mipmap-xxxhdpi/ic_launcher_round.png",
+      "size": 13848
+    },
+    {
+      "path": "src-tauri/icons/android/values/ic_launcher_background.xml",
+      "size": 115
+    },
+    {
+      "path": "src-tauri/icons/icon.icns",
+      "size": 215539
+    },
+    {
+      "path": "src-tauri/icons/icon.ico",
+      "size": 35804
+    },
+    {
+      "path": "src-tauri/icons/icon.png",
+      "size": 45959
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-20x20@1x.png",
+      "size": 879
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-20x20@2x-1.png",
+      "size": 2175
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-20x20@2x.png",
+      "size": 2175
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-20x20@3x.png",
+      "size": 3714
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-29x29@1x.png",
+      "size": 1468
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-29x29@2x-1.png",
+      "size": 3534
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-29x29@2x.png",
+      "size": 3534
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-29x29@3x.png",
+      "size": 6022
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-40x40@1x.png",
+      "size": 2175
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-40x40@2x-1.png",
+      "size": 5260
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-40x40@2x.png",
+      "size": 5260
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-40x40@3x.png",
+      "size": 8798
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-512@2x.png",
+      "size": 61177
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-60x60@2x.png",
+      "size": 8798
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-60x60@3x.png",
+      "size": 14255
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-76x76@1x.png",
+      "size": 5065
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-76x76@2x.png",
+      "size": 11663
+    },
+    {
+      "path": "src-tauri/icons/ios/AppIcon-83.5x83.5@2x.png",
+      "size": 13048
+    },
+    {
+      "path": "src-tauri/src/account_import.rs",
+      "size": 50364
+    },
+    {
+      "path": "src-tauri/src/app/accounts.rs",
+      "size": 26849
+    },
+    {
+      "path": "src-tauri/src/app/clipboard.rs",
+      "size": 16358
+    },
+    {
+      "path": "src-tauri/src/app/codex.rs",
+      "size": 3300
+    },
+    {
+      "path": "src-tauri/src/app/logs.rs",
+      "size": 513
+    },
+    {
+      "path": "src-tauri/src/app/mod.rs",
+      "size": 263
+    },
+    {
+      "path": "src-tauri/src/app/proxy_settings.rs",
+      "size": 9173
+    },
+    {
+      "path": "src-tauri/src/app/runtime.rs",
+      "size": 14877
+    },
+    {
+      "path": "src-tauri/src/app/state.rs",
+      "size": 1377
+    },
+    {
+      "path": "src-tauri/src/app/usage.rs",
+      "size": 11818
+    },
+    {
+      "path": "src-tauri/src/app/vault.rs",
+      "size": 5410
+    },
+    {
+      "path": "src-tauri/src/billing_sync.rs",
+      "size": 4421
+    },
+    {
+      "path": "src-tauri/src/capacity.rs",
+      "size": 3599
+    },
+    {
+      "path": "src-tauri/src/channel_monitor.rs",
+      "size": 7188
+    },
+    {
+      "path": "src-tauri/src/codex_fingerprint.rs",
+      "size": 17971
+    },
+    {
+      "path": "src-tauri/src/codex_history.rs",
+      "size": 29282
+    },
+    {
+      "path": "src-tauri/src/codex_identity.rs",
+      "size": 8840
+    },
+    {
+      "path": "src-tauri/src/codex_resources.rs",
+      "size": 15067
+    },
+    {
+      "path": "src-tauri/src/codex_takeover.rs",
+      "size": 12381
+    },
+    {
+      "path": "src-tauri/src/cost_guard.rs",
+      "size": 2624
+    },
+    {
+      "path": "src-tauri/src/db.rs",
+      "size": 2814
+    },
+    {
+      "path": "src-tauri/src/db/accounts.rs",
+      "size": 32749
+    },
+    {
+      "path": "src-tauri/src/db/model_integrity.rs",
+      "size": 6220
+    },
+    {
+      "path": "src-tauri/src/db/request_logs.rs",
+      "size": 34027
+    },
+    {
+      "path": "src-tauri/src/db/schema.rs",
+      "size": 6954
+    },
+    {
+      "path": "src-tauri/src/db/settings.rs",
+      "size": 6672
+    },
+    {
+      "path": "src-tauri/src/db/tests.rs",
+      "size": 17613
+    },
+    {
+      "path": "src-tauri/src/db/types.rs",
+      "size": 3219
+    },
+    {
+      "path": "src-tauri/src/db/usage.rs",
+      "size": 11670
+    },
+    {
+      "path": "src-tauri/src/dns.rs",
+      "size": 4277
+    },
+    {
+      "path": "src-tauri/src/image_generation.rs",
+      "size": 4368
+    },
+    {
+      "path": "src-tauri/src/lib.rs",
+      "size": 569
+    },
+    {
+      "path": "src-tauri/src/logger.rs",
+      "size": 5926
+    },
+    {
+      "path": "src-tauri/src/main.rs",
+      "size": 105
+    },
+    {
+      "path": "src-tauri/src/market/classifier.rs",
+      "size": 9975
+    },
+    {
+      "path": "src-tauri/src/market/database.rs",
+      "size": 35036
+    },
+    {
+      "path": "src-tauri/src/market/engine.rs",
+      "size": 60912
+    },
+    {
+      "path": "src-tauri/src/market/legacy.rs",
+      "size": 13308
+    },
+    {
+      "path": "src-tauri/src/market/mod.rs",
+      "size": 2619
+    },
+    {
+      "path": "src-tauri/src/market/types.rs",
+      "size": 5927
+    },
+    {
+      "path": "src-tauri/src/market_notification.rs",
+      "size": 1218
+    },
+    {
+      "path": "src-tauri/src/model_integrity.rs",
+      "size": 35010
+    },
+    {
+      "path": "src-tauri/src/oauth.rs",
+      "size": 16121
+    },
+    {
+      "path": "src-tauri/src/outbound_proxy.rs",
+      "size": 5451
+    },
+    {
+      "path": "src-tauri/src/pricing.rs",
+      "size": 3052
+    },
+    {
+      "path": "src-tauri/src/pricing/calculator.rs",
+      "size": 2411
+    },
+    {
+      "path": "src-tauri/src/pricing/catalog.rs",
+      "size": 7151
+    },
+    {
+      "path": "src-tauri/src/pricing/types.rs",
+      "size": 1596
+    },
+    {
+      "path": "src-tauri/src/proxy/mod.rs",
+      "size": 31400
+    },
+    {
+      "path": "src-tauri/src/proxy/protocol.rs",
+      "size": 14649
+    },
+    {
+      "path": "src-tauri/src/proxy/request.rs",
+      "size": 35117
+    },
+    {
+      "path": "src-tauri/src/proxy/streaming.rs",
+      "size": 37593
+    },
+    {
+      "path": "src-tauri/src/proxy/tests.rs",
+      "size": 41937
+    },
+    {
+      "path": "src-tauri/src/proxy/upstream.rs",
+      "size": 22412
+    },
+    {
+      "path": "src-tauri/src/proxy/websocket.rs",
+      "size": 82224
+    },
+    {
+      "path": "src-tauri/src/quota.rs",
+      "size": 17207
+    },
+    {
+      "path": "src-tauri/src/quota_headers.rs",
+      "size": 14347
+    },
+    {
+      "path": "src-tauri/src/relay_usage.rs",
+      "size": 22376
+    },
+    {
+      "path": "src-tauri/src/webview_tabs.rs",
+      "size": 31650
+    },
+    {
+      "path": "src-tauri/tauri.conf.json",
+      "size": 1194
+    },
+    {
+      "path": "src/App.tsx",
+      "size": 63274
+    },
+    {
+      "path": "src/components/AccountDetailDialog.tsx",
+      "size": 3929
+    },
+    {
+      "path": "src/components/AccountTable.tsx",
+      "size": 17508
+    },
+    {
+      "path": "src/components/AccountToolbar.tsx",
+      "size": 8960
+    },
+    {
+      "path": "src/components/ApiKeyDialog.tsx",
+      "size": 4914
+    },
+    {
+      "path": "src/components/AppHeader.tsx",
+      "size": 7325
+    },
+    {
+      "path": "src/components/CapacityEditor.tsx",
+      "size": 2215
+    },
+    {
+      "path": "src/components/ChannelMonitorPanel.tsx",
+      "size": 21650
+    },
+    {
+      "path": "src/components/ClipboardImportDialog.tsx",
+      "size": 3380
+    },
+    {
+      "path": "src/components/CodexResourcesPanel.tsx",
+      "size": 12104
+    },
+    {
+      "path": "src/components/CodexSettingsPanel.tsx",
+      "size": 10458
+    },
+    {
+      "path": "src/components/DailyBudgetDialog.tsx",
+      "size": 2696
+    },
+    {
+      "path": "src/components/DeleteAccountDialog.tsx",
+      "size": 1079
+    },
+    {
+      "path": "src/components/Dialog.tsx",
+      "size": 1510
+    },
+    {
+      "path": "src/components/EditAccountDialog.tsx",
+      "size": 7211
+    },
+    {
+      "path": "src/components/ImportDialog.tsx",
+      "size": 8227
+    },
+    {
+      "path": "src/components/LoggerPage.tsx",
+      "size": 24115
+    },
+    {
+      "path": "src/components/MarketMonitorPage.tsx",
+      "size": 63449
+    },
+    {
+      "path": "src/components/OpenAIOAuthDialog.tsx",
+      "size": 4397
+    },
+    {
+      "path": "src/components/PageImportDropZone.tsx",
+      "size": 2724
+    },
+    {
+      "path": "src/components/PriorityEditor.tsx",
+      "size": 1819
+    },
+    {
+      "path": "src/components/ProxyPanel.tsx",
+      "size": 11763
+    },
+    {
+      "path": "src/components/QuotaPanel.tsx",
+      "size": 10774
+    },
+    {
+      "path": "src/components/RateMultiplierEditor.tsx",
+      "size": 3434
+    },
+    {
+      "path": "src/components/RelayUsagePanel.tsx",
+      "size": 8590
+    },
+    {
+      "path": "src/components/ResetAccessKeyDialog.tsx",
+      "size": 985
+    },
+    {
+      "path": "src/components/SettingsPage.tsx",
+      "size": 20290
+    },
+    {
+      "path": "src/components/ToastStack.tsx",
+      "size": 1612
+    },
+    {
+      "path": "src/components/TooltipProvider.tsx",
+      "size": 7675
+    },
+    {
+      "path": "src/components/TrashDialog.tsx",
+      "size": 4395
+    },
+    {
+      "path": "src/components/WebWorkspaceView.tsx",
+      "size": 2994
+    },
+    {
+      "path": "src/components/WorkspaceTabBar.tsx",
+      "size": 9930
+    },
+    {
+      "path": "src/lib/channelMonitor.ts",
+      "size": 8168
+    },
+    {
+      "path": "src/lib/commands.ts",
+      "size": 37632
+    },
+    {
+      "path": "src/lib/dailyBudget.ts",
+      "size": 557
+    },
+    {
+      "path": "src/lib/format.ts",
+      "size": 192
+    },
+    {
+      "path": "src/lib/market.ts",
+      "size": 12465
+    },
+    {
+      "path": "src/lib/quotaCache.ts",
+      "size": 3617
+    },
+    {
+      "path": "src/lib/quotaRefreshSettings.ts",
+      "size": 1451
+    },
+    {
+      "path": "src/lib/relayUsageCache.ts",
+      "size": 3995
+    },
+    {
+      "path": "src/lib/time.ts",
+      "size": 4925
+    },
+    {
+      "path": "src/lib/updater.ts",
+      "size": 2736
+    },
+    {
+      "path": "src/lib/webviewTabs.ts",
+      "size": 2238
+    },
+    {
+      "path": "src/lib/workspaceTabs.ts",
+      "size": 8135
+    },
+    {
+      "path": "src/main.tsx",
+      "size": 160
+    },
+    {
+      "path": "src/monitorTypes.ts",
+      "size": 2165
+    },
+    {
+      "path": "src/styles/buttons.css",
+      "size": 1566
+    },
+    {
+      "path": "src/styles/codex.css",
+      "size": 10447
+    },
+    {
+      "path": "src/styles/header.css",
+      "size": 4238
+    },
+    {
+      "path": "src/styles/index.css",
+      "size": 450
+    },
+    {
+      "path": "src/styles/ios-theme.css",
+      "size": 24961
+    },
+    {
+      "path": "src/styles/logger.css",
+      "size": 12529
+    },
+    {
+      "path": "src/styles/market.css",
+      "size": 40707
+    },
+    {
+      "path": "src/styles/monitor.css",
+      "size": 17265
+    },
+    {
+      "path": "src/styles/overlays.css",
+      "size": 13601
+    },
+    {
+      "path": "src/styles/proxy.css",
+      "size": 5602
+    },
+    {
+      "path": "src/styles/quota.css",
+      "size": 6646
+    },
+    {
+      "path": "src/styles/responsive.css",
+      "size": 6030
+    },
+    {
+      "path": "src/styles/settings.css",
+      "size": 4456
+    },
+    {
+      "path": "src/styles/table.css",
+      "size": 12158
+    },
+    {
+      "path": "src/styles/toast.css",
+      "size": 1269
+    },
+    {
+      "path": "src/styles/tokens.css",
+      "size": 3564
+    },
+    {
+      "path": "src/styles/toolbar.css",
+      "size": 4587
+    },
+    {
+      "path": "src/styles/tooltip.css",
+      "size": 1176
+    },
+    {
+      "path": "src/styles/workspace-tabs.css",
+      "size": 5861
+    },
+    {
+      "path": "src/types.ts",
+      "size": 7933
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "size": 38
+    },
+    {
+      "path": "tsconfig.json",
+      "size": 561
+    },
+    {
+      "path": "tsconfig.node.json",
+      "size": 211
+    },
+    {
+      "path": "vite.config.ts",
+      "size": 339
+    }
+  ],
+  "tree_truncated": false
+}

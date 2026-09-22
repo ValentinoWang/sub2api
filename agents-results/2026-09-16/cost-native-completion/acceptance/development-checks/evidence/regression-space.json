@@ -1,0 +1,18 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-tags=unit",
+    "./internal/costing",
+    "./internal/service",
+    "-run",
+    "TestPrepaid|TestAccountUpgrade|TestTraffic|TestDualWindow|TestForecast|TestCostQuota|TestOpenAIQuota",
+    "-count=1"
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 9366798336,
+  "status": "PASS",
+  "exit_code": 0,
+  "reserve_preserved": true
+}

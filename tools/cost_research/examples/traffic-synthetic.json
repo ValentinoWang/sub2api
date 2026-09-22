@@ -1,0 +1,13 @@
+{
+  "interface": "eth0",
+  "start": "2026-09-01T00:00:00Z",
+  "end": "2026-09-02T00:00:00Z",
+  "before": {"jsonversion": "2", "interfaces": [{"name": "eth0", "created": {"timestamp": 1}, "updated": {"timestamp": 1788220800}, "traffic": {"total": {"rx": 100, "tx": 100}}}]},
+  "after": {"jsonversion": "2", "interfaces": [{"name": "eth0", "created": {"timestamp": 1}, "updated": {"timestamp": 1788307200}, "traffic": {"total": {"rx": 1000000100, "tx": 2000000100}}}]},
+  "mode": "egress",
+  "included_bytes": "1000000000",
+  "gb_bytes": "1000000000",
+  "rate": "0.1",
+  "currency": "USD",
+  "coverage_complete": true
+}

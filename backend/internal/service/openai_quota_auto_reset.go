@@ -52,6 +52,7 @@ type OpenAIAutoResetCreditState struct {
 }
 
 type openAIAutoResetQuota interface {
+	CheckResetCreditHistory(ctx context.Context, accountID int64) *OpenAIResetCreditCheck
 	QueryUsage(ctx context.Context, accountID int64) (*OpenAIQuotaUsage, error)
 	CacheResetCreditsSnapshot(ctx context.Context, accountID int64, credits *OpenAIRateLimitResetCredits) error
 	CachePostResetSnapshot(ctx context.Context, accountID int64, usage *OpenAIQuotaUsage) error
@@ -406,6 +407,13 @@ func (s *OpenAIQuotaAutoResetService) evaluateAccount(ctx context.Context, accou
 		TTL:        openAIAutoResetAttemptTTL,
 		RequireKey: true,
 	}, func(execCtx context.Context) (any, error) {
+		check := s.quota.CheckResetCreditHistory(execCtx, accountID)
+		if check == nil || check.Status == "unknown" {
+			return nil, infraerrors.New(http.StatusConflict, "RESET_CREDIT_HISTORY_UNKNOWN", "recent reset credit usage could not be verified")
+		}
+		if check.Status != "clear" {
+			return nil, infraerrors.New(http.StatusConflict, "RESET_CREDIT_RECENT_USE", "a reset credit was already used within ten minutes")
+		}
 		resetResult, resetErr := s.quota.ResetCreditTargeted(execCtx, accountID, candidate.ID, redeemRequestID)
 		if resetErr != nil {
 			return nil, resetErr

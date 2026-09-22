@@ -1,0 +1,16 @@
+{
+  "status": "BLOCKED",
+  "reason": "project-approved worker root is not registered; CODEX_WORKERS_ROOT is unset",
+  "skill": "/Users/vsiyo/.codex/skills/verify-acceptance-release/SKILL.md",
+  "source_commit": "fb21376b5",
+  "logical_review_surfaces": [
+    "ledger-and-account-intervals",
+    "source-readonly-sync",
+    "traffic-collector",
+    "quota-entrypoint-hooks",
+    "local-deployment-and-rollback"
+  ],
+  "dispatched_workers": 0,
+  "in_process_fallback_used": false,
+  "local_build_and_runtime_work_continues": true
+}

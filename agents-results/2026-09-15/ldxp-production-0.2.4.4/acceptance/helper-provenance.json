@@ -1,0 +1,14 @@
+{
+  "source_directory": "/Users/vsiyo/.local/share/sub2api/worktrees/chrome-restock-products-20260913/agents-results/2026-09-13/chrome-restock-products",
+  "copied_sha256": {
+    "make_candidate.py": "4090922b29affa452098ee091e84f757734f153aab8eb26ad55fbe14e621e2cb",
+    "release_common.py": "f0dee7fe8b0fce3a9a87213cc44bdd88e57b07323804ba3fd45dd2fbd696d6bd",
+    "release_api.py": "8c470ab718f7aa44f67e588bdc65e249cdc9995273598fa5544732ac269a845a",
+    "backup_app.py": "63b8786f79cf6ebfe4f66a6ee69a1fb8b90416a02bacdddec8a692e500b728dd",
+    "replace_app.py": "c8d9dc4b286960d78e89f58bea271355cec40988cfc066e6f82a9ab871f6bc5a",
+    "rollback_app.py": "3749b8f8e19aa7a531c96733651509fded0ce25903ca46fb23f5c437ae383c8c",
+    "verify_local_images.py": "f80f44fcde67913eb1c097522bc03a8d73e92a1c78cdaa91659e50872e69baa2",
+    "tests/test_release_helpers.py": "0a3966c0a594d97bc882e94fa624d343387c18c7e41b4abb71dfbe9e5ba022ac",
+    "tests/test_local_images.py": "1dae928ee6d6a2bcaf303fbb94379d3482284918729870ee5e042689344dbf43"
+  }
+}

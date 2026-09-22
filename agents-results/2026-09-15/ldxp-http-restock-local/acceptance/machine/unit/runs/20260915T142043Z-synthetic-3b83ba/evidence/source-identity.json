@@ -1,0 +1,14 @@
+{
+  "base_commit": "507a820c6792782ac07f9962a06c6224ce6cba70",
+  "uncommitted_source": true,
+  "files": {
+    "tools/commerce/ldxp_http_probe.py": "7e8dcc411e52900d63cf4129660c7e54314093ac573e1f00c35b96f1527bb7f7",
+    "tools/commerce/ldxp_http_probe.html": "403a3ca76db0c86f314602066beafbe8f7311f1d060c3b128be832f42da3fc86",
+    "tools/commerce/ldxp_http_restock.py": "513762c37797cd2d9c9ed871c62ada28f29506b12f071e492a1b2e24fbeb2992",
+    "tools/commerce/ldxp-restock.local.json": "a647aaa8480d370cb8508112ea20eb636eedf70b61848ccd717b669f6f156bfb",
+    "tools/quality/tests/test_ldxp_http_probe.py": "6e33b27af9af6667e9902d082037901de1b3cf69780fabc222ff2d6f6563279a",
+    "tools/quality/tests/test_ldxp_http_restock.py": "25aa9435509a09bad6700998ef64053049b6f46a556723f9691c246472c83df0"
+  },
+  "python": "3.9.6",
+  "executable": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3"
+}

@@ -1,0 +1,7 @@
+{
+  "selected_status_lines": [
+    "2026-09-10T17:41:13.114+0800\tINFO\tstdlog\tserver/main.go:94\tServer started on 0.0.0.0:8080\t",
+    "2026-09-10T17:41:25.785+0800\tINFO\tmiddleware/logger.go:82\thttp request completed\t"
+  ],
+  "fatal_count": 0
+}

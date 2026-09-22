@@ -173,6 +173,7 @@ func (r *autoResetTestAccountRepo) UpdateExtra(_ context.Context, id int64, upda
 }
 
 type autoResetTestQuota struct {
+	historyCheck *OpenAIResetCreditCheck
 	usage        *OpenAIQuotaUsage
 	resetCalls   atomic.Int32
 	resetEntered chan struct{}
@@ -181,6 +182,13 @@ type autoResetTestQuota struct {
 	mu           sync.Mutex
 	resetArgs    [][2]string
 	failFirst    bool
+}
+
+func (q *autoResetTestQuota) CheckResetCreditHistory(context.Context, int64) *OpenAIResetCreditCheck {
+	if q.historyCheck != nil {
+		return q.historyCheck
+	}
+	return &OpenAIResetCreditCheck{Status: "clear", HistoryComplete: true}
 }
 
 func (q *autoResetTestQuota) QueryUsage(context.Context, int64) (*OpenAIQuotaUsage, error) {
@@ -220,6 +228,41 @@ type autoResetTestRecoverer struct{}
 
 func (autoResetTestRecoverer) RecoverAccountState(context.Context, int64, AccountRecoveryOptions) (*SuccessfulTestRecoveryResult, error) {
 	return &SuccessfulTestRecoveryResult{ClearedRateLimit: true}, nil
+}
+
+func TestOpenAIQuotaAutoResetService_RecentOrUnknownHistoryDoesNotConsume(t *testing.T) {
+	for _, status := range []string{"recent", "unknown"} {
+		t.Run(status, func(t *testing.T) {
+			now := time.Now().UTC()
+			account := &Account{ID: 101, Platform: PlatformOpenAI, Type: AccountTypeOAuth, Status: StatusActive, Schedulable: true,
+				Extra: map[string]any{
+					OpenAIAutoResetCreditEnabledExtraKey: true,
+					"codex_5h_used_percent":              100.0,
+					"codex_usage_updated_at":             now.Format(time.RFC3339),
+					"codex_5h_reset_at":                  now.Add(time.Hour).Format(time.RFC3339),
+				}}
+			repo := &autoResetTestAccountRepo{account: account}
+			expiry := now.Add(time.Hour).Format(time.RFC3339)
+			quota := &autoResetTestQuota{historyCheck: &OpenAIResetCreditCheck{Status: status}, usage: &OpenAIQuotaUsage{
+				FetchedAt:             now.Unix(),
+				RateLimit:             &OpenAIRateLimit{PrimaryWindow: &OpenAIRateLimitWindow{UsedPercent: 100, LimitWindowSeconds: 18000, ResetAfterSeconds: 3600, ResetAt: now.Add(time.Hour).Unix()}},
+				RateLimitResetCredits: &OpenAIRateLimitResetCredits{AvailableCount: 1, Credits: []OpenAIRateLimitResetCreditDetail{{ExpiresAt: expiry}}},
+				autoResetCandidates:   []openAIAutoResetCreditCandidate{{ID: "unspent-credit", ExpiresAt: expiry}},
+			}}
+			config := DefaultIdempotencyConfig()
+			config.ObserveOnly = false
+			config.FailedRetryBackoff = 0
+			svc := NewOpenAIQuotaAutoResetService(repo, quota, autoResetTestRecoverer{}, NewIdempotencyCoordinator(newInMemoryIdempotencyRepo(), config), nil, nil, nil)
+			require.Error(t, svc.evaluateAccount(context.Background(), account.ID))
+			require.Zero(t, quota.resetCalls.Load())
+			state := openAIAutoResetStateFromExtra(repo.account.Extra)
+			require.NotNil(t, state)
+			require.Contains(t, state.ErrorCode, "RESET_CREDIT_")
+			quota.historyCheck = &OpenAIResetCreditCheck{Status: "clear", HistoryComplete: true}
+			require.NoError(t, svc.evaluateAccount(context.Background(), account.ID))
+			require.Equal(t, int32(1), quota.resetCalls.Load(), "automatic use can resume after a fresh clear check")
+		})
+	}
 }
 
 func TestOpenAIQuotaAutoResetService_ConcurrentInstancesConsumeOnce(t *testing.T) {

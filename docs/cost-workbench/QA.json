@@ -1,0 +1,12 @@
+{
+  "date": "2026-09-16",
+  "unit_tests": {"status": "PASS", "count": 12, "command": "python -m unittest discover -s tools/cost_research -p 'test_*.py' -v"},
+  "prototype_dom": {"status": "PASS", "method": "Chromium Playwright set_content of generated local HTML", "cases": ["1440px JavaScript", "390px JavaScript", "320px JavaScript disabled", "print media"], "checks": ["no document horizontal overflow", "zero utilization is undefined", "Plus scenario arithmetic", "local-only plan form"]},
+  "visual_review": "PASS: desktop and mobile screenshots inspected; generated figures independently rendered",
+  "live_crawler": "NOT_RUN: execution container cannot resolve external domains; public_snapshot uses separate web retrieval",
+  "private_admin_integration": "NOT_RUN: no live private credentials or procurement data supplied",
+  "production_go_vue_build": "NOT_RUN: production code unchanged",
+  "pdf_pagination": "NOT_RUN",
+  "study_skills_v2_geometry_certification": "NOT_APPLICABLE: independent renderer following semantic figure guidance",
+  "public_pages_readback": "NOT_RUN"
+}

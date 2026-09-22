@@ -1,0 +1,103 @@
+{
+  "repo": "Samge0/wzyp-view",
+  "commit": "0c91b5bbd2c7bf94f5fb1f131cc91e95d0d92ad3",
+  "default_branch": "main",
+  "license": "MIT",
+  "size_kb": 927,
+  "description": "链动小铺店铺数据洞察",
+  "tree_truncated": false,
+  "files": [
+    {
+      "path": ".dockerignore",
+      "size": 336
+    },
+    {
+      "path": ".github/workflows/pages.yml",
+      "size": 704
+    },
+    {
+      "path": ".gitignore",
+      "size": 92
+    },
+    {
+      "path": "Dockerfile",
+      "size": 736
+    },
+    {
+      "path": "LICENSE",
+      "size": 1065
+    },
+    {
+      "path": "README.md",
+      "size": 6521
+    },
+    {
+      "path": "agent.py",
+      "size": 14555
+    },
+    {
+      "path": "config.py",
+      "size": 2970
+    },
+    {
+      "path": "data/settings.example.json",
+      "size": 263
+    },
+    {
+      "path": "db.py",
+      "size": 13113
+    },
+    {
+      "path": "docker-compose.yml",
+      "size": 1085
+    },
+    {
+      "path": "docs/index.html",
+      "size": 27637
+    },
+    {
+      "path": "docs/screenshot-chat.png",
+      "size": 82339
+    },
+    {
+      "path": "docs/screenshot-dashboard.png",
+      "size": 373730
+    },
+    {
+      "path": "docs/screenshot-goods.png",
+      "size": 335441
+    },
+    {
+      "path": "docs/screenshot-settings.png",
+      "size": 61848
+    },
+    {
+      "path": "docs/screenshot-shops.png",
+      "size": 122348
+    },
+    {
+      "path": "requirements.txt",
+      "size": 149
+    },
+    {
+      "path": "run.py",
+      "size": 310
+    },
+    {
+      "path": "server.py",
+      "size": 7934
+    },
+    {
+      "path": "static/favicon.svg",
+      "size": 436
+    },
+    {
+      "path": "static/index.html",
+      "size": 59817
+    },
+    {
+      "path": "static/marked.min.js",
+      "size": 35479
+    }
+  ]
+}

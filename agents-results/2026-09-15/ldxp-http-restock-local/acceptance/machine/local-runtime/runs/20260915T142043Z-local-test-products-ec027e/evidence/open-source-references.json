@@ -1,0 +1,29 @@
+{
+  "sources": [
+    {
+      "repository": "https://github.com/1120393079/aliashub",
+      "license": "AGPL-3.0-only",
+      "file": "mail-pickup/app.py",
+      "use": "Independently confirmed merchant routes and upload request fields; no code copied."
+    },
+    {
+      "repository": "https://github.com/maile456/source-browser",
+      "license": null,
+      "file": "server.js",
+      "use": "Public session/login protocol reference only; no code copied."
+    },
+    {
+      "repository": "https://github.com/easychen/CookieCloud",
+      "license": "GPL-3.0",
+      "file": "README.md",
+      "use": "Reviewed cookie/localStorage sync; not installed or used."
+    }
+  ],
+  "checked_on": "2026-09-15",
+  "order_lookup_reference": {
+    "route": "/merchantApi/Order/orderInfo",
+    "method": "POST",
+    "body_key": "trade_no",
+    "live_verified_this_task": false
+  }
+}

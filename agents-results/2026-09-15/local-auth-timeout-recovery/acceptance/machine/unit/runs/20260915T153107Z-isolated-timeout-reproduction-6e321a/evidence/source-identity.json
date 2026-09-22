@@ -1,0 +1,16 @@
+{
+  "base_commit": "507a820c6792782ac07f9962a06c6224ce6cba70",
+  "source_files": {
+    "frontend/src/api/client.ts": "5606541e7de5c4cfa194ba7e1caac4b7baa0e93d4fb89d171b16034edb13f62c",
+    "frontend/src/api/__tests__/client.spec.ts": "3443fbcac4e3242693ca7450730be4b912ec117b916686b36f4a897517a7987e",
+    "frontend/src/api/__tests__/client.transport.spec.ts": "89914a72566807c5e778b049aaad4ccc82993a39793cf02eb064b3478a4a0c6d",
+    "backend/internal/repository/redis.go": "0ed5787658373a4956b6736ff00a6a331b7fc79e48744438301796f1a4c4198f",
+    "backend/internal/repository/redis_test.go": "e517bd7c344e267fb19ec9554ca980321e9ff3c570df2818dcea7fd78dd92f01",
+    "backend/internal/server/middleware/jwt_auth.go": "d2b2aa07adda59a6f7662c0ff3acecfda6faace5c4ab9499df3e9ba3810e8c0c",
+    "backend/internal/server/middleware/jwt_auth_test.go": "905db56900d969b9317b0172199d24c776eeec388148d960b88463dfcd80b7a9",
+    "backend/internal/service/user_service.go": "f9c0ed59155680dfe8a147963758a26be1561543c51321f8ceeeaaaed0349fb1",
+    "backend/internal/service/user_service_test.go": "629c246c7c5faf9bce54e0e16d26f389ed335c6e2a75d5cc29f20a7d54b843fa"
+  },
+  "backend_container_updated": false,
+  "production_accessed": false
+}

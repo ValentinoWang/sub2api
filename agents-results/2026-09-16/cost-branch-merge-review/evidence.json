@@ -1,0 +1,17 @@
+{
+  "at": "2026-09-16T15:04:47.580945+08:00",
+  "refs": {
+    "local_main": "507a820c6792782ac07f9962a06c6224ce6cba70",
+    "fork_main": "507a820c6792782ac07f9962a06c6224ce6cba70",
+    "research": "a893f6186d322761da032e7360323d065321aafd",
+    "comparison": "0e83332ad7aaff2bc6866d68168652a5f8f14832",
+    "ledger": "90058777007f6eb9b1c106da202ee6a805d21d38",
+    "local_ldxp": "4aa71a5401644b8bc62443b6642c61fd389eb85e"
+  },
+  "remote_changed_files": 39,
+  "overlap_with_local_tracked_edits": [],
+  "overlap_with_local_untracked_files": [],
+  "ldxp_and_ledger_merge_tree_exit": 0,
+  "ldxp_and_ledger_merge_tree": "39b3a83d19855fe9a2d56a2547917ab972224aa4",
+  "scope": "read-only source review and Git object merge simulation; no checkout/index/branch/working-source changes; no code tests or deployment performed"
+}

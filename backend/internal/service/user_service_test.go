@@ -33,6 +33,7 @@ type mockUserRepo struct {
 	unbindIdentityErr        error
 	unboundProviders         []string
 	updateLastActiveErr      error
+	updateLastActiveFn       func(context.Context, int64, time.Time) error
 	updateLastActiveUserIDs  []int64
 	updateLastActiveAt       []time.Time
 	updateFn                 func(ctx context.Context, user *User) error
@@ -193,7 +194,10 @@ func (m *mockUserRepo) UpdateBalance(ctx context.Context, id int64, amount float
 	}
 	return m.updateBalanceErr
 }
-func (m *mockUserRepo) UpdateUserLastActiveAt(_ context.Context, userID int64, activeAt time.Time) error {
+func (m *mockUserRepo) UpdateUserLastActiveAt(ctx context.Context, userID int64, activeAt time.Time) error {
+	if m.updateLastActiveFn != nil {
+		return m.updateLastActiveFn(ctx, userID, activeAt)
+	}
 	m.updateLastActiveUserIDs = append(m.updateLastActiveUserIDs, userID)
 	m.updateLastActiveAt = append(m.updateLastActiveAt, activeAt)
 	return m.updateLastActiveErr
@@ -670,6 +674,105 @@ func TestTouchLastActive_SkipsWhenRecent(t *testing.T) {
 
 	require.Empty(t, repo.updateLastActiveUserIDs)
 	require.Empty(t, repo.updateLastActiveAt)
+}
+
+func TestTouchLastActive_CanceledFollowerDoesNotCancelSharedUpdate(t *testing.T) {
+	user := &User{ID: 42}
+	entered := make(chan context.Context, 1)
+	release := make(chan struct{})
+	var releaseOnce sync.Once
+	var calls atomic.Int32
+	repo := &mockUserRepo{updateLastActiveFn: func(ctx context.Context, _ int64, _ time.Time) error {
+		calls.Add(1)
+		entered <- ctx
+		select {
+		case <-release:
+			return nil
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}}
+	svc := NewUserService(repo, nil, nil, nil)
+	leaderDone := make(chan struct{})
+	go func() {
+		svc.TouchLastActiveForUser(context.Background(), user)
+		close(leaderDone)
+	}()
+	t.Cleanup(func() {
+		releaseOnce.Do(func() { close(release) })
+		<-leaderDone
+	})
+	var updateCtx context.Context
+	select {
+	case updateCtx = <-entered:
+	case <-time.After(time.Second):
+		t.Fatal("shared update did not start")
+	}
+	followerCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	followerDone := make(chan struct{})
+	go func() {
+		svc.TouchLastActiveForUser(followerCtx, user)
+		close(followerDone)
+	}()
+	cancel()
+	select {
+	case <-followerDone:
+	case <-time.After(250 * time.Millisecond):
+		t.Fatal("canceled follower remained blocked behind the shared update")
+	}
+	require.NoError(t, updateCtx.Err(), "a follower must not cancel another request's update")
+	select {
+	case <-leaderDone:
+		t.Fatal("leader returned before its update completed")
+	default:
+	}
+	releaseOnce.Do(func() { close(release) })
+	select {
+	case <-leaderDone:
+	case <-time.After(time.Second):
+		t.Fatal("leader did not complete after the repository was released")
+	}
+	svc.TouchLastActiveForUser(context.Background(), user)
+	require.Equal(t, int32(1), calls.Load(), "successful updates must retain the debounce")
+}
+
+func TestTouchLastActive_TimeoutBoundsWaitAndRetainsFailureBackoff(t *testing.T) {
+	user := &User{ID: 42}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var calls atomic.Int32
+	finished := make(chan error, 1)
+	repo := &mockUserRepo{updateLastActiveFn: func(ctx context.Context, _ int64, _ time.Time) error {
+		calls.Add(1)
+		<-ctx.Done()
+		finished <- ctx.Err()
+		return ctx.Err()
+	}}
+	svc := NewUserService(repo, nil, nil, nil)
+	done := make(chan struct{})
+	go func() {
+		svc.TouchLastActiveForUser(ctx, user)
+		close(done)
+	}()
+	t.Cleanup(func() { cancel(); <-done })
+	select {
+	case <-done:
+	case <-time.After(1500 * time.Millisecond):
+		t.Fatal("best-effort activity update exceeded its short request budget")
+	}
+	select {
+	case err := <-finished:
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+	case <-time.After(time.Second):
+		t.Fatal("repository update did not receive its deadline")
+	}
+	require.Eventually(t, func() bool {
+		_, ok := svc.lastActiveTouchL1.Load(user.ID)
+		return ok
+	}, time.Second, time.Millisecond)
+	svc.TouchLastActiveForUser(context.Background(), user)
+	require.Equal(t, int32(1), calls.Load(), "failed updates must retain the retry backoff")
 }
 
 func TestUpdateBalance_RepoError_ReturnsError(t *testing.T) {

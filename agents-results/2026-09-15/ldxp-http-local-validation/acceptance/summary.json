@@ -1,0 +1,102 @@
+{
+  "checked_at": "2026-09-15T13:57:56.368074+00:00",
+  "status": "READ_ONLY_VERIFIED",
+  "source_base_commit": "507a820c6792782ac07f9962a06c6224ce6cba70",
+  "changes_committed": false,
+  "live_receipts": [
+    "probe-20260915T215245-6dd1bb2f.json",
+    "probe-20260915T215327-d167555b.json"
+  ],
+  "merchant_product_count": 10,
+  "local_mapped_products": [
+    {
+      "goods_id": 874783,
+      "cny_amount": 5,
+      "usd_credit": 5,
+      "found_in_merchant": true,
+      "unsold_count": 3,
+      "two_scans_agree": true
+    },
+    {
+      "goods_id": 875537,
+      "cny_amount": 10,
+      "usd_credit": 10,
+      "found_in_merchant": true,
+      "unsold_count": 1,
+      "two_scans_agree": true
+    },
+    {
+      "goods_id": 875562,
+      "cny_amount": 20,
+      "usd_credit": 20,
+      "found_in_merchant": true,
+      "unsold_count": 1,
+      "two_scans_agree": true
+    },
+    {
+      "goods_id": 875570,
+      "cny_amount": 50,
+      "usd_credit": 50,
+      "found_in_merchant": true,
+      "unsold_count": 1,
+      "two_scans_agree": true
+    },
+    {
+      "goods_id": 875577,
+      "cny_amount": 100,
+      "usd_credit": 100,
+      "found_in_merchant": true,
+      "unsold_count": 1,
+      "two_scans_agree": true
+    }
+  ],
+  "independent_query_processes": [
+    84074,
+    84528
+  ],
+  "login_listener_stopped": true,
+  "browser_used_for_queries": false,
+  "invalid_session": {
+    "http_status": 200,
+    "application_code": 401,
+    "authenticated": false
+  },
+  "targeted_tests": {
+    "passed": 14,
+    "log": "probe-tests-final.log"
+  },
+  "known_credentials_scan": {
+    "result": "PASS",
+    "files_checked": 13
+  },
+  "session_file_mode": "0600",
+  "session_directory_mode": "0700",
+  "local_document_links_checked": 13,
+  "diff_check": "PASS",
+  "production_sub2api_accessed": false,
+  "inventory_written": false,
+  "automatic_restock_enabled": false,
+  "full_local_ci_run": false,
+  "human_acceptance": "NOT_PERFORMED",
+  "not_verified": [
+    "initial_mapping_creation",
+    "merchant_to_local_code_reconciliation",
+    "card_upload",
+    "duplicate_restock_idempotency",
+    "purchase_and_redemption",
+    "maintain_999_inventory",
+    "continuous_service",
+    "long_duration_session_validity",
+    "production_execution"
+  ],
+  "source_sha256": {
+    "tools/commerce/ldxp_http_probe.py": "8f489f3ee673685a88ee0cfd54e9415fc380c7f8490cba2727f65bd826d094b9",
+    "tools/commerce/ldxp_http_probe.html": "403a3ca76db0c86f314602066beafbe8f7311f1d060c3b128be832f42da3fc86",
+    "tools/commerce/README.md": "b732efd996406b327f1fbbd61646b3cc535150592abb21beb457c2c968888c3e",
+    "tools/quality/tests/test_ldxp_http_probe.py": "6e33b27af9af6667e9902d082037901de1b3cf69780fabc222ff2d6f6563279a"
+  },
+  "receipt_sha256": {
+    "probe-20260915T215245-6dd1bb2f.json": "cfe6d0918ecb9e7c3c1a1dd5a42869fe315924c993e99d1cd95024b5a5406313",
+    "probe-20260915T215327-d167555b.json": "e709f44350464cf3e65a50561447728c373366e7144cd4416eac54bd6ec98e3b"
+  }
+}

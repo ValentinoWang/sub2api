@@ -1,0 +1,7 @@
+{
+  "status": "SCHEDULED",
+  "interval_seconds": 60,
+  "target_stock": 999,
+  "products": 5,
+  "finished_at": 1789481864.476446
+}

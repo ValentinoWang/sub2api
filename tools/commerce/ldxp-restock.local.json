@@ -1,0 +1,12 @@
+{
+  "site": "http://127.0.0.1:8080",
+  "goods_ids": "all",
+  "target_stock": 999,
+  "batch_size": 20,
+  "interval_seconds": 60,
+  "recovery": {
+    "enabled": true,
+    "max_attempts": 3,
+    "retry_seconds": 60
+  }
+}

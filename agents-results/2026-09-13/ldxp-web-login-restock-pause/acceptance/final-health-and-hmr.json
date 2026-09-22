@@ -1,0 +1,8 @@
+{
+  "dev_health": "ok",
+  "prod_health": "ok",
+  "hmr_client_status": 200,
+  "hmr_client_websocket_code": true,
+  "probe_note": "Initial urllib probe encountered connection reset; independent curl retry succeeded for all three URLs.",
+  "observed_at": "2026-09-13T08:03:01.557611+00:00"
+}

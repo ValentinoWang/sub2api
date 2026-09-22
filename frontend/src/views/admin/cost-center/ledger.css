@@ -1,0 +1,56 @@
+.ledger-title {
+  @apply text-sm font-semibold text-gray-900 dark:text-white sm:text-base;
+}
+
+.ledger-desc {
+  @apply mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400 sm:text-sm sm:leading-6;
+}
+
+.ledger-label {
+  @apply mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400;
+}
+
+.ledger-hint {
+  @apply mt-1 text-xs leading-5 text-gray-500 dark:text-dark-400;
+}
+
+.ledger-disclosure {
+  @apply flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors sm:px-5 md:px-6;
+  @apply hover:bg-gray-50 dark:hover:bg-dark-700/40;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500/60;
+}
+
+.ledger-alert-error {
+  @apply flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs leading-5 text-red-700;
+  @apply dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300;
+}
+
+.ledger-alert-ok {
+  @apply flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-800;
+  @apply dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300;
+}
+
+.ledger-empty {
+  @apply flex flex-col items-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-10 text-center;
+  @apply dark:border-dark-600;
+}
+
+.ledger-empty-icon {
+  @apply mb-1 flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-gray-400;
+  @apply dark:bg-dark-700 dark:text-dark-400;
+}
+
+.ledger-chevron {
+  @apply transition-transform duration-200;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ledger-chevron,
+  .ledger-disclosure {
+    transition: none;
+  }
+
+  .ledger-refresh-icon {
+    animation: none;
+  }
+}

@@ -2,6 +2,8 @@ package admin
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -26,6 +28,7 @@ type OpenAIOAuthHandler struct {
 }
 
 type openAIQuotaService interface {
+	CheckResetCreditHistory(ctx context.Context, accountID int64) *service.OpenAIResetCreditCheck
 	QueryUsage(ctx context.Context, accountID int64) (*service.OpenAIQuotaUsage, error)
 	CacheResetCreditsSnapshot(ctx context.Context, accountID int64, credits *service.OpenAIRateLimitResetCredits) error
 	CacheCreditsSnapshot(ctx context.Context, accountID int64, usage *service.OpenAIQuotaUsage) error
@@ -580,16 +583,48 @@ func (h *OpenAIOAuthHandler) CreateShadow(c *gin.Context) {
 	response.Success(c, dto.AccountFromServiceShallow(shadow))
 }
 
-// ResetQuota consumes one rate-limit reset credit for an OpenAI account.
-// POST /api/v1/admin/openai/accounts/:id/reset-quota
-func (h *OpenAIOAuthHandler) ResetQuota(c *gin.Context) {
+// CheckResetCreditHistory does not notify automatic reset jobs or persist quota caches.
+func (h *OpenAIOAuthHandler) CheckResetCreditHistory(c *gin.Context) {
+	c.Header("Cache-Control", "no-store")
 	accountID, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
+	if err != nil || accountID <= 0 {
 		response.BadRequest(c, "Invalid account ID")
 		return
 	}
 	if h.quotaService == nil {
 		response.BadRequest(c, "openai quota service is not enabled")
+		return
+	}
+	response.Success(c, h.quotaService.CheckResetCreditHistory(c.Request.Context(), accountID))
+}
+
+// ResetQuota rechecks recent usage before consuming a reset credit.
+// POST /api/v1/admin/openai/accounts/:id/reset-quota
+func (h *OpenAIOAuthHandler) ResetQuota(c *gin.Context) {
+	accountID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || accountID <= 0 {
+		response.BadRequest(c, "Invalid account ID")
+		return
+	}
+	if h.quotaService == nil {
+		response.BadRequest(c, "openai quota service is not enabled")
+		return
+	}
+	var request struct {
+		ConfirmationKey string `json:"confirmation_key"`
+	}
+	if err := c.ShouldBindJSON(&request); err != nil && err != io.EOF {
+		response.BadRequest(c, "Invalid reset confirmation")
+		return
+	}
+	check := h.quotaService.CheckResetCreditHistory(c.Request.Context(), accountID)
+	if check == nil {
+		response.Error(c, http.StatusServiceUnavailable, "Reset history check unavailable")
+		return
+	}
+	if check.Status != "clear" && (request.ConfirmationKey == "" || request.ConfirmationKey != check.ConfirmationKey) {
+		encoded, _ := json.Marshal(check)
+		response.ErrorWithDetails(c, http.StatusConflict, "Reset credit history requires confirmation", "RESET_CREDIT_CONFIRMATION_REQUIRED", map[string]string{"reset_credit_check": string(encoded)})
 		return
 	}
 	result, err := h.quotaService.ResetCredit(c.Request.Context(), accountID)

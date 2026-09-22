@@ -1,0 +1,51 @@
+{
+  "status": "component-verification-passed",
+  "generated_at": "2026-09-16T10:01:41.147647+00:00",
+  "files": [
+    {
+      "path": "frontend/src/api/liandongBrowser.ts",
+      "sha256": "c00e873d1ad766d88d625265311d1964f0453e2feec4e855a1f29326cd2084e2"
+    },
+    {
+      "path": "frontend/src/components/admin/liandong/ChromeRestockPanel.vue",
+      "sha256": "3645e95dd8c93110bc9d84f64e2dc86da518e23ab36602da3e6ffed1d5043190"
+    },
+    {
+      "path": "frontend/src/components/admin/liandong/__tests__/ChromeRestockPanel.spec.ts",
+      "sha256": "40226a73e9caec9fd7a944de3dc235d63c55d0e2f59a985b6dfeafff955d9960"
+    },
+    {
+      "path": "frontend/src/i18n/locales/zh/misc.ts",
+      "sha256": "b55017e8c83224f497407d9ca8d94ba5bbfb14fc1e0f5cca693380ea9880ec58"
+    },
+    {
+      "path": "frontend/src/i18n/locales/en/misc.ts",
+      "sha256": "27452c65ae634888a21087b787d9ed7c8d4237b1f3cd1ee54a82e5f2bbaf6c51"
+    }
+  ],
+  "scope": [
+    "Consume runtime.execution_mode without renaming stored device identities",
+    "Browser mode localhost/127.0.0.1 link opens fixed local helper at http://127.0.0.1:52401/",
+    "Remote pages never expose a local helper link; instruct verification on the execution computer",
+    "Browser login/verification pause and failed recheck use same-browser instructions; HTTP mode retains supported merchant link and feedback",
+    "Browser alerts label Dedicated browser worker while preserving device display name",
+    "Product mappings remain collapsed at the bottom and existing pause/recheck protections remain"
+  ],
+  "tests": {
+    "pnpm": "9.15.9",
+    "red": "red-pnpm9.log: 9 failed / 21 passed before implementation",
+    "green": "green-final.log: 30 component and 3 locale tests",
+    "lint": "lint-final.log",
+    "typecheck": "typecheck.log: exit 0 before final label-only template and locale addition",
+    "diff_check": "passed scoped owned files"
+  },
+  "boundaries": [
+    "No deployment, version change, Go invocation or commit.",
+    "The helper link target is fixed; actual helper launch and shared browser session are implemented and accepted by the parent task.",
+    "Real browser interaction was not performed in this frontend subtask."
+  ],
+  "notes": [
+    "Existing unrelated edits in the shared files were preserved.",
+    "red.log is an initial non-authoritative run using discovered pnpm 11; red-pnpm9.log is the required-version regression run."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "at": 1789494098.181698,
+  "case": "real_partial_delivery_then_process_exit",
+  "goods_id": 875577,
+  "batch_id": "browser-0b48f949fd37bdacf09bac416c8fe152",
+  "batch_count": 20,
+  "actually_uploaded_before_exit": 1,
+  "intentional_exit_code": 75,
+  "production_accessed": false,
+  "automatic_retry_not_yet_observed": true
+}

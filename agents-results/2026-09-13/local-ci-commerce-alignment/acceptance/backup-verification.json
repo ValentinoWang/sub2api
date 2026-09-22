@@ -1,0 +1,71 @@
+{
+  "local": {
+    "created_at": "2026-09-12T17:20:25.816186+00:00",
+    "postgres_archive_readable": true,
+    "toc_entries": 1346,
+    "files": [
+      {
+        "file": "local-app-data.tar.gz",
+        "bytes": 4894720,
+        "sha256": "e5d9aeadae6e4b57a585230f5e9438d9ad8fb61fe230b5c2dc8b341316ba97fb"
+      },
+      {
+        "file": "local-app-inspect.json",
+        "bytes": 18689,
+        "sha256": "ed0055c99ecc1ff78d49cc1e42269977c386cfad3fb3532844b3cfa81d5201fe"
+      },
+      {
+        "file": "local-compose-config.tar.gz",
+        "bytes": 20480,
+        "sha256": "e48e205b2e378fc906c23105288f8fc66c27c0415df948da3039278ed7ad9d90"
+      },
+      {
+        "file": "local-db.dump",
+        "bytes": 203681903,
+        "sha256": "b2ca2c1d74f5d79de512a8b70b3ae1fecf6122857c493d1c96aa3fe8d6942cad"
+      }
+    ],
+    "archive_integrity": [
+      {
+        "file": "local-app-data.tar.gz",
+        "gzip_crc_valid": true,
+        "tar_entries": 30,
+        "zero_record_padding_bytes": 5214
+      },
+      {
+        "file": "local-compose-config.tar.gz",
+        "gzip_crc_valid": true,
+        "tar_entries": 4,
+        "zero_record_padding_bytes": 8435
+      }
+    ]
+  },
+  "production": {
+    "created_at": "2026-09-12T17:21:55.900803+00:00",
+    "postgres_archive_readable": true,
+    "toc_entries": 1346,
+    "files": [
+      {
+        "file": "prod-app-data.tar.gz",
+        "bytes": 10105348,
+        "sha256": "e95b4d3c523be2a9090267221ad7524778f22bdca5aff783135590f354dd8a57"
+      },
+      {
+        "file": "prod-app-inspect.json",
+        "bytes": 19064,
+        "sha256": "09b441a9cb605d87473ce0e0f7be6cd51dd8b60d10931e558dc31159ddba2233"
+      },
+      {
+        "file": "prod-compose-config.tar.gz",
+        "bytes": 11625,
+        "sha256": "8e423a0b9b1c725af4575bcc04657124a063ad2a24ee59ce2a27794e511fa81e"
+      },
+      {
+        "file": "prod-db.dump",
+        "bytes": 190917583,
+        "sha256": "e61ee1487441cef5afd6443ab139bbab56536f97e87960f5c45d50a04e790eff"
+      }
+    ]
+  },
+  "verification": "pg_restore parsed both database archive headers and table-of-contents; local archive hashes match and gzip CRC/tar parsing passed. BSD tar stdout includes all-zero record padding. No live restore or cutover claimed."
+}

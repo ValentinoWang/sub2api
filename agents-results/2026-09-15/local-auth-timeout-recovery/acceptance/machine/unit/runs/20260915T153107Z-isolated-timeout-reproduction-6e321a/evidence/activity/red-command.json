@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/Users/vsiyo/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.0.darwin-arm64/bin/go",
+    "test",
+    "-tags",
+    "unit",
+    "./internal/service",
+    "./internal/server/middleware",
+    "-run",
+    "TestTouchLastActive_(CanceledFollower|TimeoutBounds)|TestJWTAuth_LastActiveTimeoutAllowsAuthenticatedHandler",
+    "-count=1",
+    "-p",
+    "1",
+    "-v"
+  ],
+  "exit_code": 1,
+  "source": "current pre-fix activity implementation"
+}

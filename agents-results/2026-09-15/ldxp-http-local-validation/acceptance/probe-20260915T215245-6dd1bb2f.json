@@ -1,0 +1,56 @@
+{
+  "started_at": 1789480363.4973261,
+  "pid": 84074,
+  "status": "READ_ONLY_VERIFIED",
+  "browser_used": false,
+  "inventory_written": false,
+  "production_accessed": false,
+  "merchant_origin": "https://www.ldxp.cn",
+  "sub2api_origin": "http://127.0.0.1:8080",
+  "merchant_authenticated": true,
+  "merchant_product_count": 10,
+  "test_products": [
+    {
+      "goods_id": 874783,
+      "cny_amount": 5,
+      "usd_credit": 5,
+      "found_in_merchant": true,
+      "unsold_count": 3,
+      "two_scans_agree": true
+    },
+    {
+      "goods_id": 875537,
+      "cny_amount": 10,
+      "usd_credit": 10,
+      "found_in_merchant": true,
+      "unsold_count": 1,
+      "two_scans_agree": true
+    },
+    {
+      "goods_id": 875562,
+      "cny_amount": 20,
+      "usd_credit": 20,
+      "found_in_merchant": true,
+      "unsold_count": 1,
+      "two_scans_agree": true
+    },
+    {
+      "goods_id": 875570,
+      "cny_amount": 50,
+      "usd_credit": 50,
+      "found_in_merchant": true,
+      "unsold_count": 1,
+      "two_scans_agree": true
+    },
+    {
+      "goods_id": 875577,
+      "cny_amount": 100,
+      "usd_credit": 100,
+      "found_in_merchant": true,
+      "unsold_count": 1,
+      "two_scans_agree": true
+    }
+  ],
+  "local_mappings_present": true,
+  "finished_at": 1789480365.39957
+}

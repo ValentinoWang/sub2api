@@ -1,0 +1,368 @@
+{
+  "repo": "yusheng266186-beep/liandong-ai-radar",
+  "commit": "d0b1c8831e042156c64c0f375ed5997f61a57946",
+  "license": "MIT",
+  "files": [
+    {
+      "path": ".github/workflows/pages-next.yml",
+      "size": 3124
+    },
+    {
+      "path": ".gitignore",
+      "size": 512
+    },
+    {
+      "path": ".npmrc",
+      "size": 76
+    },
+    {
+      "path": "LICENSE",
+      "size": 1075
+    },
+    {
+      "path": "README.md",
+      "size": 16282
+    },
+    {
+      "path": "app/globals.css",
+      "size": 51677
+    },
+    {
+      "path": "app/layout.tsx",
+      "size": 595
+    },
+    {
+      "path": "app/page.tsx",
+      "size": 117
+    },
+    {
+      "path": "app/radar-dashboard.tsx",
+      "size": 65369
+    },
+    {
+      "path": "components.json",
+      "size": 420
+    },
+    {
+      "path": "components/ui/accordion.tsx",
+      "size": 2048
+    },
+    {
+      "path": "components/ui/alert-dialog.tsx",
+      "size": 5439
+    },
+    {
+      "path": "components/ui/alert.tsx",
+      "size": 1614
+    },
+    {
+      "path": "components/ui/aspect-ratio.tsx",
+      "size": 274
+    },
+    {
+      "path": "components/ui/attachment.tsx",
+      "size": 6002
+    },
+    {
+      "path": "components/ui/avatar.tsx",
+      "size": 2916
+    },
+    {
+      "path": "components/ui/badge.tsx",
+      "size": 1776
+    },
+    {
+      "path": "components/ui/breadcrumb.tsx",
+      "size": 2350
+    },
+    {
+      "path": "components/ui/bubble.tsx",
+      "size": 4699
+    },
+    {
+      "path": "components/ui/button-group.tsx",
+      "size": 2202
+    },
+    {
+      "path": "components/ui/button.tsx",
+      "size": 2392
+    },
+    {
+      "path": "components/ui/calendar.tsx",
+      "size": 7832
+    },
+    {
+      "path": "components/ui/card.tsx",
+      "size": 1987
+    },
+    {
+      "path": "components/ui/carousel.tsx",
+      "size": 5556
+    },
+    {
+      "path": "components/ui/chart.tsx",
+      "size": 10614
+    },
+    {
+      "path": "components/ui/checkbox.tsx",
+      "size": 1214
+    },
+    {
+      "path": "components/ui/collapsible.tsx",
+      "size": 795
+    },
+    {
+      "path": "components/ui/combobox.tsx",
+      "size": 9158
+    },
+    {
+      "path": "components/ui/command.tsx",
+      "size": 4818
+    },
+    {
+      "path": "components/ui/context-menu.tsx",
+      "size": 8268
+    },
+    {
+      "path": "components/ui/dialog.tsx",
+      "size": 4303
+    },
+    {
+      "path": "components/ui/direction.tsx",
+      "size": 506
+    },
+    {
+      "path": "components/ui/drawer.tsx",
+      "size": 4255
+    },
+    {
+      "path": "components/ui/dropdown-menu.tsx",
+      "size": 8418
+    },
+    {
+      "path": "components/ui/empty.tsx",
+      "size": 2396
+    },
+    {
+      "path": "components/ui/field.tsx",
+      "size": 6159
+    },
+    {
+      "path": "components/ui/form.tsx",
+      "size": 3757
+    },
+    {
+      "path": "components/ui/hover-card.tsx",
+      "size": 1526
+    },
+    {
+      "path": "components/ui/input-group.tsx",
+      "size": 5065
+    },
+    {
+      "path": "components/ui/input-otp.tsx",
+      "size": 2254
+    },
+    {
+      "path": "components/ui/input.tsx",
+      "size": 962
+    },
+    {
+      "path": "components/ui/item.tsx",
+      "size": 4486
+    },
+    {
+      "path": "components/ui/kbd.tsx",
+      "size": 862
+    },
+    {
+      "path": "components/ui/label.tsx",
+      "size": 606
+    },
+    {
+      "path": "components/ui/marker.tsx",
+      "size": 1864
+    },
+    {
+      "path": "components/ui/menubar.tsx",
+      "size": 8389
+    },
+    {
+      "path": "components/ui/message-scroller.tsx",
+      "size": 3992
+    },
+    {
+      "path": "components/ui/message.tsx",
+      "size": 2232
+    },
+    {
+      "path": "components/ui/native-select.tsx",
+      "size": 1995
+    },
+    {
+      "path": "components/ui/navigation-menu.tsx",
+      "size": 6658
+    },
+    {
+      "path": "components/ui/pagination.tsx",
+      "size": 2717
+    },
+    {
+      "path": "components/ui/popover.tsx",
+      "size": 2357
+    },
+    {
+      "path": "components/ui/progress.tsx",
+      "size": 755
+    },
+    {
+      "path": "components/ui/radio-group.tsx",
+      "size": 1460
+    },
+    {
+      "path": "components/ui/resizable.tsx",
+      "size": 1815
+    },
+    {
+      "path": "components/ui/scroll-area.tsx",
+      "size": 1639
+    },
+    {
+      "path": "components/ui/select.tsx",
+      "size": 6353
+    },
+    {
+      "path": "components/ui/separator.tsx",
+      "size": 694
+    },
+    {
+      "path": "components/ui/sheet.tsx",
+      "size": 4188
+    },
+    {
+      "path": "components/ui/sidebar.tsx",
+      "size": 21526
+    },
+    {
+      "path": "components/ui/skeleton.tsx",
+      "size": 276
+    },
+    {
+      "path": "components/ui/slider.tsx",
+      "size": 1991
+    },
+    {
+      "path": "components/ui/sonner.tsx",
+      "size": 1034
+    },
+    {
+      "path": "components/ui/spinner.tsx",
+      "size": 331
+    },
+    {
+      "path": "components/ui/switch.tsx",
+      "size": 1408
+    },
+    {
+      "path": "components/ui/table.tsx",
+      "size": 2478
+    },
+    {
+      "path": "components/ui/tabs.tsx",
+      "size": 3782
+    },
+    {
+      "path": "components/ui/textarea.tsx",
+      "size": 759
+    },
+    {
+      "path": "components/ui/toggle-group.tsx",
+      "size": 2308
+    },
+    {
+      "path": "components/ui/toggle.tsx",
+      "size": 1565
+    },
+    {
+      "path": "components/ui/tooltip.tsx",
+      "size": 1830
+    },
+    {
+      "path": "eslint.config.mjs",
+      "size": 861
+    },
+    {
+      "path": "hooks/use-mobile.ts",
+      "size": 565
+    },
+    {
+      "path": "lib/utils.ts",
+      "size": 177
+    },
+    {
+      "path": "next.config.ts",
+      "size": 444
+    },
+    {
+      "path": "package-lock.json",
+      "size": 497924
+    },
+    {
+      "path": "package.json",
+      "size": 2211
+    },
+    {
+      "path": "postcss.config.mjs",
+      "size": 94
+    },
+    {
+      "path": "public/data/catalog.json",
+      "size": 619539
+    },
+    {
+      "path": "public/favicon.svg",
+      "size": 523
+    },
+    {
+      "path": "public/file.svg",
+      "size": 392
+    },
+    {
+      "path": "public/globe.svg",
+      "size": 1036
+    },
+    {
+      "path": "public/window.svg",
+      "size": 386
+    },
+    {
+      "path": "scripts/adapters/priceai.mjs",
+      "size": 5530
+    },
+    {
+      "path": "scripts/crawl-catalog.mjs",
+      "size": 55023
+    },
+    {
+      "path": "scripts/visual-check.mjs",
+      "size": 6044
+    },
+    {
+      "path": "tests/catalog-v4.test.mjs",
+      "size": 6650
+    },
+    {
+      "path": "tsconfig.json",
+      "size": 666
+    },
+    {
+      "path": "vendor/shadcn-tailwind-4.13.0.LICENSE.md",
+      "size": 1063
+    },
+    {
+      "path": "vendor/shadcn-tailwind-4.13.0.css",
+      "size": 16041
+    }
+  ],
+  "tree_truncated": false
+}

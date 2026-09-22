@@ -1,0 +1,12 @@
+{
+  "created_at": 1789491363.756935,
+  "backup_private_path": "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-deployment/before-0.2.4.5-20260916T005319.dump",
+  "backup_bytes": 203993586,
+  "sha256": "5ceee3e26a32c94dbad2ce32bd708c1c9bdf921f13d93481754e0aa1f1887699",
+  "prior_image": "sub2api-local:0.2.4.4-507a820c6792",
+  "prior_image_id": "sha256:4e7bf76b9e2cccf925a2f385460acf1361fedf4b72521a6c566df0ed4fd19db5",
+  "container_config_saved_privately": true,
+  "no_runtime_replacement_yet": true,
+  "restore_catalog_verified": true,
+  "toc_entries": 1358
+}

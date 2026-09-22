@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/quality/tests",
+    "-p",
+    "test_ldxp_http_probe.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "legacy_tests_sha256": "6e33b27af9af6667e9902d082037901de1b3cf69780fabc222ff2d6f6563279a"
+}

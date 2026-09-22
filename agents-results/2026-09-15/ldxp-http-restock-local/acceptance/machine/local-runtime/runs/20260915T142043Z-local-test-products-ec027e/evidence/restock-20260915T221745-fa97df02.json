@@ -1,0 +1,9 @@
+{
+  "status": "PAUSED",
+  "site": "http://127.0.0.1:8080",
+  "products": [],
+  "uploaded": 0,
+  "error": "backend_error",
+  "message": "本站补货接口请求失败，已停止本轮。",
+  "finished_at": 1789481865.9147031
+}

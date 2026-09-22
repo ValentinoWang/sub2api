@@ -1,0 +1,49 @@
+{
+  "desktop_directory": "/Users/vsiyo/Desktop/小铺补货助手",
+  "installed_files_match_source": true,
+  "browser_reload_verified": false,
+  "real_site_bindings_verified": false,
+  "zip_sha256": "43dafe438b498858f77d6c81a5af3f687e771c1505acf0cdcd92a30f0b280132",
+  "files": [
+    {
+      "file": "manifest.json",
+      "sha256": "cbc98453130cd41838412b9be33cb083efe9a04f245094b81a1b57346bdb7506"
+    },
+    {
+      "file": "worker.js",
+      "sha256": "bfe4753b9590d016e0b57ad3bb5b393e56ef09450b5d98e2cddcba3ac683e30f"
+    },
+    {
+      "file": "core.js",
+      "sha256": "0e83e2ce8abc8ae5432d5ce4fac0257c19b8cea524906752e0a48888e15ed51f"
+    },
+    {
+      "file": "backend.js",
+      "sha256": "291c57038b2df354cb9c8bc9484b64d56f18a4ce473f102e4efb57216df8a97e"
+    },
+    {
+      "file": "merchant-adapter.js",
+      "sha256": "7ac2a31f4f0d95c43f5db3560804aa4aedcd959361cd604588a39592406dee48"
+    },
+    {
+      "file": "popup.html",
+      "sha256": "f52c26c26dbf4301166fd1c02cccb4b8b0745fd5d873975898fcead399db5628"
+    },
+    {
+      "file": "popup.js",
+      "sha256": "571d7e284ed4b6988e19241e35b600ceb16d31db46da445c6f5987bfdcbef29b"
+    },
+    {
+      "file": "options.html",
+      "sha256": "420e11c9eb7ffaa3a2795cd9f02d9ae8b0704167501853c47b30abe5c0208c8e"
+    },
+    {
+      "file": "options.js",
+      "sha256": "d946ebf94c601c6a36b1bc7cfe8761e24c53eb3deefe64c130027938926e47db"
+    },
+    {
+      "file": "ui.css",
+      "sha256": "1f23f01b6bebcf156b6595a5e16254db526dfca3a66920c27435ba142ff0bf89"
+    }
+  ]
+}

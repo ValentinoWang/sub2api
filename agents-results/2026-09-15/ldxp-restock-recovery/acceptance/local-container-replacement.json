@@ -1,0 +1,9 @@
+{
+  "at": 1789493995.563571,
+  "image": "sub2api-local:0.2.4.5-be8771d92b66",
+  "image_id": "sha256:94d5252779108bc8ada75b12d6187093d702063ad47a8cdf89666343675ac428",
+  "commit": "be8771d92b66f8742fa90036d8507b822306e3eb",
+  "compose_exit_code": 0,
+  "local_only": true,
+  "full_ci_still_pending": true
+}

@@ -1,0 +1,10 @@
+{
+  "first_attempt": "automatic rollback succeeded before migration 241 applied",
+  "cause": "Removed three obsolete toolkit image defaults falsely failed exact runtime environment guard",
+  "correction": "Only exact retired defaults absent from image and operator configuration may disappear; all other environment/mount/port invariants remain enforced",
+  "red_evidence": "retired-defaults-red.log",
+  "green_evidence": "release-helpers-v2-green.log",
+  "tests_passed": 28,
+  "replace_app_sha256": "ed33f39d74554fd233a6298653ab139cbafc1553227acc00bd7351ea056fa10c",
+  "source_image_unchanged": true
+}

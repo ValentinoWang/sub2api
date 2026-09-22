@@ -1,0 +1,14 @@
+{
+  "source_commit": "20189b7348fa74020e066241890c240e0c28cad4",
+  "source_dirty": true,
+  "old_image": "sub2api-local:0.1.183-proxy-subscription-ss-20260903",
+  "old_image_id": "sha256:d5f73b59753e7638d786f6430c412e15e9220c3f5bcbe1fb7f8b9b44d3d2cfd7",
+  "container": "f36c0f40c8f1c644b8346047112385be71f063384d067a97dd07d37efb702b6a",
+  "backup_path": "/Users/vsiyo/.local/share/sub2api-backups/20260910-local-8080",
+  "target": "http://127.0.0.1:8080",
+  "technical_version": "0.2.5",
+  "architecture": "linux/amd64",
+  "reason": "current packaged LDXP toolkit targets linux/amd64",
+  "source_digest": "1b221364260bb98954cef10d9c289487f4707f3314a1925146b044ba2d7f1045",
+  "new_image": "sub2api-local:0.2.5-local-1b221364260b"
+}

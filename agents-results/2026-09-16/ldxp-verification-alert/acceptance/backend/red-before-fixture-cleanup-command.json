@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/go",
+    "test",
+    "-tags",
+    "integration",
+    "./internal/server/routes",
+    "-run",
+    "^TestLiandongBrowserRuntimeIntegration$",
+    "-count=1",
+    "-p",
+    "1",
+    "-v"
+  ],
+  "cwd": "/Users/vsiyo/.local/share/sub2api/ldxp-verification-checkout/backend",
+  "baseline": "4aa71a540",
+  "exit_code": 1,
+  "source": "baseline backend plus the new runtime integration test"
+}

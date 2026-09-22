@@ -1,0 +1,33 @@
+{
+  "task_id": "windows-wsl-codex-frontend-tutorial",
+  "source_identity": "20189b7348fa74020e066241890c240e0c28cad4+worktree-dde0ffb9e5fd",
+  "checks": [
+    {
+      "name": "focused tutorial tests",
+      "status": "PASS",
+      "result": "3 files, 11 tests passed"
+    },
+    {
+      "name": "full frontend test suite",
+      "status": "PASS",
+      "result": "293 files, 2182 tests passed"
+    },
+    {
+      "name": "Vue TypeScript",
+      "status": "PASS",
+      "command": "vue-tsc --noEmit"
+    },
+    {
+      "name": "full frontend ESLint",
+      "status": "PASS"
+    },
+    {
+      "name": "git diff whitespace check",
+      "status": "PASS"
+    }
+  ],
+  "notes": [
+    "The suite emitted existing fixture warnings for unresolved RouterLink components, intentionally simulated failures, and missing isolated-test locale messages; the process completed with exit code 0.",
+    "The tutorial assertions now require reader-facing experience copy, distinct WSL terminal and Codex prompt labels, ten steps, and the final practice task."
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "image": "sub2api-local:0.2.6-64f459e05d2e",
+  "mode": "fresh setup server, no user database or production configuration",
+  "container": "6c7a7543fad8715d90e2003552d18ef50d53cc7e32a838b527cf4d72e1409586",
+  "checks": [
+    {
+      "path": "/home",
+      "http": 200,
+      "embedded_app": true,
+      "scripts": [
+        "/assets/index-CumNenV7.js"
+      ]
+    },
+    {
+      "path": "/purchase",
+      "http": 200,
+      "embedded_app": true,
+      "scripts": [
+        "/assets/index-CumNenV7.js"
+      ]
+    },
+    {
+      "path": "/redeem",
+      "http": 200,
+      "embedded_app": true,
+      "scripts": [
+        "/assets/index-CumNenV7.js"
+      ]
+    },
+    {
+      "path": "/register",
+      "http": 200,
+      "embedded_app": true,
+      "scripts": [
+        "/assets/index-CumNenV7.js"
+      ]
+    },
+    {
+      "path": "/experiences/windows-11-wsl-codex-frontend",
+      "http": 200,
+      "embedded_app": true,
+      "scripts": [
+        "/assets/index-CumNenV7.js"
+      ]
+    },
+    {
+      "path": "/error-experiences/windows-11-wsl2-codex-environment",
+      "http": 200,
+      "embedded_app": true,
+      "scripts": [
+        "/assets/index-CumNenV7.js"
+      ]
+    }
+  ],
+  "url": "http://127.0.0.1:62380",
+  "setup_status": {
+    "code": 0,
+    "message": "success",
+    "data": {
+      "needs_setup": true,
+      "step": "welcome"
+    }
+  },
+  "asset_fetch": true,
+  "result": "PASS: image binary serves embedded frontend in fresh setup mode; no checkout/redemption claim",
+  "container_removed": true
+}

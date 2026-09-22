@@ -1,0 +1,11 @@
+{
+  "anchors_valid": true,
+  "anchor_issues": [],
+  "fixed_positions": {
+    "def _fetch_order_detail_with_browser(": 2982,
+    "and (self.order_detail_fetcher or str(os.environ.get(\"LDXP_FETCH_ORDER_DETAILS\"": 3058
+  },
+  "report_sha256": "1a9952351588d8700ded33a3a0a18d6c86835f030b98808ef03757fdde387ed8",
+  "manifest_sha256": "88659a5a45dc4e590164b88d8323f9356008087e744d17f624fdbefe6bc38395",
+  "static_only": true
+}

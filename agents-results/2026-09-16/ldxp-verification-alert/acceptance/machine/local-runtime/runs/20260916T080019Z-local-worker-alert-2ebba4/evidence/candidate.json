@@ -1,0 +1,28 @@
+{
+  "commit": "2478cc12a97cd3caa10aac7db51fc9b47295aae0",
+  "branch": "codex/ldxp-verification-alert",
+  "base": "4aa71a5401644b8bc62443b6642c61fd389eb85e",
+  "version": "0.2.4.6",
+  "paths": {
+    "backend/cmd/server/VERSION": "27ec0aab13da3b193e9f6d2d55c6aef8f87ead8ea124b4e536c290aefd2087ba",
+    "backend/internal/handler/admin/liandong_browser.go": "f4c303d9d6096a8a937245cbaab241a62a9b99eab9a486e4c547cd6846a5648f",
+    "backend/internal/server/routes/liandong_browser_runtime_integration_test.go": "2045d396eea2daf2154a1bda31deb667cbf8d9cc742a1b8e1c9c93f127616a0a",
+    "backend/internal/server/routes/liandong_tool_routes.go": "1a304838dd8298f0009ca58465cd80552cf7e5cd59f083e7da4a88d7b2325190",
+    "backend/internal/service/liandong_browser.go": "13ad6f7ab9adb593b17b5e5db8b77ba6701d9ac46950c7dc58228d88ebac3ff0",
+    "backend/internal/service/liandong_browser_runtime.go": "8490b0b4a4a6bbd4b3ba72293f59ff60281ba53b61e65114f25ece57641b4a74",
+    "backend/migrations/243_liandong_browser_runtime.sql": "9c3eaa73d366f78414e3e305147afb8ee7493b59d48118937530202a8203dd48",
+    "frontend/src/api/liandongBrowser.ts": "60c6aa45bf49abcc84db7c67a71c7e36860ae900c2c74274a72a549c7eadaeda",
+    "frontend/src/components/admin/liandong/ChromeRestockPanel.vue": "7f9ba7fccf7e56d99e62f5f3206dd0fd2ce0646b40c0b23cea87fae9eccd4604",
+    "frontend/src/components/admin/liandong/__tests__/ChromeRestockPanel.spec.ts": "1cf2bcd2e81ad5e7f05e7f89c6545e89a1b3e40fdfa3ec5fbf87ddb2ac4870b5",
+    "frontend/src/i18n/locales/en/misc.ts": "27daa85db78044f451041b0fb069c1c311aa1544a671b35d3742586ef4891d27",
+    "frontend/src/i18n/locales/zh/misc.ts": "78e8e64cca7a062f15d5f54dfa34c6461cd2dcdb46dd84f1d6bafc44304051a8",
+    "frontend/src/views/admin/__tests__/LiandongToolkitView.spec.ts": "46435c77da87e2623280dd1cae27b514b842c725054f32055311ffca1dfbafe4",
+    "tools/commerce/README.md": "1d284cfb89f2f0c67e37d8b1406bed3c22af14d3a3d2e325d7a69254c3b4eed8",
+    "tools/commerce/ldxp_http_probe.py": "2dcd70134729477459a92e216835c751aee4663f5f72dc0958bcf532710ab43f",
+    "tools/commerce/ldxp_http_restock.py": "52228d8b2a35c7d11c34d2c6f06a22d69b2a0d2fbccba3e9bd8a0f3d30579dc9",
+    "tools/quality/tests/test_ldxp_http_response_recovery.py": "07d42adb76c9eacb9782d30e4a12b788cf2f6622c589810a495213e2c3924962",
+    "tools/quality/tests/test_ldxp_http_restock.py": "d28354ba21b968db70cc7ba1393811fd4818942ea38532e56523c9ba398b9ba1",
+    "tools/quality/tests/test_ldxp_runtime_notification.py": "78407df84c017914dc4eff46c62f6062e9fa9bd5c21b433bd2be1aea35a07d1c"
+  },
+  "production_touched": false
+}

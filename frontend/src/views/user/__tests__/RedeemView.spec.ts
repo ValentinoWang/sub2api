@@ -68,7 +68,7 @@ describe('RedeemView refresh after redemption', () => {
 
       expect(redeem).toHaveBeenCalledWith('REDEEM-CODE')
       expect(showError).not.toHaveBeenCalled()
-      expect(showWarning).toHaveBeenCalledWith('redeem.userRefreshFailed')
+      expect(wrapper.text()).toContain('purchase.refreshWarning')
       expect(showSuccess).toHaveBeenCalledWith('redeem.codeRedeemSuccess')
       expect(wrapper.text()).toContain('Code applied')
       expect(wrapper.text()).not.toContain('redeem.failedToRedeem')
@@ -205,7 +205,7 @@ describe('RedeemView refresh after redemption', () => {
     const wrapper = await submitCode()
 
     expect(refreshUser).toHaveBeenCalledOnce()
-    expect(showWarning).not.toHaveBeenCalled()
+    expect(wrapper.text()).not.toContain('purchase.refreshWarning')
     expect(showError).not.toHaveBeenCalled()
     expect(showSuccess).toHaveBeenCalledWith('redeem.codeRedeemSuccess')
     expect((wrapper.get('input#code').element as HTMLInputElement).value).toBe('')
@@ -217,7 +217,7 @@ describe('RedeemView refresh after redemption', () => {
     fetchActiveSubscriptions.mockRejectedValue(new Error('Network Error'))
     const wrapper = await submitCode()
 
-    expect(showWarning).toHaveBeenCalledWith('redeem.subscriptionRefreshFailed')
+    expect(wrapper.text()).toContain('purchase.refreshWarning')
     expect(showError).not.toHaveBeenCalled()
     expect(showSuccess).toHaveBeenCalledWith('redeem.codeRedeemSuccess')
     expect(getHistory).toHaveBeenCalledTimes(2)
@@ -236,7 +236,7 @@ describe('RedeemView refresh after redemption', () => {
     expect(fetchActiveSubscriptions).not.toHaveBeenCalled()
     expect(getHistory).toHaveBeenCalledOnce()
     expect(showSuccess).not.toHaveBeenCalled()
-    expect(showWarning).not.toHaveBeenCalled()
+    expect(wrapper.text()).not.toContain('purchase.refreshWarning')
     wrapper.unmount()
   })
 })

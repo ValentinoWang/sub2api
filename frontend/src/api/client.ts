@@ -38,6 +38,22 @@ const getUserTimezone = (): string => {
   }
 }
 
+function transportFailure(error: Pick<AxiosError, 'code'>) {
+  const timedOut = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT'
+  const chinese = getLocale().startsWith('zh')
+  return {
+    status: 0,
+    code: timedOut ? 'REQUEST_TIMEOUT' : 'NETWORK_ERROR',
+    message: timedOut
+      ? (chinese
+          ? '请求超时，暂未收到处理结果。请先确认当前状态，再重试。'
+          : 'The request timed out before a result was received. Check the current status before retrying.')
+      : (chinese
+          ? '无法连接服务器，请检查网络后重试。'
+          : 'Unable to connect to the server. Check your connection and try again.'),
+  }
+}
+
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Attach token from localStorage
@@ -200,15 +216,23 @@ apiClient.interceptors.response.use(
               })
             }
 
-            if (axios.isAxiosError(refreshError)) {
-              const refreshStatus = refreshError.response?.status ?? 0
-              if (refreshStatus === 0 || refreshStatus === 429 || refreshStatus >= 500) {
-                return Promise.reject({
-                  status: refreshStatus,
-                  code: 'TOKEN_REFRESH_UNAVAILABLE',
-                  message: refreshError.response?.data?.message || refreshError.message
-                })
+            // An unavailable refresh service cannot establish that a session was revoked.
+            // Keep the credentials so a later request can refresh after recovery.
+            const refreshFailure = refreshError as AxiosError
+            const refreshStatus = refreshFailure.response?.status
+            if (axios.isCancel(refreshError)) return Promise.reject(refreshError)
+            // A malformed refresh result is not an outage, so it still ends the session below.
+            if (axios.isAxiosError(refreshError) && (!refreshStatus || ![400, 401, 403].includes(refreshStatus))) {
+              if (!refreshStatus) {
+                return Promise.reject(transportFailure(refreshFailure))
               }
+              return Promise.reject({
+                status: refreshStatus || 503,
+                code: 'AUTH_REFRESH_UNAVAILABLE',
+                message: getLocale().startsWith('zh')
+                  ? '登录服务暂时不可用，请稍后重试。'
+                  : 'The sign-in service is temporarily unavailable. Please try again shortly.',
+              })
             }
 
             // Clear tokens and redirect to login
@@ -265,12 +289,7 @@ apiClient.interceptors.response.use(
       })
     }
 
-    // Network error
-    return Promise.reject({
-      status: 0,
-      code: error.code || 'ERR_NETWORK',
-      message: 'Network error. Please check your connection.'
-    })
+    return Promise.reject(transportFailure(error))
   }
 )
 

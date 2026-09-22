@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin/go",
+    "test",
+    "-tags=unit",
+    "./internal/service",
+    "-run",
+    "^TestOpenAIImagesJSONKeepalive_KeepsOAuthNonStreamResponseValid$",
+    "-count=20"
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 4640419840,
+  "status": "PASS",
+  "exit_code": 0,
+  "reserve_preserved": true
+}

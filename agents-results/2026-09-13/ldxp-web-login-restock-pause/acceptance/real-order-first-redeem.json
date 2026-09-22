@@ -1,0 +1,16 @@
+{
+  "order": "LD260913BZVIEC",
+  "goods_id": 874782,
+  "order_display_amount_cny": 5,
+  "delivered": 1,
+  "redeem": {
+    "id": 4,
+    "type": "balance",
+    "value": 5,
+    "status": "used",
+    "used_by": 1,
+    "used_at": "2026-09-13T14:22:03.121869+08:00"
+  },
+  "page_message": "兑换成功！ 已到账 $5.00",
+  "before_status": "unused"
+}

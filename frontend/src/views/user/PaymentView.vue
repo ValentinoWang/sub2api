@@ -1261,7 +1261,10 @@ onMounted(async () => {
       }
     }
     await resumeWechatPaymentFromQuery()
-    // balance_disabled → the tabs watcher above moves activeTab to the subscription tab (when enabled).
+    // The tabs watcher only reacts to changes; converge once after checkout loads as well.
+    if (!tabs.value.some((tab) => tab.key === activeTab.value)) {
+      activeTab.value = tabs.value[0]?.key ?? 'recharge'
+    }
     // Handle renewal navigation: ?tab=subscription&group=123 (ignored when subscriptions are disabled)
     if (route.query.tab === 'subscription' && subscriptionEnabled.value) {
       activeTab.value = 'subscription'

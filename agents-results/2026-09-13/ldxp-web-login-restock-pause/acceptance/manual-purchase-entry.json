@@ -1,0 +1,12 @@
+{
+  "scope": "manual_inventory_purchase_redemption_verification",
+  "before": {
+    "purchase_subscription_enabled": false
+  },
+  "after": {
+    "purchase_subscription_enabled": true,
+    "purchase_subscription_url": "https://wzyp.cn/item/x6uqgh"
+  },
+  "automatic_restock_enabled_by_this_operation": false,
+  "sales_gate_passed": false
+}

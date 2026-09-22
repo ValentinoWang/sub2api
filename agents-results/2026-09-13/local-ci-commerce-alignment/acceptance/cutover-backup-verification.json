@@ -1,0 +1,47 @@
+{
+  "observed_at": "2026-09-12T18:20:53.857627+00:00",
+  "dev": {
+    "created_at": "2026-09-12T18:19:53.677517+00:00",
+    "files": {
+      "database.dump": {
+        "bytes": 203682856,
+        "sha256": "85e24b482ae923dc60f48e26eb087eae5f8711e293caeb1c75711b8cca3cd517"
+      },
+      "app-inspect.json": {
+        "bytes": 18683,
+        "sha256": "2180ac5c8a498612a222aa5a5729fd278d64f7bc0fd014a57745603f07b51527"
+      },
+      "compose-config.tar.gz": {
+        "bytes": 20480,
+        "sha256": "b4b42f7bc70eb1179528d5399a69436b93077ff990b13bd3bf38169822ee4a4e"
+      },
+      "app-data.tar.gz": {
+        "bytes": 4904960,
+        "sha256": "41c2500c906d91eaa22fa66816da235765d412e51ef3c2378d76b5a45dbf690c"
+      }
+    }
+  },
+  "prod": {
+    "created_at": "2026-09-12T18:19:43.606963+00:00",
+    "files": {
+      "database.dump": {
+        "bytes": 191019367,
+        "sha256": "7c881e761c54607608c3c25b7c982d57e102e36b9ac5fee618dbe4d290d00a33"
+      },
+      "app-inspect.json": {
+        "bytes": 19061,
+        "sha256": "ec2f44bbca05a3a4181c3cbcdae3e734aa002f5082e533aa457318352ef856e9"
+      },
+      "compose-config.tar.gz": {
+        "bytes": 11625,
+        "sha256": "8e423a0b9b1c725af4575bcc04657124a063ad2a24ee59ce2a27794e511fa81e"
+      },
+      "app-data.tar.gz": {
+        "bytes": 10191337,
+        "sha256": "0a4bb57c251ba563b061611d2bfc760e5ad1226b3f3ba1ebfd41c53b20a3ec48"
+      }
+    }
+  },
+  "both_pg_restore_toc": "PASS",
+  "dev_bytes_and_archive_integrity": "PASS"
+}

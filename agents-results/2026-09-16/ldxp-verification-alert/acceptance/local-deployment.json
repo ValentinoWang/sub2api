@@ -1,0 +1,8 @@
+{
+  "at": 1789547388.489054,
+  "image": "sub2api-local:0.2.4.6-2478cc12a97c",
+  "image_id": "sha256:dcd8d087adac0797602a583deb923ce2a6170aeb35dc1c653c412f5d363b087a",
+  "commit": "2478cc12a97cd3caa10aac7db51fc9b47295aae0",
+  "local_health": "PASS",
+  "production_touched": false
+}

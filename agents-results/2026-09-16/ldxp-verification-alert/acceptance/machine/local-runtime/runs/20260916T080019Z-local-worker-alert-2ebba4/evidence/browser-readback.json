@@ -1,0 +1,17 @@
+{
+  "url": "http://127.0.0.1:4174/admin/tools/ldxp",
+  "method": "native Chrome accessibility readback",
+  "observed_labels": [
+    "联动小铺需要完成网页验证",
+    "打开小铺完成验证",
+    "补货已暂停",
+    "最近检查小铺",
+    "下次自动检查"
+  ],
+  "reported_at_display": "2026/9/16 16:31:03",
+  "last_check_display": "2026/9/16 16:25:57",
+  "next_check_display": "2026/9/16 16:40:57",
+  "real_admin_session": true,
+  "real_backend_report": true,
+  "captcha_not_solved_by_agent": true
+}

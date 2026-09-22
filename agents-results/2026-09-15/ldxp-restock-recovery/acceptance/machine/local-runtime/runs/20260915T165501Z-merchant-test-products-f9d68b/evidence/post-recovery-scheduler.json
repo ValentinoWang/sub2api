@@ -1,0 +1,17 @@
+{
+  "at": 1789494718.458386,
+  "paused": false,
+  "reason": "",
+  "stocks": {
+    "874783": 724,
+    "875537": 685,
+    "875562": 665,
+    "875570": 665,
+    "875577": 646
+  },
+  "target_stock": 999,
+  "last_success_at": 1789494563.7838788,
+  "backend_image": "sub2api-local:0.2.4.5-be8771d92b66",
+  "source_commit": "be8771d92b66f8742fa90036d8507b822306e3eb",
+  "production_accessed": false
+}

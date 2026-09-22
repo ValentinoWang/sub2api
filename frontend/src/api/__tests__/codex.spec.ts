@@ -1,10 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   buildCodexModelsManifestUrl,
+  buildCodexBaseUrl,
   fetchCodexModelsManifest
 } from '../codex'
 
 describe('Codex models API', () => {
+  it.each([
+    ['', 'http://127.0.0.1:4174', 'http://127.0.0.1:4174/v1'],
+    ['', 'https://production.example', 'https://production.example/v1'],
+    ['  ', 'https://preview.example', 'https://preview.example/v1'],
+    ['https://api.example/prefix/v1/', 'http://127.0.0.1:4174', 'https://api.example/prefix/v1'],
+    ['https://api.example/prefix/', 'https://production.example', 'https://api.example/prefix/v1'],
+  ])('resolves %s on %s without baking in a deployment host', (configured, origin, expected) => {
+    expect(buildCodexBaseUrl(configured, origin)).toBe(expected)
+    expect(buildCodexModelsManifestUrl(expected)).toBe(`${expected}/models?client_version=0.147.0`)
+  })
   afterEach(() => {
     vi.unstubAllGlobals()
   })

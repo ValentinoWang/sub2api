@@ -1,0 +1,17 @@
+{
+  "command": [
+    "golangci-lint",
+    "run",
+    "--timeout=10m",
+    "--concurrency=2",
+    "./internal/costing/...",
+    "./cmd/cost-collect/...",
+    "./cmd/cost-workbench/..."
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 7681114112,
+  "status": "COMMAND_FAILED",
+  "exit_code": 1,
+  "reserve_preserved": true
+}

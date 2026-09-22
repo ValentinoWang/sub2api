@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "boundary": "isolated Chromium extension with fictional products and mocked config reads; no real credentials or inventory operations",
+  "checks": [
+    "both sites and ten amounts selected by default",
+    "single bulk save",
+    "local credential reuse",
+    "reopen reuses both credentials",
+    "duplicate save preserves inventory and states",
+    "new bindings remain paused",
+    "only config GET calls",
+    "no console errors"
+  ],
+  "layout": [
+    {
+      "width": 1280,
+      "height": 1000,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

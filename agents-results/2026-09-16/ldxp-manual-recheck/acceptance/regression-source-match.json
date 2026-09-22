@@ -1,0 +1,20 @@
+{
+  "all_tested_backend_and_python_sources_unchanged": true,
+  "checks": {
+    "backend/internal/service/liandong_browser_runtime.go": true,
+    "backend/internal/service/liandong_browser.go": true,
+    "backend/internal/handler/admin/liandong_browser.go": true,
+    "backend/internal/server/routes/liandong_tool_routes.go": true,
+    "backend/migrations/244_liandong_browser_rechecks.sql": true,
+    "backend/internal/server/routes/liandong_browser_recheck_integration_test.go": true,
+    "tools/commerce/ldxp_http_restock.py": true,
+    "tools/commerce/ldxp_http_probe.py": true,
+    "tools/quality/tests/test_ldxp_http_probe.py": true,
+    "tools/quality/tests/test_ldxp_http_recovery.py": true,
+    "tools/quality/tests/test_ldxp_http_response_recovery.py": true,
+    "tools/quality/tests/test_ldxp_http_restock.py": true,
+    "tools/quality/tests/test_ldxp_manual_recheck.py": true,
+    "tools/quality/tests/test_ldxp_runtime_notification.py": true
+  },
+  "candidate": "f0e321a7cb350f809e5f7657a3edc3b433177a40"
+}

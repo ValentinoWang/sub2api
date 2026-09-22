@@ -1,0 +1,18 @@
+{
+  "kind": "operator_verified_recovery",
+  "batch_id": "browser-4d79f8cafb952b3a807ba9837ca48f00",
+  "goods_id": 874783,
+  "missing_count": 20,
+  "payload_sha256": "1dbcf505650b08fb6abd1579442ee7d2efdd3ba413c5ba95fe9f96aa07fb1823",
+  "started_at": 1789492608.128513,
+  "rights_checked_read_only_in_authoritative_local_db": true,
+  "dedup_capability_checked": true,
+  "automatic_backend_retry_eligibility_used": false,
+  "response": "received",
+  "finished_at": 1789492610.0507789,
+  "stock_before": 404,
+  "stock_after": 424,
+  "batch_resolved": true,
+  "matched_stock": 424,
+  "all_original_codes_found": 20
+}

@@ -26,9 +26,30 @@ export interface BrowserRestockDevice {
   paused_reason?: string
   last_seen_at?: string
   authorization_verified_at?: string
+  runtime?: {
+    execution_mode?: 'http' | 'browser'
+    state: 'running' | 'paused'
+    reason: string
+    browser_verification_required: boolean
+    checked_at?: string
+    next_check_at?: string
+    reported_at: string
+  }
+  recheck?: BrowserRestockRecheck
+}
+export interface BrowserRestockRecheck {
+  id: string
+  device_id: string
+  state: 'queued' | 'checking' | 'passed' | 'failed'
+  reason: string
+  resumed: boolean
+  requested_at: string
+  started_at?: string
+  finished_at?: string
 }
 export interface BrowserRestockStatus {
   enabled: boolean
+  recheck_supported?: boolean
   paused_reason: string
   products: BrowserRestockProduct[]
   devices: BrowserRestockDevice[]
@@ -38,6 +59,9 @@ const base = '/admin/tools/ldxp/browser'
 export const liandongBrowserAPI = {
   async getStatus(): Promise<BrowserRestockStatus> {
     return (await apiClient.get<BrowserRestockStatus>(`${base}/status`)).data
+  },
+  async requestRecheck(deviceId: string): Promise<BrowserRestockRecheck> {
+    return (await apiClient.post<{ recheck: BrowserRestockRecheck }>(`${base}/devices/${encodeURIComponent(deviceId)}/recheck`, {})).data.recheck
   },
   async saveConfig(payload: { enabled: boolean; products: BrowserRestockProduct[] }): Promise<BrowserRestockStatus> {
     return (await apiClient.put<BrowserRestockStatus>(`${base}/config`, payload)).data

@@ -1,0 +1,11 @@
+{
+  "archive": "/Users/vsiyo/.local/share/sub2api/releases/0.2.6-64f459e05d2e/sub2api-image.tar.gz",
+  "sha256": "bf9fc1330edd6c1b56ac1f45c193d469914130b505cfbdb24a11c80a1f51a2be",
+  "bytes": 56522691,
+  "image_tag": "sub2api-local:0.2.6-64f459e05d2e",
+  "source_commit": "64f459e05d2ec50ac997dd6933794a1fcccaac61",
+  "image_id": "sha256:ea8ebd15578451c1e414b8dfa980ae7de7b400e2a5d6335c4fe1c5f229bcd857",
+  "archive_config_matches_image": true,
+  "gzip_integrity": true,
+  "toolkit_hash_verified": true
+}

@@ -1,0 +1,17 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-tags=unit",
+    "./internal/service",
+    "-run",
+    "TestCostQuota|TestOpenAIQuota",
+    "-count=1"
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 4290748416,
+  "status": "STOPPED_FOR_SPACE",
+  "exit_code": 73,
+  "reserve_preserved": true
+}

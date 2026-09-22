@@ -1,0 +1,17 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-p",
+    "1",
+    "-tags=integration",
+    "./internal/costing",
+    "-count=1"
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 6092169216,
+  "status": "PASS",
+  "exit_code": 0,
+  "reserve_preserved": true
+}

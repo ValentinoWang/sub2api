@@ -1,0 +1,18 @@
+{
+  "at": 1789495100.431811,
+  "full_ci_source_commit": "26e666caee7edcd43ff2ac0ae85b4a35aeec4277",
+  "final_source_commit": "4aa71a5401644b8bc62443b6642c61fd389eb85e",
+  "changed_files": [
+    "backend/internal/service/liandong_browser_delivery_integration_test.go",
+    "tools/commerce/ldxp_http_restock.py",
+    "tools/quality/tests/test_ldxp_http_recovery.py"
+  ],
+  "runtime_implementation_unchanged_from": "be8771d92b66f8742fa90036d8507b822306e3eb",
+  "backend_frontend_dockerfile_ci_entry_unchanged": true,
+  "incremental_python_tests": 170,
+  "delivery_integration_cases": 24,
+  "delivery_tests_reused_only_after_all_source_hashes_verified": true,
+  "full_ci_result": "PASS",
+  "note": "No failure or unexecuted full-CI phase is treated as PASS.",
+  "full_ci_summary_sha256": "2f0d98c88cd12f1900b9bf7a566dff2db3ab048bb6aff40c1805277998102488"
+}

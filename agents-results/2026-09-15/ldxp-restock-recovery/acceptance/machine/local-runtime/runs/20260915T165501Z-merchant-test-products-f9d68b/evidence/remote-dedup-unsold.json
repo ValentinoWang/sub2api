@@ -1,0 +1,12 @@
+{
+  "at": 1789487801.616517,
+  "goods_id": 875577,
+  "case": "repeat_existing_unsold_code",
+  "before_total": 365,
+  "after_total": 365,
+  "matching_before": 1,
+  "matching_after": 1,
+  "response_code": 0,
+  "safe_message": "去重后没有可添加的卡密",
+  "same_inventory_row_ids": true
+}

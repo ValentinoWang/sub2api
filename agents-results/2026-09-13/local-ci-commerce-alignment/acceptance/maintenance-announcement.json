@@ -1,0 +1,12 @@
+{
+  "announcement_id": 17,
+  "request": {
+    "title": "系统维护通知",
+    "content": "正在升级服务，期间可能短暂中断。遇到请求失败，请稍后重试。维护结束后将发布恢复通知。",
+    "status": "active",
+    "notify_mode": "popup",
+    "targeting": {}
+  },
+  "confirmed_at": "2026-09-12T18:32:54.534492+00:00",
+  "status": "active"
+}

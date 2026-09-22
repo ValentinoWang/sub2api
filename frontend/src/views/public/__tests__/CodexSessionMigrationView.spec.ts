@@ -17,11 +17,14 @@ describe('CodexSessionMigrationView', () => {
     expect(wrapper.html()).toContain(CODEX_SESSION_MIGRATION.manifestDownload)
   })
 
-  it('copies the exact prompt shared by the download artifact', async () => {
+  it('copies the displayed prompt with current-site download URLs', async () => {
     writeText.mockResolvedValue(undefined)
     const wrapper = mount(CodexSessionMigrationView, { global: { stubs: { PublicPageLayout, RouterLink: RouterLinkStub } } })
     await wrapper.get('button').trigger('click')
     await flushPromises()
-    expect(writeText).toHaveBeenCalledWith(CODEX_SESSION_MIGRATION.prompt)
+    const displayed = wrapper.get<HTMLTextAreaElement>('textarea').element.value
+    expect(writeText).toHaveBeenCalledWith(displayed)
+    expect(displayed).toContain(`${window.location.origin}${CODEX_SESSION_MIGRATION.packageDownload}`)
+    expect(displayed).toContain(`${window.location.origin}${CODEX_SESSION_MIGRATION.manifestDownload}`)
   })
 })

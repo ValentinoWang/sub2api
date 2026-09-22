@@ -1,0 +1,22 @@
+{
+  "commit": "e8de8a5d394839ff12d8e5e5967cb5996a911999",
+  "version": "0.2.4.7",
+  "files": {
+    "backend/cmd/server/VERSION": "ed3b77b459a6194129ebd536b0ed65c2e765a03aecd01e5151759879cfdab950",
+    "backend/internal/handler/admin/liandong_browser.go": "e7cf366ee39ff5cdcf5adb921cd15cff44c977ec243f273e6e4ab34548d8857d",
+    "backend/internal/server/routes/liandong_tool_routes.go": "39d1d0aa57d31bb8188d4da0bc5cc51a662e576c3f96ea6f5ed49a45bafb4f7b",
+    "backend/internal/service/liandong_browser.go": "8e619c52f3934ac2fc42e30b9ecfe6c593762332ddb462a157f91c7da655f5c7",
+    "backend/internal/service/liandong_browser_runtime.go": "7c8a6c0138518c5ba25b2b21eeee86ea8e2d5fd295cb451b9c66ab9eca5625f9",
+    "frontend/src/api/liandongBrowser.ts": "3c74ffe5fd08ef6b4b0b2f0d1cf4ead609ae208b77134f51e60a839abcc5bfcc",
+    "frontend/src/components/admin/liandong/ChromeRestockPanel.vue": "2d47ae6ef4db523d4bb75e99b101506e10eff4ebfdefc7400a522015f9700881",
+    "frontend/src/components/admin/liandong/__tests__/ChromeRestockPanel.spec.ts": "fa4a9260c7edecaa2525f6b85419df4bdf4203a6dfe9ea6b595dc6ec4ab0caa1",
+    "frontend/src/i18n/locales/en/misc.ts": "54903b7bc61234914a1a00dc8feeebe557e63f37a5e7f1d71ce28c8b856bab00",
+    "frontend/src/i18n/locales/zh/misc.ts": "b0aee1fcb80d7abf6732d1c2801016ff0cccb9a3f66ec0ceb21e5e0371c5efa0",
+    "tools/commerce/README.md": "e97a1ffa32c4f40ad703b75dacc9eb3da6847b294908b0f7239ad9eb18edec78",
+    "tools/commerce/ldxp_http_restock.py": "080e09f972c2ed08561b1a88bd303bdd037108eab53b979de904c4764a885ff8",
+    "tools/quality/tests/test_ldxp_http_restock.py": "37953ccb1809494f5a104d506ac8193f4ce0fd047e5f0d64ade7a4e8fd4731cd",
+    "backend/internal/server/routes/liandong_browser_recheck_integration_test.go": "4073367cb6eb7f12d3dec16a72e9b9854bf6d32e98c1bf3607c198d756b023b2",
+    "backend/migrations/244_liandong_browser_rechecks.sql": "3716d2117c8a6cf2bbef5f243c18ab67935e965c1fd72e710be533efdf807fef",
+    "tools/quality/tests/test_ldxp_manual_recheck.py": "5eeb0c20f473279dbe2f1b7dba8496d6e32320ddecf19ab995ac175426d29e36"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "status": "PAUSED",
+  "site": "http://127.0.0.1:8080",
+  "products": [],
+  "uploaded": 0,
+  "error": "manual",
+  "message": "已暂停，运行 resume 可重新核对并恢复。",
+  "finished_at": 1789481927.162188
+}

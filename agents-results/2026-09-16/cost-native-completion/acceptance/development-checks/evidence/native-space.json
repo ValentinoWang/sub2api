@@ -1,0 +1,14 @@
+{
+  "command": [
+    "go",
+    "test",
+    "./internal/costing",
+    "-count=1"
+  ],
+  "minimum_required_gib": 3,
+  "stop_threshold_gib": 4,
+  "lowest_free_bytes": 11885146112,
+  "status": "PASS",
+  "exit_code": 0,
+  "reserve_preserved": true
+}

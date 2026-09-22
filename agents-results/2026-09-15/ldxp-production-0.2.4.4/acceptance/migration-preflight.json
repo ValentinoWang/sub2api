@@ -1,0 +1,8 @@
+{
+  "base_migrations_match_production": true,
+  "existing_migrations_unchanged": true,
+  "added_migrations": {
+    "241_liandong_browser_restock.sql": "b0bc9bed100b075204422be0457b3893ed1b8c38f36cd8f6ca3efa3f69dd0dba"
+  },
+  "historical_extra_count": 9
+}

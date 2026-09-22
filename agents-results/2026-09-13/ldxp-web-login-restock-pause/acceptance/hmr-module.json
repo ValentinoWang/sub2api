@@ -1,0 +1,8 @@
+{
+  "http_status": 200,
+  "vite_transformed_module": true,
+  "session_verification_banner": true,
+  "session_state_field": true,
+  "preview_loading_fix": true,
+  "scope": "HMR source delivery; not a rendered browser acceptance"
+}

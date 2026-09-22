@@ -16,7 +16,7 @@ COMMIT="$(git rev-parse HEAD)"
 TREE="$(git rev-parse HEAD^{tree})"
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 SNAPSHOT=""
-STAGES=(source-preflight snapshot toolchain frozen-install acceptance-layout deploy-guards version-guards local-ci-guards commerce-parity-guards browser-extension-tests backend-unit backend-integration backend-lint frontend-lint frontend-typecheck frontend-tests frontend-build backend-security frontend-security)
+STAGES=(source-preflight snapshot toolchain acceptance-layout deploy-guards version-guards local-ci-guards commerce-parity-guards backend-unit backend-integration backend-lint frozen-install browser-extension-tests frontend-lint frontend-typecheck frontend-tests frontend-build backend-security frontend-security)
 
 finish() {
   local code=$?
@@ -152,17 +152,19 @@ SHIM
 fi
 cd "$SNAPSHOT"
 run_stage toolchain preflight_toolchain
-run_stage frozen-install pnpm --dir frontend install --frozen-lockfile
 # The central checker needs the real checkout's Git tracking and evidence paths.
 run_stage acceptance-layout bash "$REPO_ROOT/tools/quality/run_acceptance_artifact_layout_guard.sh"
 run_stage deploy-guards deploy_guards
 run_stage version-guards python3 tools/quality/test_version_scripts.py
 run_stage local-ci-guards python3 tools/quality/test_local_ci.py
 run_stage commerce-parity-guards python3 -m unittest discover -s tools/quality/tests
-run_stage browser-extension-tests node --test tools/ldxp-browser-extension/test/*.test.js
 run_stage backend-unit make -C backend test-unit
 run_stage backend-integration make -C backend test-integration
 run_stage backend-lint bash -c 'cd backend && golangci-lint run --timeout=30m --concurrency=2 --max-issues-per-linter=0 --max-same-issues=0 ./...'
+# Install the frontend only after Go phases so the private snapshot does not
+# retain node_modules throughout backend compilation and container tests.
+run_stage frozen-install pnpm --dir frontend install --frozen-lockfile
+run_stage browser-extension-tests node --test tools/ldxp-browser-extension/test/*.test.js
 run_stage frontend-lint pnpm --dir frontend run lint:check
 run_stage frontend-typecheck pnpm --dir frontend run typecheck
 run_stage frontend-tests pnpm --dir frontend exec vitest run --maxWorkers=2 --minWorkers=1

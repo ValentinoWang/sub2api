@@ -1,0 +1,166 @@
+{
+  "at": 1789486091.699599,
+  "scope": "existing backend with ongoing restock; read-only and invalid empty login bodies",
+  "requests": [
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 106.63
+    },
+    {
+      "probe": "public",
+      "status": 200,
+      "ms": 104.31
+    },
+    {
+      "probe": "login-validation",
+      "status": 400,
+      "ms": 61.2
+    },
+    {
+      "probe": "db-read",
+      "status": 200,
+      "ms": 339.47
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 47.59
+    },
+    {
+      "probe": "public",
+      "status": 200,
+      "ms": 77.54
+    },
+    {
+      "probe": "login-validation",
+      "status": 400,
+      "ms": 37.26
+    },
+    {
+      "probe": "db-read",
+      "status": 200,
+      "ms": 847.73
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 39.5
+    },
+    {
+      "probe": "public",
+      "status": 200,
+      "ms": 102.0
+    },
+    {
+      "probe": "login-validation",
+      "status": 400,
+      "ms": 57.97
+    },
+    {
+      "probe": "db-read",
+      "status": 200,
+      "ms": 66.73
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 60.44
+    },
+    {
+      "probe": "public",
+      "status": 200,
+      "ms": 179.61
+    },
+    {
+      "probe": "login-validation",
+      "status": 400,
+      "ms": 22.78
+    },
+    {
+      "probe": "db-read",
+      "status": 200,
+      "ms": 283.77
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 7.09
+    },
+    {
+      "probe": "public",
+      "status": 200,
+      "ms": 41.48
+    },
+    {
+      "probe": "login-validation",
+      "status": 400,
+      "ms": 29.31
+    },
+    {
+      "probe": "db-read",
+      "status": 200,
+      "ms": 40.86
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 176.21
+    },
+    {
+      "probe": "public",
+      "status": 200,
+      "ms": 141.8
+    },
+    {
+      "probe": "login-validation",
+      "status": 400,
+      "ms": 124.08
+    },
+    {
+      "probe": "db-read",
+      "status": 200,
+      "ms": 3034.63
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 43.66
+    },
+    {
+      "probe": "public",
+      "status": 200,
+      "ms": 42.97
+    },
+    {
+      "probe": "login-validation",
+      "status": 400,
+      "ms": 15.4
+    },
+    {
+      "probe": "db-read",
+      "status": 200,
+      "ms": 136.2
+    },
+    {
+      "probe": "health",
+      "status": 200,
+      "ms": 17.07
+    },
+    {
+      "probe": "public",
+      "status": 200,
+      "ms": 19.79
+    },
+    {
+      "probe": "login-validation",
+      "status": 400,
+      "ms": 12.84
+    },
+    {
+      "probe": "db-read",
+      "status": 200,
+      "ms": 32.64
+    }
+  ]
+}

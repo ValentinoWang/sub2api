@@ -1,0 +1,9 @@
+{
+  "previous_image": "sub2api-local:0.2.4.6-2478cc12a97c",
+  "image": "sub2api-local:0.2.4.7-e8de8a5d3948",
+  "image_id": "sha256:f2fc43e77bd5aed56861b92fa4ad81b14abfe6009ff4e150069d2c60a66d8bf2",
+  "commit": "e8de8a5d394839ff12d8e5e5967cb5996a911999",
+  "production_changed": false,
+  "compose_exit": 0,
+  "healthy": true
+}

@@ -1,0 +1,9 @@
+{
+  "status": "PAUSE_REQUESTED",
+  "message": "当前上传核对完成后暂停。",
+  "finished_at": 1789489121.416317,
+  "source_sha256": {
+    "ldxp_http_restock.py": "3d27c25cec7ef28844c3d54ae2a905607ef5a6371e2f8ff1e0b96e6f134cc6b8",
+    "ldxp_http_probe.py": "7e8dcc411e52900d63cf4129660c7e54314093ac573e1f00c35b96f1527bb7f7"
+  }
+}

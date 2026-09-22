@@ -1,0 +1,13 @@
+{
+  "method": "Chrome native accessibility inspection via cua_repl",
+  "catalog_reference_visible": true,
+  "ledger_readable_visible": true,
+  "source_account_list_read": true,
+  "account_not_auto_selected": true,
+  "terms_and_examples_rendered": true,
+  "collapsed_help_verified_in_source": true,
+  "radar_network_and_postgres_readback_verified": true,
+  "radar_browser_click_verification": "not_completed_due_to_shared_browser_activity",
+  "mobile_visual_verification": "not_run",
+  "human_signed_acceptance": false
+}

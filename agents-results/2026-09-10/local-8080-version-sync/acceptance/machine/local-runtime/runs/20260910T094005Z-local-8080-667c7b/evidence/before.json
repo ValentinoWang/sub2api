@@ -1,0 +1,91 @@
+{
+  "tables": {
+    "users": {
+      "count": 1,
+      "identity_digest": "e320f8625479e93b18baf60e3a6bb392"
+    },
+    "accounts": {
+      "count": 10,
+      "identity_digest": "da8874bab3bcccba860160c3fc8b4377"
+    },
+    "api_keys": {
+      "count": 3,
+      "identity_digest": "857e5f1358401b99cdd6eda91c44fce7"
+    },
+    "groups": {
+      "count": 4,
+      "identity_digest": "14dbd64a014a8ac18c72aa52f6cfa0d9"
+    },
+    "proxies": {
+      "count": 66,
+      "identity_digest": "821483aa94ff43d882bff58c11f531dd"
+    },
+    "payment_orders": {
+      "count": 0,
+      "identity_digest": "d751713988987e9331980363e24189ce"
+    }
+  },
+  "containers": {
+    "sub2api": {
+      "id": "f36c0f40c8f1c644b8346047112385be71f063384d067a97dd07d37efb702b6a",
+      "image_id": "sha256:d5f73b59753e7638d786f6430c412e15e9220c3f5bcbe1fb7f8b9b44d3d2cfd7"
+    },
+    "sub2api-postgres": {
+      "id": "a1f9eb24d79f5b97554db7a5a75cc9541c50e47d0daeb781d8eadea7bed7276a",
+      "image_id": "sha256:db676a0ed906c00f55020fb8999e4fb30c598bf5c3b5c188630aef2812d3f11d"
+    },
+    "sub2api-redis": {
+      "id": "61f052550ff5c0941cf18c985d99909cf8f9eeea805f5cf1a1900ec2ad9d882b",
+      "image_id": "sha256:de4f5bec2c472de82ee9ec09d917d4fbcc879bdb0763a2f00c798652a7c0553a"
+    },
+    "sub2api-mihomo": {
+      "id": "bf03a27ba5bf4a56b78b19c9f1f31c655ddeecd3ffaea2566c9c57886a72f879",
+      "image_id": "sha256:d657325894ef0c0611c3a60a1d5e0843fb0d2819272054df99af3bcfffdc83c0"
+    }
+  },
+  "identity_fields": {
+    "users": [
+      "id",
+      "email"
+    ],
+    "accounts": [
+      "id",
+      "name",
+      "proxy_id"
+    ],
+    "api_keys": [
+      "id",
+      "key",
+      "user_id"
+    ],
+    "groups": [
+      "id",
+      "name"
+    ],
+    "proxies": [
+      "id",
+      "host",
+      "port",
+      "username",
+      "password"
+    ],
+    "payment_orders": [
+      "id",
+      "order_no",
+      "user_id",
+      "amount"
+    ]
+  },
+  "home_before": {
+    "status": 200,
+    "cache_control": "no-cache",
+    "assets": [
+      "/assets/index-brhE89Tb.js",
+      "/assets/vendor-vue-Dzwqm9Y9.js",
+      "/assets/vendor-i18n-BuoWFzps.js",
+      "/assets/vendor-misc-CSXt3BKA.js",
+      "/assets/vendor-misc-DB0Q8XAf.css",
+      "/assets/index-CzLVhJUL.css"
+    ]
+  }
+}

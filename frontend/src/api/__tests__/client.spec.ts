@@ -413,10 +413,9 @@ describe('API Client', () => {
       })
       apiClient.defaults.adapter = adapter
 
-      await expect(apiClient.get('/test')).rejects.toMatchObject({
-        status, code: 'TOKEN_REFRESH_UNAVAILABLE',
-        message: status ? 'Please try again later' : 'Refresh unavailable',
-      })
+      await expect(apiClient.get('/test')).rejects.toMatchObject(
+        status ? { status, code: 'AUTH_REFRESH_UNAVAILABLE' } : { status: 0, code: 'NETWORK_ERROR' },
+      )
       expect(adapter).toHaveBeenCalledTimes(1)
       expect(localStorage.getItem('auth_token')).toBe('expired-token')
       expect(localStorage.getItem('refresh_token')).toBe('refresh-token')
@@ -494,7 +493,7 @@ describe('API Client', () => {
   // --- 网络错误 ---
 
   describe('网络错误', () => {
-    it.each(['ERR_NETWORK', 'ECONNABORTED', 'ETIMEDOUT', undefined])('网络错误保留错误码 %s', async (code) => {
+    it.each(['ERR_NETWORK', 'ECONNABORTED', 'ETIMEDOUT', undefined])('网络错误 %s 归一为稳定错误码', async (code) => {
       const adapter = vi.fn().mockRejectedValue({
         code,
         message: 'Network Error',
@@ -506,8 +505,10 @@ describe('API Client', () => {
       await expect(apiClient.get('/test')).rejects.toEqual(
         expect.objectContaining({
           status: 0,
-          code: code || 'ERR_NETWORK',
-          message: 'Network error. Please check your connection.',
+          code: code === 'ECONNABORTED' || code === 'ETIMEDOUT' ? 'REQUEST_TIMEOUT' : 'NETWORK_ERROR',
+          message: code === 'ECONNABORTED' || code === 'ETIMEDOUT'
+            ? '请求超时，暂未收到处理结果。请先确认当前状态，再重试。'
+            : '无法连接服务器，请检查网络后重试。',
         })
       )
     })

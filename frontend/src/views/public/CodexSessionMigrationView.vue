@@ -27,7 +27,8 @@
       <section class="tool-panel" aria-labelledby="tool-title">
         <div class="heading-row"><div><p class="step">02</p><h2 id="tool-title">Codex 帮你处理</h2></div><button type="button" class="icon-button" :aria-label="copyLabel" @click="copyPrompt">{{ copyLabel }}</button></div>
         <p>先把下面的指令交给 Codex 做只读诊断；需要写入时，下载离线工具并在关闭 Codex 后从外部终端执行。</p>
-        <textarea ref="promptField" readonly aria-label="可直接发给 Codex 的迁移提示词" :value="migration.prompt"></textarea>
+        <p>提示词已包含当前站点的工具包、校验清单和教程地址，可直接复制使用。</p>
+        <textarea ref="promptField" readonly aria-label="可直接发给 Codex 的迁移提示词" :value="prompt"></textarea>
         <p class="status" role="status" aria-live="polite">{{ copyStatus }}</p>
         <div class="downloads" aria-label="迁移工具下载">
           <a class="download" :href="migration.packageDownload" download>下载离线工具包 <span>1.0.0</span></a>
@@ -59,14 +60,16 @@ import { computed, ref } from 'vue'
 import Rest2BuildBrandFooter from '@/components/common/Rest2BuildBrandFooter.vue'
 import PublicPageLayout from '@/components/layout/PublicPageLayout.vue'
 import { CODEX_SESSION_MIGRATION as migration } from '@/constants/codexMigration'
+import { formatTutorialPrompt } from '@/utils/tutorialPrompt.mjs'
 
+const prompt = formatTutorialPrompt(migration.prompt, new URL(migration.route, window.location.origin).href)
 const promptField = ref<HTMLTextAreaElement | null>(null)
 const copyStatus = ref('')
 const copyLabel = computed(() => copyStatus.value === '提示词已复制' ? '已复制' : '复制提示词')
 
 async function copyPrompt() {
   try {
-    await navigator.clipboard.writeText(migration.prompt)
+    await navigator.clipboard.writeText(prompt)
     copyStatus.value = '提示词已复制'
   } catch {
     promptField.value?.focus()

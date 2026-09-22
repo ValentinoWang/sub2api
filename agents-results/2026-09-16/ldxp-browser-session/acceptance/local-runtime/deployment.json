@@ -1,0 +1,10 @@
+{
+  "backup_path": "/Users/vsiyo/.local/share/sub2api/ldxp-http-restock/backups/browser-session-20260916T182047",
+  "previous_image": "sub2api-local:0.2.4.8-f0e321a7cb35",
+  "image": "sub2api-local:0.2.4.9-d2966e82874a",
+  "image_id": "sha256:526135c3e78627f31124507d083964177113b02fc311463461a07605ae0ac058",
+  "commit": "d2966e82874a32a0f4eefaa43b56b7bd252fa1c7",
+  "production_changed": false,
+  "compose_exit": 0,
+  "healthy": true
+}

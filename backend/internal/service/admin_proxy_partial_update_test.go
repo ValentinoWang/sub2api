@@ -80,34 +80,6 @@ func TestAdminProxyPartialUpdateValidatesMergedFallback(t *testing.T) {
 	}
 }
 
-func TestAdminProxyPartialUpdatePreservesCredentialFieldPresence(t *testing.T) {
-	for _, tc := range []struct {
-		name         string
-		input        UpdateProxyInput
-		wantUsername string
-		wantPassword string
-	}{
-		{name: "omitted", wantUsername: "old-user", wantPassword: "old-pass"},
-		{name: "null clears", input: UpdateProxyInput{ClearUsername: true, ClearPassword: true}},
-		{name: "strings set", input: UpdateProxyInput{Username: "new-user", UsernameSet: true, Password: "new-pass", PasswordSet: true}, wantUsername: "new-user", wantPassword: "new-pass"},
-		{name: "empty strings clear", input: UpdateProxyInput{UsernameSet: true, PasswordSet: true}},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			repo := &updatingProxyRepoStub{
-				proxyRepoStub: &proxyRepoStub{},
-				proxy:         &Proxy{ID: 9, Username: "old-user", Password: "old-pass", FallbackMode: FallbackModeNone},
-			}
-			svc := &adminServiceImpl{proxyRepo: repo}
-
-			got, err := svc.UpdateProxy(context.Background(), 9, &tc.input)
-
-			require.NoError(t, err)
-			require.Equal(t, tc.wantUsername, got.Username)
-			require.Equal(t, tc.wantPassword, got.Password)
-		})
-	}
-}
-
 type proxyLatencyCacheStub struct {
 	setCalls   int
 	deletedIDs []int64

@@ -1,0 +1,66 @@
+[
+  {
+    "local_account_id": 10,
+    "endpoint": "rate-limit-reset-credits/history",
+    "method": "GET",
+    "checked_at": "2026-09-15T17:36:33.066139+00:00",
+    "status": 200,
+    "body_sha256": "6a31058a7917c9e839d76ab81410e5b3158c6f7fc399b0312eb060bb65d638a8",
+    "top_level_keys": [
+      "as_of",
+      "events",
+      "next_cursor",
+      "window_start"
+    ],
+    "has_next_cursor": false,
+    "as_of": "2026-09-15T17:36:34.759225+00:00",
+    "window_start": "2026-08-16T17:36:34.759225+00:00",
+    "record_count": 4,
+    "record_fields": [
+      "id",
+      "kind",
+      "occurred_at"
+    ],
+    "statuses": {
+      "missing": 4
+    },
+    "records": [
+      {
+        "kind": "used",
+        "field_types": {
+          "id": "str",
+          "kind": "str",
+          "occurred_at": "str"
+        },
+        "occurred_at": "2026-09-15T16:40:32.907674+00:00"
+      },
+      {
+        "kind": "granted",
+        "field_types": {
+          "id": "str",
+          "kind": "str",
+          "occurred_at": "str"
+        },
+        "occurred_at": "2026-09-05T04:19:53.891578+00:00"
+      },
+      {
+        "kind": "granted",
+        "field_types": {
+          "id": "str",
+          "kind": "str",
+          "occurred_at": "str"
+        },
+        "occurred_at": "2026-09-04T02:31:28.138700+00:00"
+      },
+      {
+        "kind": "granted",
+        "field_types": {
+          "id": "str",
+          "kind": "str",
+          "occurred_at": "str"
+        },
+        "occurred_at": "2026-08-22T00:16:32.769223+00:00"
+      }
+    ]
+  }
+]

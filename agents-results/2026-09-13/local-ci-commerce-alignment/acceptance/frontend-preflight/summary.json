@@ -1,0 +1,26 @@
+[
+  {
+    "stage": "install",
+    "exit_code": 0
+  },
+  {
+    "stage": "lint",
+    "exit_code": 0
+  },
+  {
+    "stage": "typecheck",
+    "exit_code": 0
+  },
+  {
+    "stage": "tests",
+    "exit_code": 0
+  },
+  {
+    "stage": "build",
+    "exit_code": 0
+  },
+  {
+    "stage": "security",
+    "exit_code": 0
+  }
+]

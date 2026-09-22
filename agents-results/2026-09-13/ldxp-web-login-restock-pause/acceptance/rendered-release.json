@@ -1,0 +1,14 @@
+{
+  "method": "Chrome CUA live browser readback after reload",
+  "dev_8080": {
+    "version": "0.2.4.2",
+    "web_login_credential_copy_visible": true,
+    "auto_restock_disabled": true
+  },
+  "prod": {
+    "version": "0.2.4.2",
+    "purchase_url": "https://wzyp.cn/item/x6uqgh",
+    "redeem_input_visible": true
+  },
+  "human_signoff": false
+}

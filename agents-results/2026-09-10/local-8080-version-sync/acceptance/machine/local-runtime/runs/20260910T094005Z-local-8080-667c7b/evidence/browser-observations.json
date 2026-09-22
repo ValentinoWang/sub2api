@@ -1,0 +1,29 @@
+{
+  "browser": "Chrome 用户1 via CUA",
+  "origin": "http://127.0.0.1:8080",
+  "routes": [
+    {
+      "path": "/home",
+      "observed": "Current experience heading, account top-up service paths and shared brand footer."
+    },
+    {
+      "path": "/experiences",
+      "observed": "Five experience cards, filters and current footer."
+    },
+    {
+      "path": "/public-benefit",
+      "observed": "Local-only application form, unconfigured contact and no submission claim."
+    },
+    {
+      "path": "/business-invoice",
+      "observed": "Invoice and corporate contract/service copy."
+    },
+    {
+      "path": "/login",
+      "observed": "Email/password controls and full shared brand/footer content."
+    }
+  ],
+  "browser_cache_action": "Command+Shift+R on new local homepage; forced resource refresh. Browser global cache/storage/cookies were not erased.",
+  "business_actions_submitted": false,
+  "human_signed_acceptance": false
+}

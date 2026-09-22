@@ -1,0 +1,27 @@
+{
+  "tag": "sub2api-local:0.2.6-64f459e05d2e",
+  "id": "sha256:ea8ebd15578451c1e414b8dfa980ae7de7b400e2a5d6335c4fe1c5f229bcd857",
+  "os": "linux",
+  "architecture": "amd64",
+  "labels": {
+    "description": "Sub2API - AI API Gateway Platform",
+    "maintainer": "Wei-Shaw <github.com/Wei-Shaw>",
+    "org.opencontainers.image.created": "2026-09-12T23:46:04+08:00",
+    "org.opencontainers.image.revision": "64f459e05d2ec50ac997dd6933794a1fcccaac61",
+    "org.opencontainers.image.source": "https://github.com/ValentinoWang/sub2api",
+    "org.opencontainers.image.version": "0.2.6"
+  },
+  "backend_version_output": "2026-09-12T15:59:25.742Z\tINFO\tstdlog\tSub2API 0.2.6 (commit: 64f459e05d2ec50ac997dd6933794a1fcccaac61, built: 2026-09-12T23:46:04+08:00)\t{\"service\": \"sub2api\", \"env\": \"bootstrap\", \"legacy_stdlog\": true}\n",
+  "toolkit_manifest": {
+    "schema_version": 1,
+    "program": "ldxp-toolkit",
+    "version": "0.2.6",
+    "os": "linux",
+    "arch": "amd64",
+    "sha256": "efa461dba7812ec8ec4100a4c8ed339043085f2411de4b8a276904ff1c169b91"
+  },
+  "toolkit_hash_verified": true,
+  "toolkit_version": {
+    "version": "0.2.6"
+  }
+}

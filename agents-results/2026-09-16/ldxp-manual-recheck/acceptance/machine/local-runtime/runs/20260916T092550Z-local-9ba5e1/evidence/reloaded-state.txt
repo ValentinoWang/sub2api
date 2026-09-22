@@ -1,0 +1,177 @@
+Window: "联动小铺补货 - rest2build", App: Google Chrome.
+0 标准窗口 联动小铺补货 - rest2build - Google Chrome - 思尧, URL: 127.0.0.1:4174/admin/tools/ldxp, Secondary Actions: Raise
+	1 container 联动小铺补货 - rest2build - Google Chrome - 思尧, URL: 127.0.0.1:4174/admin/tools/ldxp
+		2 container
+			3 container
+				4 HTML 内容 联动小铺补货 - rest2build, URL: 127.0.0.1:4174/admin/tools/ldxp
+					5 container
+						6 container
+							7 link Logo. 要获取缺失的图片说明，请打开上下文菜单。, Value: 127.0.0.1:4174/admin/dashboard
+							8 link rest2build, Value: 127.0.0.1:4174/admin/dashboard
+							9 按钮 v0.2.4.7, Help: 已是最新版本
+							10 link 仪表盘, Value: 127.0.0.1:4174/admin/dashboard
+							11 按钮 成本工作台
+								12 图像
+								13 container
+									14 文本 成本工作台
+									15 图像
+							16 link 运维监控, Value: 127.0.0.1:4174/admin/ops
+							17 按钮 工具
+								18 图像
+								19 container
+									20 文本 工具
+									21 图像
+							22 link 联动小铺, Value: 127.0.0.1:4174/admin/tools/ldxp
+							23 link 用户管理, Value: 127.0.0.1:4174/admin/users
+							24 link 分组管理, Value: 127.0.0.1:4174/admin/groups
+							25 按钮 渠道管理
+								26 图像
+								27 container
+									28 文本 渠道管理
+									29 图像
+							30 link 订阅管理, Value: 127.0.0.1:4174/admin/subscriptions
+							31 link AI 充值工作台, Value: 127.0.0.1:4174/admin/membership
+							32 link 账号管理, Value: 127.0.0.1:4174/admin/accounts
+							33 link 公告, Value: 127.0.0.1:4174/admin/announcements
+							34 link IP管理, Value: 127.0.0.1:4174/admin/proxies
+							35 link 兑换码, Value: 127.0.0.1:4174/admin/redeem
+							36 link 优惠码, Value: 127.0.0.1:4174/admin/promo-codes
+							37 按钮 订单管理
+								38 图像
+								39 container
+									40 文本 订单管理
+									41 图像
+							42 link 使用记录, Value: 127.0.0.1:4174/admin/usage
+							43 link 操作日志, Value: 127.0.0.1:4174/admin/audit-logs
+							44 link 系统设置, Value: 127.0.0.1:4174/admin/settings
+							45 文本 我的账户
+							46 link API 密钥, Value: 127.0.0.1:4174/keys
+							47 link 使用记录, Value: 127.0.0.1:4174/usage
+							48 link 渠道状态, Value: 127.0.0.1:4174/monitor
+							49 link 我的订阅, Value: 127.0.0.1:4174/subscriptions
+							50 link 会员充值, Value: 127.0.0.1:4174/memberships
+							51 link 充值/订阅, Value: 127.0.0.1:4174/purchase
+							52 link 我的订单, Value: 127.0.0.1:4174/orders
+							53 link 兑换中心, Value: 127.0.0.1:4174/redeem
+							54 link 经验分享, Value: 127.0.0.1:4174/experiences
+							55 link 个人资料, Value: 127.0.0.1:4174/profile
+							56 按钮 深色模式
+								57 图像
+								58 文本 深色模式
+							59 按钮 收起
+								60 图像
+								61 文本 收起
+						62 container
+							63 标题 联动小铺补货, Value: 1
+								64 文本 联动小铺补货
+							65 文本 查看和管理联动小铺自动补货、商品映射与设备状态。
+							66 按钮 公告
+								67 图像
+							68 按钮 🇨🇳 ZH, Help: 中文
+								69 文本 🇨🇳
+								70 文本 ZH
+								71 图像
+							72 container
+								73 图像
+								74 文本 $999964739.95
+							75 按钮 用户菜单
+								76 文本 AD
+								77 文本 admin
+								78 文本 管理员
+								79 图像
+							80 container
+								81 标题 自动补货状态, Value: 2
+									82 文本 自动补货状态
+								83 文本 查看自动补货开关、设备最近通信和各额度库存。遇到网页验证时，可在这里提交复查请求。
+								84 按钮 刷新
+								85 标题 联动小铺需要完成网页验证, Value: 3
+									86 文本 联动小铺需要完成网页验证
+								87 文本 请打开联动小铺，在网页中完成滑块或其他真人验证。完成后点击“我已完成验证，立即检查”，只有脚本授权与库存确认成功后才恢复补货。
+								88 文本 本机 HTTP 补货脚本 · 状态上报时间: 2026/9/16 17:21:41
+								89 文本 最近检查小铺: 2026/9/16 17:17:36
+								90 文本 下次自动检查: 2026/9/16 17:32:36
+								91 link 打开小铺完成验证, Value: ldxp.cn/merchant/
+								92 按钮 我已完成验证，立即检查
+								93 文本 脚本仍收到验证页，尚未通过。浏览器验证不会自动同步到独立脚本；需要检查脚本的商户授权。
+								94 文本 自动补货开关
+								95 文本 已启用
+								96 文本 执行设备通信
+								97 文本 补货已暂停
+								98 文本 最近连接: 2026/9/16 17:21:41
+								99 文本 近期核实达标商品
+								100 文本 0 / 5
+								101 文本 仅统计最近 2 分钟核对通过的已启用商品
+								102 text 每 15 秒自动刷新。开关开启表示允许补货，近期心跳不代表每轮已完成；请结合库存核对时间和待处理批次判断。心跳过期也可能是脚本遇到小铺异常后暂停，并不一定是电脑离线。 最近补货批次: 100元额度 · 13 张 · 已核对确认 已启用
+								103 按钮 停用补货
+								104 标题 补货设备, Value: 3
+									105 文本 补货设备
+								106 文本栏 (settable) 设备名称，例如本机补货脚本
+								107 弹出式按钮 绑定商品, Value: 当前全部已启用商品
+									108 (selected) 当前全部已启用商品
+								109 按钮 (disabled) 生成设备凭据
+								110 text 本机 HTTP 补货脚本 最近连接: 2026/9/16 17:21:41 · 补货已暂停
+								111 按钮 撤销凭据
+								112 text 我的 Chrome 最近连接: 2026/9/13 20:57:00 · 设备离线 / 需重新检查
+								113 按钮 撤销凭据
+								114 text 本地测试 Chrome 20260913 最近连接: 尚未连接 · 等待设备验证
+								115 按钮 撤销凭据
+								116 开合三角标记 商品映射
+									117 文本 商品映射
+		118 container
+			119 container
+				120 工具栏
+					121 按钮 返回
+					122 按钮 (disabled) 前进
+					123 按钮 重新加载
+					124 container
+						125 弹出式按钮 查看网站信息
+						126 文本栏 (settable) 地址和搜索栏, Value: 127.0.0.1:4174/admin/tools/ldxp, Placeholder: 在 Google 中搜索，或输入网址
+						127 按钮 为此标签页添加书签
+					128 container
+						129 弹出式按钮 easyScholar
+可以访问此网站
+						130 弹出式按钮 Save to Zotero (Embedded Metadata)
+可以访问此网站
+						131 弹出式按钮 Snip
+可以访问此网站
+						132 弹出式按钮 不背单词查词
+可以访问此网站
+						133 弹出式按钮 ChatGPT
+可以访问此网站
+						134 弹出式按钮 扩展程序
+					135 按钮 思尧
+					136 弹出式按钮 Chrome
+			137 container
+				138 弹出式按钮 标签页搜索
+				139 标签组
+					140 标签 (settable, boolean) 账号管理 - rest2build - 内存用量 - 216 MB, Value: off
+						141 按钮 关闭
+					142 标签 (settable, boolean) Search | arXiv e-print repository - 内存用量 - 82.2 MB, Value: off
+						143 按钮 关闭
+					144 标签 (settable, boolean) MediaClaw｜AI 内容生产工作台 - 内存用量 - 236 MB, Value: off
+						145 按钮 关闭
+					146 标签 (settable, boolean) Cadenvo 前端开发工作台 - 内存用量 - 119 MB, Value: off
+						147 按钮 关闭
+					148 标签 (settable, boolean) 交付调度台 - 内存用量 - 138 MB, Value: off
+						149 按钮 关闭
+					150 标签 (selected, settable, boolean) 联动小铺补货 - rest2build, Value: on
+						151 按钮 关闭
+					152 标签 (settable, boolean) 链动小铺 - 寄售平台-发货平台-自动发货网-专注自动发货系统,链动小铺寄售网(ldxp.cn), Value: off
+						153 按钮 关闭
+				154 按钮 新标签页
+	155 container
+		156 关闭按钮
+		157 缩放按钮
+158 menu bar
+	159 Chrome
+	160 文件
+	161 编辑
+	162 显示
+	163 历史记录
+	164 书签
+	165 个人资料
+	166 标签页
+	167 窗口
+	168 帮助
+
+The focused UI element is 4 HTML 内容 联动小铺补货 - rest2build, URL: 127.0.0.1:4174/admin/tools/ldxp

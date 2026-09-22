@@ -1,0 +1,13 @@
+# Local purchase, channel selection, and redemption verification
+
+> Superseded for live purchase readiness by [the paid-order incident](../../liandong-paid-code-mismatch/acceptance/incident.md). The real purchase failed: the configured store issued a MediaClaw wallet code, not a Sub2API code. The local buyer URL has been cleared. UI/test results below do not constitute working commerce acceptance.
+
+- Scope: `/purchase` is the purchase hub. It offers the public shop link and a compact same-page redemption form. `/redeem` remains the full redemption center with balance, rules, and history.
+- Channel isolation: Liandong Store and native online payment are separate recharge channels. When both are available, a segmented selector renders one flow at a time. Store-only mode does not request checkout data; online payment failures cannot block the store flow.
+- Access isolation: `/purchase` is available when either `payment_enabled` or `purchase_subscription_enabled` is enabled. `/orders`, payment QR pages, and payment administration remain controlled by `payment_enabled`; `/redeem` remains independent.
+- Actual shop URL recovered from the earlier merchant audit's `EVIDENCE_MANIFEST.json`, then verified in Chrome as Rest2Build's shop with six Token-credit products. Local public settings read back `purchase_subscription_enabled=true`, `purchase_subscription_url=https://wzyp.cn/shop/MGDY0ZE4`, and `payment_enabled=true`. No merchant setting, inventory, order, or payment was changed in this layout pass.
+- Browser: `/purchase` rendered the compact 672 px single-column flow through the existing Vite HMR server. `/redeem` rendered separately and the sidebar label read `兑换中心`. No real code was entered or redeemed.
+- Redemption semantics: both entry points use the same submit state implementation. The server response is final, concurrent submissions are blocked, and a later balance or subscription refresh failure retains success and clears the code instead of encouraging a second redemption.
+- Automated checks: seven focused suites passed with 57 tests, covering the panel, payment page, route access, sidebar, and locale integrity. The channel matrix covers store-only, online-only, and both-enabled selection. Typecheck, targeted ESLint, and diff whitespace checks passed.
+- Figma: editable desktop `23:15` and mobile `23:17` frames mirror the compact flow and the both-enabled channel selector. The 84-node audit is stored in `figma-audit.json`; it reports zero image paints and zero overflow violations.
+- This verifies local implementation and navigation, not an actual store purchase, fulfillment, code compatibility between local and production databases, or production deployment.

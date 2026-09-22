@@ -1,0 +1,39 @@
+{
+  "status": "VERIFIED",
+  "site": "http://127.0.0.1:8080",
+  "products": [
+    {
+      "goods_id": 874783,
+      "stock": 3,
+      "matched_stock": 3,
+      "uploaded": 0
+    },
+    {
+      "goods_id": 875537,
+      "stock": 1,
+      "matched_stock": 1,
+      "uploaded": 0
+    },
+    {
+      "goods_id": 875562,
+      "stock": 1,
+      "matched_stock": 1,
+      "uploaded": 0
+    },
+    {
+      "goods_id": 875570,
+      "stock": 1,
+      "matched_stock": 1,
+      "uploaded": 0
+    },
+    {
+      "goods_id": 875577,
+      "stock": 1,
+      "matched_stock": 1,
+      "uploaded": 0
+    }
+  ],
+  "uploaded": 0,
+  "at_target": false,
+  "finished_at": 1789481233.2869601
+}

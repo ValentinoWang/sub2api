@@ -1,0 +1,143 @@
+{
+  "commit": "26e666caee7edcd43ff2ac0ae85b4a35aeec4277",
+  "tree": "7e10001b7c4f22353b65a8abb8ea37d6faaf8b78",
+  "started_at": "2026-09-15T16:26:14Z",
+  "finished_at": "2026-09-15T18:21:04.939955+00:00",
+  "exit_code": 0,
+  "status": "PASS",
+  "stages": [
+    {
+      "stage": "source-preflight",
+      "exit_code": 0,
+      "seconds": 0,
+      "log": "source-preflight.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "snapshot",
+      "exit_code": 0,
+      "seconds": 10,
+      "log": "snapshot.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "toolchain",
+      "exit_code": 0,
+      "seconds": 7,
+      "log": "toolchain.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "frozen-install",
+      "exit_code": 0,
+      "seconds": 56,
+      "log": "frozen-install.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "acceptance-layout",
+      "exit_code": 0,
+      "seconds": 1,
+      "log": "acceptance-layout.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "deploy-guards",
+      "exit_code": 0,
+      "seconds": 30,
+      "log": "deploy-guards.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "version-guards",
+      "exit_code": 0,
+      "seconds": 15,
+      "log": "version-guards.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "local-ci-guards",
+      "exit_code": 0,
+      "seconds": 61,
+      "log": "local-ci-guards.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "commerce-parity-guards",
+      "exit_code": 0,
+      "seconds": 26,
+      "log": "commerce-parity-guards.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "browser-extension-tests",
+      "exit_code": 0,
+      "seconds": 14,
+      "log": "browser-extension-tests.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "backend-unit",
+      "exit_code": 0,
+      "seconds": 3209,
+      "log": "backend-unit.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "backend-integration",
+      "exit_code": 0,
+      "seconds": 2532,
+      "log": "backend-integration.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "backend-lint",
+      "exit_code": 0,
+      "seconds": 557,
+      "log": "backend-lint.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "frontend-lint",
+      "exit_code": 0,
+      "seconds": 20,
+      "log": "frontend-lint.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "frontend-typecheck",
+      "exit_code": 0,
+      "seconds": 38,
+      "log": "frontend-typecheck.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "frontend-tests",
+      "exit_code": 0,
+      "seconds": 179,
+      "log": "frontend-tests.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "frontend-build",
+      "exit_code": 0,
+      "seconds": 114,
+      "log": "frontend-build.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "backend-security",
+      "exit_code": 0,
+      "seconds": 17,
+      "log": "backend-security.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "frontend-security",
+      "exit_code": 0,
+      "seconds": 2,
+      "log": "frontend-security.log",
+      "status": "PASS"
+    }
+  ]
+}

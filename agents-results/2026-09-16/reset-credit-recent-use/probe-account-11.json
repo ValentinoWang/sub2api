@@ -1,0 +1,29 @@
+[
+  {
+    "local_account_id": 11,
+    "endpoint": "rate-limit-reset-credits",
+    "method": "GET",
+    "checked_at": "2026-09-15T17:34:28.586738+00:00",
+    "status": 401,
+    "body_sha256": "ec94b559fd8f6b159922f3183f517600dd049dcaa800fc96ca5e21930a358a4b",
+    "result": "upstream_rejected_read"
+  },
+  {
+    "local_account_id": 11,
+    "endpoint": "rate-limit-reset-credits/history",
+    "method": "GET",
+    "checked_at": "2026-09-15T17:34:29.412045+00:00",
+    "status": 401,
+    "body_sha256": "ec94b559fd8f6b159922f3183f517600dd049dcaa800fc96ca5e21930a358a4b",
+    "result": "upstream_rejected_read"
+  },
+  {
+    "local_account_id": 11,
+    "endpoint": "usage",
+    "method": "GET",
+    "checked_at": "2026-09-15T17:34:30.888183+00:00",
+    "status": 401,
+    "body_sha256": "ec94b559fd8f6b159922f3183f517600dd049dcaa800fc96ca5e21930a358a4b",
+    "result": "upstream_rejected_read"
+  }
+]

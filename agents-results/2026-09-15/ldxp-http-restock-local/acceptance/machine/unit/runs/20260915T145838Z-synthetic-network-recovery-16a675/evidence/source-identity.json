@@ -1,0 +1,7 @@
+{
+  "tools/commerce/ldxp_http_probe.py": "7e8dcc411e52900d63cf4129660c7e54314093ac573e1f00c35b96f1527bb7f7",
+  "tools/commerce/ldxp_http_restock.py": "3c58ed112c62739669eb54812419309e84825e592a2a19d19c85213abfbd263a",
+  "tools/quality/tests/test_ldxp_http_probe.py": "6e33b27af9af6667e9902d082037901de1b3cf69780fabc222ff2d6f6563279a",
+  "tools/quality/tests/test_ldxp_http_restock.py": "67851a7041865cfb7318a7c92515cb669cd110e1341fdcf61e7cb0809ffcc7d9",
+  "tools/commerce/ldxp-restock.local.json": "a647aaa8480d370cb8508112ea20eb636eedf70b61848ccd717b669f6f156bfb"
+}

@@ -1,0 +1,44 @@
+{
+  "commit": "c8e82b6c0a9a7088690d5f52b597d02f2b0283a1",
+  "tree": "be1708e71128941c1817a5c9b6e0925c092306e7",
+  "mode": "resume_exact_unchanged_commit",
+  "status": "FAIL",
+  "stages": [
+    {
+      "stage": "frozen-install",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 6.02,
+      "sha256": "ec38a2b78e3b5a2203de60dc9974564627c3b014f9a33bae53b4b4f971ae70cf"
+    },
+    {
+      "stage": "frontend-typecheck",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 20.09,
+      "sha256": "3f384a27f320c37648c0f888b98366f6a1f5777098913eddc41073b76fd25c34"
+    },
+    {
+      "stage": "frontend-tests",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 84.3,
+      "sha256": "c6b1c48b90aa6ad0c41ce7a9a50a877ab12a6fd5cc8edf81ecbf677b36727d7f"
+    },
+    {
+      "stage": "frontend-build",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 44.18,
+      "sha256": "4f0c551f0fb7f9b4e1a5f6dca62dc7c3743c4d14761a54c24e3dc50547e3dc27"
+    },
+    {
+      "stage": "backend-security",
+      "status": "FAIL",
+      "exit_code": 3,
+      "seconds": 408.06,
+      "sha256": "2c622653d074b3b7e9f70cad65636bce1efff70380c5c55725dcdd77d87c0eef"
+    }
+  ],
+  "minimum_free_gib": 4.541
+}

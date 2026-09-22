@@ -40,13 +40,15 @@ type LiandongBrowserConfig struct {
 	Products     []LiandongBrowserProduct `json:"products"`
 }
 type LiandongBrowserDevice struct {
-	GoodsIDs                []int64    `json:"goods_ids"`
-	ID                      string     `json:"id"`
-	Name                    string     `json:"name"`
-	Revoked                 bool       `json:"revoked"`
-	PausedReason            string     `json:"paused_reason"`
-	LastSeenAt              *time.Time `json:"last_seen_at,omitempty"`
-	AuthorizationVerifiedAt *time.Time `json:"authorization_verified_at,omitempty"`
+	GoodsIDs                []int64                 `json:"goods_ids"`
+	ID                      string                  `json:"id"`
+	Name                    string                  `json:"name"`
+	Revoked                 bool                    `json:"revoked"`
+	PausedReason            string                  `json:"paused_reason"`
+	LastSeenAt              *time.Time              `json:"last_seen_at,omitempty"`
+	AuthorizationVerifiedAt *time.Time              `json:"authorization_verified_at,omitempty"`
+	Runtime                 *LiandongBrowserRuntime `json:"runtime,omitempty"`
+	Recheck                 *LiandongBrowserRecheck `json:"recheck,omitempty"`
 }
 type LiandongBrowserBatch struct {
 	BatchID    string    `json:"batch_id"`
@@ -59,23 +61,32 @@ type LiandongBrowserBatch struct {
 }
 type LiandongBrowserStatus struct {
 	LiandongBrowserConfig
-	Devices []LiandongBrowserDevice `json:"devices"`
-	Batches []LiandongBrowserBatch  `json:"batches"`
+	RecheckSupported bool                    `json:"recheck_supported"`
+	Devices          []LiandongBrowserDevice `json:"devices"`
+	Batches          []LiandongBrowserBatch  `json:"batches"`
 }
 type LiandongBrowserInventoryReport struct {
-	BatchID  string   `json:"batch_id,omitempty"`
-	GoodsID  int64    `json:"goods_id"`
-	Complete bool     `json:"complete"`
-	Total    int      `json:"total"`
-	Hashes   []string `json:"hashes"`
+	BatchID      string                     `json:"batch_id,omitempty"`
+	GoodsID      int64                      `json:"goods_id"`
+	Complete     bool                       `json:"complete"`
+	Total        int                        `json:"total"`
+	Hashes       []string                   `json:"hashes"`
+	SoldComplete bool                       `json:"sold_complete,omitempty"`
+	SoldProofs   []LiandongBrowserSoldProof `json:"sold_proofs,omitempty"`
+}
+type LiandongBrowserSoldProof struct {
+	CodeHash string `json:"code_hash"`
+	CardID   int64  `json:"card_id"`
 }
 type LiandongBrowserInventoryResult struct {
-	TargetStock      int                   `json:"target_stock"`
-	IdentityVerified bool                  `json:"identity_verified"`
-	MatchedStock     int                   `json:"matched_stock"`
-	Blocked          bool                  `json:"blocked"`
-	PendingBatch     *LiandongBrowserBatch `json:"pending_batch"`
-	BatchResolved    bool                  `json:"batch_resolved"`
+	TargetStock          int                   `json:"target_stock"`
+	IdentityVerified     bool                  `json:"identity_verified"`
+	MatchedStock         int                   `json:"matched_stock"`
+	Blocked              bool                  `json:"blocked"`
+	PendingBatch         *LiandongBrowserBatch `json:"pending_batch"`
+	BatchResolved        bool                  `json:"batch_resolved"`
+	DeliveryProofVersion int                   `json:"delivery_proof_version"`
+	RetryEligible        bool                  `json:"retry_eligible"`
 }
 type LiandongRechargeProduct struct {
 	GoodsID     int64   `json:"goods_id"`
@@ -466,8 +477,103 @@ func validateBrowserReport(r LiandongBrowserInventoryReport) error {
 		}
 		seen[h] = true
 	}
+	if (r.SoldComplete || len(r.SoldProofs) > 0) && (r.BatchID == "" || !r.SoldComplete) || len(r.SoldProofs) > 20 {
+		return errBrowserInvalid
+	}
+	cards := map[int64]bool{}
+	for _, proof := range r.SoldProofs {
+		b, err := hex.DecodeString(proof.CodeHash)
+		if err != nil || len(b) != 32 || proof.CodeHash != strings.ToLower(proof.CodeHash) || seen[proof.CodeHash] || proof.CardID <= 0 || cards[proof.CardID] {
+			return errBrowserInvalid
+		}
+		seen[proof.CodeHash], cards[proof.CardID] = true, true
+	}
 	return nil
 }
+
+// A delivery attestation is separate from stock: sold codes never become saleable inventory.
+func browserDeliveryProof(ctx context.Context, tx *sql.Tx, id string, p *LiandongBrowserProduct, batch *LiandongBrowserBatch, r LiandongBrowserInventoryReport, verified bool) (complete, retryEligible bool, err error) {
+	var owner, digest, status string
+	var goodsID int64
+	var count int
+	var bindingMatches bool
+	err = tx.QueryRowContext(ctx, `SELECT browser_device_id,goods_id,status,code_count,code_sha256,cny_amount=$2 AND grant_value=$2 AND grant_type='balance' FROM liandong_restock_batches WHERE batch_id=$1 AND browser_device_id IS NOT NULL FOR NO KEY UPDATE`, batch.BatchID, p.CNYAmount).Scan(&owner, &goodsID, &status, &count, &digest, &bindingMatches)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, false, errBrowserInvalid
+	}
+	if err != nil {
+		return false, false, err
+	}
+	if owner != id || goodsID != p.GoodsID {
+		return false, false, errBrowserAuth
+	}
+	if status != "pending" && status != "needs_reconciliation" && status != "uploaded" {
+		return false, false, ErrLiandongNeedsReconciliation
+	}
+	known, unsold, sold := map[string]bool{}, map[string]bool{}, map[string]LiandongBrowserSoldProof{}
+	for _, hash := range batch.CodeHashes {
+		known[hash] = true
+	}
+	for _, hash := range r.Hashes {
+		unsold[hash] = true
+	}
+	for _, proof := range r.SoldProofs {
+		if !known[proof.CodeHash] {
+			return false, false, errBrowserInvalid
+		}
+		sold[proof.CodeHash] = proof
+	}
+	// Lock the original rights while validating, so redemption/refund cannot race completion.
+	rows, err := tx.QueryContext(ctx, `SELECT bc.code_sha256,r.code,r.status,
+        r.type='balance' AND r.value=$2 AND r.group_id IS NULL
+        AND (r.expires_at IS NULL OR r.expires_at>NOW())
+        AND ((r.status='unused' AND r.used_by IS NULL AND r.used_at IS NULL) OR (r.status='used' AND r.used_by IS NOT NULL AND r.used_at IS NOT NULL))
+        AND NOT EXISTS(SELECT 1 FROM liandong_code_refunds f WHERE f.redeem_code_id=r.id)
+        FROM liandong_restock_batch_codes bc JOIN redeem_codes r ON r.id=bc.redeem_code_id
+        WHERE bc.batch_id=$1 ORDER BY bc.ordinal FOR SHARE OF r,bc`, batch.BatchID, p.CNYAmount)
+	if err != nil {
+		return false, false, err
+	}
+	defer func() { _ = rows.Close() }()
+	codes, originalHashes, unsoldBatch := []string{}, []string{}, []string{}
+	soldBatch := []LiandongBrowserSoldProof{}
+	intact, missingUnused, missing := bindingMatches, true, 0
+	for rows.Next() {
+		var hash, code, codeStatus string
+		var eligible bool
+		if err := rows.Scan(&hash, &code, &codeStatus, &eligible); err != nil {
+			return false, false, err
+		}
+		codes, originalHashes = append(codes, code), append(originalHashes, hash)
+		intact = intact && eligible && browserHash(code) == hash && known[hash]
+		if unsold[hash] {
+			unsoldBatch = append(unsoldBatch, hash)
+		} else if proof, ok := sold[hash]; ok {
+			soldBatch = append(soldBatch, proof)
+		} else {
+			missing++
+			missingUnused = missingUnused && codeStatus == "unused"
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return false, false, err
+	}
+	if err := rows.Close(); err != nil {
+		return false, false, err
+	}
+	intact = intact && count == len(codes) && count == batch.CodeCount && liandongCodesDigest(codes) == digest
+	complete = verified && intact && missing == 0
+	retryEligible = verified && intact && missing > 0 && missingUnused && r.SoldComplete && status != "uploaded"
+	if !complete {
+		return false, retryEligible, nil
+	}
+	allJSON, _ := json.Marshal(originalHashes)
+	unsoldJSON, _ := json.Marshal(unsoldBatch)
+	soldJSON, _ := json.Marshal(soldBatch)
+	_, err = tx.ExecContext(ctx, `INSERT INTO liandong_browser_delivery_proofs(batch_id,device_id,goods_id,code_count,code_sha256,code_hashes,unsold_batch_hashes,sold_proofs) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb) ON CONFLICT(batch_id) DO NOTHING`, batch.BatchID, id, p.GoodsID, count, digest, string(allJSON), string(unsoldJSON), string(soldJSON))
+	return complete, false, err
+}
+
 func (s *LiandongRestockService) BrowserInventory(ctx context.Context, id string, r LiandongBrowserInventoryReport) (*LiandongBrowserInventoryResult, error) {
 	if err := validateBrowserReport(r); err != nil {
 		return nil, err
@@ -495,6 +601,28 @@ func (s *LiandongRestockService) BrowserInventory(ctx context.Context, id string
 	if err != nil {
 		return nil, err
 	}
+	pending, err := browserLoadBatch(ctx, tx, "", p.GoodsID, true)
+	if err != nil {
+		return nil, err
+	}
+	selected := pending
+	if r.BatchID != "" {
+		var owner string
+		var goodsID int64
+		if err = tx.QueryRowContext(ctx, `SELECT browser_device_id,goods_id FROM liandong_restock_batches WHERE batch_id=$1 AND browser_device_id IS NOT NULL FOR NO KEY UPDATE`, r.BatchID).Scan(&owner, &goodsID); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, errBrowserInvalid
+			}
+			return nil, err
+		}
+		if owner != id || goodsID != p.GoodsID {
+			return nil, errBrowserAuth
+		}
+		selected, err = browserLoadBatch(ctx, tx, r.BatchID, p.GoodsID, true)
+		if err != nil {
+			return nil, err
+		}
+	}
 	raw, err := json.Marshal(r.Hashes)
 	if err != nil {
 		return nil, err
@@ -517,55 +645,45 @@ func (s *LiandongRestockService) BrowserInventory(ctx context.Context, id string
 	if _, err = tx.ExecContext(ctx, `INSERT INTO liandong_browser_inventory(goods_id,device_id,identity_verified,code_hashes) VALUES($1,$2,$3,$4::jsonb) ON CONFLICT(goods_id) DO UPDATE SET device_id=$2,identity_verified=$3,code_hashes=$4::jsonb,observed_at=NOW()`, p.GoodsID, id, verified, string(raw)); err != nil {
 		return nil, err
 	}
-	b, err := browserLoadBatch(ctx, tx, "", p.GoodsID, true)
-	if err != nil {
-		return nil, err
-	}
-	result := &LiandongBrowserInventoryResult{TargetStock: p.TargetStock, IdentityVerified: verified, MatchedStock: matched, Blocked: !verified, PendingBatch: b}
-	if r.BatchID != "" {
-		var terminal bool
-		if err = tx.QueryRowContext(ctx, `SELECT status='uploaded' FROM liandong_restock_batches WHERE batch_id=$1 AND goods_id=$2 AND browser_device_id=$3`, r.BatchID, r.GoodsID, id).Scan(&terminal); err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return nil, errBrowserInvalid
-			}
-			return nil, err
-		}
-		result.BatchResolved = terminal
-	}
-	if b != nil {
-		all := verified
-		seen := map[string]bool{}
-		for _, h := range r.Hashes {
-			seen[h] = true
-		}
-		for _, h := range b.CodeHashes {
-			if !seen[h] {
-				all = false
-			}
-		}
-		if all {
-			if _, err = tx.ExecContext(ctx, `UPDATE liandong_restock_batches SET status='uploaded',remote_stock_after=$2,uploaded_at=NOW(),updated_at=NOW(),error=NULL WHERE batch_id=$1`, b.BatchID, r.Total); err != nil {
+	result := &LiandongBrowserInventoryResult{TargetStock: p.TargetStock, IdentityVerified: verified, MatchedStock: matched, Blocked: !verified, PendingBatch: pending, DeliveryProofVersion: 1}
+	if selected != nil {
+		result.BatchResolved = selected.Status == "verified"
+		if selected.Status != "verified" || r.SoldComplete {
+			complete, retryEligible, err := browserDeliveryProof(ctx, tx, id, p, selected, r, verified)
+			if err != nil {
 				return nil, err
 			}
-			if _, err = tx.ExecContext(ctx, `UPDATE liandong_restock_segments SET status='uploaded',remote_acknowledged=TRUE,uploaded_at=NOW(),updated_at=NOW() WHERE batch_id=$1`, b.BatchID); err != nil {
-				return nil, err
+			result.RetryEligible = retryEligible && c.Enabled && (d.PausedReason == "" || d.PausedReason == "disconnected")
+			if !complete && r.SoldComplete {
+				result.Blocked, result.BatchResolved = true, false
 			}
-			result.BatchResolved = true
-			result.PendingBatch = nil
-		} else if b.Status == "uncertain" {
+			if complete && selected.Status != "verified" {
+				if _, err = tx.ExecContext(ctx, `UPDATE liandong_restock_batches SET status='uploaded',remote_stock_after=$2,uploaded_at=NOW(),updated_at=NOW(),error=NULL WHERE batch_id=$1`, selected.BatchID, r.Total); err != nil {
+					return nil, err
+				}
+				if _, err = tx.ExecContext(ctx, `UPDATE liandong_restock_segments SET status='uploaded',remote_acknowledged=TRUE,uploaded_at=NOW() WHERE batch_id=$1`, selected.BatchID); err != nil {
+					return nil, err
+				}
+				result.BatchResolved = true
+				if pending != nil && pending.BatchID == selected.BatchID {
+					result.PendingBatch = nil
+				}
+			}
+		}
+	}
+	if result.PendingBatch != nil {
+		if result.PendingBatch.Status == "uncertain" {
 			result.Blocked = true
 		}
 		// Inventory reports never expose another device's issued codes.
-		if result.PendingBatch != nil {
-			var owner string
-			if err = tx.QueryRowContext(ctx, `SELECT browser_device_id FROM liandong_restock_batches WHERE batch_id=$1`, b.BatchID).Scan(&owner); err != nil {
-				return nil, err
-			}
-			if owner != id {
-				result.Blocked = true
-				result.PendingBatch.Codes = nil
-				result.PendingBatch.CodeHashes = nil
-			}
+		var owner string
+		if err = tx.QueryRowContext(ctx, `SELECT browser_device_id FROM liandong_restock_batches WHERE batch_id=$1`, result.PendingBatch.BatchID).Scan(&owner); err != nil {
+			return nil, err
+		}
+		if owner != id {
+			result.Blocked = true
+			result.PendingBatch.Codes = nil
+			result.PendingBatch.CodeHashes = nil
 		}
 	}
 	if _, err = tx.ExecContext(ctx, `UPDATE liandong_browser_devices SET last_seen_at=NOW() WHERE id=$1`, id); err != nil {
@@ -835,7 +953,7 @@ func (s *LiandongRestockService) BrowserStatus(ctx context.Context) (*LiandongBr
 	if err != nil {
 		return nil, err
 	}
-	out := &LiandongBrowserStatus{LiandongBrowserConfig: *c, Devices: []LiandongBrowserDevice{}, Batches: []LiandongBrowserBatch{}}
+	out := &LiandongBrowserStatus{LiandongBrowserConfig: *c, RecheckSupported: true, Devices: []LiandongBrowserDevice{}, Batches: []LiandongBrowserBatch{}}
 	for i := range out.Products {
 		p := &out.Products[i]
 		var raw []byte
@@ -856,20 +974,43 @@ func (s *LiandongRestockService) BrowserStatus(ctx context.Context) (*LiandongBr
 		p.IdentityVerified = verified
 		p.InventoryAt = &at
 	}
-	rows, err := tx.QueryContext(ctx, `SELECT id,name,revoked,paused_reason,last_seen_at,authorization_verified_at,goods_ids FROM liandong_browser_devices ORDER BY created_at DESC`)
+	rows, err := tx.QueryContext(ctx, `SELECT d.id,d.name,d.revoked,d.paused_reason,d.last_seen_at,d.authorization_verified_at,d.goods_ids,r.report,r.reported_at,q.report
+        FROM liandong_browser_devices d LEFT JOIN liandong_browser_runtime r ON r.device_id=d.id
+        LEFT JOIN LATERAL (SELECT row_to_json(c) AS report FROM liandong_browser_rechecks c WHERE c.device_id=d.id ORDER BY c.requested_at DESC,c.id DESC LIMIT 1) q ON TRUE
+        ORDER BY d.created_at DESC`)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		var d LiandongBrowserDevice
 		var scope []byte
-		if err = rows.Scan(&d.ID, &d.Name, &d.Revoked, &d.PausedReason, &d.LastSeenAt, &d.AuthorizationVerifiedAt, &scope); err != nil {
+		var runtimeRaw []byte
+		var recheckRaw []byte
+		var reportedAt sql.NullTime
+		if err = rows.Scan(&d.ID, &d.Name, &d.Revoked, &d.PausedReason, &d.LastSeenAt, &d.AuthorizationVerifiedAt, &scope, &runtimeRaw, &reportedAt, &recheckRaw); err != nil {
 			_ = rows.Close()
 			return nil, err
 		}
 		if err = json.Unmarshal(scope, &d.GoodsIDs); err != nil {
 			_ = rows.Close()
 			return nil, err
+		}
+		if reportedAt.Valid {
+			var report LiandongBrowserRuntimeReport
+			if err = json.Unmarshal(runtimeRaw, &report); err != nil {
+				_ = rows.Close()
+				return nil, err
+			}
+			if report.ExecutionMode == "" {
+				report.ExecutionMode = "http"
+			}
+			d.Runtime = &LiandongBrowserRuntime{LiandongBrowserRuntimeReport: report, ReportedAt: reportedAt.Time}
+		}
+		if len(recheckRaw) > 0 {
+			if err = json.Unmarshal(recheckRaw, &d.Recheck); err != nil {
+				_ = rows.Close()
+				return nil, err
+			}
 		}
 		if !d.Revoked && d.PausedReason != "" {
 			out.PausedReason = d.PausedReason

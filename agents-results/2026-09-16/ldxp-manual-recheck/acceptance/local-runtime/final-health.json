@@ -1,0 +1,8 @@
+{
+  "image": "sub2api-local:0.2.4.8-f0e321a7cb35",
+  "healthy": true,
+  "checked_at": "2026-09-16T09:29:00.798049+00:00",
+  "compose_image_persisted": true,
+  "initial_30s_wait_expired": true,
+  "restart_repeated": false
+}

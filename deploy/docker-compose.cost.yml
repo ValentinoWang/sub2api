@@ -1,0 +1,31 @@
+# Local cost integration. Layer on docker-compose.local.yml with private .env.cost.
+services:
+  sub2api:
+    environment:
+      SUB2API_COST_LEDGER_DSN: ${SUB2API_COST_LEDGER_DSN:?private cost DSN required}
+      SUB2API_COST_SOURCE_DSN: ${SUB2API_COST_SOURCE_DSN:?read-only source DSN required}
+      SUB2API_COST_SOURCE_ID: local-sub2api
+    networks:
+      - sub2api-network
+      - cost-network
+  cost-collector:
+    image: ${SUB2API_COST_COLLECTOR_IMAGE:?committed collector image required}
+    container_name: sub2api-cost-collector
+    restart: unless-stopped
+    network_mode: service:sub2api
+    depends_on:
+      - sub2api
+    environment:
+      SUB2API_COST_TRAFFIC_DSN: ${SUB2API_COST_TRAFFIC_DSN:?traffic-only DSN required}
+      COST_TRAFFIC_SOURCE: local-sub2api-service
+      COST_TRAFFIC_INTERFACE: eth0
+    volumes:
+      - ${SUB2API_COST_VNSTAT_DIR:?private vnStat directory required}:/var/lib/vnstat
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - NET_RAW
+networks:
+  cost-network:
+    external: true
+    name: sub2api-cost-local-net

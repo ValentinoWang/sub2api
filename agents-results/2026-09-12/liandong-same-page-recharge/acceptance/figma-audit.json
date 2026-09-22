@@ -1,0 +1,167 @@
+{
+  "fileKey": "bG5roZJVC4F4IQwaL8oeOk",
+  "pageId": "23:14",
+  "roots": [
+    {
+      "id": "23:15",
+      "name": "Desktop / purchase / both channels / store selected",
+      "width": 960,
+      "height": 470,
+      "nodeCount": 42,
+      "children": [
+        {
+          "id": "29:18",
+          "name": "Primary tabs / recharge selected",
+          "width": 896
+        },
+        {
+          "id": "30:18",
+          "name": "Recharge channels / mutually exclusive / store selected",
+          "width": 672
+        },
+        {
+          "id": "23:16",
+          "name": "LiandongRechargePanel / purchase",
+          "width": 672
+        }
+      ]
+    },
+    {
+      "id": "23:17",
+      "name": "Mobile / purchase / both channels / store selected / 390px",
+      "width": 390,
+      "height": 556,
+      "nodeCount": 42,
+      "children": [
+        {
+          "id": "29:23",
+          "name": "Primary tabs / recharge selected",
+          "width": 362
+        },
+        {
+          "id": "30:27",
+          "name": "Recharge channels / mutually exclusive / store selected",
+          "width": 362
+        },
+        {
+          "id": "23:18",
+          "name": "LiandongRechargePanel / purchase",
+          "width": 362
+        }
+      ]
+    }
+  ],
+  "channelSelectors": {
+    "desktop": "30:18",
+    "mobile": "30:27"
+  },
+  "topLevelTabs": {
+    "desktop": "29:18",
+    "mobile": "29:23"
+  },
+  "cards": {
+    "desktop": "23:16",
+    "mobile": "23:18"
+  },
+  "allNodeIds": [
+    "23:15",
+    "29:18",
+    "29:19",
+    "29:20",
+    "29:21",
+    "29:22",
+    "30:18",
+    "30:19",
+    "30:20",
+    "30:21",
+    "30:22",
+    "30:23",
+    "30:24",
+    "30:25",
+    "30:26",
+    "23:16",
+    "23:19",
+    "23:20",
+    "23:21",
+    "23:22",
+    "23:27",
+    "25:18",
+    "25:19",
+    "25:20",
+    "25:21",
+    "25:22",
+    "25:23",
+    "25:24",
+    "25:25",
+    "I25:25;2:12",
+    "26:27",
+    "26:28",
+    "26:29",
+    "26:30",
+    "26:31",
+    "26:32",
+    "26:33",
+    "26:34",
+    "26:35",
+    "26:36",
+    "26:37",
+    "I26:37;2:12",
+    "23:17",
+    "29:23",
+    "29:24",
+    "29:25",
+    "29:26",
+    "29:27",
+    "30:27",
+    "30:28",
+    "30:29",
+    "30:30",
+    "30:31",
+    "30:32",
+    "30:33",
+    "30:34",
+    "30:35",
+    "23:18",
+    "23:23",
+    "23:24",
+    "23:25",
+    "23:26",
+    "23:34",
+    "26:18",
+    "26:19",
+    "26:20",
+    "26:21",
+    "26:22",
+    "26:23",
+    "26:24",
+    "26:25",
+    "I26:25;2:12",
+    "26:39",
+    "26:40",
+    "26:41",
+    "26:42",
+    "26:43",
+    "26:44",
+    "26:45",
+    "26:46",
+    "26:47",
+    "26:48",
+    "26:49",
+    "I26:49;2:12"
+  ],
+  "zeroImagePaint": true,
+  "imagePaintViolations": [],
+  "overflowViolations": [],
+  "state": "Both recharge channels enabled; recharge tab active; store channel selected; only LiandongRechargePanel shown. This is a requested design scenario, not a production availability assertion.",
+  "sourceHashes": {
+    "PaymentView": "91017f7b3bd6b502ee763411643440a90c1533d2fd6a07efa9cf994ff5583557",
+    "LiandongRechargePanel": "a5deabb072aaffa6faaa028c51c0b3b7769712731b92b3c827c81315a6b83566",
+    "zhMisc": "58398487fdb0e8b9cd08cbf94e0515f38d3303e0f7af02dc1b5f90187b2b7ba3"
+  },
+  "limitations": [
+    "Native editable design; runtime channel switching belongs to main task browser verification.",
+    "Balance $0.00 is a neutral design sample.",
+    "Noto Sans SC is used because OS system-ui/PingFang SC is unavailable in Figma.",
+    "No purchase or redemption was submitted."
+  ]
+}

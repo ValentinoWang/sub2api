@@ -1,0 +1,20 @@
+{
+  "at": 1789488058.944078,
+  "goods_id": 875577,
+  "product_unlisted": true,
+  "case": "two_concurrent_imports_of_same_new_code",
+  "before_total": 365,
+  "after_total": 366,
+  "matching_after": 1,
+  "responses": [
+    {
+      "code": 0,
+      "safe_message": "去重后没有可添加的卡密"
+    },
+    {
+      "code": 1,
+      "safe_message": "共 1 张卡密，去除重复 0 张，成功添加 1 张卡密！"
+    }
+  ],
+  "local_code_id": 1970
+}

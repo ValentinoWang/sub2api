@@ -3,13 +3,14 @@ import { flushPromises, mount } from '@vue/test-utils'
 import OpenAIQuotaResetCell from '../OpenAIQuotaResetCell.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import type { Account } from '@/types'
-import { refreshOpenAIQuota, resetOpenAIQuota, type OpenAIQuotaRefreshResult } from '@/api/admin/accounts'
+import { checkOpenAIResetCreditHistory, refreshOpenAIQuota, resetOpenAIQuota, type OpenAIQuotaRefreshResult } from '@/api/admin/accounts'
 
 vi.mock('@/api/admin/accounts', () => ({
   refreshOpenAIQuota: vi.fn(),
   resetOpenAIQuota: vi.fn(),
   refreshOpenAIReferrals: vi.fn(),
   sendOpenAIReferralInvite: vi.fn(),
+  checkOpenAIResetCreditHistory: vi.fn(),
 }))
 
 vi.mock('vue-i18n', async () => {
@@ -64,6 +65,7 @@ const resetButton = (wrapper: ReturnType<typeof mount>) =>
 beforeEach(() => {
   vi.mocked(refreshOpenAIQuota).mockReset()
   vi.mocked(resetOpenAIQuota).mockReset()
+  vi.mocked(checkOpenAIResetCreditHistory).mockReset().mockResolvedValue({ status: 'clear', checked_at: '2026-09-16T00:00:00Z', history_complete: true, used_count: 0, recent_use_count: 0, confirmation_key: 'clear-check' })
 })
 
 describe('OpenAIQuotaResetCell — Codex 点数', () => {
@@ -150,6 +152,79 @@ describe('OpenAIQuotaResetCell — Codex 点数', () => {
 })
 
 describe('OpenAIQuotaResetCell — 外审 F6:影子禁用重置', () => {
+  it('先查询近期用卡记录，显示提醒；新记录要求再次确认且不会自动重试', async () => {
+    const recent = { status: 'recent' as const, checked_at: '2026-09-16T00:00:00Z', as_of: '2026-09-16T00:00:00Z',
+      last_used_at: '2026-09-15T23:57:00Z', window_start: '2026-08-16T00:00:00Z', history_complete: true,
+      used_count: 2, recent_use_count: 1, confirmation_key: 'first-check' }
+    vi.mocked(checkOpenAIResetCreditHistory).mockResolvedValue(recent)
+    const account = makeAccount({ extra: { codex_reset_credit_snapshot: { available_count: 2, credits: [{ expires_at: FUTURE_EXPIRY_EARLY }, { expires_at: FUTURE_EXPIRY_LATE }] } } })
+    const wrapper = mount(OpenAIQuotaResetCell, { props: { account }, global: { stubs: { teleport: true } } })
+    await resetButton(wrapper).trigger('click')
+    await flushPromises()
+    expect(checkOpenAIResetCreditHistory).toHaveBeenCalledWith(1)
+    expect(resetOpenAIQuota).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('admin.accounts.openaiQuotaReset.recentUseWarning')
+    const changed = { ...recent, recent_use_count: 2, confirmation_key: 'second-check' }
+    vi.mocked(resetOpenAIQuota).mockRejectedValueOnce({ reason: 'RESET_CREDIT_CONFIRMATION_REQUIRED', metadata: { reset_credit_check: JSON.stringify(changed) } })
+    wrapper.findComponent(ConfirmDialog).vm.$emit('confirm')
+    await flushPromises()
+    expect(resetOpenAIQuota).toHaveBeenCalledTimes(1)
+    expect(resetOpenAIQuota).toHaveBeenCalledWith(1, 'first-check')
+    expect(wrapper.findComponent(ConfirmDialog).props('show')).toBe(true)
+    vi.mocked(resetOpenAIQuota).mockResolvedValueOnce({ code: 'success', windows_reset: 1, cache_refreshed: false, account_state_recovered: true })
+    wrapper.findComponent(ConfirmDialog).vm.$emit('confirm')
+    await flushPromises()
+    expect(resetOpenAIQuota).toHaveBeenCalledTimes(2)
+    expect(resetOpenAIQuota).toHaveBeenLastCalledWith(1, 'second-check')
+    wrapper.unmount()
+  })
+
+  it('查询期间禁用用卡，超过十分钟仍展示最近使用时间供核对', async () => {
+    let resolveCheck!: (value: Awaited<ReturnType<typeof checkOpenAIResetCreditHistory>>) => void
+    vi.mocked(checkOpenAIResetCreditHistory).mockReturnValue(new Promise(resolve => { resolveCheck = resolve }))
+    const account = makeAccount({ extra: { codex_reset_credit_snapshot: { available_count: 1, credits: [{ expires_at: FUTURE_EXPIRY_EARLY }] } } })
+    const wrapper = mount(OpenAIQuotaResetCell, { props: { account }, global: { stubs: { teleport: true } } })
+    await resetButton(wrapper).trigger('click')
+    expect(resetButton(wrapper).attributes('disabled')).toBeDefined()
+    expect(resetButton(wrapper).text()).toContain('admin.accounts.openaiQuotaReset.checkingHistory')
+    expect(wrapper.findComponent(ConfirmDialog).props('show')).toBe(false)
+    expect(resetOpenAIQuota).not.toHaveBeenCalled()
+    resolveCheck({ status: 'clear', checked_at: '2026-09-16T06:09:15Z', as_of: '2026-09-16T06:09:15Z',
+      last_used_at: '2026-09-15T16:40:32.907674Z', used_count: 1, recent_use_count: 0,
+      history_complete: true, confirmation_key: 'clear-check' })
+    await flushPromises()
+    expect(wrapper.get('[data-testid="reset-credit-last-used"]').text()).toContain('admin.accounts.openaiQuotaReset.lastUsedAt:')
+    expect(wrapper.text()).toContain('admin.accounts.openaiQuotaReset.historyClear:')
+    expect(wrapper.text()).not.toContain('admin.accounts.openaiQuotaReset.recentUseWarning')
+    expect(resetButton(wrapper).text()).not.toContain('admin.accounts.openaiQuotaReset.checkingHistory')
+    wrapper.unmount()
+  })
+
+  it('历史请求失败明确提示无法确认，不能显示近期无人使用', async () => {
+    vi.mocked(checkOpenAIResetCreditHistory).mockRejectedValue(new Error('offline'))
+    const account = makeAccount({ extra: { codex_reset_credit_snapshot: { available_count: 1, credits: [{ expires_at: FUTURE_EXPIRY_EARLY }] } } })
+    const wrapper = mount(OpenAIQuotaResetCell, { props: { account }, global: { stubs: { teleport: true } } })
+    await resetButton(wrapper).trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('admin.accounts.openaiQuotaReset.historyUnknown')
+    expect(wrapper.text()).not.toContain('admin.accounts.openaiQuotaReset.historyClear')
+    expect(resetOpenAIQuota).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('切换账号后丢弃之前尚未完成的历史检查', async () => {
+    let resolveCheck!: (value: Awaited<ReturnType<typeof checkOpenAIResetCreditHistory>>) => void
+    vi.mocked(checkOpenAIResetCreditHistory).mockReturnValue(new Promise(resolve => { resolveCheck = resolve }))
+    const account = makeAccount({ extra: { codex_reset_credit_snapshot: { available_count: 1, credits: [{ expires_at: FUTURE_EXPIRY_EARLY }] } } })
+    const wrapper = mount(OpenAIQuotaResetCell, { props: { account } })
+    await resetButton(wrapper).trigger('click')
+    await wrapper.setProps({ account: makeAccount({ id: 2 }) })
+    resolveCheck({ status: 'clear', checked_at: '', used_count: 0, recent_use_count: 0, history_complete: true, confirmation_key: 'old-account' })
+    await flushPromises()
+    expect(wrapper.findComponent(ConfirmDialog).props('show')).toBe(false)
+    expect(resetOpenAIQuota).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
   it('影子账号(parent_account_id 非空)的 reset 按钮被禁用且提示在母账号重置', () => {
     const account = makeAccount({ parent_account_id: 100 })
     const wrapper = mount(OpenAIQuotaResetCell, { props: { account } })
@@ -351,7 +426,7 @@ describe('OpenAIQuotaResetCell — 外审 F6:影子禁用重置', () => {
     wrapper.findComponent(ConfirmDialog).vm.$emit('confirm')
     await flushPromises()
 
-    expect(resetOpenAIQuota).toHaveBeenCalledWith(1)
+    expect(resetOpenAIQuota).toHaveBeenCalledWith(1, 'clear-check')
     expect(refreshOpenAIQuota).not.toHaveBeenCalled()
     expect(wrapper.get('[data-testid="codex-credits"]').text()).toContain('999.25')
     expect(wrapper.text()).not.toContain('admin.accounts.openaiQuotaReset.expiresAt:')
@@ -433,6 +508,19 @@ describe('OpenAIQuotaResetCell — 外审 F6:影子禁用重置', () => {
 })
 
 describe('OpenAIQuotaResetCell 自动用卡运行态', () => {
+  it.each([
+    ['RESET_CREDIT_RECENT_USE', 'autoRecentUse'],
+    ['RESET_CREDIT_HISTORY_UNKNOWN', 'autoHistoryUnknown'],
+  ])('将 %s 显示为可理解的暂缓原因', (errorCode, messageKey) => {
+    const account = makeAccount({ extra: { auto_reset_credit_enabled: true,
+      codex_auto_reset_credit_state: { status: 'failed', available_count: 1, error_code: errorCode } } })
+    const wrapper = mount(OpenAIQuotaResetCell, { props: { account } })
+    const state = wrapper.get('[data-testid="auto-reset-credit-state"]')
+    expect(state.text()).toContain('admin.accounts.openaiQuotaReset.autoStatus.paused')
+    expect(state.text()).toContain(`admin.accounts.openaiQuotaReset.${messageKey}`)
+    expect(state.text()).not.toContain(errorCode)
+    wrapper.unmount()
+  })
   it.each([
     ['checking', 'checking'],
     ['available', 'available'],

@@ -1,0 +1,32 @@
+{
+  "database_rows_before": 270,
+  "database_rows_after": 292,
+  "executed_migration_files": [
+    "231_add_usage_log_native_compaction_v2.sql",
+    "231_add_usage_log_requested_reasoning_effort.sql",
+    "231_user_restrict_public_groups.sql",
+    "232_add_usage_log_upstream_request_id.sql",
+    "232_channel_cache_write_1h_pricing.sql",
+    "232_group_force_openai_fast.sql",
+    "232_group_reasoning_effort_over_limit.sql",
+    "233_add_usage_log_upstream_request_id_index_notx.sql",
+    "233_group_free_openai_fast.sql",
+    "234_channel_max_reasoning_effort_multiplier.sql",
+    "234_group_codex_models_manifest_config.sql",
+    "235_group_model_allowlist.sql",
+    "236_group_model_allowlist_repair.sql",
+    "237_add_minimax_platform.sql",
+    "238_rest2build_product_schema.sql"
+  ],
+  "consolidated_238_legacy_compatibility_rows": [
+    "231_codex_continuity.sql",
+    "232_codex_continuity_client_window.sql",
+    "233_user_lifecycle_emails.sql",
+    "234_user_first_topup_bonus.sql",
+    "235_liandong_sales_channel.sql",
+    "236_membership_fulfillment.sql",
+    "237_membership_coupon_late_payment.sql"
+  ],
+  "current_file_checksum_mismatch": [],
+  "explanation": "Migration 238 records seven legacy migration markers for compatible downgrade; these are not seven separately executed old SQL files."
+}

@@ -1,0 +1,19 @@
+{
+  "script_sha256_before": "c00a62035a810230ebbedbf4dcfee5f2b1a84e6f5ceb31ad60f713c7399d2bf8",
+  "tests_sha256": "8ef84d39a88c87d1af027a26610d347997e3475bef2f9915174b5b311842c066",
+  "started_at": 1789488721.523808,
+  "exit_code": 1,
+  "script_sha256_after": "c00a62035a810230ebbedbf4dcfee5f2b1a84e6f5ceb31ad60f713c7399d2bf8",
+  "command": [
+    "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/quality/tests",
+    "-p",
+    "test_ldxp_http_recovery.py",
+    "-v"
+  ]
+}

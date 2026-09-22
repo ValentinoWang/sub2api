@@ -1,0 +1,28 @@
+{
+  "task_id": "windows-wsl-codex-frontend-tutorial",
+  "url": "http://127.0.0.1:4174/experiences/windows-11-wsl-codex-frontend",
+  "route_status": 200,
+  "title": "Windows 11 + WSL2 使用 Codex：第一次真实前端开发",
+  "reader_guide": "打开你自己的仓库，做到哪里看到哪里",
+  "content": {
+    "step_count": 10,
+    "terminal_card_count": 3,
+    "prompt_card_count": 8,
+    "copy_button_count": 11,
+    "actor_labels": ["你来做", "Codex 来做", "一起确认"]
+  },
+  "viewports": [
+    {
+      "width": 1280,
+      "height": 720,
+      "document_scroll_width": 1280,
+      "page_horizontal_overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "document_scroll_width": 390,
+      "page_horizontal_overflow": false
+    }
+  ]
+}
