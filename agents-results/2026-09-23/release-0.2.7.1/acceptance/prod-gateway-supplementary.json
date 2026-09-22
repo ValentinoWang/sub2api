@@ -1,0 +1,13 @@
+{
+  "candidate_sha256": "a005922748738e5e29aed6f4d8f7d6c65e4e28caf4d153a44b94012c2fc5d913",
+  "environment": "prod",
+  "created_at": 1790103489.882216,
+  "purpose": "supplementary gateway check; key 3 group pool (accounts 10,11) was unavailable before release",
+  "api_key_id": 12,
+  "group_id": 1,
+  "model": "claude-sonnet-5",
+  "endpoint": "/v1/messages",
+  "http_status": 503,
+  "error": "{\"error\":{\"message\":\"No available accounts: this group only allows Claude Code clients\",\"type\":\"api_error\"},\"type\":\"error\"}",
+  "passed": false
+}

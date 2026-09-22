@@ -1,0 +1,17 @@
+{
+  "candidate_sha256": "a005922748738e5e29aed6f4d8f7d6c65e4e28caf4d153a44b94012c2fc5d913",
+  "environment": "prod",
+  "created_at": 1790103542.7608662,
+  "purpose": "supplementary end-to-end gateway check with the genuine Claude Code CLI; key 3 pool (accounts 10,11) was unavailable before release",
+  "client": "claude-code 2.1.280",
+  "api_key_id": 12,
+  "group_id": 1,
+  "model": "claude-sonnet-5",
+  "exit_code": 1,
+  "is_error": true,
+  "subtype": "success",
+  "result_is_ok": false,
+  "passed": false,
+  "stderr_tail": "",
+  "result_tail": "API Error: 503 No available accounts: no available accounts. This is a server-side issue, usually temporary \u2014 try again in a moment. If it persists, check your inference gateway (ai.rest2build.lol)."
+}

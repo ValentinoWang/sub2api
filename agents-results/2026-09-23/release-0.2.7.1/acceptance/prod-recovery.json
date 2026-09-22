@@ -1,0 +1,10 @@
+{
+  "candidate_sha256": "a005922748738e5e29aed6f4d8f7d6c65e4e28caf4d153a44b94012c2fc5d913",
+  "environment": "prod",
+  "created_at": 1790104409.278965,
+  "status": "RECOVERED_WITHOUT_FUNCTIONAL_ACCEPTANCE",
+  "maintenance_id": 25,
+  "recovery_id": 26,
+  "recovery_content_claims_functional_pass": false,
+  "reason": "prod-functional.json failed only at the model request: key 3 pool accounts 10/11 and group 1 account 12 were unavailable before cutover (see REPORT.md)"
+}

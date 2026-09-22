@@ -1,0 +1,1 @@
+6a92ff165fac0f1d467a7554b039820e43ecc5415965a0417eb1743afb1feb26  /Users/vsiyo/.local/share/sub2api/commerce-release/sub2api-0.2.7.1-f4a7a4920938.tar.gz

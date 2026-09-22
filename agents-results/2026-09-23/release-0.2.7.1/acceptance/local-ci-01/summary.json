@@ -1,0 +1,111 @@
+{
+  "commit": "2a9c1853d4e8a7552e09cea8352fea3381e3d822",
+  "tree": "3c256c05fcf10cd06581403eb1364ca02cf81d86",
+  "started_at": "2026-09-22T18:07:33Z",
+  "finished_at": "2026-09-22T18:07:36.085063+00:00",
+  "exit_code": 1,
+  "status": "FAIL",
+  "stages": [
+    {
+      "stage": "source-preflight",
+      "exit_code": 0,
+      "seconds": 0,
+      "log": "source-preflight.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "snapshot",
+      "exit_code": 0,
+      "seconds": 2,
+      "log": "snapshot.log",
+      "status": "PASS"
+    },
+    {
+      "stage": "toolchain",
+      "exit_code": 1,
+      "seconds": 1,
+      "log": "toolchain.log",
+      "status": "FAIL"
+    },
+    {
+      "stage": "acceptance-layout",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "deploy-guards",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "version-guards",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "local-ci-guards",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "commerce-parity-guards",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "backend-unit",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "backend-integration",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "backend-lint",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frozen-install",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "browser-extension-tests",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-lint",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-typecheck",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-tests",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-build",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "backend-security",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "stage": "frontend-security",
+      "status": "NOT_RUN",
+      "exit_code": null
+    }
+  ]
+}

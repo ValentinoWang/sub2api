@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "environment": "isolated-local",
+  "created_at": 1790101021.5797088,
+  "status": "FAILED",
+  "application_rollback_on_migrated_database_passed": false,
+  "verification_boundaries": [
+    "Disposable empty PostgreSQL database; no local or production data copied.",
+    "Only boot, public settings, synthetic administrator authentication, browser status and rollback basic APIs checked.",
+    "Synthetic administrator compliance acknowledgement exists only in the disposable test database.",
+    "No real upstream, Chrome extension, merchant inventory, payment, redemption or populated-database acceptance.",
+    "No production release, human acceptance, database downgrade or real-workload rollback acceptance."
+  ],
+  "candidate_sha256": "ff1977ce2008b43f1e97ee7e260853828dc8f76b98b66393732791f908a69d13",
+  "candidate_image_id": "sha256:e878a1f45eafe85daddd8cbd5839c30a2e31fb69b440aa9d3d43cb9815e528d5",
+  "stage": "local_daemon_and_image_identity",
+  "rollback_image_id": "sha256:16e6e530f0229eee399da65b8b44d2a92d48a7fdccd96a837cf8c674cd20e253",
+  "error_type": "CalledProcessError",
+  "finished_at": 1790101021.776235
+}

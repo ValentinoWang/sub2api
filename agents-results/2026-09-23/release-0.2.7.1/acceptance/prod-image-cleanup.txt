@@ -1,0 +1,29 @@
+/dev/vda2        59G   16G   42G  27% /
+untagged sub2api-local:0.2.5.1-66162d981c7b
+untagged sub2api-local:0.2.4.4-507a820c6792
+untagged sub2api-local:0.2.4.2-e77fce24d8e9
+untagged sub2api-local:0.2.4.1-8365f45ea179
+untagged sub2api-local:0.2.5-8c9390cb6e77
+untagged sub2api-local:0.2.5-7b06cc8816c6
+untagged sub2api-local:0.2.4-f0653b309ebf
+untagged sub2api-local:0.2.3-eb129758e267
+untagged sub2api-local:0.2.2-77611a54e515
+untagged sub2api-local:0.2.1-b7c407f1215f
+untagged sub2api-local:0.2.3-170f016077e0
+untagged sub2api-local:v0.2.1-main-e33a6dde1
+untagged sub2api-local:payment-chain-20260905
+untagged sub2api-local:7415f1cfb
+untagged sub2api-local:445a1803d
+untagged sub2api-local:0.1.183-proxy-subscription-ss-20260903
+untagged sub2api-rollback:20260904-0314
+---
+Total reclaimed space: 0B
+sub2api-local:0.2.7.1-f4a7a4920938 3a497985ba29 141MB
+postgres:18 a6638641707c 456MB
+redis:8-alpine 00c30ddf0ef8 119MB
+postgres:18-alpine b07129cc272f 304MB
+metacubex/mihomo:<none> 9d6f3d8e2c62 90.7MB
+alpine:3.20 bf8527eb54c3 7.81MB
+caddy:2.10-alpine aac61abc4024 58.6MB
+/dev/vda2        59G   13G   44G  23% /
+sub2api sub2api-local:0.2.7.1-f4a7a4920938 Up 17 minutes (healthy)
