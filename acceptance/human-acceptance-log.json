@@ -4,40 +4,6 @@
   "non_blocking_entries": [
     {
       "blocking": false,
-      "checklist_path": "acceptance/human/2026-W39/未-2026-09-21-upstream-ticket-capability/checklist.md",
-      "estimated_minutes": null,
-      "handoff_path": null,
-      "invalidation_keys": [],
-      "latest_run": null,
-      "loop_name": "upstream-ticket-capability",
-      "ready_at": null,
-      "release_slice": null,
-      "required_role": null,
-      "scope_hints": [],
-      "status": "PREPARING",
-      "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
-      "task_id": "upstream-ticket-capability",
-      "workspace": "acceptance/human/2026-W39/2026-09-21-upstream-ticket-capability"
-    },
-    {
-      "blocking": false,
-      "checklist_path": "acceptance/human/2026-W39/未-2026-09-22-codex-ticket-lifetime/checklist.md",
-      "estimated_minutes": null,
-      "handoff_path": null,
-      "invalidation_keys": [],
-      "latest_run": null,
-      "loop_name": "codex-ticket-lifetime",
-      "ready_at": null,
-      "release_slice": null,
-      "required_role": null,
-      "scope_hints": [],
-      "status": "PREPARING",
-      "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
-      "task_id": "codex-ticket-lifetime",
-      "workspace": "acceptance/human/2026-W39/2026-09-22-codex-ticket-lifetime"
-    },
-    {
-      "blocking": false,
       "checklist_path": "acceptance/human/2026-W37/未-2026-09-10-windows-wsl-codex-frontend-tutorial/checklist.md",
       "estimated_minutes": null,
       "handoff_path": null,
@@ -52,6 +18,23 @@
       "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
       "task_id": "windows-wsl-codex-frontend-tutorial",
       "workspace": "acceptance/human/2026-W37/2026-09-10-windows-wsl-codex-frontend-tutorial"
+    },
+    {
+      "blocking": false,
+      "checklist_path": "acceptance/human/2026-W39/未-2026-09-21-upstream-ticket-capability/checklist.md",
+      "estimated_minutes": null,
+      "handoff_path": null,
+      "invalidation_keys": [],
+      "latest_run": null,
+      "loop_name": "upstream-ticket-capability",
+      "ready_at": null,
+      "release_slice": null,
+      "required_role": null,
+      "scope_hints": [],
+      "status": "PREPARING",
+      "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
+      "task_id": "upstream-ticket-capability",
+      "workspace": "acceptance/human/2026-W39/2026-09-21-upstream-ticket-capability"
     },
     {
       "blocking": false,
@@ -171,8 +154,25 @@
       "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
       "task_id": "cost-native-completion",
       "workspace": "acceptance/human/2026-W38/2026-09-16-cost-native-completion"
+    },
+    {
+      "blocking": false,
+      "checklist_path": "acceptance/human/2026-W39/未-2026-09-22-codex-ticket-lifetime/checklist.md",
+      "estimated_minutes": null,
+      "handoff_path": null,
+      "invalidation_keys": [],
+      "latest_run": null,
+      "loop_name": "codex-ticket-lifetime",
+      "ready_at": null,
+      "release_slice": null,
+      "required_role": null,
+      "scope_hints": [],
+      "status": "PREPARING",
+      "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
+      "task_id": "codex-ticket-lifetime",
+      "workspace": "acceptance/human/2026-W39/2026-09-22-codex-ticket-lifetime"
     }
   ],
   "schema_version": 1,
-  "source_facts_sha256": "f1628009e1146ae1fd93dcd5fd17b3e6d5bd05b8ab66e6665aafcdc1cb33d3f3"
+  "source_facts_sha256": "6f646dfe123d22b27e9363ee497cfe3f15ba82c364c1c6e208e9e3cbd999c85d"
 }
