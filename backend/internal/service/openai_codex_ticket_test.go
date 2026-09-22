@@ -299,23 +299,23 @@ func TestLookupOpenAICodexTicket_HydratesFromExtra(t *testing.T) {
 }
 
 func TestOpenAICodexTicketStatuses_ReportsRemainingTTL(t *testing.T) {
+	now := time.Now().UTC()
 	account := ticketTestAccount(41)
 	account.Extra = map[string]any{
 		openAICodexTicketExtraKey("gpt-6-astra"): map[string]any{
 			"state":       fakeCodexTicketState(292),
 			"length":      292,
 			"model":       "gpt-6-astra",
-			"captured_at": time.Now().Add(-10 * time.Minute),
-			"expires_at":  time.Now().Add(50 * time.Minute),
+			"captured_at": now.Add(-60 * time.Second),
+			"expires_at":  now.Add(50 * time.Minute),
 		},
 	}
-	now := time.Now()
 	got := OpenAICodexTicketStatuses(account, config.OpenAICodexTicketConfig{Enabled: true, FailClosed: true}, now)
 	require.Len(t, got, 2)
 	require.Equal(t, "gpt-6-astra", got[0].Model)
 	require.True(t, got[0].Ready)
-	require.Greater(t, got[0].RemainingSeconds, int64(40*60))
-	require.LessOrEqual(t, got[0].RemainingSeconds, int64(50*60))
+	require.Equal(t, int64(180), got[0].RemainingSeconds)
+	require.Equal(t, now.Add(180*time.Second), *got[0].ExpiresAt)
 	require.Equal(t, "gpt-5.6-sol", got[1].Model)
 	require.False(t, got[1].Ready)
 }

@@ -3,7 +3,7 @@
 本文件由验收事实确定性生成，禁止手工修改。人工验收集中在机器开发完成后的独立末端阶段；入队不会打断中间开发。
 
 - 事实时间：-
-- 来源事实 SHA-256：9d1b48ddc0a4f3068393acc9a6220bea3dc3fd4e56cd239e9499f1a04aadad43
+- 来源事实 SHA-256：f1628009e1146ae1fd93dcd5fd17b3e6d5bd05b8ab66e6665aafcdc1cb33d3f3
 - 生成命令：`manage_acceptance_artifacts.py log --project-root <project-root>`
 
 ## 阻塞发布项
@@ -63,6 +63,7 @@
 | 时间 | 任务 | 业务闭环 | 角色 | 分钟 | 清单 | 最新记录 |
 | --- | --- | --- | --- | ---: | --- | --- |
 | - | upstream-ticket-capability | upstream-ticket-capability | - | - | acceptance/human/2026-W39/未-2026-09-21-upstream-ticket-capability/checklist.md | - |
+| - | codex-ticket-lifetime | codex-ticket-lifetime | - | - | acceptance/human/2026-W39/未-2026-09-22-codex-ticket-lifetime/checklist.md | - |
 
 ### 已通过
 

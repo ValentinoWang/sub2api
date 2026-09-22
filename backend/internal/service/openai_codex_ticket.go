@@ -68,11 +68,11 @@ func (s *OpenAIGatewayService) openAICodexTicketConfig() config.OpenAICodexTicke
 	if cfg.TargetLength <= 0 {
 		cfg.TargetLength = 292
 	}
-	if cfg.TTLSeconds <= 0 {
-		cfg.TTLSeconds = 3600
+	if cfg.TTLSeconds <= 0 || cfg.TTLSeconds > config.OpenAICodexTicketMaxTTLSeconds {
+		cfg.TTLSeconds = config.OpenAICodexTicketMaxTTLSeconds
 	}
-	if cfg.RefreshBeforeSeconds <= 0 {
-		cfg.RefreshBeforeSeconds = 600
+	if cfg.RefreshBeforeSeconds <= 0 || cfg.RefreshBeforeSeconds >= cfg.TTLSeconds {
+		cfg.RefreshBeforeSeconds = min(config.OpenAICodexTicketRefreshBeforeSeconds, cfg.TTLSeconds)
 	}
 	if cfg.HarvestProbeIntervalSeconds <= 0 {
 		cfg.HarvestProbeIntervalSeconds = 6
@@ -132,14 +132,14 @@ func OpenAICodexTicketStatuses(account *Account, cfg config.OpenAICodexTicketCon
 			ticket = parseOpenAICodexTicketFromAny(account.ID, model, account.Extra[openAICodexTicketExtraKey(model)])
 		}
 		if ticket.valid(now, targetLen) {
-			status.Ready = true
+			status.Ready = ticket.injectable(now, targetLen)
 			status.Length = ticket.Length
-			remaining := int64(ticket.ExpiresAt.Sub(now) / time.Second)
+			exp := ticket.effectiveExpiresAt()
+			remaining := int64(exp.Sub(now) / time.Second)
 			if remaining < 0 {
 				remaining = 0
 			}
 			status.RemainingSeconds = remaining
-			exp := ticket.ExpiresAt
 			status.ExpiresAt = &exp
 		}
 		status.Blocked = cfg.FailClosed && !status.Ready
@@ -176,6 +176,19 @@ func (s *OpenAIGatewayService) openAICodexTicketHarvestProxyURLContext(ctx conte
 	return strings.TrimSpace(s.openAICodexTicketConfig().HarvestProxyURL)
 }
 
+// effectiveExpiresAt bounds persisted tickets as well as newly harvested ones.
+// Reloading a ticket must never extend its age or retain a longer stored TTL.
+func (t *openAICodexTicket) effectiveExpiresAt() time.Time {
+	if t == nil || t.CapturedAt.IsZero() || t.ExpiresAt.IsZero() {
+		return time.Time{}
+	}
+	limit := t.CapturedAt.Add(config.OpenAICodexTicketMaxTTLSeconds * time.Second)
+	if t.ExpiresAt.Before(limit) {
+		return t.ExpiresAt
+	}
+	return limit
+}
+
 func (t *openAICodexTicket) valid(now time.Time, targetLen int) bool {
 	if t == nil {
 		return false
@@ -184,17 +197,26 @@ func (t *openAICodexTicket) valid(now time.Time, targetLen int) bool {
 	if len(state) != targetLen || t.Length != targetLen || !strings.HasPrefix(state, openAICodexTicketStatePrefix) {
 		return false
 	}
-	if t.ExpiresAt.IsZero() || !now.Before(t.ExpiresAt) {
+	if t.CapturedAt.IsZero() || now.Before(t.CapturedAt) || !now.Before(t.effectiveExpiresAt()) {
 		return false
 	}
 	return true
 }
 
+func (t *openAICodexTicket) injectable(now time.Time, targetLen int) bool {
+	return t.valid(now, targetLen) && now.Before(t.CapturedAt.Add(config.OpenAICodexTicketInjectionMaxAgeSeconds*time.Second))
+}
+
 func (t *openAICodexTicket) needsRefresh(now time.Time, refreshBefore time.Duration) bool {
-	if t == nil || t.ExpiresAt.IsZero() {
+	if t == nil || t.effectiveExpiresAt().IsZero() || now.Before(t.CapturedAt) {
 		return true
 	}
-	return !t.ExpiresAt.After(now.Add(refreshBefore))
+	refreshAt := t.effectiveExpiresAt().Add(-refreshBefore)
+	latest := t.CapturedAt.Add(config.OpenAICodexTicketRefreshAgeSeconds * time.Second)
+	if latest.Before(refreshAt) {
+		refreshAt = latest
+	}
+	return !now.Before(refreshAt)
 }
 
 func (s *OpenAIGatewayService) lookupOpenAICodexTicket(account *Account, model string) *openAICodexTicket {
@@ -267,9 +289,29 @@ func (s *OpenAIGatewayService) storeOpenAICodexTicket(ctx context.Context, accou
 		return
 	}
 	model := normalizeOpenAICodexTicketModel(ticket.Model)
+	copy := *ticket
+	ticket = &copy
 	ticket.Model = model
 	ticket.AccountID = account.ID
-	s.openaiCodexTickets.Store(openAICodexTicketKey(account.ID, model), ticket)
+	key := openAICodexTicketKey(account.ID, model)
+	var previous *openAICodexTicket
+	if raw, ok := s.openaiCodexTickets.Load(key); ok {
+		previous, _ = raw.(*openAICodexTicket)
+	}
+	stored := parseOpenAICodexTicketFromAny(account.ID, model, account.Extra[openAICodexTicketExtraKey(model)])
+	// Seeing the same opaque state again is not evidence of a renewed lifetime.
+	for _, prior := range []*openAICodexTicket{previous, stored} {
+		if prior != nil && prior.State == ticket.State {
+			if prior.CapturedAt.Before(ticket.CapturedAt) {
+				ticket.CapturedAt = prior.CapturedAt
+			}
+			if prior.ExpiresAt.Before(ticket.ExpiresAt) {
+				ticket.ExpiresAt = prior.ExpiresAt
+			}
+		}
+	}
+	ticket.ExpiresAt = ticket.effectiveExpiresAt()
+	s.openaiCodexTickets.Store(key, ticket)
 	if s.accountRepo == nil {
 		return
 	}
@@ -287,7 +329,7 @@ func (s *OpenAIGatewayService) storeOpenAICodexTicket(ctx context.Context, accou
 }
 
 // applyOpenAICodexTicket 在出站请求上覆盖 x-codex-turn-state。
-// 请求路径只注入已捕获的有效门票，不现场打票；无票则返回
+// 请求路径只注入未到 210 秒的有效门票，不现场打票；无票则返回
 // ErrOpenAICodexTicketUnavailable。打票由后台 harvester 完成。
 func (s *OpenAIGatewayService) applyOpenAICodexTicket(ctx context.Context, account *Account, model string, h http.Header) error {
 	if s == nil || h == nil || !isOpenAICodexTicketAccount(account) || !s.openAICodexTicketEnabledContext(ctx) {
@@ -299,7 +341,7 @@ func (s *OpenAIGatewayService) applyOpenAICodexTicket(ctx context.Context, accou
 	}
 	cfg := s.openAICodexTicketConfig()
 	ticket := s.lookupOpenAICodexTicket(account, model)
-	if ticket.valid(time.Now(), cfg.TargetLength) {
+	if ticket.injectable(time.Now(), cfg.TargetLength) {
 		h.Set(openAICodexTurnStateHeader, ticket.State)
 		return nil
 	}
@@ -354,7 +396,7 @@ func (s *OpenAIGatewayService) openAICodexTicketBlocksAccount(account *Account, 
 		return false
 	}
 	ticket := s.lookupOpenAICodexTicket(account, model)
-	return !ticket.valid(time.Now(), cfg.TargetLength)
+	return !ticket.injectable(time.Now(), cfg.TargetLength)
 }
 
 func (s *OpenAIGatewayService) fireOpenAICodexTicketProbe(ctx context.Context, account *Account, token, model, proxyURL string, attemptTimeout time.Duration) (state string, status int, err error) {

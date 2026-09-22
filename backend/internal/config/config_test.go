@@ -30,6 +30,14 @@ func TestLoadDefaultModelsListReadMaxBytes(t *testing.T) {
 	require.Equal(t, DefaultModelsListReadMaxBytes, cfg.Gateway.ModelsListReadMaxBytes)
 }
 
+func TestLoadDefaultOpenAICodexTicketLifetime(t *testing.T) {
+	resetViperWithJWTSecret(t)
+	cfg, err := Load()
+	require.NoError(t, err)
+	require.Equal(t, 240, cfg.Gateway.OpenAICodexTicket.TTLSeconds)
+	require.Equal(t, 90, cfg.Gateway.OpenAICodexTicket.RefreshBeforeSeconds)
+}
+
 func TestLoadTimezonePrecedence(t *testing.T) {
 	tests := []struct {
 		name         string

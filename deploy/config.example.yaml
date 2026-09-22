@@ -315,8 +315,10 @@ gateway:
   openai_codex_ticket:
     enabled: false
     target_length: 292
-    ttl_seconds: 3600
-    refresh_before_seconds: 600
+    # Local lifetime is capped at 240s, including tickets loaded from storage.
+    # Refresh starts by age 150s; injection stops at age 210s.
+    ttl_seconds: 240
+    refresh_before_seconds: 90
     harvest_proxy_url: ""
     harvest_probe_interval_seconds: 6
     harvest_attempt_timeout_seconds: 25

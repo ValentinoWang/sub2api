@@ -18,8 +18,25 @@
       "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
       "task_id": "upstream-ticket-capability",
       "workspace": "acceptance/human/2026-W39/2026-09-21-upstream-ticket-capability"
+    },
+    {
+      "blocking": false,
+      "checklist_path": "acceptance/human/2026-W39/未-2026-09-22-codex-ticket-lifetime/checklist.md",
+      "estimated_minutes": null,
+      "handoff_path": null,
+      "invalidation_keys": [],
+      "latest_run": null,
+      "loop_name": "codex-ticket-lifetime",
+      "ready_at": null,
+      "release_slice": null,
+      "required_role": null,
+      "scope_hints": [],
+      "status": "PREPARING",
+      "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
+      "task_id": "codex-ticket-lifetime",
+      "workspace": "acceptance/human/2026-W39/2026-09-22-codex-ticket-lifetime"
     }
   ],
   "schema_version": 1,
-  "source_facts_sha256": "9d1b48ddc0a4f3068393acc9a6220bea3dc3fd4e56cd239e9499f1a04aadad43"
+  "source_facts_sha256": "f1628009e1146ae1fd93dcd5fd17b3e6d5bd05b8ab66e6665aafcdc1cb33d3f3"
 }
