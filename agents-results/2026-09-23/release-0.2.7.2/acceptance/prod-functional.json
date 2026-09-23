@@ -1,0 +1,16 @@
+{
+  "candidate_sha256": "532c96a0ff02efe7eef9c3f45abcafd0cf4ce819be843c21c6f9142ad873bc9d",
+  "environment": "prod",
+  "created_at": 1790131409.7144608,
+  "status": "FAILED",
+  "health_passed": true,
+  "functional_checks_passed": false,
+  "version": "0.2.7.2",
+  "shop_url": "https://wzyp.cn/shop/MGDY0ZE4",
+  "browser_enabled": true,
+  "configured_product_count": 0,
+  "catalog_http_status": 200,
+  "page_shells_passed": true,
+  "error_type": "HTTPError",
+  "finished_at": 1790131433.6854668
+}

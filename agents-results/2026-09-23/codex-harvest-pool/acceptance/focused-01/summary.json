@@ -1,0 +1,36 @@
+{
+  "commit": "a1bbccf62e7d482c3da774ebf6af5b4e939144e1",
+  "started_at": "2026-09-23T02:38:51.247147Z",
+  "runs": [
+    {
+      "name": "backend-service",
+      "command": "go test -tags unit ./internal/service/ -run Codex|Ticket|Harvest -count=1",
+      "cwd": "backend",
+      "exit_code": 0,
+      "seconds": 25
+    },
+    {
+      "name": "backend-handler",
+      "command": "go test -tags unit ./internal/handler/admin/ ./internal/handler/dto/ ./internal/server/ -count=1",
+      "cwd": "backend",
+      "exit_code": 0,
+      "seconds": 10
+    },
+    {
+      "name": "backend-repository-integration",
+      "command": "go test -tags integration ./internal/repository/ -run CodexHarvest -p 1 -count=1",
+      "cwd": "backend",
+      "exit_code": 0,
+      "seconds": 18
+    },
+    {
+      "name": "frontend-pages",
+      "command": "pnpm exec vitest run src/views/admin/__tests__/CodexHarvestView.spec.ts src/views/admin/__tests__/SettingsView.spec.ts",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "seconds": 6
+    }
+  ],
+  "status": "PASS",
+  "finished_at": "2026-09-23T02:39:50.262848Z"
+}

@@ -1,0 +1,62 @@
+{
+  "runtime_identity": "vite-dev-127.0.0.1:4174",
+  "pages": [
+    {
+      "label": "desktop",
+      "title": "打票管理",
+      "sections": [
+        "打票代理池",
+        "速度与限额",
+        "账号门票",
+        "代理成绩",
+        "打票流水"
+      ],
+      "poolRows": 3,
+      "unusableRows": 1,
+      "accountRows": 2,
+      "eventRows": 4,
+      "selectedPreset": "标准",
+      "docScrollWidth": 1440,
+      "viewportWidth": 1440,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "ticket_state_in_dom": false,
+      "proxy_secret_in_dom": false
+    },
+    {
+      "label": "mobile",
+      "title": "打票管理",
+      "sections": [
+        "打票代理池",
+        "速度与限额",
+        "账号门票",
+        "代理成绩",
+        "打票流水"
+      ],
+      "poolRows": 3,
+      "unusableRows": 1,
+      "accountRows": 2,
+      "eventRows": 4,
+      "selectedPreset": "标准",
+      "docScrollWidth": 390,
+      "viewportWidth": 390,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "ticket_state_in_dom": false,
+      "proxy_secret_in_dom": false
+    }
+  ],
+  "unmatched_api_paths": [
+    "/api/v1/admin/compliance",
+    "/api/v1/admin/payment/config",
+    "/api/v1/admin/settings",
+    "/api/v1/admin/system/check-updates",
+    "/api/v1/announcements",
+    "/api/v1/keys",
+    "/api/v1/subscriptions/active"
+  ]
+}

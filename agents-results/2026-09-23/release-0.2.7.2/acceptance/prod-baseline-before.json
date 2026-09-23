@@ -1,0 +1,13 @@
+{
+  "version": "0.2.7.1",
+  "purchase_subscription_enabled": true,
+  "purchase_subscription_url": "https://wzyp.cn/shop/MGDY0ZE4",
+  "payment_enabled": true,
+  "openai_codex_ticket_enabled": false,
+  "browser_enabled": true,
+  "browser_products": 0,
+  "key3": {
+    "status": "active",
+    "group_id": 3
+  }
+}

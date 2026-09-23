@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "source_identity": "a1bbccf62e7d482c3da774ebf6af5b4e939144e1",
+  "runtime_identity": "vite-dev-127.0.0.1:4174",
+  "screenshots": [
+    {
+      "path": "evidence/screenshots/codex-harvest-desktop-1440x900.png",
+      "sha256": "976614dee95dd1eed64a08ff6e49e85ca43016c4e612054e22a4f2a680d1214c",
+      "page_id": "codex-harvest-desktop",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "captured_at": "2026-09-23T02:06:18Z"
+    },
+    {
+      "path": "evidence/screenshots/codex-harvest-manual-dialog-1440x900.png",
+      "sha256": "8156835fa8420614620531535819686e5e34c5fd5543a7bcb264810447d8a32c",
+      "page_id": "codex-harvest-manual-dialog",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "captured_at": "2026-09-23T02:06:19Z"
+    },
+    {
+      "path": "evidence/screenshots/codex-harvest-mobile-390x844.png",
+      "sha256": "66f9f085e0a706c1c26971154ff20ace9869587eeb7fe2c751eeeba6ecad26dd",
+      "page_id": "codex-harvest-mobile",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "captured_at": "2026-09-23T02:06:20Z"
+    }
+  ],
+  "review": {
+    "status": "PASS",
+    "reviewer": "Claude visual review",
+    "reviewed_at": "2026-09-23T02:06:47Z",
+    "conclusion": "The Codex tickets page renders all five sections with the fixed demo data at 1440x900 and 390x844; wide tables scroll inside their cards without page-level horizontal overflow; the manual harvest dialog shows models, attempt and interval inputs; no ticket state or proxy password appears in the DOM."
+  }
+}

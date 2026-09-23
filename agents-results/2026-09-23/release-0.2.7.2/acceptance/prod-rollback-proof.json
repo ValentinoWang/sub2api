@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "environment": "isolated-local",
+  "created_at": 1790131220.345217,
+  "status": "PASSED",
+  "application_rollback_on_migrated_database_passed": true,
+  "verification_boundaries": [
+    "Disposable empty PostgreSQL database; no local or production data copied.",
+    "Only boot, public settings, synthetic administrator authentication, browser status and rollback basic APIs checked.",
+    "Synthetic administrator compliance acknowledgement exists only in the disposable test database.",
+    "No real upstream, Chrome extension, merchant inventory, payment, redemption or populated-database acceptance.",
+    "No production release, human acceptance, database downgrade or real-workload rollback acceptance."
+  ],
+  "candidate_sha256": "532c96a0ff02efe7eef9c3f45abcafd0cf4ce819be843c21c6f9142ad873bc9d",
+  "candidate_image_id": "sha256:0ca96e166491e5bb4611172f2eeb64dd1b06f865fb95b9b34fd9769a60109949",
+  "stage": "completed",
+  "rollback_image_id": "sha256:3a497985ba29c1d22ec6dced35cef327101e6f6ddfbb7b088c2b7c25fd138b71",
+  "dependency_image_ids": {
+    "postgres": "sha256:d7a8005067f55a2f8ea369e767545fd467b1943a4f0f1a48b7dc44f06c366109",
+    "redis": "sha256:675f7644831d85995868250485bf7a71970257f74da31c62969a868d3f3eff2e"
+  },
+  "resource_label": "io.sub2api.isolated-image-verification=8cf1ddbc6b9e73d30feb6c082892c7c9",
+  "network": {
+    "driver": "bridge",
+    "internal": false,
+    "outbound_ip_masquerade": false
+  },
+  "empty_database_verified": true,
+  "migration_aliases_not_in_manifest": [
+    "231_codex_continuity.sql",
+    "232_codex_continuity_client_window.sql",
+    "233_user_lifecycle_emails.sql",
+    "234_user_first_topup_bonus.sql",
+    "235_liandong_sales_channel.sql",
+    "236_membership_fulfillment.sql",
+    "237_membership_coupon_late_payment.sql"
+  ],
+  "candidate_checks": {
+    "health": true,
+    "public_settings": true,
+    "admin_login": true,
+    "admin_profile": true,
+    "browser_status_empty": true,
+    "migration_manifest_covered": true
+  },
+  "migration_count": 303,
+  "migrations_sha256": "f6b7005e7f94ac204cf856fa9f9554e1b13305911830f4f46481fe6cb153a695",
+  "schema_before_rollback_sha256": "069fadea61cccb705e09c078cdce5f62156669f1c18103a2a1af9c1eebec3766",
+  "schema_after_rollback_sha256": "069fadea61cccb705e09c078cdce5f62156669f1c18103a2a1af9c1eebec3766",
+  "rollback_checks": {
+    "health": true,
+    "public_settings": true,
+    "admin_login": true,
+    "admin_profile": true,
+    "same_database": true,
+    "migration_ledger_unchanged": true,
+    "schema_unchanged": true
+  },
+  "cleanup_passed": true,
+  "cleanup_failed_resource_types": [],
+  "finished_at": 1790131235.665279
+}

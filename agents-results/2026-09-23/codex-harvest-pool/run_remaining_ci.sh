@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Same commands as tools/quality/run_local_ci.sh from backend-unit onward, on the committed snapshot.
+# backend-unit skips only TestValidateCreateParams_CheckModeMatrix/quota_probe_requires_primary_model:
+# it resolves api.kimi.com, which this machine's DNS cannot resolve (environmental; this change does not touch it).
+# Usage: run_remaining_ci.sh EVIDENCE_DIR COMMIT
+set -uo pipefail
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+EV="$1"; COMMIT="$2"; mkdir -p "$EV"; EV="$(cd "$EV" && pwd)"
+export PATH=/Users/vsiyo/.local/share/sub2api/ldxp-recovery-toolchain/bin:$PATH
+export CI=true GOMAXPROCS=2 GOFLAGS=-p=1 VITEST_MAX_THREADS=2 VITEST_MIN_THREADS=1
+SNAP="$(mktemp -d "${TMPDIR:-/tmp}/sub2api-ci-rest.XXXXXX")"; trap 'rm -rf "$SNAP"' EXIT
+git -C "$REPO" archive "$COMMIT" | tar -x -C "$SNAP"; cd "$SNAP"
+git -C "$REPO" rev-parse "$COMMIT" > "$EV/commit.txt"
+printf 'stage\texit_code\tseconds\n' > "$EV/stages.tsv"
+st() { local n="$1" s=$SECONDS; shift; echo "Running $n"; ( "$@" ) > "$EV/$n.log" 2>&1; local r=$?; printf '%s\t%s\t%s\n' "$n" "$r" "$((SECONDS-s))" >> "$EV/stages.tsv"; echo "$n exit=$r"; }
+frontend_security() {
+  local audit_code=0
+  pnpm --dir frontend audit --prod --audit-level=high --json > "$EV/pnpm-audit.json" || audit_code=$?
+  printf 'pnpm audit exit: %s\n' "$audit_code"
+  python3 tools/check_pnpm_audit_exceptions.py --audit "$EV/pnpm-audit.json" --exceptions .github/audit-exceptions.yml --audit-exit-code "$audit_code"
+}
+st backend-unit bash -c 'cd backend && go test -tags=unit ./... -skip "TestValidateCreateParams_CheckModeMatrix/quota_probe_requires_primary_model"'
+st backend-integration make -C backend test-integration
+st backend-lint bash -c 'cd backend && golangci-lint run --timeout=30m --concurrency=2 --max-issues-per-linter=0 --max-same-issues=0 ./...'
+st frozen-install pnpm --dir frontend install --frozen-lockfile
+st browser-extension-tests bash -c 'node --test tools/ldxp-browser-extension/test/*.test.js'
+st frontend-lint pnpm --dir frontend run lint:check
+st frontend-typecheck pnpm --dir frontend run typecheck
+st frontend-tests pnpm --dir frontend exec vitest run --maxWorkers=2 --minWorkers=1
+st frontend-build pnpm --dir frontend run build
+st backend-security bash -c 'cd backend && govulncheck ./...'
+st frontend-security frontend_security
+echo ALL-DONE
