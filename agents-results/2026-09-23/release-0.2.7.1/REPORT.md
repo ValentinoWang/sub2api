@@ -55,7 +55,8 @@
 ## 清理与保留
 
 - 生产删除 17 个旧镜像标签（`sub2api-local:*` 0.1.183–0.2.5.1 及 `sub2api-rollback:20260904-0314`），仅保留 `sub2api-local:0.2.7.1-f4a7a4920938`；磁盘占用 16 GB → 13 GB。清单见 [prod-image-cleanup.txt](acceptance/prod-image-cleanup.txt)。
-- 保留：生产全部备份目录；生产 `/home/ubuntu/sub2api-release-0.2.5.1-66162d98/` 内 0.2.5.1 归档（SHA-256 `8e8898a9…344f`，与本地一致），需要回滚时 `docker load` 后按 `rollback_app.py` 流程执行；本地 0.2.4.4、0.2.5.1、0.2.7.1 归档。
+- 保留：生产全部备份目录。
+- 同日按要求删除 0.2.5.1 与 0.2.7.1 的归档 tar.gz（生产发布目录与本地 `commerce-release` 各两份）。0.2.5.1 此后只剩本地 Docker 镜像 `sub2api-local:0.2.5.1-66162d981c7b`（`sha256:16e6e530…`）；需要回滚时须先从该镜像重新导出并上传，再按 `rollback_app.py` 流程执行。
 - 本次未更新本地 8080 环境。
 
 ## 待办
