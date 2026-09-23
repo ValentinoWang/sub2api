@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "source_identity": "ef67476430a6e89476f8cd81b4706ce4385c847b",
+  "runtime_identity": "vite-dev-127.0.0.1:4174",
+  "screenshots": [
+    {
+      "path": "evidence/screenshots/proxy-subscriptions-desktop-1440x900.png",
+      "sha256": "f7cbc2a9a5072bc3befaf13573b86da5ad0b3d603bf341cbf0265459f48540d0",
+      "page_id": "proxy-subscriptions-desktop",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "captured_at": "2026-09-23T05:20:49Z"
+    },
+    {
+      "path": "evidence/screenshots/harvest-pool-groups-desktop-1440x900.png",
+      "sha256": "68a684cd71608de77050a27e36121b454950ee24e6296560138cff374598b922",
+      "page_id": "harvest-pool-groups-desktop",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "captured_at": "2026-09-23T05:20:51Z"
+    },
+    {
+      "path": "evidence/screenshots/proxy-subscriptions-mobile-390x844.png",
+      "sha256": "ce133f7d1832b96479db5e35b8f7fbd1d2ab606fcdd15c838eb636c2e4afcb88",
+      "page_id": "proxy-subscriptions-mobile",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "captured_at": "2026-09-23T05:20:53Z"
+    },
+    {
+      "path": "evidence/screenshots/harvest-pool-groups-mobile-390x844.png",
+      "sha256": "8173bf68f37ef7239960dfd2f39ec29bb5c33815ae0875fff9cdfd68525afce6",
+      "page_id": "harvest-pool-groups-mobile",
+      "browser": "playwright-chromium",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "captured_at": "2026-09-23T05:20:54Z"
+    }
+  ],
+  "review": {
+    "status": "PASS",
+    "reviewer": "Claude visual review",
+    "reviewed_at": "2026-09-23T05:21:15Z",
+    "conclusion": "The Subscriptions & groups dialog shows usage, expiry, info entries, refresh status, interval and grouped chips with expanded residential members in Codex_degrade naming; the Codex tickets pool shows add-by-group chips and normalized names; no page-level horizontal overflow at 1440x900 or 390x844; the fixture subscription token never appears."
+  }
+}

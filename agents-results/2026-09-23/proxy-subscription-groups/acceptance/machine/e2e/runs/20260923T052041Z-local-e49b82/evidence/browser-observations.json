@@ -1,0 +1,76 @@
+{
+  "runtime_identity": "vite-dev-127.0.0.1:4174",
+  "pages": [
+    {
+      "subscriptions": 4,
+      "groupButtons": 11,
+      "members": 2,
+      "noUrlHint": true,
+      "docScrollWidth": 1440,
+      "viewportWidth": 1440,
+      "page": "proxies-subscriptions",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "subscription_secret_in_dom": false,
+      "label": "desktop"
+    },
+    {
+      "groupChips": 9,
+      "normalizedNames": [
+        "🇸🇬新加坡-中转-新加坡家宽-住宅IP",
+        "🇯🇵日本-中转-新日本KDDI家宽-住宅IP",
+        "🇺🇸美国-cf加速-美国圣何塞-机房-Vless"
+      ],
+      "docScrollWidth": 1440,
+      "viewportWidth": 1440,
+      "page": "codex-harvest-pool-groups",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "desktop"
+    },
+    {
+      "subscriptions": 4,
+      "groupButtons": 11,
+      "members": 2,
+      "noUrlHint": true,
+      "docScrollWidth": 390,
+      "viewportWidth": 390,
+      "page": "proxies-subscriptions",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "subscription_secret_in_dom": false,
+      "label": "mobile"
+    },
+    {
+      "groupChips": 9,
+      "normalizedNames": [
+        "🇸🇬新加坡-中转-新加坡家宽-住宅IP",
+        "🇯🇵日本-中转-新日本KDDI家宽-住宅IP",
+        "🇺🇸美国-cf加速-美国圣何塞-机房-Vless"
+      ],
+      "docScrollWidth": 390,
+      "viewportWidth": 390,
+      "page": "codex-harvest-pool-groups",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "label": "mobile"
+    }
+  ],
+  "unmatched_api_paths": [
+    "/api/v1/admin/compliance",
+    "/api/v1/admin/payment/config",
+    "/api/v1/admin/settings",
+    "/api/v1/admin/system/check-updates",
+    "/api/v1/announcements",
+    "/api/v1/keys",
+    "/api/v1/subscriptions/active"
+  ]
+}
