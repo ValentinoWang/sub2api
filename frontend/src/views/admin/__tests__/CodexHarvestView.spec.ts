@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CodexHarvestView from '../CodexHarvestView.vue'
 import type { CodexHarvestSnapshot, CodexHarvestSpeed } from '@/api/admin/codexHarvest'
 
-const { getSnapshot, updateControls, listNodes, resetNodes, startManual, getAllWithCount, testProxy, showError, showSuccess } = vi.hoisted(() => ({
+const { getSnapshot, updateControls, listNodes, resetNodes, startManual, getAllWithCount, testProxy, listSubscriptions, showError, showSuccess } = vi.hoisted(() => ({
   getSnapshot: vi.fn(),
   updateControls: vi.fn(),
   listNodes: vi.fn(),
@@ -12,6 +12,7 @@ const { getSnapshot, updateControls, listNodes, resetNodes, startManual, getAllW
   startManual: vi.fn(),
   getAllWithCount: vi.fn(),
   testProxy: vi.fn(),
+  listSubscriptions: vi.fn(),
   showError: vi.fn(),
   showSuccess: vi.fn()
 }))
@@ -19,7 +20,7 @@ const { getSnapshot, updateControls, listNodes, resetNodes, startManual, getAllW
 vi.mock('@/api/admin', () => ({
   adminAPI: {
     codexHarvest: { getSnapshot, updateControls, listNodes, resetNodes, startManual },
-    proxies: { getAllWithCount, testProxy }
+    proxies: { getAllWithCount, testProxy, listSubscriptions }
   }
 }))
 
@@ -123,6 +124,7 @@ describe('打票管理页面', () => {
     startManual.mockResolvedValue({ account_id: 41, running: true, attempts: 0, models: [], harvested: [], started_at: '' })
     resetNodes.mockResolvedValue(undefined)
     testProxy.mockResolvedValue({ success: true, message: 'ok', ip_address: '198.51.100.4', country: 'JP', city: 'Tokyo' })
+    listSubscriptions.mockResolvedValue([])
   })
 
   afterEach(() => {
@@ -209,6 +211,36 @@ describe('打票管理页面', () => {
     await wrapper.get('[data-testid="confirm-yes"]').trigger('click')
     await flushPromises()
     expect(resetNodes).toHaveBeenCalledWith(0)
+  })
+
+  it('adds and removes a subscription group of active proxies', async () => {
+    listSubscriptions.mockResolvedValue([
+      {
+        id: 's1', name: '苏菲', format: 'uri-list', updated_at: '', node_count: 2, has_url: true, refresh_interval_minutes: 60, info: [],
+        groups: [
+          { name: '🎫 打票出口', source: 'derived', kind: 'purpose', proxy_ids: [1, 2, 77] },
+          { name: '家宽住宅 · 3×', source: 'derived', kind: 'multiplier', proxy_ids: [1, 2] }
+        ],
+        nodes: [
+          { proxy_id: 1, name: 'a', info: false, meta: { residential: true, multiplier: '3×', route: '中转', protocol: 'vless', display_name: '🇯🇵日本-KDDI家宽-住宅IP' } },
+          { proxy_id: 2, name: 'b', info: false, meta: { residential: true, multiplier: '3×', route: '中转', protocol: 'vless', display_name: '🇭🇰香港-家宽-住宅IP' } }
+        ]
+      }
+    ])
+    const wrapper = mountView()
+    await flushPromises()
+    expect(wrapper.find('[data-testid="pool-group-家宽住宅 · 3×"]').exists()).toBe(false)
+    const group = wrapper.get('[data-testid="pool-group-🎫 打票出口"]')
+    expect(group.text()).toContain('· 2')
+    expect(wrapper.get('[data-testid="pool-proxy-1"]').text()).toContain('🇯🇵日本-KDDI家宽-住宅IP')
+    await group.trigger('click')
+    await wrapper.get('[data-testid="harvest-save"]').trigger('click')
+    await flushPromises()
+    expect(updateControls.mock.calls[0][0].proxy_ids).toEqual([9, 1, 2])
+    await wrapper.get('[data-testid="pool-group-🎫 打票出口"]').trigger('click')
+    await wrapper.get('[data-testid="harvest-save"]').trigger('click')
+    await flushPromises()
+    expect(updateControls.mock.calls[1][0].proxy_ids).toEqual([9])
   })
 
   it('polls the snapshot while mounted and stops after unmount', async () => {

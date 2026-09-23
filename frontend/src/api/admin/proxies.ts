@@ -272,14 +272,90 @@ export async function batchCreate(
 export interface ImportProxySubscriptionRequest {
   name: string
   url: string
+  /** Omit to keep the stored interval (60 for a new subscription); 0 disables auto refresh. */
+  refresh_interval_minutes?: number
 }
 
 export interface ImportProxySubscriptionResult {
   subscription_id: string
+  format: ProxySubscriptionFormat
   node_count: number
+  info_count: number
+  group_count: number
   created: number
   reused: number
   deactivated: number
+}
+
+export type ProxySubscriptionFormat = 'uri-list' | 'mihomo-yaml'
+
+export interface ProxySubscriptionNodeMeta {
+  region?: string
+  country?: string
+  flag?: string
+  residential: boolean
+  multiplier: string
+  route: string
+  protocol: string
+  display_name: string
+}
+
+export interface ProxySubscriptionNode {
+  proxy_id: number
+  name: string
+  info: boolean
+  meta: ProxySubscriptionNodeMeta
+}
+
+export interface ProxySubscriptionGroup {
+  name: string
+  source: 'subscription' | 'derived'
+  kind: 'provider' | 'purpose' | 'multiplier' | 'region'
+  proxy_ids: number[]
+}
+
+export interface ProxySubscriptionUsage {
+  upload: number
+  download: number
+  total: number
+  expire_at?: string
+}
+
+/** An imported subscription; never includes its URL or node credentials. */
+export interface ProxySubscription {
+  id: string
+  name: string
+  format: ProxySubscriptionFormat
+  updated_at: string
+  node_count: number
+  has_url: boolean
+  refresh_interval_minutes: number
+  last_refresh_at?: string
+  last_refresh_status?: 'ok' | 'failed'
+  last_refresh_error?: string
+  next_refresh_at?: string
+  usage?: ProxySubscriptionUsage
+  info: string[]
+  groups: ProxySubscriptionGroup[]
+  nodes: ProxySubscriptionNode[]
+}
+
+export async function listSubscriptions(): Promise<ProxySubscription[]> {
+  const { data } = await apiClient.get<ProxySubscription[]>('/admin/proxies/subscriptions')
+  return data || []
+}
+
+export async function refreshSubscription(id: string): Promise<ImportProxySubscriptionResult> {
+  const { data } = await apiClient.post<ImportProxySubscriptionResult>(
+    `/admin/proxies/subscriptions/${encodeURIComponent(id)}/refresh`
+  )
+  return data
+}
+
+export async function updateSubscription(id: string, refreshIntervalMinutes: number): Promise<void> {
+  await apiClient.put(`/admin/proxies/subscriptions/${encodeURIComponent(id)}`, {
+    refresh_interval_minutes: refreshIntervalMinutes
+  })
 }
 
 export async function importSubscription(
@@ -353,6 +429,9 @@ export const proxiesAPI = {
   getProxyAccounts,
   batchCreate,
   importSubscription,
+  listSubscriptions,
+  refreshSubscription,
+  updateSubscription,
   batchDelete,
   exportData,
   importData

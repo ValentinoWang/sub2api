@@ -36,11 +36,17 @@ const (
 type ProxySubscriptionImportInput struct {
 	Name string
 	URL  string
+	// RefreshIntervalMinutes: nil keeps the stored interval (60 for a new
+	// subscription), 0 disables automatic refresh.
+	RefreshIntervalMinutes *int
 }
 
 type ProxySubscriptionImportResult struct {
 	SubscriptionID string `json:"subscription_id"`
+	Format         string `json:"format"`
 	NodeCount      int    `json:"node_count"`
+	InfoCount      int    `json:"info_count"`
+	GroupCount     int    `json:"group_count"`
 	Created        int    `json:"created"`
 	Reused         int    `json:"reused"`
 	Deactivated    int    `json:"deactivated"`
@@ -57,14 +63,27 @@ type proxySubscriptionRuntimeEntry struct {
 	Name      string                         `json:"name"`
 	UpdatedAt time.Time                      `json:"updated_at"`
 	Nodes     []proxySubscriptionRuntimeNode `json:"nodes"`
+	Format    string                         `json:"format,omitempty"`
+	// URLCiphertext is the subscription URL encrypted with the server secret;
+	// it is required for manual and automatic refresh and never returned.
+	URLCiphertext          string                         `json:"url_ciphertext,omitempty"`
+	RefreshIntervalMinutes int                            `json:"refresh_interval_minutes,omitempty"`
+	LastRefreshAt          *time.Time                     `json:"last_refresh_at,omitempty"`
+	LastRefreshStatus      string                         `json:"last_refresh_status,omitempty"`
+	LastRefreshError       string                         `json:"last_refresh_error,omitempty"`
+	Usage                  *ProxySubscriptionUsage        `json:"usage,omitempty"`
+	Info                   []string                       `json:"info,omitempty"`
+	Groups                 []ProxySubscriptionSourceGroup `json:"groups,omitempty"`
 }
 
 type proxySubscriptionRuntimeNode struct {
 	Fingerprint string `json:"fingerprint"`
 	Name        string `json:"name"`
-	SourceURI   string `json:"source_uri"`
-	ProxyID     int64  `json:"proxy_id"`
-	Port        int    `json:"port"`
+	SourceURI   string `json:"source_uri,omitempty"`
+	// Config holds a Mihomo proxy imported from a YAML profile (no share URI).
+	Config  map[string]any `json:"config,omitempty"`
+	ProxyID int64          `json:"proxy_id"`
+	Port    int            `json:"port"`
 }
 
 // ProxySubscriptionService owns the persisted mapping between imported nodes,
@@ -74,7 +93,15 @@ type ProxySubscriptionService struct {
 	cfg              config.ProxySubscriptionConfig
 	fetchClient      *http.Client
 	controllerClient *http.Client
-	mu               sync.Mutex
+	encryptor        SecretEncryptor
+	// validateURL rejects non-HTTPS and private destinations; tests replace it
+	// to reach a local fixture server.
+	validateURL func(context.Context, *url.URL) error
+	mu          sync.Mutex
+
+	lifecycleMu sync.Mutex
+	stopRefresh context.CancelFunc
+	refreshDone chan struct{}
 }
 
 func NewProxySubscriptionService(admin AdminService, cfg *config.Config) *ProxySubscriptionService {
@@ -82,7 +109,7 @@ func NewProxySubscriptionService(admin AdminService, cfg *config.Config) *ProxyS
 	if cfg != nil {
 		runtimeCfg = cfg.ProxySubscription
 	}
-	service := &ProxySubscriptionService{admin: admin, cfg: runtimeCfg}
+	service := &ProxySubscriptionService{admin: admin, cfg: runtimeCfg, validateURL: validateProxySubscriptionURL}
 	service.fetchClient = &http.Client{
 		Timeout: 25 * time.Second,
 		Transport: &http.Transport{
@@ -126,34 +153,61 @@ func (s *ProxySubscriptionService) Import(ctx context.Context, input ProxySubscr
 	if err != nil || sourceURL == nil {
 		return nil, infraerrors.New(http.StatusBadRequest, "PROXY_SUBSCRIPTION_URL_INVALID", "Subscription URL is invalid")
 	}
-	if err := validateProxySubscriptionURL(ctx, sourceURL); err != nil {
+	if err := s.validateURL(ctx, sourceURL); err != nil {
 		return nil, infraerrors.New(http.StatusBadRequest, "PROXY_SUBSCRIPTION_URL_INVALID", err.Error())
 	}
 
-	raw, err := s.fetch(ctx, sourceURL)
+	interval := -1
+	if input.RefreshIntervalMinutes != nil {
+		interval = *input.RefreshIntervalMinutes
+		if err := validateProxySubscriptionRefreshInterval(interval); err != nil {
+			return nil, err
+		}
+	}
+	raw, header, err := s.fetchWithHeader(ctx, sourceURL)
 	if err != nil {
 		return nil, infraerrors.New(http.StatusBadGateway, "PROXY_SUBSCRIPTION_FETCH_FAILED", "Failed to fetch proxy subscription").WithCause(err)
 	}
-	nodes, err := ParseProxySubscription(raw)
+	doc, err := ParseProxySubscriptionDocument(raw)
 	if err != nil {
 		return nil, infraerrors.New(http.StatusBadRequest, "PROXY_SUBSCRIPTION_PARSE_FAILED", err.Error())
+	}
+	ciphertext := ""
+	if s.encryptor != nil {
+		if ciphertext, err = s.encryptor.Encrypt(sourceURL.String()); err != nil {
+			return nil, infraerrors.New(http.StatusInternalServerError, "PROXY_SUBSCRIPTION_URL_ENCRYPT_FAILED", "Failed to protect the subscription URL")
+		}
 	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.importLocked(ctx, name, sourceURL.String(), nodes)
+	return s.importLocked(ctx, name, sourceURL.String(), doc, proxySubscriptionImportOptions{
+		usage: ParseProxySubscriptionUsage(header), interval: interval, urlCiphertext: ciphertext,
+	})
+}
+
+type proxySubscriptionImportOptions struct {
+	usage *ProxySubscriptionUsage
+	// interval < 0 keeps the stored interval, or the default for a new entry.
+	interval      int
+	urlCiphertext string
 }
 
 func (s *ProxySubscriptionService) fetch(ctx context.Context, sourceURL *url.URL) ([]byte, error) {
+	body, _, err := s.fetchWithHeader(ctx, sourceURL)
+	return body, err
+}
+
+func (s *ProxySubscriptionService) fetchWithHeader(ctx context.Context, sourceURL *url.URL) ([]byte, http.Header, error) {
 	var lastErr error
 	for attempt := 0; attempt < proxySubscriptionFetchAttempts; attempt++ {
-		body, retryable, err := s.fetchOnce(ctx, sourceURL)
+		body, header, retryable, err := s.fetchOnce(ctx, sourceURL)
 		if err == nil {
-			return body, nil
+			return body, header, nil
 		}
 		lastErr = err
 		if !retryable || attempt+1 == proxySubscriptionFetchAttempts {
-			return nil, err
+			return nil, nil, err
 		}
 
 		timer := time.NewTimer(time.Duration(attempt+1) * proxySubscriptionRetryDelay)
@@ -162,23 +216,24 @@ func (s *ProxySubscriptionService) fetch(ctx context.Context, sourceURL *url.URL
 			if !timer.Stop() {
 				<-timer.C
 			}
-			return nil, ctx.Err()
+			return nil, nil, ctx.Err()
 		case <-timer.C:
 		}
 	}
-	return nil, lastErr
+	return nil, nil, lastErr
 }
 
-func (s *ProxySubscriptionService) fetchOnce(ctx context.Context, sourceURL *url.URL) ([]byte, bool, error) {
+func (s *ProxySubscriptionService) fetchOnce(ctx context.Context, sourceURL *url.URL) ([]byte, http.Header, bool, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, sourceURL.String(), nil)
 	if err != nil {
-		return nil, false, err
+		return nil, nil, false, err
 	}
-	req.Header.Set("Accept", "text/plain, application/octet-stream;q=0.9, */*;q=0.1")
-	req.Header.Set("User-Agent", "Sub2API-Proxy-Subscription/1.0")
+	req.Header.Set("Accept", "text/yaml, text/plain, application/octet-stream;q=0.9, */*;q=0.1")
+	// Providers return a Mihomo profile (with proxy groups) to Clash-family clients.
+	req.Header.Set("User-Agent", "clash.meta Sub2API-Proxy-Subscription/1.1")
 	resp, err := s.fetchClient.Do(req)
 	if err != nil {
-		return nil, isRetryableProxySubscriptionFetchError(err), err
+		return nil, nil, isRetryableProxySubscriptionFetchError(err), err
 	}
 	defer func() {
 		if closeErr := resp.Body.Close(); closeErr != nil {
@@ -187,17 +242,17 @@ func (s *ProxySubscriptionService) fetchOnce(ctx context.Context, sourceURL *url
 		}
 	}()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, isRetryableProxySubscriptionStatus(resp.StatusCode), fmt.Errorf("subscription server returned HTTP %d", resp.StatusCode)
+		return nil, nil, isRetryableProxySubscriptionStatus(resp.StatusCode), fmt.Errorf("subscription server returned HTTP %d", resp.StatusCode)
 	}
 	limited := io.LimitReader(resp.Body, maxProxySubscriptionBytes+1)
 	body, err := io.ReadAll(limited)
 	if err != nil {
-		return nil, isRetryableProxySubscriptionFetchError(err), err
+		return nil, nil, isRetryableProxySubscriptionFetchError(err), err
 	}
 	if len(body) > maxProxySubscriptionBytes {
-		return nil, false, fmt.Errorf("subscription response exceeds %d bytes", maxProxySubscriptionBytes)
+		return nil, nil, false, fmt.Errorf("subscription response exceeds %d bytes", maxProxySubscriptionBytes)
 	}
-	return body, false, nil
+	return body, resp.Header.Clone(), false, nil
 }
 
 func isRetryableProxySubscriptionFetchError(err error) bool {
@@ -218,7 +273,8 @@ func isRetryableProxySubscriptionStatus(status int) bool {
 		(status >= http.StatusInternalServerError && status <= 599)
 }
 
-func (s *ProxySubscriptionService) importLocked(ctx context.Context, name, sourceURL string, nodes []ProxySubscriptionNode) (*ProxySubscriptionImportResult, error) {
+func (s *ProxySubscriptionService) importLocked(ctx context.Context, name, sourceURL string, doc ProxySubscriptionDocument, opts proxySubscriptionImportOptions) (*ProxySubscriptionImportResult, error) {
+	nodes := doc.Nodes
 	state, err := s.loadState()
 	if err != nil {
 		return nil, infraerrors.New(http.StatusInternalServerError, "PROXY_SUBSCRIPTION_STATE_INVALID", "Proxy subscription state is invalid").WithCause(err)
@@ -264,10 +320,24 @@ func (s *ProxySubscriptionService) importLocked(ctx context.Context, name, sourc
 	// the replacement listeners absent even when the controller returns 2xx.
 	usedPorts := reservedProxySubscriptionPorts(state)
 
-	result := &ProxySubscriptionImportResult{SubscriptionID: subscriptionID, NodeCount: len(nodes)}
+	result := &ProxySubscriptionImportResult{SubscriptionID: subscriptionID, Format: doc.Format, NodeCount: len(nodes), InfoCount: len(doc.Info), GroupCount: len(doc.Groups)}
 	createdProxies := make([]*Proxy, 0)
 	reusedInactiveProxies := make([]*Proxy, 0)
-	nextEntry := proxySubscriptionRuntimeEntry{ID: subscriptionID, Name: name, UpdatedAt: time.Now().UTC(), Nodes: make([]proxySubscriptionRuntimeNode, 0, len(nodes))}
+	now := time.Now().UTC()
+	nextEntry := proxySubscriptionRuntimeEntry{
+		ID: subscriptionID, Name: name, UpdatedAt: now, Nodes: make([]proxySubscriptionRuntimeNode, 0, len(nodes)),
+		Format: doc.Format, URLCiphertext: opts.urlCiphertext, RefreshIntervalMinutes: opts.interval,
+		LastRefreshAt: &now, LastRefreshStatus: proxySubscriptionRefreshOK, Usage: opts.usage, Info: doc.Info, Groups: doc.Groups,
+	}
+	if nextEntry.URLCiphertext == "" {
+		nextEntry.URLCiphertext = previous.URLCiphertext
+	}
+	if nextEntry.RefreshIntervalMinutes < 0 {
+		nextEntry.RefreshIntervalMinutes = proxySubscriptionDefaultRefreshMinutes
+		if entryIndex >= 0 {
+			nextEntry.RefreshIntervalMinutes = previous.RefreshIntervalMinutes
+		}
+	}
 	for _, parsed := range nodes {
 		if old, ok := previousByFingerprint[parsed.Fingerprint]; ok {
 			proxy, getErr := s.admin.GetProxy(ctx, old.ProxyID)
@@ -275,7 +345,7 @@ func (s *ProxySubscriptionService) importLocked(ctx context.Context, name, sourc
 				if proxy.Status == proxySubscriptionInactiveStatus {
 					reusedInactiveProxies = append(reusedInactiveProxies, proxy)
 				}
-				nextEntry.Nodes = append(nextEntry.Nodes, proxySubscriptionRuntimeNode{Fingerprint: parsed.Fingerprint, Name: parsed.Name, SourceURI: parsed.SourceURI, ProxyID: old.ProxyID, Port: old.Port})
+				nextEntry.Nodes = append(nextEntry.Nodes, newProxySubscriptionRuntimeNode(parsed, old.ProxyID, old.Port))
 				usedPorts[old.Port] = struct{}{}
 				result.Reused++
 				continue
@@ -301,7 +371,7 @@ func (s *ProxySubscriptionService) importLocked(ctx context.Context, name, sourc
 		}
 		createdProxies = append(createdProxies, created)
 		usedPorts[port] = struct{}{}
-		nextEntry.Nodes = append(nextEntry.Nodes, proxySubscriptionRuntimeNode{Fingerprint: parsed.Fingerprint, Name: parsed.Name, SourceURI: parsed.SourceURI, ProxyID: created.ID, Port: port})
+		nextEntry.Nodes = append(nextEntry.Nodes, newProxySubscriptionRuntimeNode(parsed, created.ID, port))
 		result.Created++
 	}
 
@@ -416,7 +486,7 @@ func renderProxySubscriptionMihomoConfig(state *proxySubscriptionRuntimeState) (
 	listeners := make([]map[string]any, 0)
 	for _, subscription := range state.Subscriptions {
 		for _, runtimeNode := range subscription.Nodes {
-			parsed, err := parseProxySubscriptionURI(runtimeNode.SourceURI)
+			parsed, err := runtimeNode.parse()
 			if err != nil {
 				return nil, fmt.Errorf("stored node %s is invalid: %w", runtimeNode.Fingerprint, err)
 			}

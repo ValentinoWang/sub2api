@@ -38,6 +38,10 @@ export default {
         latency: 'Latency',
         actions: 'Actions'
       },
+      groups: 'Add by group',
+      groupsHint: 'Click a group to add or remove its active proxies. 🎫 打票出口 holds residential nodes from the subscription; 💼 业务出口 holds datacenter nodes.',
+      residential: 'Residential',
+      datacenter: 'Datacenter',
       checkExit: 'Check exit',
       checking: 'Checking…',
       checkFailed: 'Exit check failed',

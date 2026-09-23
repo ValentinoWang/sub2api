@@ -73,6 +73,25 @@
               </router-link>
             </div>
           </div>
+          <div v-if="subscriptionGroups.length > 0" class="border-b border-gray-100 px-6 py-3 dark:border-dark-700" data-testid="harvest-pool-groups">
+            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ t('admin.codexHarvest.pool.groups') }}</div>
+            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.codexHarvest.pool.groupsHint') }}</p>
+            <div v-for="entry in subscriptionGroups" :key="entry.subscription" class="mt-2 flex flex-wrap items-center gap-1.5">
+              <span class="text-xs text-gray-500 dark:text-gray-400">{{ entry.subscription }}</span>
+              <button
+                v-for="group in entry.groups"
+                :key="group.name"
+                type="button"
+                class="rounded-lg border px-2 py-1 text-xs transition-colors"
+                :class="groupSelection(group.ids) === 'all' ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300' : groupSelection(group.ids) === 'some' ? 'border-primary-300 text-primary-700 dark:text-primary-300' : 'border-gray-200 text-gray-700 hover:border-primary-400 dark:border-dark-600 dark:text-gray-200'"
+                :disabled="group.ids.length === 0"
+                :data-testid="`pool-group-${group.name}`"
+                @click="toggleGroup(group.ids)"
+              >
+                {{ group.name }} · {{ group.ids.length }}
+              </button>
+            </div>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full min-w-[640px] text-sm">
               <thead class="bg-gray-50 text-left text-xs text-gray-500 dark:bg-dark-700/50 dark:text-gray-400">
@@ -95,7 +114,15 @@
                       @change="toggleProxy(proxy.id)"
                     />
                   </td>
-                  <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ proxy.name }}</td>
+                  <td class="px-4 py-2">
+                    <div class="font-medium text-gray-900 dark:text-white">{{ nodeMeta(proxy.id)?.display_name || proxy.name }}</div>
+                    <div v-if="nodeMeta(proxy.id)" class="mt-0.5 flex flex-wrap gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      <span :class="['badge', nodeMeta(proxy.id)?.residential ? 'badge-success' : 'badge-gray']">
+                        {{ nodeMeta(proxy.id)?.residential ? t('admin.codexHarvest.pool.residential') : t('admin.codexHarvest.pool.datacenter') }}
+                      </span>
+                      <span>{{ nodeMeta(proxy.id)?.multiplier }} · {{ nodeMeta(proxy.id)?.route }}</span>
+                    </div>
+                  </td>
                   <td class="px-4 py-2 font-mono text-xs text-gray-500 dark:text-gray-400">{{ proxy.protocol }}://{{ proxy.host }}:{{ proxy.port }}</td>
                   <td class="px-4 py-2 text-xs text-gray-600 dark:text-gray-300">{{ exitLabel(proxy) }}</td>
                   <td class="px-4 py-2 text-xs text-gray-600 dark:text-gray-300">{{ latencyLabel(proxy) }}</td>
@@ -389,6 +416,7 @@ import type {
   CodexHarvestTicketView
 } from '@/api/admin/codexHarvest'
 import type { Proxy } from '@/types'
+import type { ProxySubscription, ProxySubscriptionNodeMeta } from '@/api/admin/proxies'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
@@ -402,6 +430,7 @@ const appStore = useAppStore()
 
 const snapshot = ref<CodexHarvestSnapshot | null>(null)
 const proxies = ref<Proxy[]>([])
+const subscriptions = ref<ProxySubscription[]>([])
 const loading = ref(false)
 const saving = ref(false)
 const dirty = ref(false)
@@ -462,6 +491,48 @@ const unusableMembers = computed(() => {
 
 const recentEvents = computed(() => [...(snapshot.value?.events || [])].reverse())
 
+const metaByProxy = computed(() => {
+  const map = new Map<number, ProxySubscriptionNodeMeta>()
+  for (const subscription of subscriptions.value) {
+    for (const node of subscription.nodes) {
+      if (!node.info) map.set(node.proxy_id, node.meta)
+    }
+  }
+  return map
+})
+
+// Only proxies that are currently active can join the pool from a group.
+const subscriptionGroups = computed(() => {
+  const active = new Set(proxies.value.map((p) => p.id))
+  return subscriptions.value
+    .map((subscription) => ({
+      subscription: subscription.name,
+      groups: subscription.groups
+        .filter((group) => group.kind !== 'multiplier')
+        .map((group) => ({ name: group.name, ids: group.proxy_ids.filter((id) => active.has(id)) }))
+    }))
+    .filter((entry) => entry.groups.length > 0)
+})
+
+function nodeMeta(id: number) {
+  return metaByProxy.value.get(id)
+}
+
+function groupSelection(ids: number[]): 'all' | 'some' | 'none' {
+  const selected = ids.filter((id) => draft.proxy_ids.includes(id)).length
+  if (selected === 0) return 'none'
+  return selected === ids.length ? 'all' : 'some'
+}
+
+function toggleGroup(ids: number[]) {
+  if (groupSelection(ids) === 'all') {
+    draft.proxy_ids = draft.proxy_ids.filter((id) => !ids.includes(id))
+  } else {
+    draft.proxy_ids = [...draft.proxy_ids, ...ids.filter((id) => !draft.proxy_ids.includes(id))]
+  }
+  dirty.value = true
+}
+
 function applyControls(value: CodexHarvestSnapshot) {
   draft.preset = value.controls.preset
   draft.speed = { ...value.controls.speed }
@@ -481,7 +552,12 @@ async function loadSnapshot(silent = false) {
 
 async function loadProxies() {
   try {
-    proxies.value = await adminAPI.proxies.getAllWithCount()
+    const [list, subs] = await Promise.all([
+      adminAPI.proxies.getAllWithCount(),
+      adminAPI.proxies.listSubscriptions().catch(() => [] as ProxySubscription[])
+    ])
+    proxies.value = list
+    subscriptions.value = subs
   } catch (err: unknown) {
     appStore.showError(extractApiErrorMessage(err, t('admin.codexHarvest.loadError')))
   }

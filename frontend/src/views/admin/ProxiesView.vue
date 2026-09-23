@@ -73,6 +73,9 @@
               <Icon name="trash" size="md" class="mr-2" />
               {{ t('admin.proxies.batchDeleteAction') }}
             </button>
+            <button @click="showSubscriptions = true" class="btn btn-secondary" data-testid="open-proxy-subscriptions">
+              {{ t('admin.proxies.subscriptions.open') }}
+            </button>
             <button @click="showImportData = true" class="btn btn-secondary">
               {{ t('admin.proxies.dataImport') }}
             </button>
@@ -640,6 +643,17 @@
           </div>
           <p class="input-hint mt-2">{{ t('admin.proxies.subscriptionUrlHint') }}</p>
         </div>
+        <div>
+          <label class="input-label">{{ t('admin.proxies.subscriptionRefreshInterval') }}</label>
+          <select v-model.number="subscriptionForm.refresh_interval_minutes" class="input" data-testid="subscription-import-interval">
+            <option :value="0">{{ t('admin.proxies.subscriptions.intervals.off') }}</option>
+            <option :value="30">{{ t('admin.proxies.subscriptions.intervals.m30') }}</option>
+            <option :value="60">{{ t('admin.proxies.subscriptions.intervals.m60') }}</option>
+            <option :value="360">{{ t('admin.proxies.subscriptions.intervals.m360') }}</option>
+            <option :value="1440">{{ t('admin.proxies.subscriptions.intervals.m1440') }}</option>
+          </select>
+          <p class="input-hint mt-2">{{ t('admin.proxies.subscriptionRefreshIntervalHint') }}</p>
+        </div>
       </form>
 
       <template #footer>
@@ -903,6 +917,15 @@
     />
 
     <BaseDialog
+      :show="showSubscriptions"
+      :title="t('admin.proxies.subscriptions.title')"
+      width="extra-wide"
+      @close="showSubscriptions = false"
+    >
+      <ProxySubscriptionsPanel v-if="showSubscriptions" @refreshed="loadProxies" />
+    </BaseDialog>
+
+    <BaseDialog
       :show="showQualityReportDialog"
       :title="t('admin.proxies.qualityReportTitle')"
       width="normal"
@@ -1040,6 +1063,7 @@ import BaseDialog from '@/components/common/BaseDialog.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ImportDataModal from '@/components/admin/proxy/ImportDataModal.vue'
+import ProxySubscriptionsPanel from '@/components/admin/proxy/ProxySubscriptionsPanel.vue'
 import Select from '@/components/common/Select.vue'
 import ProxyAdBanner from '@/components/common/ProxyAdBanner.vue'
 import Icon from '@/components/icons/Icon.vue'
@@ -1197,9 +1221,11 @@ const createForm = reactive({
   expiry_warn_days: 7 as number,
 })
 
+const showSubscriptions = ref(false)
 const subscriptionForm = reactive({
   name: '',
-  url: ''
+  url: '',
+  refresh_interval_minutes: 60
 })
 
 const editForm = reactive({
@@ -1338,6 +1364,7 @@ const closeCreateModal = () => {
   subscriptionUrlVisible.value = false
   subscriptionForm.name = ''
   subscriptionForm.url = ''
+  subscriptionForm.refresh_interval_minutes = 60
   batchInput.value = ''
   batchParseResult.total = 0
   batchParseResult.valid = 0
@@ -1454,9 +1481,15 @@ const handleSubscriptionImport = async () => {
 
   submitting.value = true
   try {
-    const result = await adminAPI.proxies.importSubscription({ name, url })
+    const result = await adminAPI.proxies.importSubscription({
+      name,
+      url,
+      refresh_interval_minutes: subscriptionForm.refresh_interval_minutes
+    })
     appStore.showSuccess(t('admin.proxies.subscriptionImportSuccess', {
       node_count: result.node_count,
+      group_count: result.group_count,
+      info_count: result.info_count,
       created: result.created,
       reused: result.reused,
       deactivated: result.deactivated

@@ -1,0 +1,5 @@
+{
+  "user_visible": true,
+  "source_authority_mode": "none",
+  "scope": "Proxy management gains a Subscriptions & groups dialog (usage, expiry, info entries, refresh status, auto-refresh interval, provider and Codex_degrade-style groups with members) and an auto-refresh selector on subscription import; the Codex tickets pool gains add-by-group chips and normalized node names."
+}

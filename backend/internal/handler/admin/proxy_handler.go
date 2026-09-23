@@ -34,6 +34,9 @@ func ProvideProxyHandler(adminService service.AdminService, proxySubscriptionSer
 type ImportProxySubscriptionRequest struct {
 	Name string `json:"name" binding:"required"`
 	URL  string `json:"url" binding:"required"`
+	// RefreshIntervalMinutes: omitted keeps the stored interval (60 for a new
+	// subscription), 0 disables automatic refresh.
+	RefreshIntervalMinutes *int `json:"refresh_interval_minutes"`
 }
 
 // ImportSubscription fetches and imports a VLESS/Hysteria2/Shadowsocks subscription.
@@ -50,15 +53,74 @@ func (h *ProxyHandler) ImportSubscription(c *gin.Context) {
 	}
 
 	input := service.ProxySubscriptionImportInput{
-		Name: strings.TrimSpace(req.Name),
-		URL:  strings.TrimSpace(req.URL),
+		Name:                   strings.TrimSpace(req.Name),
+		URL:                    strings.TrimSpace(req.URL),
+		RefreshIntervalMinutes: req.RefreshIntervalMinutes,
+	}
+	interval := "keep"
+	if req.RefreshIntervalMinutes != nil {
+		interval = strconv.Itoa(*req.RefreshIntervalMinutes)
 	}
 	// The input contains a secret-bearing URL. The idempotency coordinator only
 	// receives a digest, while the execution closure receives the actual value.
-	payloadDigest := sha256.Sum256([]byte(input.Name + "\x00" + input.URL))
+	payloadDigest := sha256.Sum256([]byte(input.Name + "\x00" + input.URL + "\x00" + interval))
 	executeAdminIdempotentJSON(c, "admin.proxies.subscriptions.import", hex.EncodeToString(payloadDigest[:]), service.DefaultWriteIdempotencyTTL(), func(ctx context.Context) (any, error) {
 		return h.proxySubscriptionService.Import(ctx, input)
 	})
+}
+
+// ListSubscriptions returns imported subscriptions with classified nodes and
+// groups. It never returns subscription URLs or node credentials.
+// GET /api/v1/admin/proxies/subscriptions
+func (h *ProxyHandler) ListSubscriptions(c *gin.Context) {
+	if h.proxySubscriptionService == nil {
+		response.Success(c, []service.ProxySubscriptionView{})
+		return
+	}
+	views, err := h.proxySubscriptionService.List(c.Request.Context())
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, views)
+}
+
+// RefreshSubscription re-fetches a subscription with its stored URL.
+// POST /api/v1/admin/proxies/subscriptions/:subscription_id/refresh
+func (h *ProxyHandler) RefreshSubscription(c *gin.Context) {
+	if h.proxySubscriptionService == nil {
+		response.ErrorFrom(c, infraerrors.New(http.StatusServiceUnavailable, "PROXY_SUBSCRIPTION_DISABLED", "Proxy subscription runtime is not enabled"))
+		return
+	}
+	result, err := h.proxySubscriptionService.Refresh(c.Request.Context(), strings.TrimSpace(c.Param("subscription_id")))
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, result)
+}
+
+type UpdateProxySubscriptionRequest struct {
+	RefreshIntervalMinutes *int `json:"refresh_interval_minutes" binding:"required"`
+}
+
+// UpdateSubscription changes the automatic refresh interval (0 = off).
+// PUT /api/v1/admin/proxies/subscriptions/:subscription_id
+func (h *ProxyHandler) UpdateSubscription(c *gin.Context) {
+	var req UpdateProxySubscriptionRequest
+	if err := c.ShouldBindJSON(&req); err != nil || req.RefreshIntervalMinutes == nil {
+		response.BadRequest(c, "Invalid request")
+		return
+	}
+	if h.proxySubscriptionService == nil {
+		response.ErrorFrom(c, infraerrors.New(http.StatusServiceUnavailable, "PROXY_SUBSCRIPTION_DISABLED", "Proxy subscription runtime is not enabled"))
+		return
+	}
+	if err := h.proxySubscriptionService.UpdateRefreshInterval(c.Request.Context(), strings.TrimSpace(c.Param("subscription_id")), *req.RefreshIntervalMinutes); err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{"refresh_interval_minutes": *req.RefreshIntervalMinutes})
 }
 
 // NewProxyHandler creates a new admin proxy handler

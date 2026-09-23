@@ -40,3 +40,32 @@ func TestImportProxySubscriptionRejectsMalformedRequestWithoutEcho(t *testing.T)
 	require.Equal(t, http.StatusBadRequest, recorder.Code)
 	require.NotContains(t, recorder.Body.String(), "sensitive-value")
 }
+
+func TestProxySubscriptionManagementRoutesWithoutRuntime(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h := NewProxyHandler(nil)
+	router := gin.New()
+	// Mirrors registerProxyRoutes: static subscription paths coexist with /:id routes.
+	proxies := router.Group("/api/v1/admin/proxies")
+	proxies.POST("/subscriptions/import", h.ImportSubscription)
+	proxies.GET("/subscriptions", h.ListSubscriptions)
+	proxies.POST("/subscriptions/:subscription_id/refresh", h.RefreshSubscription)
+	proxies.PUT("/subscriptions/:subscription_id", h.UpdateSubscription)
+	proxies.GET("/:id", h.GetByID)
+	proxies.PUT("/:id", h.Update)
+	proxies.POST("/:id/test", h.Test)
+
+	serve := func(method, path, body string) *httptest.ResponseRecorder {
+		recorder := httptest.NewRecorder()
+		req := httptest.NewRequest(method, path, bytes.NewBufferString(body))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(recorder, req)
+		return recorder
+	}
+	list := serve(http.MethodGet, "/api/v1/admin/proxies/subscriptions", "")
+	require.Equal(t, http.StatusOK, list.Code)
+	require.Contains(t, list.Body.String(), `"data":[]`)
+	require.Equal(t, http.StatusServiceUnavailable, serve(http.MethodPost, "/api/v1/admin/proxies/subscriptions/abc/refresh", "").Code)
+	require.Equal(t, http.StatusBadRequest, serve(http.MethodPut, "/api/v1/admin/proxies/subscriptions/abc", `{}`).Code)
+	require.Equal(t, http.StatusServiceUnavailable, serve(http.MethodPut, "/api/v1/admin/proxies/subscriptions/abc", `{"refresh_interval_minutes":60}`).Code)
+}

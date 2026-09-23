@@ -38,6 +38,23 @@
     },
     {
       "blocking": false,
+      "checklist_path": "acceptance/human/2026-W39/未-2026-09-23-proxy-subscription-groups/checklist.md",
+      "estimated_minutes": null,
+      "handoff_path": null,
+      "invalidation_keys": [],
+      "latest_run": null,
+      "loop_name": "proxy-subscription-groups",
+      "ready_at": null,
+      "release_slice": null,
+      "required_role": null,
+      "scope_hints": [],
+      "status": "PREPARING",
+      "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
+      "task_id": "proxy-subscription-groups",
+      "workspace": "acceptance/human/2026-W39/2026-09-23-proxy-subscription-groups"
+    },
+    {
+      "blocking": false,
       "checklist_path": "acceptance/human/2026-W37/未-2026-09-13-local-ci-commerce-alignment/checklist.md",
       "estimated_minutes": null,
       "handoff_path": null,
@@ -191,5 +208,5 @@
     }
   ],
   "schema_version": 1,
-  "source_facts_sha256": "45dadf6ca735a6a5d16d72d2e1aa9bb4e50a1b5978c9b7bded8d978fc5a8f8cf"
+  "source_facts_sha256": "fffa752fadf0a8eae5c3992f6469c6118c239763b4f5aa3d0ed54c0b703c4cf0"
 }

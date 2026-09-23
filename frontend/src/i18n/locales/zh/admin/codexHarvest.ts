@@ -38,6 +38,10 @@ export default {
         latency: '延迟',
         actions: '操作'
       },
+      groups: '按分组选入',
+      groupsHint: '点击分组，把其中当前可用的代理加入或移出打票代理池。🎫 打票出口是订阅里的住宅/家宽节点，💼 业务出口是机房节点。',
+      residential: '住宅',
+      datacenter: '机房',
       checkExit: '检测出口',
       checking: '检测中…',
       checkFailed: '出口检测失败',
