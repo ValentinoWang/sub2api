@@ -67,6 +67,9 @@ func RegisterAdminRoutes(
 		// 代理管理
 		registerProxyRoutes(admin, h, stepUpAuth)
 
+		// Codex 打票：代理池、速度、代理成绩、流水与手动打票
+		registerCodexHarvestRoutes(admin, h)
+
 		// 卡密管理
 		registerRedeemCodeRoutes(admin, h)
 
@@ -527,6 +530,17 @@ func registerProxyRoutes(admin *gin.RouterGroup, h *handler.Handlers, stepUpAuth
 		proxies.GET("/:id/accounts", h.Admin.Proxy.GetProxyAccounts)
 		proxies.POST("/batch-delete", h.Admin.Proxy.BatchDelete)
 		proxies.POST("/batch", h.Admin.Proxy.BatchCreate)
+	}
+}
+
+func registerCodexHarvestRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	harvest := admin.Group("/codex-harvest")
+	{
+		harvest.GET("", h.Admin.CodexHarvest.Get)
+		harvest.PUT("/controls", h.Admin.CodexHarvest.UpdateControls)
+		harvest.GET("/nodes", h.Admin.CodexHarvest.ListNodes)
+		harvest.POST("/nodes/reset", h.Admin.CodexHarvest.ResetNodes)
+		harvest.POST("/accounts/:id/manual", h.Admin.CodexHarvest.StartManual)
 	}
 }
 

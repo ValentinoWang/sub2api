@@ -1,0 +1,5 @@
+{
+  "user_visible": true,
+  "source_authority_mode": "none",
+  "scope": "New admin Codex tickets page (harvest proxy pool, speed presets and limits, account tickets, per-proxy results, harvest log, manual harvest dialog); the settings page replaces the harvest proxy URL input with a link to that page."
+}

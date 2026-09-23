@@ -144,6 +144,7 @@ func ProvideOpenAIGatewayService(
 	settingService *SettingService,
 	userPlatformQuotaRepo UserPlatformQuotaRepository,
 	continuityRepo OpenAIContinuityRepository,
+	codexHarvest *CodexHarvestService,
 ) *OpenAIGatewayService {
 	svc := NewOpenAIGatewayService(
 		accountRepo, usageLogRepo, usageBillingRepo, userRepo, userSubRepo,
@@ -153,6 +154,7 @@ func ProvideOpenAIGatewayService(
 		channelService, balanceNotifyService, settingService, userPlatformQuotaRepo,
 	)
 	svc.SetOpenAIContinuityRepository(continuityRepo)
+	svc.SetCodexHarvestService(codexHarvest)
 	return svc
 }
 
@@ -916,6 +918,7 @@ var ProviderSet = wire.NewSet(
 	NewAdminService,
 	NewGatewayService,
 	ProvideOpenAIGatewayService,
+	ProvideCodexHarvestService,
 	ProvideImageStorageSettingService,
 	ProvideImageTaskService,
 	ProvideBatchImageModelPricingResolver,

@@ -515,9 +515,12 @@ type OpenAIGatewayService struct {
 	openaiCodexTickets           sync.Map
 	openaiCodexTicketFlight      singleflight.Group
 	openaiCodexTicketLifecycleMu sync.Mutex
+	openaiCodexTicketCtx         context.Context
 	openaiCodexTicketCancel      context.CancelFunc
 	openaiCodexTicketDone        chan struct{}
 	openaiCodexTicketStopped     bool
+	// codexHarvest supplies the harvest proxy pool, speed controls and learning.
+	codexHarvest atomic.Pointer[CodexHarvestService]
 }
 
 // NewOpenAIGatewayService creates a new OpenAIGatewayService

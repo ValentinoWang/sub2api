@@ -141,6 +141,8 @@ var ProviderSet = wire.NewSet(
 	NewChannelCache,
 	NewContentModerationHashCache,
 	NewOpenAIContinuityRepository,
+	NewCodexHarvestNodeRepository,
+	NewCodexHarvestFlowRepository,
 	NewUserLifecycleRepository,
 
 	// Encryptors

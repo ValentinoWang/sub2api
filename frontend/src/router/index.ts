@@ -716,6 +716,18 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/admin/codex-harvest',
+    name: 'AdminCodexHarvest',
+    component: () => import('@/views/admin/CodexHarvestView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Codex Tickets',
+      titleKey: 'admin.codexHarvest.title',
+      descriptionKey: 'admin.codexHarvest.description'
+    }
+  },
+  {
     path: '/admin/redeem',
     name: 'AdminRedeem',
     component: () => import('@/views/admin/RedeemView.vue'),

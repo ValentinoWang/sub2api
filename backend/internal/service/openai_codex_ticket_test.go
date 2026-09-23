@@ -68,11 +68,10 @@ func TestApplyOpenAICodexTicket_ReplacesHeader(t *testing.T) {
 
 func TestApplyOpenAICodexTicket_DoesNotReuseOtherModelOrAccount(t *testing.T) {
 	svc := ticketTestService(t, config.OpenAICodexTicketConfig{
-		Enabled:         true,
-		TargetLength:    292,
-		TTLSeconds:      3600,
-		FailClosed:      true,
-		HarvestProxyURL: "socks5h://harvest",
+		Enabled:      true,
+		TargetLength: 292,
+		TTLSeconds:   3600,
+		FailClosed:   true,
 	}, &httpUpstreamRecorder{err: io.EOF})
 	a := ticketTestAccount(41)
 	b := ticketTestAccount(42)
@@ -130,11 +129,10 @@ func TestLookupOpenAICodexTicket_PrefersNewerExtra(t *testing.T) {
 
 func TestApplyOpenAICodexTicket_ExpiredNotInjected(t *testing.T) {
 	svc := ticketTestService(t, config.OpenAICodexTicketConfig{
-		Enabled:         true,
-		TargetLength:    292,
-		TTLSeconds:      3600,
-		FailClosed:      true,
-		HarvestProxyURL: "socks5h://harvest",
+		Enabled:      true,
+		TargetLength: 292,
+		TTLSeconds:   3600,
+		FailClosed:   true,
 	}, &httpUpstreamRecorder{err: io.EOF})
 	account := ticketTestAccount(41)
 	svc.storeOpenAICodexTicket(context.Background(), account, &openAICodexTicket{
@@ -195,84 +193,72 @@ func TestApplyOpenAICodexTicket_DisabledNoop(t *testing.T) {
 	require.Equal(t, "client-state", h.Get(openAICodexTurnStateHeader))
 }
 
-func TestHarvestOpenAICodexTicket_StopsAt292AndUsesHarvestProxy(t *testing.T) {
-	state312 := fakeCodexTicketState(312)
+func TestHarvestOpenAICodexTicket_SwitchesProxyAfterDegradedTicket(t *testing.T) {
 	state292 := fakeCodexTicketState(292)
-	header312 := http.Header{}
-	header312.Set(openAICodexTurnStateHeader, state312)
-	header292 := http.Header{}
-	header292.Set(openAICodexTurnStateHeader, state292)
-	upstream := &httpUpstreamRecorder{
-		responses: []*http.Response{
-			{
-				StatusCode: http.StatusOK,
-				Header:     header312,
-				Body:       io.NopCloser(strings.NewReader("data: {}\n\n")),
-			},
-			{
-				StatusCode: http.StatusOK,
-				Header:     header292,
-				Body:       io.NopCloser(strings.NewReader("data: {}\n\n")),
-			},
-		},
-	}
+	upstream := &httpUpstreamRecorder{responses: []*http.Response{
+		codexHarvestResponse(http.StatusOK, fakeCodexTicketState(312)),
+		codexHarvestResponse(http.StatusOK, state292),
+	}}
 	svc := ticketTestService(t, config.OpenAICodexTicketConfig{
-		Enabled:                      true,
-		TargetLength:                 292,
-		TTLSeconds:                   3600,
-		HarvestProxyURL:              "socks5h://user:pass@harvest.example:31",
-		HarvestAttemptTimeoutSeconds: 5,
-		FailClosed:                   true,
+		Enabled:      true,
+		TargetLength: 292,
+		TTLSeconds:   3600,
+		FailClosed:   true,
 	}, upstream)
+	first, second := testHarvestProxy(1), testHarvestProxy(2)
+	harvest, nodes := newTicketHarvest(t, first, second)
+	svc.SetCodexHarvestService(harvest)
 	account := ticketTestAccount(41)
+	controls, _, err := harvest.Controls(context.Background())
+	require.NoError(t, err)
 
-	svc.probeOnceOpenAICodexTicket(context.Background(), account, "gpt-6-astra")
-	require.Nil(t, svc.lookupOpenAICodexTicket(account, "gpt-6-astra"))
-	svc.probeOnceOpenAICodexTicket(context.Background(), account, "gpt-6-astra")
+	result := svc.huntCodexHarvestTicket(context.Background(), harvest, account, "gpt-6-astra", []Proxy{first, second}, controls, codexHarvestHuntOptions{maxAttempts: 3})
+	require.True(t, result.Harvested)
+	require.Equal(t, 2, result.Sent)
 	ticket := svc.lookupOpenAICodexTicket(account, "gpt-6-astra")
 	require.NotNil(t, ticket)
 	require.Equal(t, state292, ticket.State)
+	require.NotEqual(t, ticket.HarvestProxyID, int64(0))
 	h := http.Header{}
 	h.Set(openAICodexTurnStateHeader, "stale")
 	require.NoError(t, svc.applyOpenAICodexTicket(context.Background(), account, "gpt-6-astra", h))
 	require.Equal(t, state292, h.Get(openAICodexTurnStateHeader))
-	require.Equal(t, "socks5h://user:pass@harvest.example:31", upstream.lastProxyURL)
 	require.Len(t, upstream.requests, 2)
 	require.Empty(t, upstream.requests[0].Header.Get(openAICodexTurnStateHeader))
 	require.Equal(t, openAICodexAstraMinVersion, upstream.requests[0].Header.Get("version"))
 	require.Equal(t, HTTPUpstreamProfileOpenAIHarvest, HTTPUpstreamProfileFromContext(upstream.requests[0].Context()))
 	require.True(t, upstream.requests[0].Close)
+	// The degraded ticket and the good one came from different pool proxies.
+	require.Len(t, nodes.feedback, 2)
+	require.Equal(t, "invalid_state", nodes.feedback[0].Result)
+	require.Equal(t, "success", nodes.feedback[1].Result)
+	require.NotEqual(t, nodes.feedback[0].ProxyID, nodes.feedback[1].ProxyID)
+	require.Equal(t, nodes.feedback[1].ProxyID, ticket.HarvestProxyID)
+	for _, proxy := range []Proxy{first, second} {
+		if proxy.ID == ticket.HarvestProxyID {
+			require.Equal(t, proxy.URL(), upstream.lastProxyURL)
+		}
+	}
 }
 
 func TestHarvestOpenAICodexTicket_HTTP503DoesNotAbortHunt(t *testing.T) {
 	state292 := fakeCodexTicketState(292)
-	header503 := http.Header{}
-	header292 := http.Header{}
-	header292.Set(openAICodexTurnStateHeader, state292)
-	responses := make([]*http.Response, 0, 3)
-	responses = append(responses, &http.Response{
-		StatusCode: http.StatusServiceUnavailable,
-		Header:     header503,
-		Body:       io.NopCloser(strings.NewReader(`{"error":"overloaded"}`)),
-	})
-	responses = append(responses, &http.Response{
-		StatusCode: http.StatusOK,
-		Header:     header292,
-		Body:       io.NopCloser(strings.NewReader("data: {}\n\n")),
-	})
-	upstream := &httpUpstreamRecorder{responses: responses}
+	upstream := &httpUpstreamRecorder{responses: []*http.Response{
+		{StatusCode: http.StatusServiceUnavailable, Header: http.Header{}, Body: io.NopCloser(strings.NewReader(`{"error":"overloaded"}`))},
+		codexHarvestResponse(http.StatusOK, state292),
+	}}
 	svc := ticketTestService(t, config.OpenAICodexTicketConfig{
-		Enabled:                      true,
-		TargetLength:                 292,
-		TTLSeconds:                   3600,
-		HarvestProxyURL:              "socks5h://harvest.example:31",
-		HarvestAttemptTimeoutSeconds: 5,
-		FailClosed:                   true,
+		Enabled:      true,
+		TargetLength: 292,
+		TTLSeconds:   3600,
+		FailClosed:   true,
 	}, upstream)
+	harvest, _ := newTicketHarvest(t, testHarvestProxy(1), testHarvestProxy(2))
+	svc.SetCodexHarvestService(harvest)
+	controls, _, _ := harvest.Controls(context.Background())
 	account := ticketTestAccount(41)
-	svc.probeOnceOpenAICodexTicket(context.Background(), account, "gpt-6-astra")
-	require.Nil(t, svc.lookupOpenAICodexTicket(account, "gpt-6-astra"))
-	svc.probeOnceOpenAICodexTicket(context.Background(), account, "gpt-6-astra")
+	result := svc.huntCodexHarvestTicket(context.Background(), harvest, account, "gpt-6-astra", []Proxy{testHarvestProxy(1), testHarvestProxy(2)}, controls, codexHarvestHuntOptions{maxAttempts: 3})
+	require.True(t, result.Harvested)
 	ticket := svc.lookupOpenAICodexTicket(account, "gpt-6-astra")
 	require.NotNil(t, ticket)
 	require.Equal(t, state292, ticket.State)
@@ -349,35 +335,42 @@ func (r *codexTicketRefreshRepo) UpdateExtra(_ context.Context, _ int64, updates
 	return nil
 }
 
-type codexTicketConcurrentUpstream struct {
+type codexTicketSequentialUpstream struct {
 	HTTPUpstream
-	started atomic.Int64
-	ready   chan struct{}
+	inFlight    atomic.Int64
+	maxInFlight atomic.Int64
+	started     atomic.Int64
 }
 
-func (u *codexTicketConcurrentUpstream) Do(req *http.Request, _ string, _ int64, _ int) (*http.Response, error) {
-	if u.started.Add(1) == 2 {
-		close(u.ready)
+func (u *codexTicketSequentialUpstream) Do(req *http.Request, _ string, _ int64, _ int) (*http.Response, error) {
+	current := u.inFlight.Add(1)
+	defer u.inFlight.Add(-1)
+	for {
+		seen := u.maxInFlight.Load()
+		if current <= seen || u.maxInFlight.CompareAndSwap(seen, current) {
+			break
+		}
 	}
-	select {
-	case <-u.ready:
-	case <-req.Context().Done():
-		return nil, req.Context().Err()
-	}
-	h := http.Header{}
-	h.Set(openAICodexTurnStateHeader, fakeCodexTicketState(292))
-	return &http.Response{StatusCode: 200, Header: h, Body: io.NopCloser(strings.NewReader("data: {}\n\n"))}, nil
+	u.started.Add(1)
+	time.Sleep(5 * time.Millisecond)
+	return codexHarvestResponse(http.StatusOK, fakeCodexTicketState(292)), nil
 }
-func TestRefreshOpenAICodexTickets_ConcurrentModelsPreserveAccountSnapshot(t *testing.T) {
+
+// Rounds probe one account/model at a time, and each probe works on its own
+// copy of the account maps so the listed snapshot is never mutated.
+func TestRefreshOpenAICodexTickets_SequentialModelsPreserveAccountSnapshot(t *testing.T) {
 	account := ticketTestAccount(41)
 	account.Status = StatusActive
 	account.Extra = map[string]any{"existing": true}
 	repo := &codexTicketRefreshRepo{accounts: []Account{*account}}
-	upstream := &codexTicketConcurrentUpstream{ready: make(chan struct{})}
-	svc := ticketTestService(t, config.OpenAICodexTicketConfig{Enabled: true, HarvestProxyURL: "socks5h://proxy.example.com:1080"}, upstream)
+	upstream := &codexTicketSequentialUpstream{}
+	svc := ticketTestService(t, config.OpenAICodexTicketConfig{Enabled: true}, upstream)
+	harvest, _ := newTicketHarvest(t, testHarvestProxy(1))
+	svc.SetCodexHarvestService(harvest)
 	svc.accountRepo = repo
 	svc.refreshOpenAICodexTickets(context.Background())
 	require.Equal(t, int64(2), upstream.started.Load())
+	require.Equal(t, int64(1), upstream.maxInFlight.Load())
 	require.Equal(t, map[string]any{"existing": true}, account.Extra)
 	require.Len(t, repo.updates, 2)
 	for _, model := range []string{openAICodexTicketDefaultModel, openAICodexTicketDefaultSolModel} {
@@ -401,14 +394,24 @@ func TestOpenAICodexTicketStatuses_RespectRuntimeConfiguration(t *testing.T) {
 	require.True(t, OpenAICodexTicketStatuses(account, cfg, time.Now())[0].Blocked)
 }
 func TestProbeOpenAICodexTicket_RejectsInvalidState(t *testing.T) {
-	for _, state := range []string{fakeCodexTicketState(312), strings.Repeat("X", 292), ""} {
-		h := http.Header{}
-		h.Set(openAICodexTurnStateHeader, state)
-		upstream := &httpUpstreamRecorder{responses: []*http.Response{{StatusCode: 200, Header: h, Body: io.NopCloser(strings.NewReader(""))}}}
-		svc := ticketTestService(t, config.OpenAICodexTicketConfig{Enabled: true, HarvestProxyURL: "http://proxy.example.com:8080"}, upstream)
-		account := ticketTestAccount(41)
-		svc.probeOnceOpenAICodexTicket(context.Background(), account, "gpt-6-astra")
-		require.Nil(t, svc.lookupOpenAICodexTicket(account, "gpt-6-astra"))
+	cases := map[string]*http.Response{
+		"degraded":   codexHarvestResponse(http.StatusOK, fakeCodexTicketState(312)),
+		"prefix":     codexHarvestResponse(http.StatusOK, strings.Repeat("X", 292)),
+		"missing":    codexHarvestResponse(http.StatusOK, ""),
+		"incomplete": {StatusCode: http.StatusOK, Header: http.Header{openAICodexTurnStateHeader: []string{fakeCodexTicketState(292)}}, Body: io.NopCloser(strings.NewReader("data: {}\n\n"))},
+	}
+	for name, response := range cases {
+		t.Run(name, func(t *testing.T) {
+			upstream := &httpUpstreamRecorder{responses: []*http.Response{response}}
+			svc := ticketTestService(t, config.OpenAICodexTicketConfig{Enabled: true}, upstream)
+			harvest, _ := newTicketHarvest(t, testHarvestProxy(1))
+			svc.SetCodexHarvestService(harvest)
+			controls, _, _ := harvest.Controls(context.Background())
+			account := ticketTestAccount(41)
+			result := svc.huntCodexHarvestTicket(context.Background(), harvest, account, "gpt-6-astra", []Proxy{testHarvestProxy(1)}, controls, codexHarvestHuntOptions{maxAttempts: 1})
+			require.False(t, result.Harvested)
+			require.Nil(t, svc.lookupOpenAICodexTicket(account, "gpt-6-astra"))
+		})
 	}
 }
 func TestOpenAICodexTicket_RequiresActualLengthAndExpiry(t *testing.T) {

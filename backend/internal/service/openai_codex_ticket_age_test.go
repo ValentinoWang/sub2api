@@ -124,7 +124,9 @@ func TestRefreshOpenAICodexTicketAgeWindow(t *testing.T) {
 				calls++
 				return nil, io.EOF
 			}}
-			svc := ticketTestService(t, config.OpenAICodexTicketConfig{Enabled: true, FailClosed: true, TTLSeconds: 3600, RefreshBeforeSeconds: 600, Models: []string{ticket.Model}, HarvestProxyURL: "http://proxy.example.com:8080"}, upstream)
+			svc := ticketTestService(t, config.OpenAICodexTicketConfig{Enabled: true, FailClosed: true, TTLSeconds: 3600, RefreshBeforeSeconds: 600, Models: []string{ticket.Model}}, upstream)
+			harvest, _ := newTicketHarvest(t, testHarvestProxy(1))
+			svc.SetCodexHarvestService(harvest)
 			svc.accountRepo = &codexTicketRefreshRepo{accounts: []Account{*account}}
 			svc.refreshOpenAICodexTickets(context.Background())
 			require.Equal(t, age >= 150, calls == 1)

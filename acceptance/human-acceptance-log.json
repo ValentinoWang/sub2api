@@ -171,8 +171,25 @@
       "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
       "task_id": "codex-ticket-lifetime",
       "workspace": "acceptance/human/2026-W39/2026-09-22-codex-ticket-lifetime"
+    },
+    {
+      "blocking": false,
+      "checklist_path": "acceptance/human/2026-W39/未-2026-09-23-codex-harvest-pool/checklist.md",
+      "estimated_minutes": null,
+      "handoff_path": null,
+      "invalidation_keys": [],
+      "latest_run": null,
+      "loop_name": "codex-harvest-pool",
+      "ready_at": null,
+      "release_slice": null,
+      "required_role": null,
+      "scope_hints": [],
+      "status": "PREPARING",
+      "summary": "人工验收工作区已建立，尚未完成机器验收递交。",
+      "task_id": "codex-harvest-pool",
+      "workspace": "acceptance/human/2026-W39/2026-09-23-codex-harvest-pool"
     }
   ],
   "schema_version": 1,
-  "source_facts_sha256": "6f646dfe123d22b27e9363ee497cfe3f15ba82c364c1c6e208e9e3cbd999c85d"
+  "source_facts_sha256": "45dadf6ca735a6a5d16d72d2e1aa9bb4e50a1b5978c9b7bded8d978fc5a8f8cf"
 }

@@ -3,7 +3,7 @@
 本文件由验收事实确定性生成，禁止手工修改。人工验收集中在机器开发完成后的独立末端阶段；入队不会打断中间开发。
 
 - 事实时间：-
-- 来源事实 SHA-256：6f646dfe123d22b27e9363ee497cfe3f15ba82c364c1c6e208e9e3cbd999c85d
+- 来源事实 SHA-256：45dadf6ca735a6a5d16d72d2e1aa9bb4e50a1b5978c9b7bded8d978fc5a8f8cf
 - 生成命令：`manage_acceptance_artifacts.py log --project-root <project-root>`
 
 ## 阻塞发布项
@@ -72,6 +72,7 @@
 | - | ldxp-browser-session | ldxp-browser-session | - | - | acceptance/human/2026-W38/未-2026-09-16-ldxp-browser-session/checklist.md | - |
 | - | cost-native-completion | cost-native-completion | - | - | acceptance/human/2026-W38/未-2026-09-16-cost-native-completion/checklist.md | - |
 | - | codex-ticket-lifetime | codex-ticket-lifetime | - | - | acceptance/human/2026-W39/未-2026-09-22-codex-ticket-lifetime/checklist.md | - |
+| - | codex-harvest-pool | codex-harvest-pool | - | - | acceptance/human/2026-W39/未-2026-09-23-codex-harvest-pool/checklist.md | - |
 
 ### 已通过
 

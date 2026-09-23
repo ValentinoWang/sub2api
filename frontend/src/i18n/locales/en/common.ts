@@ -198,6 +198,7 @@ export default {
     accounts: 'Accounts',
     plugins: 'Plugins',
     proxies: 'Proxies',
+    codexHarvest: 'Codex tickets',
     redeemCodes: 'Redeem Codes',
     ops: 'Ops',
     promoCodes: 'Promo Codes',

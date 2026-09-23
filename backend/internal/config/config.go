@@ -1268,18 +1268,15 @@ func (c *UserMessageQueueConfig) GetEffectiveMode() string {
 }
 
 // OpenAICodexTicketConfig 控制 ChatGPT OAuth 的 x-codex-turn-state 门票。
-// 打票走 harvest_proxy_url（SOCKS），业务出站仍用账号住宅 proxy_id，只替换该请求头。
-// 门票本地寿命最多 240 秒，默认在 150 秒开始刷新，210 秒停止注入。
+// 打票代理池、速度与限额在后台「打票管理」中配置；业务出站仍用账号自己的 proxy_id，
+// 只替换该请求头。门票本地寿命最多 240 秒，默认在 150 秒开始刷新，210 秒停止注入。
 type OpenAICodexTicketConfig struct {
-	Enabled                      bool     `mapstructure:"enabled"`
-	TargetLength                 int      `mapstructure:"target_length"`
-	TTLSeconds                   int      `mapstructure:"ttl_seconds"`
-	RefreshBeforeSeconds         int      `mapstructure:"refresh_before_seconds"`
-	HarvestProxyURL              string   `mapstructure:"harvest_proxy_url"`
-	HarvestProbeIntervalSeconds  int      `mapstructure:"harvest_probe_interval_seconds"`
-	HarvestAttemptTimeoutSeconds int      `mapstructure:"harvest_attempt_timeout_seconds"`
-	FailClosed                   bool     `mapstructure:"fail_closed"`
-	Models                       []string `mapstructure:"models"`
+	Enabled              bool     `mapstructure:"enabled"`
+	TargetLength         int      `mapstructure:"target_length"`
+	TTLSeconds           int      `mapstructure:"ttl_seconds"`
+	RefreshBeforeSeconds int      `mapstructure:"refresh_before_seconds"`
+	FailClosed           bool     `mapstructure:"fail_closed"`
+	Models               []string `mapstructure:"models"`
 }
 
 // Local ticket age limits are not an upstream guarantee of validity.
@@ -2496,12 +2493,6 @@ func setDefaults() {
 	viper.SetDefault("gateway.openai_codex_ticket.target_length", 292)
 	viper.SetDefault("gateway.openai_codex_ticket.ttl_seconds", OpenAICodexTicketMaxTTLSeconds)
 	viper.SetDefault("gateway.openai_codex_ticket.refresh_before_seconds", OpenAICodexTicketRefreshBeforeSeconds)
-	viper.SetDefault("gateway.openai_codex_ticket.harvest_max_attempts", 100)
-	viper.SetDefault("gateway.openai_codex_ticket.harvest_fail_streak", 8)
-	viper.SetDefault("gateway.openai_codex_ticket.harvest_proxy_url", "")
-	viper.SetDefault("gateway.openai_codex_ticket.harvest_probe_interval_seconds", 6)
-	viper.SetDefault("gateway.openai_codex_ticket.harvest_attempt_timeout_seconds", 25)
-	viper.SetDefault("gateway.openai_codex_ticket.harvest_overall_timeout_seconds", 120)
 	viper.SetDefault("gateway.openai_codex_ticket.fail_closed", true)
 	viper.SetDefault("gateway.openai_codex_ticket.models", []string{"gpt-6-astra", "gpt-5.6-sol"})
 

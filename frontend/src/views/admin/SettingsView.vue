@@ -4516,26 +4516,21 @@
                     v-model="form.openai_codex_ticket_enabled"
                   />
                 </div>
-                <div>
+                <div data-testid="codex-ticket-harvest-page-hint">
                   <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-                    {{ t("admin.settings.gatewayForwarding.codexTicketHarvestProxy") }}
+                    {{ t("admin.settings.gatewayForwarding.codexTicketHarvestPage") }}
                   </h3>
                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    {{ t("admin.settings.gatewayForwarding.codexTicketHarvestProxyDesc") }}
+                    {{ t("admin.settings.gatewayForwarding.codexTicketHarvestPageDesc") }}
                   </p>
-                  <input
-                    id="codex-ticket-harvest-proxy"
-                    v-model="form.openai_codex_ticket_harvest_proxy_url"
-                    type="text"
-                    class="input mt-3 w-full font-mono text-sm"
-                    :placeholder="t('admin.settings.gatewayForwarding.codexTicketHarvestProxyPlaceholder')"
-                    autocomplete="off"
-                  />
-                  <p
-                    v-if="form.openai_codex_ticket_harvest_proxy_configured"
-                    class="mt-1.5 text-xs text-gray-500 dark:text-gray-400"
-                  >
-                    {{ t("admin.settings.gatewayForwarding.codexTicketHarvestProxyConfigured") }}
+                  <p class="mt-1.5 text-xs">
+                    <router-link
+                      to="/admin/codex-harvest"
+                      class="inline-flex items-center gap-1 text-primary-600 hover:underline dark:text-primary-400"
+                    >
+                      {{ t("admin.settings.gatewayForwarding.codexTicketHarvestPageLink") }}
+                      <span aria-hidden="true">→</span>
+                    </router-link>
                   </p>
                 </div>
                 <div>
@@ -9928,8 +9923,6 @@ const form = reactive<SettingsForm>({
   openai_codex_client_version_synced: "",
   openai_codex_version_auto_sync_enabled: true,
   openai_codex_ticket_enabled: false,
-  openai_codex_ticket_harvest_proxy_url: "",
-  openai_codex_ticket_harvest_proxy_configured: false,
   // codex_cli_only 加固
   min_codex_version: "",
   max_codex_version: "",
@@ -11541,8 +11534,6 @@ async function saveSettings() {
       openai_codex_version_auto_sync_enabled:
         form.openai_codex_version_auto_sync_enabled,
       openai_codex_ticket_enabled: form.openai_codex_ticket_enabled,
-      openai_codex_ticket_harvest_proxy_url:
-        form.openai_codex_ticket_harvest_proxy_url?.trim() || "",
       min_codex_version: form.min_codex_version?.trim() || "",
       max_codex_version: form.max_codex_version?.trim() || "",
       codex_cli_only_allow_app_server_clients:

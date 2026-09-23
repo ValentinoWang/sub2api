@@ -312,6 +312,8 @@ gateway:
   # 当 compact 端点暂未支持更新模型时，可通过这里降级规避失败。
   openai_compact_model: "gpt-5.5"
   # ChatGPT OAuth x-codex-turn-state ticket settings. Disabled by default.
+  # The harvest proxy pool, speed and hourly limits are configured in the admin
+  # "Codex tickets" page from managed proxies.
   openai_codex_ticket:
     enabled: false
     target_length: 292
@@ -319,9 +321,6 @@ gateway:
     # Refresh starts by age 150s; injection stops at age 210s.
     ttl_seconds: 240
     refresh_before_seconds: 90
-    harvest_proxy_url: ""
-    harvest_probe_interval_seconds: 6
-    harvest_attempt_timeout_seconds: 25
     fail_closed: true
     models:
       - gpt-6-astra
