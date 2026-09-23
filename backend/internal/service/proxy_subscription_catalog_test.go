@@ -121,8 +121,10 @@ func TestClassifyProxySubscriptionNode_CodexDegradeNaming(t *testing.T) {
 		{"【2】新加坡高速节点🇸🇬hy2", "hysteria2", ProxySubscriptionNodeMeta{Region: "SG", Country: "新加坡", Flag: "🇸🇬", Multiplier: "1×", Route: "直连", Protocol: "hysteria2", DisplayName: "🇸🇬新加坡-【2】新加坡高速节点-机房-Hysteria2"}},
 		{"[01]台湾hinet家宽🇨🇳hy2", "hysteria2", ProxySubscriptionNodeMeta{Region: "TW", Country: "台湾", Flag: "🇹🇼", Residential: true, Multiplier: "1×", Route: "直连", Protocol: "hysteria2", DisplayName: "🇹🇼台湾-[01]台湾hinet家宽-住宅IP"}},
 		{"cf加速|美国圣何塞", "vless", ProxySubscriptionNodeMeta{Region: "US", Country: "美国", Flag: "🇺🇸", Multiplier: "1×", Route: "CF", Protocol: "vless", DisplayName: "🇺🇸美国-cf加速-美国圣何塞-机房-Vless"}},
-		{"【10x】日本KDDI家宽🇯🇵ss|不可直连！小白不要连接！", "ss", ProxySubscriptionNodeMeta{Region: "JP", Country: "日本", Flag: "🇯🇵", Residential: true, Multiplier: "10×", Route: "直连", Protocol: "ss", DisplayName: "🇯🇵日本-日本KDDI家宽-不可直连！小白不要连接！-住宅IP"}},
-		{"🇺🇸美国-克利夫兰-Charter静态住宅IP", "hysteria2", ProxySubscriptionNodeMeta{Region: "US", Country: "美国", Flag: "🇺🇸", Residential: true, Multiplier: "1×", Route: "直连", Protocol: "hysteria2", DisplayName: "🇺🇸美国-美国-克利夫兰-Charter静态住宅IP-住宅IP"}},
+		{"【10x】日本KDDI家宽🇯🇵ss|不可直连！小白不要连接！", "ss", ProxySubscriptionNodeMeta{Region: "JP", Country: "日本", Flag: "🇯🇵", Residential: true, Multiplier: "10×", Route: "直连", Protocol: "ss", DisplayName: "🇯🇵日本-KDDI家宽-不可直连！小白不要连接！-住宅IP"}},
+		{"🇺🇸美国-克利夫兰-Charter静态住宅IP", "hysteria2", ProxySubscriptionNodeMeta{Region: "US", Country: "美国", Flag: "🇺🇸", Residential: true, Multiplier: "1×", Route: "直连", Protocol: "hysteria2", DisplayName: "🇺🇸美国-克利夫兰-Charter静态住宅IP"}},
+		{"🇺🇸美国-洛杉矶-ZgoCloud-NetLab机房-Vless", "vless", ProxySubscriptionNodeMeta{Region: "US", Country: "美国", Flag: "🇺🇸", Multiplier: "1×", Route: "直连", Protocol: "vless", DisplayName: "🇺🇸美国-洛杉矶-ZgoCloud-NetLab机房-Vless"}},
+		{"新加坡家宽", "vless", ProxySubscriptionNodeMeta{Region: "SG", Country: "新加坡", Flag: "🇸🇬", Residential: true, Multiplier: "1×", Route: "直连", Protocol: "vless", DisplayName: "🇸🇬新加坡-家宽-住宅IP"}},
 		{"Mystery node", "vless", ProxySubscriptionNodeMeta{Multiplier: "1×", Route: "直连", Protocol: "vless", DisplayName: "🌐未知-Mystery node-机房-Vless"}},
 	}
 	for _, tc := range cases {

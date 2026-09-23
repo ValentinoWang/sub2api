@@ -431,6 +431,11 @@ func proxySubscriptionDisplayName(name string, meta ProxySubscriptionNodeMeta) s
 	description = proxySubscriptionSeparatorPattern.ReplaceAllString(description, "-")
 	description = proxySubscriptionDashPattern.ReplaceAllString(strings.TrimSpace(description), "-")
 	description = strings.Trim(description, "- ")
+	// A name already in Codex_degrade form keeps its wording: no repeated
+	// country prefix and no second 住宅IP / 机房 suffix.
+	if meta.Country != "" {
+		description = strings.Trim(strings.TrimPrefix(description, meta.Country), "- ")
+	}
 	prefix := meta.Flag + meta.Country
 	if prefix == "" {
 		prefix = "🌐未知"
@@ -439,14 +444,17 @@ func proxySubscriptionDisplayName(name string, meta ProxySubscriptionNodeMeta) s
 	if description != "" {
 		parts = append(parts, description)
 	}
-	if meta.Residential {
-		parts = append(parts, "住宅IP")
-	} else {
+	switch {
+	case meta.Residential:
+		if !strings.Contains(description, "住宅IP") {
+			parts = append(parts, "住宅IP")
+		}
+	case !strings.Contains(description, "机房"):
+		parts = append(parts, "机房")
 		title := proxySubscriptionProtocolTitles[meta.Protocol]
 		if title == "" {
 			title = meta.Protocol
 		}
-		parts = append(parts, "机房")
 		if title != "" {
 			parts = append(parts, title)
 		}
