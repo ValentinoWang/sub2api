@@ -1,0 +1,35 @@
+{
+  "repository": "https://github.com/ranxi2001/sub2api",
+  "tag": "v2.8.0",
+  "commit": "3719ff895d3d8565b750a40e01a76a57c864a758",
+  "files": [
+    {
+      "file": "codex-ticket-pinning.md",
+      "sha256": "ec01cfab6b2c3fd1d8466159cf428a50fb081f48725a5a0cdddfed82b6e04622"
+    },
+    {
+      "file": "config.go",
+      "sha256": "1b29110d5fd6311bc2ea7f43760e98affc419ec239c8b23070629cb9168046bd"
+    },
+    {
+      "file": "openai_codex_ticket.go",
+      "sha256": "88b0ceb249f1f56cf1a72b50e4ade5cd56d43091059eb11c05182b3ca7017d53"
+    },
+    {
+      "file": "openai_codex_ticket_cookie_test.go",
+      "sha256": "06595bc44d6295510aef723e589d7efdb86e431624d34e5ec180cf3103a3bf7f"
+    },
+    {
+      "file": "openai_codex_ticket_egress.go",
+      "sha256": "7df1323043df1308940e444225a3ee6bd7f6aabc147854ec3668afb61f55e1fd"
+    },
+    {
+      "file": "openai_codex_ticket_feedback.go",
+      "sha256": "c3785cd2f2442e90deebde35b342945e79b983268c6afdc791a9380de6075f33"
+    },
+    {
+      "file": "release.json",
+      "sha256": "8aa7f995637cea903c81d8836cb1f61dcd949b1e775eec62434f0325558427e6"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Run stopped after a frontend correctness fix changed the candidate commit. Exit 143 is retained; no failing tests were removed. Final candidate validation is recorded in local-ci-02.

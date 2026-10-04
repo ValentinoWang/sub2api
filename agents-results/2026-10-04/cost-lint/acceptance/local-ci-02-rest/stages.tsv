@@ -1,0 +1,10 @@
+stage	exit_code	seconds
+backend-lint	0	550
+frozen-install	0	11
+browser-extension-tests	0	1
+frontend-lint	0	25
+frontend-typecheck	0	49
+frontend-tests	1	177
+frontend-build	0	87
+backend-security	0	20
+frontend-security	1	3

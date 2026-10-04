@@ -1,0 +1,33 @@
+[
+  {
+    "stage": "backend",
+    "command": [
+      "go",
+      "test",
+      "-tags=unit",
+      "./internal/config",
+      "./internal/service",
+      "./internal/handler/admin",
+      "-run",
+      "CodexTicket|CodexTurnState",
+      "-count=1"
+    ],
+    "exit_code": 0
+  },
+  {
+    "stage": "frontend-settings",
+    "command": [
+      "pnpm",
+      "--dir",
+      "frontend",
+      "exec",
+      "vitest",
+      "run",
+      "src/views/admin/__tests__/SettingsView.spec.ts",
+      "src/components/account/__tests__/AccountUsageCell.spec.ts",
+      "--maxWorkers=2",
+      "--minWorkers=1"
+    ],
+    "exit_code": 0
+  }
+]
