@@ -48,9 +48,9 @@ func main() {
 		log.Fatal("separate ledger and read-only source configuration required")
 	}
 	db := pool(os.Getenv("SUB2API_COST_LEDGER_DSN"))
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	sourceDB := pool(os.Getenv("SUB2API_COST_SOURCE_DSN"))
-	defer sourceDB.Close()
+	defer func() { _ = sourceDB.Close() }()
 	store := &costing.SQLLedgerStore{Open: func() (*sql.DB, func(), error) { return db, func() {}, nil }}
 	ledger := &costing.Ledger{Store: store}
 	source := &costing.SQLSource{Origin: "local-sub2api", Open: func() (*sql.DB, func(), error) { return sourceDB, func() {}, nil }}
@@ -73,7 +73,7 @@ func main() {
 	client := &http.Client{Timeout: 5 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return errors.New("redirect denied") }}
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if origin := r.Header.Get("Origin"); origin != "" && origin != "http://127.0.0.1:4174" {
-			http.Error(w, "local origin required", 403)
+			http.Error(w, "local origin required", http.StatusForbidden)
 			return
 		}
 		if !strings.HasPrefix(r.URL.Path, "/api/v1/admin/cost-center/") {
@@ -82,21 +82,21 @@ func main() {
 		}
 		token := r.Header.Get("Authorization")
 		if !strings.HasPrefix(token, "Bearer ") {
-			http.Error(w, "admin session required", 401)
+			http.Error(w, "admin session required", http.StatusUnauthorized)
 			return
 		}
 		request, err := http.NewRequestWithContext(r.Context(), http.MethodGet, *authority+"/api/v1/auth/me", nil)
 		if err != nil {
-			http.Error(w, "authority unavailable", 503)
+			http.Error(w, "authority unavailable", http.StatusServiceUnavailable)
 			return
 		}
 		request.Header.Set("Authorization", token)
 		response, err := client.Do(request)
 		if err != nil {
-			http.Error(w, "authority unavailable", 503)
+			http.Error(w, "authority unavailable", http.StatusServiceUnavailable)
 			return
 		}
-		defer response.Body.Close()
+		defer func() { _ = response.Body.Close() }()
 		var identity struct {
 			Code int `json:"code"`
 			Data struct {
@@ -106,11 +106,11 @@ func main() {
 			} `json:"data"`
 		}
 		if response.StatusCode != 200 || json.NewDecoder(io.LimitReader(response.Body, 65536)).Decode(&identity) != nil || identity.Code != 0 || identity.Data.ID <= 0 {
-			http.Error(w, "valid admin session required", 401)
+			http.Error(w, "valid admin session required", http.StatusUnauthorized)
 			return
 		}
 		if identity.Data.Role != "admin" || identity.Data.Status != "active" {
-			http.Error(w, "active administrator required", 403)
+			http.Error(w, "active administrator required", http.StatusForbidden)
 			return
 		}
 		h := costing.HTTPHandler{Authorize: func(*http.Request) bool { return true }, Actor: func(*http.Request) int64 { return identity.Data.ID }, Ledger: ledger, Source: source, Quota: quota, Radar: radar, Snapshots: snapshots, Traffic: traffic}
