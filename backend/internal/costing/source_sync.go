@@ -59,7 +59,7 @@ func (s *SourceSnapshotStore) Save(ctx context.Context, source string, actor int
 	if err != nil {
 		return out, ErrUnavailable
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	for _, account := range report.Accounts {
 		metadata, err := json.Marshal(account)
 		if err != nil {

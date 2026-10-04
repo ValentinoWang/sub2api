@@ -90,7 +90,7 @@ func (s *QuotaStore) List(ctx context.Context, accountID int64, start, end strin
 	if err != nil {
 		return out, ErrUnavailable
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	for rows.Next() {
 		var raw []byte
 		var q QuotaObservation

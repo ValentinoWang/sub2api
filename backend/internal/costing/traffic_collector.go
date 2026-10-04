@@ -232,7 +232,7 @@ func (s *TrafficSampleStore) Latest(ctx context.Context) ([]NetworkSample, error
 	if err != nil {
 		return nil, ErrUnavailable
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := []NetworkSample{}
 	for rows.Next() {
 		var raw []byte

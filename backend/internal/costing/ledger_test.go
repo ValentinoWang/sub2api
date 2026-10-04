@@ -17,6 +17,13 @@ import (
 	"time"
 )
 
+func testFileStore(l *Ledger) *FileLedgerStore {
+	store, ok := l.Store.(*FileLedgerStore)
+	if !ok {
+		panic("ledger fixture requires file store")
+	}
+	return store
+}
 func testLedger(t *testing.T) *Ledger {
 	t.Helper()
 	d := t.TempDir()
@@ -70,7 +77,7 @@ func TestLedgerThreeTiersAndAllocation(t *testing.T) {
 func TestLedgerRestartAndReplay(t *testing.T) {
 	l := testLedger(t)
 	first := appendOK(t, l, "once", purchase("plus", "20", "p"))
-	second := &Ledger{Store: &FileLedgerStore{l.Store.(*FileLedgerStore).Path}, Clock: l.Clock}
+	second := &Ledger{Store: &FileLedgerStore{testFileStore(l).Path}, Clock: l.Clock}
 	repeat := appendOK(t, second, "once", purchase("plus", "20", "p"))
 	if !repeat.Replayed || repeat.Event.ID != first.Event.ID {
 		t.Fatal(repeat)
@@ -88,7 +95,7 @@ func TestLedgerConcurrentIdempotency(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			other := &Ledger{Store: &FileLedgerStore{l.Store.(*FileLedgerStore).Path}, Clock: l.Clock}
+			other := &Ledger{Store: &FileLedgerStore{testFileStore(l).Path}, Clock: l.Clock}
 			_, e := other.Append(context.Background(), 7, "same", purchase("plus", "20", "p"))
 			errCh <- e
 		}()
@@ -249,7 +256,7 @@ func TestLedgerFutureObservationsRejected(t *testing.T) {
 func TestLedgerCorruptFileFailsClosed(t *testing.T) {
 	l := testLedger(t)
 	appendOK(t, l, "p", purchase("plus", "20", "p"))
-	path := l.Store.(*FileLedgerStore).Path
+	path := testFileStore(l).Path
 	if e := os.WriteFile(path, []byte(`[{"bad":"data"}]`), 0600); e != nil {
 		t.Fatal(e)
 	}

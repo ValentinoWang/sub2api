@@ -124,7 +124,15 @@ func TestTrafficCounterIntegrityAndExactLargeBytes(t *testing.T) {
 	q.Start, q.End = "2026-09-02T00:00:00Z", "2026-09-03T00:00:00Z"
 	var data map[string]any
 	_ = json.Unmarshal(q.After, &data)
-	data["interfaces"].([]any)[0].(map[string]any)["updated"] = map[string]any{"timestamp": 1788393600}
+	interfaces, ok := data["interfaces"].([]any)
+	if !ok || len(interfaces) == 0 {
+		t.Fatal("invalid traffic fixture interfaces")
+	}
+	iface, ok := interfaces[0].(map[string]any)
+	if !ok {
+		t.Fatal("invalid traffic fixture interface")
+	}
+	iface["updated"] = map[string]any{"timestamp": 1788393600}
 	q.After, _ = json.Marshal(data)
 	r, err = AnalyzeTraffic(q)
 	if err != nil || r.Status != "COUNTER_RESET" || r.Charge != nil {

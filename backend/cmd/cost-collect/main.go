@@ -35,7 +35,7 @@ func main() {
 	if err != nil {
 		log.Fatal("collector database unavailable")
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	db.SetMaxOpenConns(1)
 	store := &costing.TrafficSampleStore{Open: func() (*sql.DB, func(), error) { return db, func() {}, nil }}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

@@ -48,10 +48,12 @@ func RegisterCostCenterRoutes(v1 *gin.RouterGroup, auth middleware.AdminAuthMidd
 			db.SetMaxIdleConns(0)
 			return db, func() { _ = db.Close() }, nil
 		}}}
-		quota = &costing.QuotaStore{Open: ledger.Store.(*costing.SQLLedgerStore).Open}
-		radar.Open = quota.Open
-		snapshots = &costing.SourceSnapshotStore{Open: quota.Open}
-		traffic = &costing.TrafficSampleStore{Open: quota.Open}
+		if store, ok := ledger.Store.(*costing.SQLLedgerStore); ok {
+			quota = &costing.QuotaStore{Open: store.Open}
+			radar.Open = quota.Open
+			snapshots = &costing.SourceSnapshotStore{Open: quota.Open}
+			traffic = &costing.TrafficSampleStore{Open: quota.Open}
+		}
 	}
 	admin := v1.Group("/admin/cost-center")
 	admin.Use(gin.HandlerFunc(auth), limiter.Global(), gin.HandlerFunc(audit), middleware.AdminComplianceGuard(settings))

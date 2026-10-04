@@ -51,14 +51,14 @@ func main() {
 	if err != nil {
 		log.Fatal("listener unavailable")
 	}
-	defer listener.Close()
+	defer func() { _ = listener.Close() }()
 	origin := "http://" + listener.Addr().String()
 	h := costing.HTTPHandler{Authorize: func(r *http.Request) bool {
 		return subtle.ConstantTimeCompare([]byte(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")), []byte(token)) == 1
 	}, Actor: func(*http.Request) int64 { return 1 }, Ledger: &costing.Ledger{Store: store}}
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Host != listener.Addr().String() || (r.Header.Get("Origin") != "" && r.Header.Get("Origin") != origin) {
-			http.Error(w, "origin denied", 403)
+			http.Error(w, "origin denied", http.StatusForbidden)
 			return
 		}
 		h.ServeHTTP(w, r)

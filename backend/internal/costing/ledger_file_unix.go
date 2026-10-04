@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// FileLedgerStore is a Unix local acceptance adapter. Production uses Postgres.
+// FileLedgerStore is a Linux-only local acceptance adapter. Production uses Postgres.
 // The directory must be private and dedicated; no symlinks, multiprocess writes use flock.
 type FileLedgerStore struct{ Path string }
 
@@ -26,9 +26,11 @@ func (s *FileLedgerStore) withLock(ctx context.Context, write bool, fn func([]Le
 		return nil, ErrUnavailable
 	}
 	dir := filepath.Dir(s.Path)
+	// #nosec G703 -- Operator-selected absolute private ledger path; no HTTP input can set it.
 	if err = os.MkdirAll(dir, 0700); err != nil {
 		return
 	}
+	// #nosec G703 -- Operator-selected absolute private ledger path; no HTTP input can set it.
 	info, e := os.Lstat(dir)
 	if e != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 || info.Mode().Perm()&0077 != 0 {
 		return nil, errors.New("private ledger directory (0700) required")
@@ -38,7 +40,7 @@ func (s *FileLedgerStore) withLock(ctx context.Context, write bool, fn func([]Le
 		return nil, e
 	}
 	lock := os.NewFile(uintptr(fd), s.Path+".lock")
-	defer lock.Close()
+	defer func() { _ = lock.Close() }()
 	mode := syscall.LOCK_SH
 	if write {
 		mode = syscall.LOCK_EX
@@ -57,7 +59,7 @@ func (s *FileLedgerStore) withLock(ctx context.Context, write bool, fn func([]Le
 		case <-time.After(10 * time.Millisecond):
 		}
 	}
-	defer syscall.Flock(fd, syscall.LOCK_UN)
+	defer func() { _ = syscall.Flock(fd, syscall.LOCK_UN) }()
 	fdData, e := syscall.Open(s.Path, syscall.O_RDONLY|syscall.O_NOFOLLOW, 0)
 	if e == syscall.ENOENT {
 		events = []LedgerEvent{}
@@ -67,11 +69,11 @@ func (s *FileLedgerStore) withLock(ctx context.Context, write bool, fn func([]Le
 		f := os.NewFile(uintptr(fdData), s.Path)
 		stat, e := f.Stat()
 		if e != nil || !stat.Mode().IsRegular() || stat.Mode().Perm()&0077 != 0 {
-			f.Close()
+			_ = f.Close()
 			return nil, errors.New("private regular ledger file required")
 		}
 		raw, e := io.ReadAll(io.LimitReader(f, 32*1024*1024+1))
-		f.Close()
+		_ = f.Close()
 		if e != nil {
 			return nil, e
 		}
@@ -116,7 +118,8 @@ func (s *FileLedgerStore) withLock(ctx context.Context, write bool, fn func([]Le
 		return nil, e
 	}
 	name := tmp.Name()
-	defer os.Remove(name)
+	// #nosec G703 -- Name is returned by os.CreateTemp inside the already validated private directory.
+	defer func() { _ = os.Remove(name) }()
 	if e = tmp.Chmod(0600); e == nil {
 		_, e = tmp.Write(raw)
 	}
@@ -133,14 +136,16 @@ func (s *FileLedgerStore) withLock(ctx context.Context, write bool, fn func([]Le
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
+	// #nosec G703 -- Operator-selected absolute private ledger path; no HTTP input can set it.
 	if e = os.Rename(name, s.Path); e != nil {
 		return nil, e
 	}
+	// #nosec G703 -- Operator-selected absolute private ledger path; no HTTP input can set it.
 	directory, e := os.Open(dir)
 	if e != nil {
 		return nil, e
 	}
-	defer directory.Close()
+	defer func() { _ = directory.Close() }()
 	if e = directory.Sync(); e != nil {
 		return nil, e
 	}

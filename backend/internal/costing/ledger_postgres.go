@@ -35,7 +35,7 @@ func readSQLLedger(ctx context.Context, q sqlQuery) ([]LedgerEvent, error) {
 	if e != nil {
 		return nil, fmt.Errorf("%w: events read", ErrUnavailable)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	events := []LedgerEvent{}
 	for rows.Next() {
 		var raw []byte
@@ -78,7 +78,7 @@ func (s *SQLLedgerStore) Transact(ctx context.Context, fn func([]LedgerEvent) (*
 	if e != nil {
 		return ErrUnavailable
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	// Every supported writer takes this row lock before taking its READ COMMITTED snapshot.
 	var version int
 	if e = tx.QueryRowContext(ctx, `SELECT schema_version FROM cost_center_lock WHERE id=1 FOR UPDATE`).Scan(&version); e != nil || version != 1 {

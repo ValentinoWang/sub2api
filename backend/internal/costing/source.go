@@ -64,7 +64,7 @@ func (s *SQLSource) read(ctx context.Context, fn func(*sql.Tx) error) error {
 	if err != nil {
 		return ErrUnavailable
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if _, err = tx.ExecContext(ctx, `SET LOCAL statement_timeout='7000ms'`); err != nil {
 		return ErrUnavailable
 	}
@@ -82,7 +82,7 @@ func readSourceAccounts(ctx context.Context, tx *sql.Tx) ([]SourceAccount, error
 	if err != nil {
 		return nil, ErrUnavailable
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	for rows.Next() {
 		var a SourceAccount
 		if rows.Scan(&a.ID, &a.Platform, &a.Type, &a.Status, &a.PlanType, &a.SubscriptionExpiresAt) != nil {
@@ -196,7 +196,7 @@ func (s *SQLSource) Reconcile(ctx context.Context, l *Ledger, q SummaryQuery) (R
 				for rows.Next() {
 					row := UsageRow{AccountID: account.ID, Asset: p.Asset, Tier: p.Tier, Start: p.Start, End: p.End}
 					if rows.Scan(&row.Model, &row.Requests, &row.InputTokens, &row.OutputTokens, &row.CacheReadTokens, &row.CacheCreationTokens, &row.ReferenceCost) != nil {
-						rows.Close()
+						_ = rows.Close()
 						return ErrUnavailable
 					}
 					compareRecordedRequests(active, &row)
@@ -206,12 +206,12 @@ func (s *SQLSource) Reconcile(ctx context.Context, l *Ledger, q SummaryQuery) (R
 					}
 					out.Rows = append(out.Rows, row)
 					if len(out.Rows) > 5000 {
-						rows.Close()
+						_ = rows.Close()
 						return ErrLimit
 					}
 				}
 				rowErr := rows.Err()
-				rows.Close()
+				_ = rows.Close()
 				if rowErr != nil {
 					return ErrUnavailable
 				}
@@ -237,7 +237,7 @@ func (s *SQLSource) QuotaSnapshots(ctx context.Context) ([]QuotaObservation, err
 		if err != nil {
 			return ErrUnavailable
 		}
-		defer rows.Close()
+		defer func() { _ = rows.Close() }()
 		for rows.Next() {
 			var id int64
 			var at string

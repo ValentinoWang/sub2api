@@ -153,7 +153,7 @@ func (s *RadarService) Get(ctx context.Context) (RadarSnapshot, error) {
 	if err != nil {
 		return RadarSnapshot{}, ErrUnavailable
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode != 200 || !strings.Contains(response.Header.Get("Content-Type"), "text/html") {
 		return RadarSnapshot{}, ErrUnavailable
 	}

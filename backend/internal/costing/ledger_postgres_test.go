@@ -114,7 +114,11 @@ func (c *contractConn) ExecContext(ctx context.Context, q string, args []driver.
 		return nil, errors.New("unexpected insert")
 	}
 	var e LedgerEvent
-	if err := json.Unmarshal([]byte(args[7].Value.(string)), &e); err != nil {
+	payload, ok := args[7].Value.(string)
+	if !ok {
+		return nil, errors.New("unexpected payload type")
+	}
+	if err := json.Unmarshal([]byte(payload), &e); err != nil {
 		return nil, err
 	}
 	c.pending = append(c.pending, e)
@@ -139,7 +143,7 @@ func TestSQLLedgerTransactionContract(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	store := &SQLLedgerStore{Open: func() (*sql.DB, func(), error) { return db, func() {}, nil }}
 	l := &Ledger{Store: store, Clock: func() time.Time { return time.Date(2026, 10, 2, 0, 0, 0, 0, time.UTC) }}
 	c := LedgerCommand{Kind: "purchase", Purchase: &Purchase{Reference: "synthetic", Supplier: "test", Asset: "test", Tier: "plus", Kind: "subscription", Currency: "USD", Amount: "20", PaidAt: "2026-09-01T00:00:00Z", ServiceStart: "2026-09-01T00:00:00Z", ServiceEnd: "2026-10-01T00:00:00Z", Evidence: "synthetic", EvidenceRef: "fixture"}}
