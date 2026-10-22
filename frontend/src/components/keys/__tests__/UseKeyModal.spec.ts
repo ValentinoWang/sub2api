@@ -72,6 +72,44 @@ describe('UseKeyModal', () => {
     expect(migrationLink.html()).not.toContain('https://example.com/v1')
   })
 
+  it('shows only Claude Code for Claude Code-only groups', async () => {
+    const wrapper = mount(UseKeyModal, {
+      props: {
+        show: true,
+        apiKey: 'sk-anthropic-test',
+        baseUrl: 'https://example.com/v1',
+        platform: 'anthropic'
+      },
+      global: {
+        stubs: {
+          BaseDialog: { template: '<div><slot /><slot name="footer" /></div>' },
+          Icon: { template: '<span />' }
+        }
+      }
+    })
+
+    const clientTabs = () => wrapper.find('nav[aria-label="Client"]').text()
+    expect(clientTabs()).toContain('keys.useKeyModal.cliTabs.codexCli')
+    expect(clientTabs()).toContain('keys.useKeyModal.cliTabs.opencode')
+
+    const codexTab = wrapper.find('nav[aria-label="Client"]').findAll('button').find(
+      (button) => button.text().includes('keys.useKeyModal.cliTabs.codexCli')
+    )
+    await codexTab!.trigger('click')
+    await wrapper.setProps({ claudeCodeOnly: true })
+
+    expect(clientTabs()).toContain('keys.useKeyModal.cliTabs.claudeCode')
+    expect(clientTabs()).not.toContain('keys.useKeyModal.cliTabs.codexCli')
+    expect(clientTabs()).not.toContain('keys.useKeyModal.cliTabs.opencode')
+    expect(wrapper.find('pre code').text()).toContain('CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC')
+
+    await wrapper.setProps({ platform: 'openai' })
+    expect(clientTabs()).toContain('keys.useKeyModal.cliTabs.claudeCode')
+    expect(clientTabs()).not.toContain('keys.useKeyModal.cliTabs.codexCli')
+    expect(clientTabs()).not.toContain('keys.useKeyModal.cliTabs.opencode')
+    expect(wrapper.find('pre code').text()).toContain('ANTHROPIC_BASE_URL')
+  })
+
   it('omits the attribution override from every standard Claude Code setup form', async () => {
     const wrapper = mount(UseKeyModal, {
       props: {
@@ -753,7 +791,7 @@ describe('UseKeyModal', () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => manifest
+      text: async () => JSON.stringify(manifest)
     })
     vi.stubGlobal('fetch', fetchMock)
 
@@ -796,7 +834,7 @@ describe('UseKeyModal', () => {
     await flushPromises()
 
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://example.com/v1/models?client_version=0.147.0',
+      'https://example.com/v1/models?client_version=0.158.0',
       expect.objectContaining({
         headers: expect.objectContaining({ Authorization: 'Bearer sk-composite-test' })
       })
@@ -867,7 +905,7 @@ describe('UseKeyModal', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({
+      text: async () => JSON.stringify({
         models: [
           { slug: 'claude-opus-4-8' },
           { slug: 'gpt-5.5' },
@@ -913,7 +951,7 @@ describe('UseKeyModal', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({
+      text: async () => JSON.stringify({
         models: [
           {
             slug: 'glm-5.3',

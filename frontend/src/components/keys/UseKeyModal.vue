@@ -241,6 +241,7 @@ interface Props {
   apiKey: string
   baseUrl: string
   platform: GroupPlatform | null
+  claudeCodeOnly?: boolean
   allowMessagesDispatch?: boolean
 }
 
@@ -297,6 +298,7 @@ const codexManifestContext = computed(() => {
 
 // Reset tabs when platform changes
 const defaultClientTab = computed(() => {
+  if (props.claudeCodeOnly) return 'claude'
   switch (props.platform) {
     case 'openai':
       return 'codex'
@@ -306,12 +308,14 @@ const defaultClientTab = computed(() => {
       return 'gemini'
     case 'antigravity':
       return 'claude'
+    case 'typesafe':
+      return 'systemone'
     default:
       return 'claude'
   }
 })
 
-watch(() => props.platform, () => {
+watch(() => [props.platform, props.claudeCodeOnly], () => {
   activeTab.value = 'unix'
   activeClientTab.value = defaultClientTab.value
   codexAuthMode.value = 'legacy'
@@ -402,6 +406,9 @@ const SparkleIcon = {
 
 const clientTabs = computed((): TabConfig[] => {
   if (!props.platform) return []
+  if (props.claudeCodeOnly) {
+    return [{ id: 'claude', label: t('keys.useKeyModal.cliTabs.claudeCode'), icon: TerminalIcon }]
+  }
   switch (props.platform) {
     case 'openai': {
       const tabs: TabConfig[] = [
@@ -433,6 +440,10 @@ const clientTabs = computed((): TabConfig[] => {
         { id: 'claude', label: t('keys.useKeyModal.cliTabs.claudeCode'), icon: TerminalIcon },
         { id: 'codex', label: t('keys.useKeyModal.cliTabs.codexCli'), icon: TerminalIcon },
         { id: 'opencode', label: t('keys.useKeyModal.cliTabs.opencode'), icon: TerminalIcon }
+      ]
+    case 'typesafe':
+      return [
+        { id: 'systemone', label: t('keys.useKeyModal.cliTabs.systemOne'), icon: TerminalIcon }
       ]
     case 'deepseek':
     case 'minimax':
@@ -518,6 +529,8 @@ const platformDescription = computed(() => {
       return activeClientTab.value === 'codex'
         ? t('keys.useKeyModal.composite.codexDescription')
         : t('keys.useKeyModal.composite.description')
+    case 'typesafe':
+      return t('keys.useKeyModal.typesafe.description')
     default:
       return t('keys.useKeyModal.description')
   }
@@ -575,6 +588,8 @@ const platformNote = computed(() => {
       return activeClientTab.value === 'codex'
         ? t('keys.useKeyModal.composite.codexNote')
         : t('keys.useKeyModal.note')
+    case 'typesafe':
+      return t('keys.useKeyModal.typesafe.note')
     default:
       return t('keys.useKeyModal.note')
   }
@@ -687,9 +702,12 @@ const currentFiles = computed((): FileConfig[] => {
   }
 
   switch (props.platform) {
+    case 'typesafe':
+      return [generateSystemOneCurl(baseRoot, apiKey)]
     case 'openai':
       if (activeClientTab.value === 'claude') {
-        return generateAnthropicFiles(baseUrl, apiKey)
+        // Anthropic clients append /v1/messages themselves.
+        return generateAnthropicFiles(baseRoot, apiKey)
       }
       if (activeClientTab.value === 'codex-ws') {
         return generateOpenAIFiles(codexBase, apiKey, true)
@@ -738,6 +756,46 @@ const currentFiles = computed((): FileConfig[] => {
       return generateAnthropicFiles(baseUrl, apiKey)
   }
 })
+
+function generateSystemOneCurl(baseUrl: string, apiKey: string): FileConfig {
+  const endpoint = `${baseUrl}/v1/systemone`
+  const payload = `{
+  "model": "jev-latest",
+  "state": "Text to evaluate",
+  "questions": {
+    "safety": {
+      "type": "noul",
+      "instructions": "Evaluate whether the text is unsafe"
+    }
+  }
+}`
+  if (activeTab.value === 'powershell') {
+    return {
+      path: 'PowerShell',
+      content: `$headers = @{ Authorization = "Bearer ${apiKey}" }
+$body = @'
+${payload}
+'@
+Invoke-RestMethod -Method Post -Uri "${endpoint}" -Headers $headers -ContentType "application/json" -Body $body`
+    }
+  }
+  if (activeTab.value === 'cmd') {
+    return {
+      path: 'Command Prompt',
+      content: `curl -X POST "${endpoint}" ^
+  -H "Authorization: Bearer ${apiKey}" ^
+  -H "Content-Type: application/json" ^
+  --data "{\"model\":\"jev-latest\",\"state\":\"Text to evaluate\",\"questions\":{\"safety\":{\"type\":\"noul\",\"instructions\":\"Evaluate whether the text is unsafe\"}}}"`
+    }
+  }
+  return {
+    path: 'Terminal',
+    content: `curl -X POST "${endpoint}" \\
+  -H "Authorization: Bearer ${apiKey}" \\
+  -H "Content-Type: application/json" \\
+  --data '${payload}'`
+  }
+}
 
 function generateAnthropicFiles(baseUrl: string, apiKey: string): FileConfig[] {
   let path: string
@@ -1199,6 +1257,9 @@ function generateRoutedCodexFiles(
     deepseek: 'DeepSeek',
     minimax: 'MiniMax',
     opencode_go: 'OpenCode',
+    typesafe: 'TypeSafe / Jev',
+    command_code: 'Command Code',
+    cline: 'Cline',
     composite: 'Composite'
   }
   const label = labels[platform]
@@ -1311,6 +1372,41 @@ function generateOpenCodeConfig(platform: string, baseUrl: string, apiKey: strin
         max: {}
       }
     },
+    'gpt-6.1-sol': {
+      name: 'GPT-6.1 Sol',
+      limit: {
+        context: 1050000,
+        output: 128000
+      },
+      options: {
+        store: false
+      },
+      variants: {
+        low: {},
+        medium: {},
+        high: {},
+        xhigh: {},
+        max: {}
+      }
+    },
+    'gpt-6-sol': {
+      name: 'GPT-6 Sol',
+      limit: {
+        context: 1050000,
+        output: 128000
+      },
+      options: {
+        store: false
+      },
+      variants: {
+        none: {},
+        low: {},
+        medium: {},
+        high: {},
+        xhigh: {},
+        max: {}
+      }
+    },
     'gpt-5.6-sol': {
       name: 'GPT-5.6 Sol',
       limit: {
@@ -1338,6 +1434,24 @@ function generateOpenCodeConfig(platform: string, baseUrl: string, apiKey: strin
         store: false
       },
       variants: {
+        low: {},
+        medium: {},
+        high: {},
+        xhigh: {},
+        max: {}
+      }
+    },
+    'gpt-6-luna': {
+      name: 'GPT-6 Luna',
+      limit: {
+        context: 1050000,
+        output: 128000
+      },
+      options: {
+        store: false
+      },
+      variants: {
+        none: {},
         low: {},
         medium: {},
         high: {},
@@ -1776,6 +1890,34 @@ function generateOpenCodeConfig(platform: string, baseUrl: string, apiKey: strin
     provider[platform].models = geminiModels
   } else if (platform === 'anthropic') {
     provider[platform].npm = '@ai-sdk/anthropic'
+    provider[platform].models = {
+      'claude-opus-5-5': {
+        name: 'Claude Opus 5.5',
+        limit: { context: 1000000, output: 128000 },
+        modalities: { input: ['text', 'image', 'pdf'], output: ['text'] },
+        options: { thinking: { type: 'adaptive' }, effort: 'medium' },
+        variants: {
+          low: { effort: 'low' },
+          medium: { effort: 'medium' },
+          high: { effort: 'high' },
+          xhigh: { effort: 'xhigh' },
+          max: { effort: 'max' }
+        }
+      },
+      'claude-sonnet-5-5': {
+        name: 'Claude Sonnet 5.5',
+        limit: { context: 1000000, output: 128000 },
+        modalities: { input: ['text', 'image', 'pdf'], output: ['text'] },
+        options: { thinking: { type: 'adaptive' }, effort: 'high' },
+        variants: {
+          low: { effort: 'low' },
+          medium: { effort: 'medium' },
+          high: { effort: 'high' },
+          xhigh: { effort: 'xhigh' },
+          max: { effort: 'max' }
+        }
+      }
+    }
   } else if (platform === 'antigravity-claude') {
     provider[platform].npm = '@ai-sdk/anthropic'
     provider[platform].name = 'Antigravity (Claude)'

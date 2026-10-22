@@ -155,6 +155,7 @@ docs/*
 !docs/human-acceptance/
 !docs/human-acceptance/*.md
 !docs/rest2build-handbook.html
+!docs/sub2api-edge-origin-guide.html
 !docs/error-experiences/
 docs/error-experiences/*
 !docs/error-experiences/README.md

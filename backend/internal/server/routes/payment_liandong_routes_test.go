@@ -43,7 +43,7 @@ func TestLiandongRestockRoutesRequireAdminAuthentication(t *testing.T) {
 	adminPayment := adminhandler.NewPaymentHandler(nil, nil)
 	RegisterPaymentRoutes(
 		router.Group("/api/v1"), &handler.PaymentHandler{}, &handler.PaymentWebhookHandler{}, adminPayment,
-		jwtAuth, adminAuth, auditLog, nil, &servermiddleware.PanelRateLimiter{},
+		jwtAuth, adminAuth, auditLog, nil, &servermiddleware.PanelRateLimiter{}, nil,
 	)
 
 	routes := []struct {

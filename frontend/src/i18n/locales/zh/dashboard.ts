@@ -187,7 +187,12 @@ export default {
         codexCli: 'Codex CLI',
         codexCliWs: 'Codex CLI (WebSocket)',
         grokCli: 'Grok CLI',
+        systemOne: 'System One',
         opencode: 'OpenCode'
+      },
+      typesafe: {
+        description: '通过 TypeSafe 原生 System One 端点调用 Jev。',
+        note: 'System One 不支持流式请求，也不兼容 Chat Completions、Responses、Claude Code 或 Codex 客户端。'
       },
       antigravity: {
         description: '为 Antigravity 分组配置 API 访问。请根据您使用的客户端选择对应的配置方式。',
@@ -390,6 +395,8 @@ export default {
     latency: '延迟',
     latencyFirstToken: '首字',
     latencyDuration: '总耗时',
+    outputTps: '输出 TPS',
+    outputTpsHint: '输出 Token ÷ 总耗时（包含首字等待），单位 tok/s。输出 Token 可能包含推理 Token。',
     time: '时间',
     ws: 'WS',
     stream: '流式',
@@ -624,6 +631,8 @@ export default {
       billingModePerRequest: '按次',
       billingModeImage: '按图片',
       billingModeVideo: '按视频',
+      videoPrice: '视频单价',
+      unitPerSecond: '/ 秒',
       inputPrice: '输入',
       outputPrice: '输出',
       cacheWritePrice: '缓存写入',
@@ -679,8 +688,8 @@ export default {
       cacheReadShort: '读',
       tierHint: '按单次请求的总上下文（输入 + 缓存写入 + 缓存读取）所在档位对整单计价',
       tierHintMarginal: '仅超过阈值的部分按该档计价，输出不加价',
-      maxReasoningMultiplierBadge: 'Max ×{multiplier}',
-      maxReasoningMultiplierHint: '最终转发的推理强度为 max 时，整次请求的计费与额度消耗乘以 {multiplier}',
+      reasoningMultiplierBadge: '{effort} ×{multiplier}',
+      reasoningMultiplierHint: '最终转发的思考等级为 {effort} 时，整次请求的计费与额度消耗乘以 {multiplier}；未配置的等级按 1 倍计费',
       marginalBadge: '超出部分计价',
       timePricingRowHint: '按 {timezone} 时间，在该时段内发起的请求按本行价格计费',
       timePricingRowHintWeekdays:

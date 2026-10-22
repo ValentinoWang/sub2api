@@ -11,6 +11,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/costing"
 	"github.com/Wei-Shaw/sub2api/internal/payment"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/antigravity"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/claude"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/xai"
 	"github.com/google/wire"
@@ -434,8 +435,9 @@ func ProvideGrokTokenProvider(
 }
 
 // ProvideDashboardAggregationService 创建并启动仪表盘聚合服务
-func ProvideDashboardAggregationService(repo DashboardAggregationRepository, timingWheel *TimingWheelService, lockCache LeaderLockCache, db *sql.DB, cfg *config.Config) *DashboardAggregationService {
+func ProvideDashboardAggregationService(repo DashboardAggregationRepository, timingWheel *TimingWheelService, lockCache LeaderLockCache, db *sql.DB, cfg *config.Config, settingRepo SettingRepository) *DashboardAggregationService {
 	svc := NewDashboardAggregationService(repo, timingWheel, cfg)
+	svc.settingRepo = settingRepo
 	svc.SetLeaderLock(lockCache, db)
 	svc.Start()
 	return svc
@@ -475,6 +477,18 @@ func ProvideOpenAICodexVersionSyncService(
 	githubClient GitHubReleaseClient,
 ) *OpenAICodexVersionSyncService {
 	svc := NewOpenAICodexVersionSyncService(settingRepo, settingService, githubClient, openAICodexVersionSyncInterval)
+	svc.Start()
+	return svc
+}
+
+// ProvideClaudeCodeVersionSyncService creates and starts ClaudeCodeVersionSyncService.
+// 出站 Claude Code 身份的版本号靠它跟随官方发布，无需为了跟版本而发新版本；面板可关闭。
+func ProvideClaudeCodeVersionSyncService(
+	settingRepo SettingRepository,
+	settingService *SettingService,
+	githubClient GitHubReleaseClient,
+) *ClaudeCodeVersionSyncService {
+	svc := NewClaudeCodeVersionSyncService(settingRepo, settingService, githubClient, claudeCodeVersionSyncInterval)
 	svc.Start()
 	return svc
 }
@@ -691,6 +705,13 @@ func ProvideIdempotencyCleanupService(repo IdempotencyRepository, cfg *config.Co
 	return svc
 }
 
+// ProvideGeminiCachedContentService creates GeminiCachedContentService and starts its mutation recovery loop.
+func ProvideGeminiCachedContentService(repo GeminiCachedContentRepository, compat *GeminiMessagesCompatService, cfg *config.Config) *GeminiCachedContentService {
+	svc := NewGeminiCachedContentService(repo, compat, cfg)
+	svc.Start()
+	return svc
+}
+
 // ProvideScheduledTestService creates ScheduledTestService.
 func ProvideScheduledTestService(
 	planRepo ScheduledTestPlanRepository,
@@ -858,6 +879,11 @@ func ProvideSettingService(settingRepo SettingRepository, groupRepo GroupReposit
 	SetCodexCanonicalUserAgentResolver(func() string {
 		return svc.GetOpenAICodexCanonicalUserAgent(context.Background())
 	})
+	// Claude CLI 伪装版本号同理：运行期解析（面板手动值 → 后台同步值 → 内置基线），
+	// 解析器内部自带 60s TTL 缓存，热路径不触库。
+	claude.SetCLIVersionResolver(func() string {
+		return svc.GetClaudeCodeClientVersion(context.Background())
+	})
 	return svc
 }
 
@@ -928,10 +954,12 @@ var ProviderSet = wire.NewSet(
 	ProvideBatchImageWorkerRuntime,
 	wire.Bind(new(AccountRuntimeBlocker), new(*OpenAIGatewayService)),
 	NewOAuthService,
+	ProvideClaudeResetCreditService,
 	ProvideOpenAIOAuthService,
 	ProvideGrokOAuthService,
 	wire.Bind(new(GrokOAuthTokenService), new(*GrokOAuthService)),
 	NewGeminiOAuthService,
+	ProvideGeminiCachedContentService,
 	NewGeminiQuotaService,
 	NewCompositeTokenCacheInvalidator,
 	wire.Bind(new(TokenCacheInvalidator), new(*CompositeTokenCacheInvalidator)),
@@ -955,6 +983,7 @@ var ProviderSet = wire.NewSet(
 	ProvideAccountTestService,
 	ProvideUpstreamBillingProbeService,
 	ProvideOllamaCloudUsageService,
+	ProvideOpenCodeGoUsageService,
 	ProvideSettingService,
 	NewDataManagementService,
 	ProvideBackupService,
@@ -987,6 +1016,7 @@ var ProviderSet = wire.NewSet(
 	ProvideAccountExpiryService,
 	ProvideUserLifecycleService,
 	ProvideOpenAICodexVersionSyncService,
+	ProvideClaudeCodeVersionSyncService,
 	ProvideProxyExpiryService,
 	ProvideSubscriptionExpiryService,
 	ProvideTimingWheelService,
@@ -1118,4 +1148,12 @@ func ProvideChannelMonitorV2Aggregator(repo ChannelMonitorV2Repository, db *sql.
 	}
 	aggregator.Start()
 	return aggregator
+}
+
+// ProvideClaudeResetCreditService wires the Claude reset query and, with the
+// idempotency store and Redis leases, manual redemption.
+func ProvideClaudeResetCreditService(accounts AccountRepository, tokens *ClaudeTokenProvider, proxies ProxyRepository, settings *SettingService, idem *IdempotencyCoordinator, locks LeaderLockCache) *ClaudeResetCreditService {
+	s := NewClaudeResetCreditService(accounts, tokens, proxies, settings)
+	s.ConfigureRedemption(idem, locks)
+	return s
 }
